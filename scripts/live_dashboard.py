@@ -1,3 +1,5 @@
+from pathlib import Path
+import urllib.parse
 import re
 #!/usr/bin/env python3
 """
@@ -422,6 +424,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
+    def _send_file(self, path: Path, content_type: str):
+        self.send_response(200)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(path.stat().st_size))
+        self.end_headers()
+        with path.open('rb') as f:
+            self.wfile.write(f.read())
+
     def do_GET(self):
         fleet_data = api_fleet()
         runs = api_runs()
@@ -449,6 +459,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._send_json(api_decisions())
             return
 
+        if self.path.startswith('/assets/'):
+            rel = urllib.parse.unquote(self.path[len('/assets/'):])
+            local = Path(__file__).resolve().parent.parent / 'assets' / rel
+            if local.is_file():
+                ctype = 'image/png' if local.suffix.lower() == '.png' else 'application/octet-stream'
+                self._send_file(local, ctype)
+                return
+            self.send_response(404)
+            self.end_headers()
+            return
         self.send_response(404)
         self.end_headers()
 
