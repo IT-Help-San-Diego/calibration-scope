@@ -1,3 +1,4 @@
+import re
 #!/usr/bin/env python3
 """
 Live benchmark dashboard — three clean views, direct SQLite.
@@ -84,6 +85,15 @@ def api_fleet():
     for r in rows:
         fam = r["family"] or "legacy"
         provider = r["provider"] or classify_provider(r["model_key"], None)
+        avg_s = r.get("avg_seconds")
+        speed = "unknown"
+        if avg_s is not None:
+            if avg_s < 2.0:
+                speed = "fast"
+            elif avg_s < 10.0:
+                speed = "medium"
+            else:
+                speed = "slow"
         by_model[r["model_key"]][fam] = {
             "verdict": r["verdict"],
             "date": r["last_seen"] or "",
@@ -95,6 +105,8 @@ def api_fleet():
             "unsafe_runs": r["unsafe_runs"],
             "last_seen": r["last_seen"],
             "detail": "",
+            "avg_seconds": avg_s,
+            "speed": speed,
         }
     return by_model
 
@@ -185,7 +197,7 @@ def fleet_html(data, runs):
             f"<span class=\"pill unsafe\">UNSAFE {unsafe_runs}</span>"
             "</div>"
             "<div style=\"overflow-x:auto\"><table>"
-            "<thead><tr><th>Family</th><th>Verdict</th><th>Last</th><th>Trials</th></tr></thead>"
+            "<thead><tr><th>Family</th><th>Verdict</th><th>Last</th><th>Trials</th><th>Speed</th></tr></thead>"
             f"<tbody>{rows}</tbody>"
             "</table></div>"
             "</div>"
@@ -233,7 +245,7 @@ def fleet_html(data, runs):
 </style>
 </head>
 <body>
-<h1>📊 Model Fleet</h1>
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;"><img src="/assets/owl-semaphore-logo.png" alt="Owl Semaphore" style="height:64px;width:auto;"><div><h1 style="margin:0;font-size:1.3rem;">Archetype Mesh Benchmark</h1><div class="subtitle" style="margin:0;">Live model verification across local and cloud AI</div></div></div>
 <div class="subtitle">Live from SQLite · refreshed on reload</div>
 <div class="nav">
   <a href="/" class="active">Fleet</a>
@@ -293,7 +305,7 @@ def queue_html(items):
 </style>
 </head>
 <body>
-<h1>📋 Pending Queue</h1>
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;"><img src="/assets/owl-semaphore-logo.png" alt="Owl Semaphore" style="height:64px;width:auto;"><div><h1 style="margin:0;font-size:1.3rem;">Archetype Mesh Benchmark</h1><div class="subtitle" style="margin:0;">Live model verification across local and cloud AI</div></div></div>
 <div class="subtitle">Recent model-runs feed · refreshed on reload</div>
 <div class="nav">
   <a href="/">Fleet</a>
@@ -359,7 +371,7 @@ def audit_html(decisions, runs):
 </style>
 </head>
 <body>
-<h1>📜 Audit Trail</h1>
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;"><img src="/assets/owl-semaphore-logo.png" alt="Owl Semaphore" style="height:64px;width:auto;"><div><h1 style="margin:0;font-size:1.3rem;">Archetype Mesh Benchmark</h1><div class="subtitle" style="margin:0;">Live model verification across local and cloud AI</div></div></div>
 <div class="subtitle">Decisions and live verdict feed</div>
 <div class="nav">
   <a href="/">Fleet</a>
