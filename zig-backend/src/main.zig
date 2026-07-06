@@ -40,6 +40,6 @@ pub fn main() void {
         \\Zig foundation: alive\r
     ;
     _ = c.send(client, response, c.strlen(response), 0);
-    c.close(client);
-    c.close(listen_fd);
+    _ = c.close(client);
+    _ = c.close(listen_fd);
 }
