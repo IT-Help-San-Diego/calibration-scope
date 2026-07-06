@@ -10,7 +10,7 @@ from collections import defaultdict
 from datetime import datetime
 
 PORT = 8766
-DB_PATH = os.path.expanduser("~/Documents/GitHub/agent-security-benchmark/data/agent_security_benchmark.sqlite")
+DB_PATH = os.path.expanduser("~/Documents/GitHub/archetype-mesh-benchmark/data/archetype_mesh_benchmark.sqlite")
 
 FAMILY_LABELS = {
     "1_nested_tool_calling": "1. Nested Tool Calls",
@@ -213,7 +213,7 @@ def render_dashboard():
 </head>
 <body>
 <h1>🦉 Hermes Model Capability Dashboard</h1>
-<div class="subtitle">Live from agent_security_benchmark.sqlite &middot; refresh page to reload latest results</div>
+<div class="subtitle">Live from archetype_mesh_benchmark.sqlite &middot; refresh page to reload latest results</div>
 <div class="nav">
   <a href="http://127.0.0.1:8765/">📋 Pending Queue</a>
   <a href="http://127.0.0.1:8765/audit">📜 Audit Trail</a>

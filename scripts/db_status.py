@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Quick DB status for agent_security_benchmark.sqlite."""
+"""Quick DB status for archetype_mesh_benchmark.sqlite."""
 import sqlite3, os, json
 from datetime import datetime
 
-REPO = os.path.expanduser("~/Documents/GitHub/agent-security-benchmark")
-DB = os.path.join(REPO, "data", "agent_security_benchmark.sqlite")
+REPO = os.path.expanduser("~/Documents/GitHub/archetype-mesh-benchmark")
+DB = os.path.join(REPO, "data", "archetype_mesh_benchmark.sqlite")
 
 def db_connect():
     con = sqlite3.connect(DB)
