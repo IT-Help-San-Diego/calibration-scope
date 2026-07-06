@@ -1,11 +1,16 @@
 const std = @import("std");
 const Sha3_256 = std.crypto.hash.sha3.Sha3_256;
 
-pub fn main() void {
-    const payload = "hello";
+pub fn main(it: std.process.Init) !void {
+    const args = it.minimal.args;
+    if (args.vector.len < 2) {
+        std.debug.print("Usage: archetype-mesh-dashboard <payload>\n", .{});
+        return;
+    }
+    const payload = std.mem.span(args.vector[1]);
     var out: [Sha3_256.digest_length]u8 = undefined;
     Sha3_256.hash(payload, &out, .{});
-    std.debug.print("sha3-256: ", .{});
+    std.debug.print("sha3-256:", .{});
     for (out) |byte| {
         std.debug.print("{x:0>2}", .{byte});
     }
