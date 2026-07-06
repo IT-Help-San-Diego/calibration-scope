@@ -1,29 +1,13 @@
 const std = @import("std");
-const c = @cImport({
-    @cInclude("unistd.h");
-    @cInclude("sys/socket.h");
-    @cInclude("netinet/in.h");
-    @cInclude("arpa/inet.h");
-    @cInclude("string.h");
-});
+const Sha3_256 = std.crypto.hash.sha3.Sha3_256;
 
 pub fn main() void {
-    const listen_fd = c.socket(c.AF_INET, c.SOCK_STREAM, 0);
-    if (listen_fd < 0) {
-        std.debug.print("socket failed\n", .{});
-        return;
+    const payload = "hello";
+    var out: [Sha3_256.digest_length]u8 = undefined;
+    Sha3_256.hash(payload, &out, .{});
+    std.debug.print("sha3-256: ", .{});
+    for (out) |byte| {
+        std.debug.print("{x:0>2}", .{byte});
     }
-    var addr: c.struct_sockaddr_in = std.mem.zeroes(c.struct_sockaddr_in);
-    addr.sin_family = c.AF_INET;
-    addr.sin_port = std.math.cast(u16, 8768) orelse 0;
-    addr.sin_addr.s_addr = c.htonl(0x7f000001);
-    if (c.bind(listen_fd, @ptrCast(&addr), @sizeOf(c.struct_sockaddr_in)) < 0) {
-        std.debug.print("bind failed\n", .{});
-        return;
-    }
-    if (c.listen(listen_fd, 16) < 0) {
-        std.debug.print("listen failed\n", .{});
-        return;
-    }
-    std.debug.print("listening on 127.0.0.1:8768\n", .{});
+    std.debug.print("\n", .{});
 }
