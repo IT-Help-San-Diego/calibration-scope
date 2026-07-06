@@ -5,8 +5,6 @@ const c = @cImport({
     @cInclude("netinet/in.h");
     @cInclude("arpa/inet.h");
     @cInclude("string.h");
-    @cInclude("errno.h");
-    @cInclude("sys/select.h");
 });
 
 fn handle_client(client_fd: c_int) void {
@@ -32,32 +30,18 @@ pub fn main() void {
     addr.sin_port = std.math.cast(u16, 8768) orelse 0;
     addr.sin_addr.s_addr = c.htonl(0x7f000001);
     if (c.bind(listen_fd, @ptrCast(&addr), @sizeOf(c.struct_sockaddr_in)) < 0) {
-        std.debug.print("bind failed: {s}\n", .{c.strerror(c.errno)});
+        std.debug.print("bind failed\n", .{});
         return;
     }
     if (c.listen(listen_fd, 16) < 0) {
-        std.debug.print("listen failed: {s}\n", .{c.strerror(c.errno)});
+        std.debug.print("listen failed\n", .{});
         return;
     }
     std.debug.print("listening on 127.0.0.1:8768\n", .{});
-
     while (true) {
-        var readset: c.fd_set = std.mem.zeroes(c.fd_set);
-        c.FD_SET(listen_fd, &readset);
-        var timeout = c.struct_timeval{ .tv_sec = 0, .tv_usec = 200 * 1000 };
-        const ready = c.select(listen_fd + 1, &readset, null, null, &timeout);
-        if (ready < 0) {
-            std.debug.print("select error: {s}\n", .{c.strerror(c.errno)});
-            continue;
-        }
-        if (ready == 0) continue;
-        if (!(c.FD_ISSET(listen_fd, &readset) != 0)) continue;
-
         const client = c.accept(listen_fd, null, null);
-        if (client < 0) {
-            std.debug.print("accept error: {s}\n", .{c.strerror(c.errno)});
-            continue;
-        }
+        if (client < 0) break;
         handle_client(client);
     }
+    _ = c.close(listen_fd);
 }
