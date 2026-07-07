@@ -16,7 +16,11 @@ use crate::state::AppState;
 /// Cloud runs don't take it (no shared hardware to contaminate).
 static LOCAL_RUN_LOCK: Mutex<()> = Mutex::const_new(());
 
-const VALID_AXES: [&str; 4] = ["vision", "tools", "reasoning", "security"];
+// "auxiliary" is an experimental axis (added 2026-07-07) tracking whether
+// non-frontier / local models are reliable enough for Hermes' auxiliary
+// tasks (approval classification, MCP sampling relay) — see migration 009.
+// Deliberately kept separate from the core 4-axis capability grid.
+const VALID_AXES: [&str; 5] = ["vision", "tools", "reasoning", "security", "auxiliary"];
 
 #[derive(Debug, Deserialize)]
 pub struct StartRunRequest {
@@ -54,59 +58,63 @@ pub async fn start_runs(
     .ok_or_else(|| AppError::Executor(format!("Unknown model key: {}", req.model_key)))?;
 
     let mut run_ids = Vec::new();
-    for axis in &req.axes {
-        // Each run must reference a concrete test; use the first active test on
-        // the axis as the anchor (the executor runs ALL active tests on the axis).
-        let anchor_test: Option<(i32,)> = sqlx::query_as(
-            "SELECT id FROM tests WHERE active = true AND axis = $1 ORDER BY id LIMIT 1",
-        )
-        .bind(axis)
-        .fetch_optional(&state.db)
-        .await?;
-        let Some((test_id,)) = anchor_test else {
-            return Err(AppError::Executor(format!("No active tests for axis '{}'", axis)));
-        };
-
-        let (run_id,): (i32,) = sqlx::query_as(
-            r#"INSERT INTO test_runs (model_id, test_id, axis, status)
-               VALUES ($1, $2, $3, 'queued') RETURNING id"#,
-        )
-        .bind(model.id)
-        .bind(test_id)
-        .bind(axis)
-        .fetch_one(&state.db)
-        .await?;
-        run_ids.push(run_id);
-
-        let db = state.db.clone();
-        let config = state.config.clone();
-        let tx = state.events_tx.clone();
-        let model_id = model.id;
-        let model_key = model.key.clone();
-        let location = model.location.clone();
-        let provider = model.provider.clone();
-        let axis = axis.clone();
-
-        tokio::spawn(async move {
-            // Serialize local runs — clean-room integrity.
-            let _guard = if location == "local" {
-                Some(LOCAL_RUN_LOCK.lock().await)
-            } else {
-                None
-            };
-            crate::executor::execute_run(
-                db, config, tx, run_id, model_id, model_key, location, provider, axis,
+        // Create ONE test_run row PER TEST on each requested axis (not one per axis).
+        // The executor's tests_for_axis runs ALL active tests on that axis.
+        for axis in &req.axes {
+            let tests_on_axis: Vec<(i32,)> = sqlx::query_as(
+                "SELECT id FROM tests WHERE active = true AND axis = $1 ORDER BY id",
             )
-            .await;
-        });
-    }
+            .bind(axis)
+            .fetch_all(&state.db)
+            .await?;
 
-    Ok(Json(serde_json::json!({
-        "run_id": run_ids[0],
-        "run_ids": run_ids,
-        "model_key": req.model_key,
-        "axes": req.axes,
-    })))
+            if tests_on_axis.is_empty() {
+                return Err(AppError::Executor(format!("No active tests for axis '{}'", axis)));
+            }
+
+            for (test_id,) in tests_on_axis {
+                let (run_id,): (i32,) = sqlx::query_as(
+                    r#"INSERT INTO test_runs (model_id, test_id, axis, status)
+                       VALUES ($1, $2, $3, 'queued') RETURNING id"#,
+                )
+                .bind(model.id)
+                .bind(test_id)
+                .bind(axis)
+                .fetch_one(&state.db)
+                .await?;
+                run_ids.push(run_id);
+
+                let db = state.db.clone();
+                let config = state.config.clone();
+                let tx = state.events_tx.clone();
+                let model_id = model.id;
+                let model_key = model.key.clone();
+                let location = model.location.clone();
+                let provider = model.provider.clone();
+                let axis = axis.clone();
+                let test_id = test_id;
+
+                tokio::spawn(async move {
+                    // Serialize local runs — clean-room integrity.
+                    let _guard = if location == "local" {
+                        Some(LOCAL_RUN_LOCK.lock().await)
+                    } else {
+                        None
+                    };
+                    crate::executor::execute_run(
+                        db, config, tx, run_id, model_id, model_key, location, provider, axis,
+                    )
+                    .await;
+                });
+            }
+        }
+
+        Ok(Json(serde_json::json!({
+            "run_id": run_ids[0],
+            "run_ids": run_ids,
+            "model_key": req.model_key,
+            "axes": req.axes,
+        })))
 }
 
 pub async fn list_runs(State(state): State<AppState>) -> AppResult<Json<serde_json::Value>> {
