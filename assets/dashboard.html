@@ -388,6 +388,40 @@
   .list-row .lr-axis { min-width: 90px; font-weight: 600; }
   .list-row .lr-name { flex: 1; font-family: var(--font-mono); }
   .list-row .lr-meta { color: var(--text-muted); font-size: 11px; font-family: var(--font-mono); }
+
+  /* Loot page */
+  .loot-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+  .squad-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .squad-slot {
+    background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; position: relative; overflow: hidden;
+  }
+  .squad-slot::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+  }
+  .squad-slot.vision::before { background: var(--accent-purple); }
+  .squad-slot.tools::before { background: var(--accent-cyan); }
+  .squad-slot.reasoning::before { background: var(--accent-green); }
+  .squad-slot.security::before { background: var(--accent-amber); }
+  .squad-slot-axis { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px; }
+  .squad-slot-model { font-size: 14px; font-weight: 700; font-family: var(--font-mono); margin-bottom: 4px; }
+  .squad-slot-speed { font-size: 12px; color: var(--accent-cyan); font-family: var(--font-mono); }
+  .squad-slot-empty { color: var(--text-muted); font-style: italic; font-size: 13px; }
+  .loot-sort-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .loot-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .loot-table th {
+    text-align: left; padding: 10px 12px; color: var(--text-muted); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border);
+  }
+  .loot-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .loot-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .loot-rank { font-family: var(--font-mono); color: var(--text-muted); width: 28px; }
+  .loot-rank.gold { color: #ffd700; font-weight: 700; }
+  .loot-rank.silver { color: #c0c0c0; font-weight: 700; }
+  .loot-rank.bronze { color: #cd7f32; font-weight: 700; }
+  .loot-model-name { font-family: var(--font-mono); font-weight: 600; }
+  .loot-axis-cell { font-family: var(--font-mono); font-size: 12px; text-align: center; }
+  .loot-axis-cell .lac-ms { display:block; font-size: 10px; color: var(--accent-cyan); margin-top:2px; }
   .protocol {
     margin: 0 24px 14px;
     background: var(--bg-card);
@@ -460,6 +494,7 @@
 <div class="top-nav">
   <div class="tab" onclick="showPage('setup')" id="tab-setup">🧭 Hermes Setup</div>
   <div class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">🔬 Benchmark</div>
+  <div class="tab" onclick="showPage('loot-page')" id="tab-loot-page">🏆 Loot</div>
   <div class="tab" onclick="showPage('tests-page')" id="tab-tests-page">📋 Tests</div>
   <div class="tab" onclick="showPage('runs-page')" id="tab-runs-page">📊 Runs</div>
   <div class="spacer"></div>
@@ -674,6 +709,39 @@ hermes config set auxiliary.&lt;task&gt;.model &lt;your-local-model-key&gt;</pre
   </div>
 </div>
 <!-- ============ /PAGE: Hermes Setup ============ -->
+
+<!-- ============ PAGE: Loot ============ -->
+<div class="page" id="page-loot-page" style="display:none;">
+  <div class="loot-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🏆 Your Loot — what you've actually earned</div>
+      <div class="setup-hero-sub">Real evidence from your runs, not opinions. Two questions this page answers: which bot is my best for a given job, and which bots should I load into which slots if I'm running a squad instead of one do-everything model.</div>
+    </div>
+
+    <!-- Recommended Squad -->
+    <div class="setup-card" id="squad-card">
+      <div class="setup-card-title">🎯 Recommended Squad — one champion per axis, picked by fastest-to-ever-fully-pass</div>
+      <p style="margin-bottom:14px;">This is the loadout mindset: don't pick one model and run everything through it at low/medium/high — put your fastest verified-correct model in each slot, the same way you'd pin Hermes auxiliary tasks to different backends.</p>
+      <div class="squad-grid" id="squad-grid">Loading…</div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="setup-card">
+      <div class="setup-card-title">📊 Leaderboard — sortable</div>
+      <div class="loot-sort-bar">
+        <span class="filter-label">SORT BY:</span>
+        <button class="chip active" onclick="sortLoot('overall_score')" id="sort-overall_score">Overall Score</button>
+        <button class="chip" onclick="sortLoot('total_wins')" id="sort-total_wins">Total Wins</button>
+        <button class="chip" onclick="sortLoot('vision')" id="sort-vision">👁 Vision Speed</button>
+        <button class="chip" onclick="sortLoot('tools')" id="sort-tools">🔧 Tools Speed</button>
+        <button class="chip" onclick="sortLoot('reasoning')" id="sort-reasoning">🧠 Reasoning Speed</button>
+        <button class="chip" onclick="sortLoot('security')" id="sort-security">🛡 Security Speed</button>
+      </div>
+      <div id="loot-table-wrap">Loading…</div>
+    </div>
+  </div>
+</div>
+<!-- ============ /PAGE: Loot ============ -->
 
 <!-- ============ PAGE: Tests ============ -->
 <div class="page" id="page-tests-page" style="display:none;">
@@ -938,7 +1006,7 @@ if (localStorage.getItem('amb-protocol-collapsed') === '1') {
 }
 
 // ============ Tab navigation — makes the top-nav tabs actually work ============
-const PAGES = ['setup', 'benchmark', 'tests-page', 'runs-page', 'lmstudio'];
+const PAGES = ['setup', 'benchmark', 'loot-page', 'tests-page', 'runs-page', 'lmstudio'];
 function showPage(name) {
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -947,6 +1015,7 @@ function showPage(name) {
     if (tab) tab.classList.toggle('active', p === name);
   });
   localStorage.setItem('amb-active-page', name);
+  if (name === 'loot-page') loadLootPage();
   if (name === 'tests-page') loadTestsPage();
   if (name === 'runs-page') loadRunsPage();
   if (name === 'lmstudio') loadLmStudioPage();
@@ -1043,7 +1112,115 @@ async function checkLength(live) {
   }
 }
 
-// ============ Tests page ============
+// ============ Loot page ============
+let lootData = null;
+let lootSortKey = 'overall_score';
+const AXIS_ORDER = ['vision', 'tools', 'reasoning', 'security'];
+const AXIS_ICON = { vision: '👁', tools: '🔧', reasoning: '🧠', security: '🛡' };
+
+async function loadLootPage() {
+  const squadEl = document.getElementById('squad-grid');
+  const tableEl = document.getElementById('loot-table-wrap');
+  squadEl.innerHTML = 'Loading…';
+  tableEl.innerHTML = 'Loading…';
+  try {
+    const resp = await fetch('/api/loot');
+    lootData = await resp.json();
+    renderSquad();
+    renderLootTable();
+  } catch (e) {
+    squadEl.innerHTML = `<div style="color:var(--unsafe)">Failed to load: ${e.message}</div>`;
+    tableEl.innerHTML = '';
+  }
+}
+
+function renderSquad() {
+  const el = document.getElementById('squad-grid');
+  if (!lootData) return;
+  const bySlot = {};
+  (lootData.recommended_squad || []).forEach(s => { bySlot[s.axis] = s; });
+
+  el.innerHTML = AXIS_ORDER.map(axis => {
+    const pick = bySlot[axis];
+    if (!pick) {
+      return `<div class="squad-slot ${axis}">
+        <div class="squad-slot-axis">${AXIS_ICON[axis]} ${axis}</div>
+        <div class="squad-slot-empty">No model has fully passed this axis yet — run some benchmarks.</div>
+      </div>`;
+    }
+    return `<div class="squad-slot ${axis}">
+      <div class="squad-slot-axis">${AXIS_ICON[axis]} ${axis} slot</div>
+      <div class="squad-slot-model">${pick.display_name}</div>
+      <div class="squad-slot-speed">⚡ ${fmtMs(pick.best_ms)} avg · verified ${new Date(pick.evidence_at).toLocaleString()}</div>
+    </div>`;
+  }).join('');
+}
+
+function sortLoot(key) {
+  lootSortKey = key;
+  ['overall_score', 'total_wins', ...AXIS_ORDER].forEach(k => {
+    const btn = document.getElementById('sort-' + k);
+    if (btn) btn.classList.toggle('active', k === key);
+  });
+  renderLootTable();
+}
+
+function renderLootTable() {
+  const el = document.getElementById('loot-table-wrap');
+  if (!lootData || !lootData.leaderboard) { el.innerHTML = 'No data.'; return; }
+
+  let rows = [...lootData.leaderboard];
+  if (lootSortKey === 'overall_score') {
+    rows.sort((a, b) => b.overall_score - a.overall_score);
+  } else if (lootSortKey === 'total_wins') {
+    rows.sort((a, b) => b.total_wins - a.total_wins || b.overall_score - a.overall_score);
+  } else if (AXIS_ORDER.includes(lootSortKey)) {
+    // Sort by that axis's speed — models that never passed the axis sink to the bottom.
+    rows.sort((a, b) => {
+      const av = a.axes[lootSortKey], bv = b.axes[lootSortKey];
+      const aOk = av && GOOD.includes(av.verdict) && av.best_ms != null;
+      const bOk = bv && GOOD.includes(bv.verdict) && bv.best_ms != null;
+      if (aOk && bOk) return av.best_ms - bv.best_ms;
+      if (aOk) return -1;
+      if (bOk) return 1;
+      return 0;
+    });
+  }
+
+  const medalClass = i => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+  const medalIcon = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+
+  const bodyRows = rows.map((m, i) => {
+    const axisCells = AXIS_ORDER.map(axis => {
+      const a = m.axes[axis];
+      if (!a) return `<td class="loot-axis-cell v-empty">—</td>`;
+      const colorClass = verdictColor(a.verdict);
+      const ms = a.best_ms != null ? `<span class="lac-ms">${fmtMs(a.best_ms)}</span>` : '';
+      return `<td class="loot-axis-cell"><span class="${colorClass}">${a.verdict}</span>${ms}</td>`;
+    }).join('');
+    return `<tr>
+      <td class="loot-rank ${medalClass(i)}">${medalIcon(i)}</td>
+      <td class="loot-model-name">${m.display_name}<div style="font-size:10px;color:var(--text-muted);">${m.location === 'local' ? '💻 Local' : '☁️ Cloud'}</div></td>
+      <td style="text-align:center;font-weight:700;">${m.total_wins}/4</td>
+      ${axisCells}
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--text-muted);">${m.overall_score.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <table class="loot-table">
+      <thead><tr>
+        <th></th><th>Model</th><th style="text-align:center;">Wins</th>
+        <th style="text-align:center;">👁 Vision</th><th style="text-align:center;">🔧 Tools</th>
+        <th style="text-align:center;">🧠 Reasoning</th><th style="text-align:center;">🛡 Security</th>
+        <th style="text-align:right;">Score</th>
+      </tr></thead>
+      <tbody>${bodyRows}</tbody>
+    </table>
+  `;
+}
+
+
 // Tests are seeded server-side; there's no dedicated /api/tests endpoint yet,
 // so this lists the known seed set directly — honest about what exists today.
 function loadTestsPage() {
