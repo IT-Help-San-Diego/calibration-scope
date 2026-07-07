@@ -12,7 +12,8 @@ pub async fn test_app() -> Router {
         .expect("Failed to connect to test database");
 
     let config = archetype_mesh_dashboard::config::Config::from_env();
-    let state = archetype_mesh_dashboard::state::AppState { db, config };
+    let (events_tx, _) = tokio::sync::broadcast::channel(16);
+    let state = archetype_mesh_dashboard::state::AppState { db, config, events_tx };
 
     use tower_http::services::ServeDir;
     use tower_http::trace::TraceLayer;

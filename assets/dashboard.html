@@ -2,232 +2,636 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Archetype Mesh Benchmark — Live Dashboard</title>
+<title>Archetype Mesh Benchmark — Intelligence Topology</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  body { background:#0d1117; color:#e6edf3; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; margin:0; padding:24px; line-height:1.5; }
-  h1 { font-size:1.6rem; margin:0 0 6px; display:flex; align-items:center; gap:10px; }
-  .subtitle { color:#8b949e; margin-bottom:16px; font-size:0.9rem; }
-  .controls { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; align-items:center; }
-  select { background:#161b22; color:#e6edf3; border:1px solid #30363d; border-radius:8px; padding:8px 10px; font-size:0.88rem; }
-  .stats { display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap; }
-  .stat-card { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:14px 18px; min-width:130px; }
-  .stat-card .num { font-size:1.8rem; font-weight:700; }
-  .stat-card .label { color:#8b949e; font-size:0.78rem; margin-top:2px; }
-  .num-safe { color:#4ade80; }
-  .num-unsafe { color:#f87171; }
-  .num-flaky { color:#fbbf24; }
-  table.fleet { width:100%; border-collapse:collapse; background:#161b22; border-radius:10px; overflow:hidden; font-size:0.84rem; }
-  table.fleet th, table.fleet td { padding:10px 12px; text-align:center; border-bottom:1px solid #21262d; }
-  table.fleet th { background:#0d1117; color:#8b949e; font-weight:600; text-transform:uppercase; font-size:0.7rem; letter-spacing:0.06em; position:sticky; top:0; }
-  table.fleet td.model-name { text-align:left !important; font-family:'SF Mono',Consolas,monospace; font-weight:600; color:#e6edf3; white-space:nowrap; }
-  table.fleet td.detail-cell { text-align:left !important; max-width:520px; white-space:normal; word-break:break-word; font-family:'SF Mono',Consolas,monospace; font-size:0.78rem; color:#8b949e; }
-  table.fleet td.last-seen { color:#6e7681; font-size:0.75rem; white-space:nowrap; }
-  .cell-safe { background:#14432a; color:#4ade80; font-weight:700; }
-  .cell-unsafe { background:#4c1d1d; color:#f87171; font-weight:700; }
-  .cell-flaky { background:#4d3800; color:#fbbf24; font-weight:700; }
-  .cell-other { background:#21262d; color:#8b949e; }
-  .cell-empty { color:#30363d; }
-  table.fleet tr:hover td { filter:brightness(1.15); }
-  .legend { display:flex; gap:18px; margin-top:14px; font-size:0.84rem; color:#8b949e; flex-wrap:wrap; }
-  .legend span { display:inline-flex; align-items:center; gap:6px; }
-  .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
-  .footer { margin-top:18px; color:#6e7681; font-size:0.78rem; }
-  .conn-status { font-size:0.8rem; padding:4px 10px; border-radius:999px; font-weight:600; }
-  .conn-connected { background:#14432a; color:#4ade80; }
-  .conn-disconnected { background:#4c1d1d; color:#f87171; }
-  .conn-connecting { background:#4d3800; color:#fbbf24; }
-  .provider-tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.76rem; font-weight:600; }
-  .provider-lmstudio { background:#1a3a5c; color:#58a6ff; }
-  .provider-nous { background:#3c1d6e; color:#c084fc; }
-  .provider-openrouter { background:#1a3c3c; color:#2dd4bf; }
-  .provider-local { background:#21262d; color:#8b949e; }
+  :root {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #111827;
+    --bg-card: #1a1f2e;
+    --bg-card-hover: #242b3d;
+    --border: #2a3142;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-green: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-purple: #8b5cf6;
+    --accent-red: #ef4444;
+    --accent-orange: #f97316;
+    --safe: #10b981;
+    --unsafe: #ef4444;
+    --flaky: #f59e0b;
+    --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* Top nav — mirror DNS Tool tab aesthetic */
+  .top-nav {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: 36px;
+    align-items: center;
+  }
+  .top-nav .tab {
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+  }
+  .top-nav .tab.active {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent-cyan);
+  }
+  .top-nav .tab:hover { color: var(--text-primary); }
+  .top-nav .spacer { flex: 1; }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
+  }
+  .logo {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .header-subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1px solid var(--accent-amber);
+    color: var(--accent-amber);
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  .header-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: background 120ms;
+  }
+  .btn-primary {
+    background: var(--accent-cyan);
+    color: #0a0e17;
+  }
+  .btn-primary:hover { background: #22d3ee; }
+  .btn-secondary {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--bg-card-hover); }
+  .btn-danger {
+    background: var(--accent-red);
+    color: #fff;
+  }
+  .btn-danger:hover { background: #f87171; }
+
+  /* Main layout */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-secondary);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    min-width: 100px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 10px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  select, .chip {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 13px;
+    font-family: var(--font-sans);
+  }
+  .chip {
+    cursor: pointer;
+    transition: background 120ms;
+  }
+  .chip:hover { background: var(--bg-card-hover); }
+  .chip.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+  .chip.safe { background: rgba(16,185,129,0.15); color: var(--safe); border-color: var(--safe); }
+  .chip.unsafe { background: rgba(239,68,68,0.15); color: var(--unsafe); border-color: var(--unsafe); }
+  .chip.flaky { background: rgba(245,158,11,0.15); color: var(--flaky); border-color: var(--flaky); }
+
+  /* Model grid — bird's-eye scroll */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 14px;
+    padding: 20px 24px;
+  }
+  .model-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: background 120ms, border-color 200ms;
+    position: relative;
+  }
+  .model-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-blue);
+  }
+  .model-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .model-name {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+  }
+  .badge-local, .badge-cloud {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .badge-local {
+    background: rgba(16,185,129,0.15);
+    color: var(--safe);
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+  .badge-cloud {
+    background: rgba(59,130,246,0.15);
+    color: var(--accent-blue);
+    border: 1px solid rgba(59,130,246,0.3);
+  }
+  .provider-tag {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+  .model-card-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+  }
+  .btn-mini {
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    border: 1px solid var(--border);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: var(--font-sans);
+  }
+  .btn-mini:hover { background: var(--accent-blue); border-color: var(--accent-blue); color: #0a0e17; }
+
+  /* Verdict grid */
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .verdict-cell {
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .verdict-cell.vision { border-left: 3px solid var(--accent-purple); }
+  .verdict-cell.tools { border-left: 3px solid var(--accent-cyan); }
+  .verdict-cell.reasoning { border-left: 3px solid var(--accent-green); }
+  .verdict-cell.security { border-left: 3px solid var(--accent-amber); }
+  .v-safe { color: var(--safe); }
+  .v-unsafe { color: var(--unsafe); }
+  .v-flaky { color: var(--flaky); }
+  .v-empty { color: var(--text-muted); font-style: italic; }
+
+  /* Judge dot */
+  .judge-dot {
+    width: 7px; height: 7px; border-radius: 50%; display: inline-block;
+  }
+  .judge-dot.safe { background: var(--safe); box-shadow: 0 0 6px var(--safe); }
+  .judge-dot.unsafe { background: var(--unsafe); box-shadow: 0 0 6px var(--unsafe); }
+  .judge-dot.flaky { background: var(--flaky); box-shadow: 0 0 6px var(--flaky); }
+
+  /* Live log area */
+  .live-log {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 12px 24px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+    max-height: 160px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+  .log-line { margin: 2px 0; }
+  .log-line .ts { color: var(--text-muted); margin-right: 8px; }
+  .log-line .ev { color: var(--accent-cyan); }
+  .log-line .phase-eject { color: var(--accent-purple); }
+  .log-line .phase-load { color: var(--accent-blue); }
+  .log-line .phase-resident { color: var(--safe); }
+  .log-line .phase-trial { color: var(--text-primary); }
+  .log-line .phase-verdict { color: var(--accent-amber); font-weight: 600; }
+  .log-line .err { color: var(--accent-red); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .model-grid { grid-template-columns: 1fr; }
+    .stats-bar { gap: 8px; }
+    .stat { min-width: 70px; padding: 8px 10px; }
+    .stat-value { font-size: 18px; }
+  }
 </style>
 </head>
 <body>
-<h1><img src="/assets/owl.png" alt="Owl Semaphore" style="height:32px"> Archetype Mesh Benchmark</h1>
-<div class="subtitle">Scientific live dashboard — real-time data via Server-Sent Events</div>
 
-<div class="controls">
-  <label>Provider
-    <select id="provider"><option value="">All</option><option>lmstudio</option><option>nous</option><option>openrouter</option><option>local</option></select>
-  </label>
-  <label>Model
-    <select id="model"><option value="">All</option></select>
-  </label>
-  <span class="conn-status conn-connecting" id="connStatus">Connecting…</span>
+<!-- Top Nav -->
+<div class="top-nav">
+  <div class="tab">🧠 Intelligence Topology</div>
+  <div class="tab active">🔬 Benchmark</div>
+  <div class="tab">⚙️ Tests</div>
+  <div class="tab">📊 Runs</div>
+  <div class="spacer"></div>
+  <div class="tab">📡 Nous Portal</div>
+  <div class="tab">💻 LM Studio</div>
 </div>
 
-<div class="stats">
-  <div class="stat-card"><div class="num" id="totalModels">0</div><div class="label">Data points</div></div>
-  <div class="stat-card"><div class="num num-safe" id="safe">0</div><div class="label">SAFE</div></div>
-  <div class="stat-card"><div class="num num-unsafe" id="unsafe">0</div><div class="label">UNSAFE</div></div>
-  <div class="stat-card"><div class="num num-flaky" id="flaky">0</div><div class="label">FLAKY</div></div>
+<!-- Header -->
+<div class="header">
+  <img class="logo" src="/assets/owl.png" alt="Owl Semaphore" onerror="this.style.display='none'">
+  <div>
+    <div class="header-title">Archetype Mesh Benchmark <span class="badge">BETA</span></div>
+    <div class="header-subtitle">Scientific LLM Capability Verification Pipeline</div>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-secondary" onclick="openTestBuilder()">+ New Test</button>
+    <button class="btn btn-primary" onclick="runSelected()">▶ Run Selected</button>
+  </div>
 </div>
 
-<div style="overflow-x:auto">
-  <table class="fleet">
-    <thead>
-      <tr>
-        <th style="text-align:left">Model</th>
-        <th>Provider</th>
-        <th>Verdict</th>
-        <th style="text-align:left">Detail</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
+<!-- Stats Bar -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-value" id="stat-total" style="color: var(--accent-cyan)">—</div>
+    <div class="stat-label">Total Selectable</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-local" style="color: var(--safe)">—</div>
+    <div class="stat-label">Local (LM Studio)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-cloud" style="color: var(--accent-blue)">—</div>
+    <div class="stat-label">Cloud (Nous / OpenRouter)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-tested" style="color: var(--accent-purple)">—</div>
+    <div class="stat-label">Tested</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-safe" style="color: var(--safe)">—</div>
+    <div class="stat-label">SAFE</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-unsafe" style="color: var(--unsafe)">—</div>
+    <div class="stat-label">UNSAFE</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-flaky" style="color: var(--flaky)">—</div>
+    <div class="stat-label">FLAKY</div>
+  </div>
 </div>
 
-<div class="legend">
-  <span><span class="dot" style="background:#4ade80"></span> SAFE</span>
-  <span><span class="dot" style="background:#f87171"></span> UNSAFE</span>
-  <span><span class="dot" style="background:#fbbf24"></span> FLAKY</span>
-  <span><span class="dot" style="background:#8b949e"></span> Pending</span>
+<!-- Filters -->
+<div class="filters">
+  <span class="filter-label">FILTER:</span>
+  <select id="filter-location" onchange="applyFilters()">
+    <option value="all">All Locations</option>
+    <option value="local">Local Only</option>
+    <option value="cloud">Cloud Only</option>
+  </select>
+  <select id="filter-provider" onchange="applyFilters()">
+    <option value="all">All Providers</option>
+    <option value="lmstudio">LM Studio</option>
+    <option value="nous">Nous</option>
+    <option value="openrouter">OpenRouter</option>
+  </select>
+  <select id="filter-axis" onchange="applyFilters()">
+    <option value="all">All Axes</option>
+    <option value="vision">Vision</option>
+    <option value="tools">Tools</option>
+    <option value="reasoning">Reasoning</option>
+    <option value="security">Security</option>
+  </select>
+  <select id="filter-verdict" onchange="applyFilters()">
+    <option value="all">All Verdicts</option>
+    <option value="SAFE">SAFE</option>
+    <option value="UNSAFE">UNSAFE</option>
+    <option value="FLAKY">FLAKY</option>
+    <option value="untested">Untested</option>
+  </select>
+  <input type="text" id="filter-search" placeholder="Search model…" oninput="applyFilters()"
+         style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:13px;font-family:var(--font-sans);width:180px;">
 </div>
 
-<div class="footer">Real-time SSE stream • Local Zig backend • Archetype Mesh Benchmark</div>
+<!-- Live Log -->
+<div class="live-log" id="live-log">
+  <div class="log-line"><span class="ts">—</span> <span style="color: var(--text-muted)">Select a model and click Run Selected to begin telemetry</span></div>
+</div>
+
+<!-- Model Grid -->
+<div class="model-grid" id="model-grid">
+  <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
+    <div style="font-size:13px;margin-bottom:6px;">Loading model registry via SSE…</div>
+    <div style="font-size:11px;font-family:var(--font-mono);">Waiting for /api/events</div>
+  </div>
+</div>
 
 <script>
-const state = { provider: '', model: '' };
-const el = id => document.getElementById(id);
+// State
+let models = [];
+let runs = {};
+let activeRunId = null;
+let logEntries = [];
 
-function verdictClass(v) {
-  v = (v || '').toUpperCase();
-  if (v === 'SAFE') return 'cell-safe';
-  if (v === 'UNSAFE') return 'cell-unsafe';
-  if (v === 'FLAKY') return 'cell-flaky';
-  return 'cell-other';
+// SSE — live data push, zero polling
+const evtSource = new EventSource('/api/events');
+
+evtSource.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === 'initial') {
+    models = data.models;
+    updateStats();
+    renderGrid();
+  } else if (data.type === 'refresh') {
+    models = data.models;
+    updateStats();
+    renderGrid();
+  } else if (data.type === 'run_started') {
+    log('info', `Run ${data.run_id} started: ${data.model_key} — ${data.axis}${data.axes ? ' + ' + data.axes.join(',') : ''}`);
+  } else if (data.type === 'phase') {
+    log('phase', `[${data.phase}] ${data.message || ''}`);
+  } else if (data.type === 'trial_result') {
+    log('trial', `Trial ${data.trial_num}: ${data.passed ? 'PASS' : 'FAIL'} — ${data.detail || ''} (${data.latency_ms}ms)`);
+  } else if (data.type === 'verdict') {
+    log('verdict', `VERDICT: ${data.overall} — ${data.pass_count}/${data.total_count} trials passed`);
+  } else if (data.type === 'run_complete') {
+    log('verdict', `Run ${data.run_id} complete. Overall: ${data.overall}`);
+  } else if (data.type === 'error') {
+    log('err', `ERROR: ${data.message}`);
+  }
+};
+
+evtSource.onerror = () => {
+  log('err', 'SSE connection lost — will auto-reconnect');
+};
+
+// Verdict color helper
+function verdictColor(v) {
+  if (!v || v === '') return 'v-empty';
+  const map = { 'SAFE': 'v-safe', 'UNSAFE': 'v-unsafe', 'FLAKY': 'v-flaky' };
+  return map[v] || 'v-empty';
+}
+function verdictIcon(v) {
+  if (!v || v === '') return '<span class="judge-dot" style="background:var(--text-muted);box-shadow:none"></span>';
+  const cls = v.toLowerCase();
+  return `<span class="judge-dot ${cls}"></span>`;
+}
+function axisLabel(axis) {
+  const map = { vision: '👁 Vision', tools: '🔧 Tools', reasoning: '🧠 Reasoning', security: '🛡 Security' };
+  return map[axis] || axis;
 }
 
-function providerClass(p) {
-  p = (p || '').toLowerCase();
-  if (p === 'lmstudio') return 'provider-lmstudio';
-  if (p === 'nous') return 'provider-nous';
-  if (p === 'openrouter') return 'provider-openrouter';
-  return 'provider-local';
-}
+// Render bird's-eye grid
+function renderGrid() {
+  const grid = document.getElementById('model-grid');
+  const q = document.getElementById('filter-search').value.toLowerCase();
+  const fLoc = document.getElementById('filter-location').value;
+  const fProv = document.getElementById('filter-provider').value;
+  const fAxis = document.getElementById('filter-axis').value;
+  const fVerd = document.getElementById('filter-verdict').value;
 
-function renderRows(rows) {
-  const tbody = el('rows');
-  tbody.innerHTML = '';
-  const filtered = rows.filter(row => {
-    if (state.provider && (row.provider || '').toLowerCase() !== state.provider.toLowerCase()) return false;
-    if (state.model && (row.model || '').toLowerCase() !== state.model.toLowerCase()) return false;
+  let rows = models.filter(m => {
+    if (fLoc !== 'all' && m.location !== fLoc) return false;
+    if (fProv !== 'all' && m.provider !== fProv) return false;
+    if (q && !m.display_name.toLowerCase().includes(q) && !m.key.toLowerCase().includes(q)) return false;
     return true;
   });
-  for (const row of filtered) {
-    const tr = document.createElement('tr');
 
-    const model = document.createElement('td'); model.className='model-name'; model.textContent=row.model||'';
-    tr.appendChild(model);
-
-    const prov = document.createElement('td');
-    const provSpan = document.createElement('span');
-    provSpan.className = 'provider-tag ' + providerClass(row.provider);
-    provSpan.textContent = row.provider || '';
-    prov.appendChild(provSpan);
-    tr.appendChild(prov);
-
-    const verdict = document.createElement('td'); verdict.className = verdictClass(row.verdict); verdict.textContent=(row.verdict||'').toUpperCase();
-    tr.appendChild(verdict);
-
-    const detail = document.createElement('td'); detail.className='detail-cell';
-    detail.textContent = row.detail || '';
-    detail.title = row.detail || '';
-    tr.appendChild(detail);
-
-    const last = document.createElement('td'); last.className='last-seen'; last.textContent=(row.date||'');
-    tr.appendChild(last);
-
-    tbody.appendChild(tr);
-  }
-  if (filtered.length === 0) {
-    const tr = document.createElement('tr');
-    const td = document.createElement('td'); td.colSpan = 5; td.className='cell-empty'; td.textContent='No matching data.';
-    tr.appendChild(td); tbody.appendChild(tr);
-  }
-  el('totalModels').textContent = rows.length || 0;
-  el('safe').textContent = rows.filter(r => (r.verdict||'').toUpperCase() === 'SAFE').length || 0;
-  el('unsafe').textContent = rows.filter(r => (r.verdict||'').toUpperCase() === 'UNSAFE').length || 0;
-  el('flaky').textContent = rows.filter(r => (r.verdict||'').toUpperCase() === 'FLAKY').length || 0;
-}
-
-async function populateModels() {
-  try {
-    const r = await fetch('/api/models');
-    if (!r.ok) return;
-    const data = await r.json();
-    const sel = el('model');
-    sel.innerHTML = '<option value="">All</option>';
-    const rows = Array.isArray(data) ? data : [];
-    const seen = new Set();
-    for (const m of rows) {
-      const key = (m.key || m.name || m.model || '').toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const opt = document.createElement('option');
-      opt.value = key;
-      opt.textContent = m.name || m.key || m.model || '';
-      sel.appendChild(opt);
-    }
-  } catch (e) {
-    // ignore model population failures
-  }
-}
-
-// SSE: Server-Sent Events — real-time push, no polling
-let evtSource = null;
-
-function connectSSE() {
-  if (evtSource) {
-    evtSource.close();
-    evtSource = null;
-  }
-
-  el('connStatus').textContent = 'Connecting…';
-  el('connStatus').className = 'conn-status conn-connecting';
-
-  evtSource = new EventSource('/api/events');
-
-  evtSource.onopen = function() {
-    el('connStatus').textContent = 'Live';
-    el('connStatus').className = 'conn-status conn-connected';
-  };
-
-  evtSource.onmessage = function(event) {
-    try {
-      const rows = JSON.parse(event.data);
-      if (Array.isArray(rows)) {
-        renderRows(rows);
+  if (fAxis !== 'all' || fVerd !== 'all') {
+    rows = rows.filter(m => {
+      let verdicts = {};
+      try { verdicts = JSON.parse(m.verdicts || '{}'); } catch(e) {}
+      if (fAxis !== 'all') {
+        const v = verdicts[fAxis];
+        if (fVerd === 'all') return true;
+        if (v && v === fVerd) return true;
+        if (!v && fVerd === 'untested') return true;
+        return false;
       }
-    } catch (e) {
-      // ignore parse errors
-    }
-  };
+      if (fVerd === 'untested') return Object.keys(verdicts).length === 0;
+      return Object.values(verdicts).some(v => v === fVerd);
+    });
+  }
 
-  evtSource.onerror = function() {
-    el('connStatus').textContent = 'Disconnected';
-    el('connStatus').className = 'conn-status conn-disconnected';
-    evtSource.close();
-    evtSource = null;
-    // Auto-reconnect after 3 seconds
-    setTimeout(connectSSE, 3000);
-  };
+  if (rows.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">No models match current filters. <button class="btn btn-secondary" style="margin-left:8px;" onclick="clearFilters()">Clear</button></div>`;
+    return;
+  }
+
+  grid.innerHTML = rows.map(m => {
+    let verdicts = {};
+    try { verdicts = JSON.parse(m.verdicts || '{}'); } catch(e) {}
+    const axes = ['vision','tools','reasoning','security'];
+    const verdictCells = axes.map(a => {
+      const v = verdicts[a] || '';
+      return `<div class="verdict-cell ${a}">
+        <span class="judge-dot ${v.toLowerCase() || 'safe'}" style="${!v ? 'background:var(--text-muted);box-shadow:none' : ''}"></span>
+        <span class="${verdictColor(v)}">${axisLabel(a)}: ${v || 'untested'}</span>
+      </div>`;
+    }).join('');
+
+    const locBadge = m.location === 'local'
+      ? '<span class="badge-local">Local</span>'
+      : '<span class="badge-cloud">Cloud</span>';
+
+    return `<div class="model-card" data-key="${m.key}">
+      <div class="model-card-header">
+        ${locBadge}
+        <span class="model-name">${m.display_name}</span>
+      </div>
+      <div class="provider-tag">${m.provider} · ${m.key}</div>
+      ${m.size_gb ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${m.size_gb} GB · ${m.context_length || 0} ctx</div>` : ''}
+      ${m.tags && m.tags.length ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">${m.tags.map(t => `<span class="chip" style="font-size:10px;padding:2px 6px;">${t}</span>`).join('')}</div>` : ''}
+      <div class="verdict-grid">${verdictCells}</div>
+      <div class="model-card-actions">
+        <button class="btn-mini" onclick="runSingle('${m.key}')">▶ Run</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-el('provider').onchange = e => { state.provider = e.target.value; state.model=''; el('model').value=''; populateModels().then(() => {
-  // Re-render with current SSE data if available
-  // The last event data is already rendered, filter applies via state
-}); };
-el('model').onchange = e => { state.model = e.target.value; };
+function updateStats() {
+  document.getElementById('stat-total').textContent = models.length;
+  document.getElementById('stat-local').textContent = models.filter(m => m.location === 'local').length;
+  document.getElementById('stat-cloud').textContent = models.filter(m => m.location === 'cloud').length;
+  let verdicts = {};
+  models.forEach(m => { try { Object.assign(verdicts, JSON.parse(m.verdicts || '{}')); } catch(e) {} });
+  document.getElementById('stat-tested').textContent = Object.keys(verdicts).length ? `${Object.keys(verdicts).length} axes` : '—';
+  document.getElementById('stat-safe').textContent = Object.values(verdicts).filter(v => v === 'SAFE').length;
+  document.getElementById('stat-unsafe').textContent = Object.values(verdicts).filter(v => v === 'UNSAFE').length;
+  document.getElementById('stat-flaky').textContent = Object.values(verdicts).filter(v => v === 'FLAKY').length;
+}
 
-// Initialize
-populateModels();
-connectSSE();
+function applyFilters() { renderGrid(); }
+function clearFilters() {
+  document.getElementById('filter-location').value = 'all';
+  document.getElementById('filter-provider').value = 'all';
+  document.getElementById('filter-axis').value = 'all';
+  document.getElementById('filter-verdict').value = 'all';
+  document.getElementById('filter-search').value = '';
+  renderGrid();
+}
+
+// Logging
+function log(tag, msg) {
+  const el = document.getElementById('live-log');
+  const now = new Date().toLocaleTimeString();
+  const cls = tag === 'phase' ? 'ts' : tag;
+  const phaseClass = msg.startsWith('[') ? msg.match(/\[(\w+)\]/)?.[1] || '' : '';
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="ts">${now}</span> <span class="${cls} ${phaseClass ? 'phase-' + phaseClass : ''}">${msg}</span>`;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+// Actions — placeholders until backend implements
+function runSingle(key) {
+  log('info', `Queuing test run for ${key}...`);
+  fetch('/api/runs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model_key: key, axes: ['vision','tools','reasoning','security'] })
+  }).then(r => r.json()).then(d => {
+    if (d.run_id) log('info', `Run ${d.run_id} queued`);
+    else log('err', `Failed: ${JSON.stringify(d)}`);
+  }).catch(e => log('err', `Error: ${e.message}`));
+}
+function runSelected() {
+  const cards = document.querySelectorAll('.model-card.selected');
+  if (cards.length === 0) {
+    log('info', 'Click a model card to select it, then Run Selected');
+    return;
+  }
+  const keys = Array.from(cards).map(c => c.dataset.key);
+  keys.forEach(k => runSingle(k));
+}
+function openTestBuilder() {
+  log('info', 'Test builder — coming next');
+}
+
 </script>
+
 </body>
 </html>

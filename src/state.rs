@@ -1,13 +1,24 @@
 use sqlx::PgPool;
 use std::time::Duration;
+use tokio::sync::broadcast;
+
 use crate::config::Config;
 use crate::error::AppError;
 use crate::error::AppResult;
+
+/// Capacity of the run-event broadcast channel. Slow SSE subscribers that lag
+/// more than this many events behind simply skip ahead (documented tokio behavior);
+/// grid state is self-healing because periodic `refresh` snapshots follow.
+const EVENT_CHANNEL_CAPACITY: usize = 256;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: PgPool,
     pub config: Config,
+    /// Run telemetry fan-out: executors publish serialized event JSON
+    /// (run_started / phase / trial_result / verdict / run_complete / error),
+    /// every open SSE connection receives it. See routes::events.
+    pub events_tx: broadcast::Sender<String>,
 }
 
 impl AppState {
@@ -16,12 +27,12 @@ impl AppState {
         let db = Self::connect_with_retry(&config.database_url, 60).await?;
 
         // Run migrations on startup
-        sqlx::migrate!("./migrations")
-            .run(&db)
-            .await?;
+        sqlx::migrate!("./migrations").run(&db).await?;
+
+        let (events_tx, _) = broadcast::channel(EVENT_CHANNEL_CAPACITY);
 
         tracing::info!("Database connected and migrations applied");
-        Ok(AppState { db, config })
+        Ok(AppState { db, config, events_tx })
     }
 
     async fn connect_with_retry(url: &str, max_seconds: u64) -> AppResult<PgPool> {

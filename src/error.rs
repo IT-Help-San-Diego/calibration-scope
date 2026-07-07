@@ -16,6 +16,12 @@ pub enum AppError {
 
     #[error("JSON serialization error: {0}")]
     Json(#[from] serde_json::Error),
+
+    #[error("HTTP client error: {0}")]
+    Http(#[from] reqwest::Error),
+
+    #[error("Executor error: {0}")]
+    Executor(String),
 }
 
 impl axum::response::IntoResponse for AppError {
@@ -39,6 +45,14 @@ impl axum::response::IntoResponse for AppError {
             AppError::Json(e) => {
                 tracing::error!("JSON error: {}", e);
                 (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "JSON error")
+            }
+            AppError::Http(e) => {
+                tracing::error!("HTTP client error: {}", e);
+                (axum::http::StatusCode::BAD_GATEWAY, "Upstream HTTP error")
+            }
+            AppError::Executor(msg) => {
+                tracing::error!("Executor error: {}", msg);
+                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Executor error")
             }
         };
 
