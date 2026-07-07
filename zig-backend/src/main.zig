@@ -7,12 +7,17 @@ const c = @cImport({
     @cInclude("string.h");
     @cInclude("stdio.h");
     @cInclude("sys/stat.h");
+    @cInclude("time.h");
+    @cInclude("sys/wait.h");
+    @cInclude("signal.h");
 });
 extern fn bind_in(sockfd: c_int, addr: [*c]const c.struct_sockaddr_in, addrlen: c_int) c_int;
+extern fn set_sigchld_ign() c_int;
 
 const LISTEN_PORT = 8768;
 const HTML_PATH = "/Users/careybalboa/Documents/GitHub/archetype-mesh-benchmark/zig-backend/dashboard.html";
 const OWL_PATH = "/Users/careybalboa/Documents/GitHub/archetype-mesh-benchmark/zig-backend/assets/owl.png";
+const DB_PATH = "/Users/careybalboa/Documents/GitHub/archetype-mesh-benchmark/data/archetype_mesh_benchmark.sqlite";
 
 fn send_all(client_fd: c_int, buf: []const u8) void {
     var left = buf.len;
@@ -105,6 +110,62 @@ fn send_json(client_fd: c_int, body: []const u8) void {
     send_all(client_fd, body);
 }
 
+fn query_json(sql: []const u8, out_buf: [*]u8, cap: usize) usize {
+    write_temp_file("/tmp/query.sql", sql);
+    return pipe_read("/tmp/am-sqlite-query.py /tmp/query.sql", out_buf, cap);
+}
+
+// SSE: Server-Sent Events stream
+// Keeps connection open, polls DB for changes every 2s, pushes data events
+fn handle_sse(client_fd: c_int) void {
+    // Send SSE headers (no Content-Length, connection stays open)
+    const sse_hdr = "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-cache\r\nConnection: keep-alive\r\nAccess-Control-Allow-Origin: *\r\n\r\n";
+    send_all(client_fd, sse_hdr);
+
+    // Send initial data event immediately
+    var out: [65536]u8 = undefined;
+    const sql = "SELECT json_group_array(json_object('model',model,'provider',provider,'family',test,'verdict',verdict,'detail',detail,'date',date)) FROM legacy_matrix";
+    const n = query_json(sql, &out, out.len);
+
+    // Send event: data\n\n
+    send_all(client_fd, "data: ");
+    send_all(client_fd, out[0..n]);
+    send_all(client_fd, "\n\n");
+
+    // Keep connection open, sending heartbeat + data on changes
+    var last_hash: u64 = 0;
+    while (true) {
+        // Check if client still connected by trying a heartbeat
+        send_all(client_fd, ": heartbeat\n\n");
+
+        // Re-query and compare
+        const n2 = query_json(sql, &out, out.len);
+        if (n2 > 0) {
+            // Simple hash: count bytes to detect change
+            var hash: u64 = 0;
+            for (out[0..n2]) |byte| {
+                hash = hash *% 31 +% byte;
+            }
+            if (hash != last_hash) {
+                send_all(client_fd, "data: ");
+                send_all(client_fd, out[0..n2]);
+                send_all(client_fd, "\n\n");
+                last_hash = hash;
+            }
+        }
+
+        // Sleep 2 seconds between checks
+        _ = c.sleep(2);
+
+        // Check if client disconnected (recv returns 0 or error)
+        var probe: [1]u8 = undefined;
+        const peek = c.recv(client_fd, &probe, 1, c.MSG_PEEK);
+        if (peek <= 0) break;
+    }
+
+    _ = c.close(client_fd);
+}
+
 fn handle_client(client_fd: c_int) void {
     var buf: [4096]u8 = undefined;
     const req_len = c.recv(client_fd, &buf, buf.len, 0);
@@ -133,17 +194,19 @@ fn handle_client(client_fd: c_int) void {
             const hdr = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\nConnection: close\r\n\r\n";
             send_all(client_fd, hdr);
             send_all(client_fd, "ok");
+        } else if (std.mem.eql(u8, path, "/api/events")) {
+            // SSE endpoint — keeps connection open, pushes data live
+            handle_sse(client_fd);
+            return; // handle_sse closes the fd
         } else if (std.mem.eql(u8, path, "/api/summary")) {
             const sql = "SELECT json_group_array(json_object('model',model,'provider',provider,'family',test,'verdict',verdict,'detail',detail,'date',date)) FROM legacy_matrix";
-            write_temp_file("/tmp/query.sql", sql);
             var out: [65536]u8 = undefined;
-            const n = pipe_read("/tmp/am-sqlite-query.py /tmp/query.sql", &out, out.len);
+            const n = query_json(sql, &out, out.len);
             send_json(client_fd, out[0..n]);
         } else if (std.mem.eql(u8, path, "/api/models")) {
             const sql = "SELECT json_group_array(json_object('key',model,'name',model,'provider',provider,'kind',test,'vision',0,'tools',0,'local_path',model)) FROM (SELECT DISTINCT model, provider, test FROM legacy_matrix) LIMIT 20";
-            write_temp_file("/tmp/query.sql", sql);
             var out: [65536]u8 = undefined;
-            const n = pipe_read("/tmp/am-sqlite-query.py /tmp/query.sql", &out, out.len);
+            const n = query_json(sql, &out, out.len);
             send_json(client_fd, out[0..n]);
         } else {
             const hdr = "HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\nConnection: close\r\n\r\n";
@@ -187,6 +250,10 @@ fn ensure_helper() void {
 
 pub fn main() void {
     ensure_helper();
+
+    // Reap zombie children (fork'd connection handlers)
+    _ = set_sigchld_ign();
+
     const listen_fd = c.socket(c.AF_INET, c.SOCK_STREAM, 0);
     if (listen_fd < 0) {
         std.debug.print("socket failed\n", .{});
@@ -214,6 +281,17 @@ pub fn main() void {
     while (true) {
         const client = c.accept(listen_fd, null, null);
         if (client < 0) continue;
-        handle_client(client);
+        // Fork: child handles the connection, parent continues accepting
+        const pid = c.fork();
+        if (pid == 0) {
+            // Child process — close listen socket, handle client, exit
+            _ = c.close(listen_fd);
+            handle_client(client);
+            _ = c.close(client);
+            _ = c._exit(0);
+        } else {
+            // Parent process — close client socket, continue accepting
+            _ = c.close(client);
+        }
     }
 }

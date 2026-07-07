@@ -1,0 +1,49 @@
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum AppError {
+    #[error("Database error: {0}")]
+    Database(#[from] sqlx::Error),
+
+    #[error("Migration error: {0}")]
+    Migration(#[from] sqlx::migrate::MigrateError),
+
+    #[error("File not found: {0}")]
+    FileNotFound(String),
+
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("JSON serialization error: {0}")]
+    Json(#[from] serde_json::Error),
+}
+
+impl axum::response::IntoResponse for AppError {
+    fn into_response(self) -> axum::response::Response {
+        let (status, message) = match &self {
+            AppError::Database(e) => {
+                tracing::error!("Database error: {}", e);
+                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Database error")
+            }
+            AppError::Migration(e) => {
+                tracing::error!("Migration error: {}", e);
+                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Migration error")
+            }
+            AppError::FileNotFound(_path) => {
+                (axum::http::StatusCode::NOT_FOUND, "File not found")
+            }
+            AppError::Io(e) => {
+                tracing::error!("IO error: {}", e);
+                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "IO error")
+            }
+            AppError::Json(e) => {
+                tracing::error!("JSON error: {}", e);
+                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "JSON error")
+            }
+        };
+
+        (status, message).into_response()
+    }
+}
+
+pub type AppResult<T> = Result<T, AppError>;

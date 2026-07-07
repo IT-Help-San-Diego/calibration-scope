@@ -1,0 +1,31 @@
+[package]
+name = "archetype-mesh-dashboard"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "archetype_mesh_dashboard"
+path = "src/lib.rs"
+
+[[bin]]
+name = "archetype-mesh-dashboard"
+path = "src/main.rs"
+
+[dependencies]
+axum = "0.8"
+tokio = { version = "1", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.9", features = ["runtime-tokio", "tls-rustls", "sqlite", "chrono", "macros", "migrate"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+futures-util = "0.3"
+tokio-stream = "0.1"
+thiserror = "2"
+
+[profile.release]
+opt-level = 3
+lto = true
