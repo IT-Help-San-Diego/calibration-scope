@@ -672,38 +672,48 @@
 
     <div class="setup-card">
       <div class="setup-card-title">2. Configure Hermes' main model (your daily driver)</div>
-      <p>In Hermes Agent, your <b>main model</b> is what answers you in chat. It's controlled with a slash command, live, no restart needed:</p>
-      <pre>/model</pre>
-      <p>This opens a picker across every configured provider. If you want cloud for daily driving (recommended for most people — reasoning, vision, and tool-use all in one place), pick something like:</p>
+      <p>In Hermes Agent, your <b>main model</b> is what answers you in chat. Two equivalent ways to set it:</p>
       <ul>
-        <li><code>anthropic/claude-sonnet-5</code> (via <code>openrouter</code> or direct Anthropic) — best all-around for chat, tool use, and coding</li>
-        <li>Any Nous-hosted model if you're on a Nous subscription — check pricing/quality trade-offs per task</li>
+        <li><b>Desktop app:</b> Settings → Model Settings → <b>MAIN MODEL</b> row → <b>CHANGE</b>. Shown as <code>provider · model</code>, e.g. <code>openrouter · anthropic/claude-sonnet-5</code>.</li>
+        <li><b>In any chat session:</b> the <code>/model</code> slash command opens the same picker.</li>
       </ul>
-      <p>The switch is live <i>and</i> it persists to <code>config.yaml</code> automatically — you won't need to touch a config file by hand for this.</p>
+      <p>Pick cloud for daily driving if you want reasoning, vision, and tool-use all in one place — a real example most people recognize: <code>openrouter · anthropic/claude-sonnet-5</code>. The switch is live <i>and</i> persists to <code>config.yaml</code> automatically.</p>
     </div>
 
     <div class="setup-card">
       <div class="setup-card-title">3. Configure auxiliary tasks — the part people skip</div>
-      <p>Hermes routes some background jobs (image captioning, code review sub-agents, summarization, etc.) to <b>auxiliary models</b> that are separate from your main chat model. If you leave these on <code>auto</code>, they silently inherit your main model — which is fine, but it means every auxiliary call bills at your main model's rate. If you're cost-conscious (see: rent-critical), pin them:</p>
-      <pre>hermes config set auxiliary.&lt;task&gt;.provider lmstudio
-hermes config set auxiliary.&lt;task&gt;.model &lt;your-local-model-key&gt;</pre>
-      <p>Common tasks worth pinning to a cheap/local model: <code>vision</code>, <code>coding</code>, <code>summarization</code>. Reserve expensive cloud reasoning models for the main chat loop where you actually need the intelligence.</p>
-      <p><b>This is a one-time setup, not a flip-flop</b> — set it once, verify with <code>hermes status</code>, move on. Changing auxiliary provider/model config does require a Hermes restart to take effect (it's snapshotted at process start); switching the main model with <code>/model</code> does not.</p>
+      <p>Hermes routes 11 background jobs (vision, web extract, context compression, skill search, command-approval scoring, MCP tool routing, session titles, and several Kanban/curator jobs) to <b>auxiliary models</b> that are separate from your main chat model. Every task defaults to <code>auto</code> — meaning it silently rides your main model, at your main model's price.</p>
+      <p><b>Best place to configure this: Desktop app → Settings → Model Settings → AUXILIARY TASKS row → CONFIGURE.</b> That opens the full 11-slot panel where each row shows its current assignment (<code>auto (use main model)</code> or <code>provider · model</code>) with its own <b>Change</b> button — no CLI needed.</p>
+      <p>Real, typical examples — the kind of pairing most Hermes users actually run:</p>
+      <ul>
+        <li><b>Vision</b> → a cloud example: <code>nous · stepfun/step-3.7-flash:free</code> (fast, free-tier, has vision) — <i>or</i> a local example: <code>lmstudio · qwen2.5-vl-7b-instruct</code> if it's already loaded/downloaded in your LM Studio. That local key won't be findable in anyone else's LM Studio for a long time — it's only there once you've downloaded that exact model — which is exactly why the picker (next section) matters.</li>
+        <li><b>MCP tool routing</b> → <code>nous · stepfun/step-3.7-flash:free</code> — cheap/free is fine here, it's just routing tool calls, not reasoning hard.</li>
+        <li><b>Approval (Smart auto-approve)</b> — <b>this is the actual "security slot."</b> When <code>approvals.mode: smart</code> is set, THIS auxiliary task is the model that decides whether to auto-approve a risky-looking shell command instead of prompting you. Point it at something fast and cheap (haiku, flash, gpt-5-mini) — an expensive reasoning model here is wasted spend, not extra safety.</li>
+      </ul>
+      <p>CLI equivalent, if you prefer terminal: <code>hermes config set auxiliary.&lt;task&gt;.provider lmstudio</code> then <code>hermes config set auxiliary.&lt;task&gt;.model &lt;model-key&gt;</code>. Task names match the desktop panel's internal keys: <code>vision</code>, <code>web_extract</code>, <code>compression</code>, <code>skills_hub</code>, <code>approval</code>, <code>mcp</code>, <code>title_generation</code>, <code>triage_specifier</code>, <code>kanban_decomposer</code>, <code>profile_describer</code>, <code>curator</code>.</p>
+      <p><b>One-time setup, not a flip-flop</b> — set it once, verify, move on.</p>
+    </div>
+
+    <div class="setup-card">
+      <div class="setup-card-title">3b. Does the picker auto-find new local models, or do I have to hit refresh?</div>
+      <p><b>For LM Studio specifically: fully automatic, every time you open the picker.</b> Verified straight from Hermes' source (<code>hermes_cli/models.py</code>): the LM Studio path calls its <code>/api/v1/models</code> endpoint live, with no disk cache in front of it — unlike most cloud providers, whose curated model lists ARE disk-cached for up to an hour. So the moment you download and load a new model in LM Studio, it shows up in Hermes' picker the very next time you open it. No action needed.</p>
+      <p>The <code>--refresh</code> flag (<code>/model --refresh</code>, or the desktop picker's refresh control) exists for the <i>other</i> providers — it busts that hour-long disk cache so a newly-released cloud model (say, a new free OpenRouter model) shows up immediately instead of waiting out the cache window. It's harmless to hit on LM Studio too — just a no-op there, since there was never a cache to clear.</p>
     </div>
 
     <div class="setup-card">
       <div class="setup-card-title">4. Why local models feel different — and how to use this dashboard to fix that</div>
-      <p>The honest gap between local and cloud isn't intelligence alone — it's <b>speed</b>. This dashboard measures average response latency per axis, in milliseconds, right next to the verdict. Use it to find the local model that's fast enough to not feel like a downgrade for your actual workload, instead of guessing.</p>
+      <p>The honest gap between local and cloud isn't intelligence alone — it's <b>speed</b>. This dashboard measures average response latency per axis, in milliseconds, right next to the verdict. Check the <b>🏆 Loot</b> tab for a leaderboard and a recommended squad — the same "one model per slot" idea as the auxiliary tasks panel above, but backed by your own measured evidence instead of guessing.</p>
       <p>Use the <b>Prompt Length Checker</b> on the Benchmark page before sending anything heavy to a local model — it gives you an instant, zero-cost estimate of whether your prompt fits that model's context window. LM Studio's REST API has no live tokenizer endpoint, so the default check is a calibrated heuristic (~3.5 chars/token + 20% safety margin); a "Verify exact count" button is there when you want the real number, at the cost of one small real inference call.</p>
     </div>
 
     <div class="setup-card">
       <div class="setup-card-title">5. Quick verification checklist</div>
       <ul>
-        <li>✅ Run <code>hermes status</code> — confirms main model, active provider, and whether auxiliary tasks are pinned or on auto</li>
+        <li>✅ Desktop app → Settings → Model Settings — confirms main model + how many auxiliary tasks are overridden vs. auto, at a glance</li>
         <li>✅ Run <code>/model</code> in a Hermes chat — confirms you can see and switch providers live</li>
         <li>✅ Open LM Studio → Developer tab — confirm the local server is running on port 1234 (or whatever <code>LMSTUDIO_BASE_URL</code> you've set for this dashboard)</li>
         <li>✅ Come back here and click ▶ Run on any local model card — watch the Live Log; you should see <code>ejecting → loading → resident → trial → verdict</code>, all with real timestamps</li>
+        <li>✅ Check the 🏆 Loot tab — your recommended squad updates automatically as you run more benchmarks</li>
       </ul>
     </div>
   </div>
