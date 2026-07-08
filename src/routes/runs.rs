@@ -43,9 +43,17 @@ pub async fn start_runs(
     if req.axes.is_empty() {
         return Err(AppError::Executor("axes must be non-empty".into()));
     }
+    // Validate, then dedup preserving order: ["reasoning","reasoning"] must
+    // cost ONE battery, not two. Duplicate axes double real GPU time on a
+    // machine that is someone's daily driver — same protection class as the
+    // run budget.
+    let mut axes: Vec<&str> = Vec::new();
     for axis in &req.axes {
         if !VALID_AXES.contains(&axis.as_str()) {
             return Err(AppError::Executor(format!("Invalid axis: {}", axis)));
+        }
+        if !axes.contains(&axis.as_str()) {
+            axes.push(axis.as_str());
         }
     }
 
@@ -57,12 +65,33 @@ pub async fn start_runs(
     .await?
     .ok_or_else(|| AppError::Executor(format!("Unknown model key: {}", req.model_key)))?;
 
+    // Refuse to stack a duplicate battery behind an identical one already
+    // queued/running: the clean-room lock serializes local runs, so a repeat
+    // click (or an impatient script) would silently commit HOURS of extra
+    // grind. Finished runs don't block — re-measurement is always allowed.
+    for axis in &axes {
+        let (in_flight,): (i64,) = sqlx::query_as(
+            r#"SELECT COUNT(*) FROM test_runs
+               WHERE model_id = $1 AND axis = $2 AND status NOT IN ('done', 'error')"#,
+        )
+        .bind(model.id)
+        .bind(axis)
+        .fetch_one(&state.db)
+        .await?;
+        if in_flight > 0 {
+            return Err(AppError::Executor(format!(
+                "A '{}' run for {} is already queued or running — wait for it to finish (or check /api/runs). Re-running after completion is always allowed.",
+                axis, model.key
+            )));
+        }
+    }
+
     let mut run_ids = Vec::new();
     // ONE run per (model, axis). The executor runs every active test on the
     // axis inside that single run — pass_count/total_count aggregate the whole
     // battery. (Previously this inserted one run per test while the executor
     // still ran the full battery per run: N² executions. Fixed 2026-07-07.)
-    for axis in &req.axes {
+    for axis in &axes {
         let (test_count,): (i64,) = sqlx::query_as(
             "SELECT COUNT(*) FROM tests WHERE active = true AND axis = $1",
         )
@@ -91,7 +120,7 @@ pub async fn start_runs(
         let model_key = model.key.clone();
         let location = model.location.clone();
         let provider = model.provider.clone();
-        let axis = axis.clone();
+        let axis = axis.to_string();
 
         tokio::spawn(async move {
             // Serialize local runs — clean-room integrity.
@@ -111,7 +140,7 @@ pub async fn start_runs(
         "run_id": run_ids[0],
         "run_ids": run_ids,
         "model_key": req.model_key,
-        "axes": req.axes,
+        "axes": axes,
     })))
 }
 

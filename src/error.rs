@@ -52,7 +52,12 @@ impl axum::response::IntoResponse for AppError {
             }
             AppError::Executor(msg) => {
                 tracing::error!("Executor error: {}", msg);
-                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "Executor error")
+                // Executor errors are overwhelmingly caller-fixable (invalid
+                // axis, unknown model, duplicate in-flight run, budget refusal)
+                // — surface the actual message with a 400 so the client can
+                // act on it, instead of a swallowed generic 500. Messages are
+                // built server-side from validated data; nothing sensitive.
+                return (axum::http::StatusCode::BAD_REQUEST, msg.clone()).into_response();
             }
         };
 

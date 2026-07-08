@@ -1,0 +1,11 @@
+-- v015: Drop tests.flaky_threshold — dead schema that contradicts the design.
+--
+-- Created in 003 but never read by any code path (verified: zero references
+-- in src/, assets/, or later migrations). Verdict semantics are deliberately
+-- STRICT: all trials pass => PASS/SAFE, zero pass => FAIL/UNSAFE, anything
+-- between => FLAKY. That is the protocol's documented standard ("one pass can
+-- be luck") — a per-test soft threshold would weaken it. A column that
+-- implies a capability the engine doesn't have is a lie in the schema;
+-- if graded thresholds are ever wanted, that's a deliberate design change
+-- with its own migration, not a leftover.
+ALTER TABLE tests DROP COLUMN IF EXISTS flaky_threshold;
