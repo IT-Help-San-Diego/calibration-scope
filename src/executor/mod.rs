@@ -333,11 +333,18 @@ async fn execute_run_inner(
             };
 
             total_count += 1;
-            let (passed, latency_ms, raw, detail, is_infra_error) = match outcome {
-                Ok((response, latency)) => {
+            let (passed, latency_ms, raw, reasoning, detail, is_infra_error) = match outcome {
+                Ok((response, reasoning_content, latency)) => {
                     let expected = test.expected_result.as_deref().unwrap_or("");
                     let score = scoring::score_response(&response, expected, &test.scoring_method);
-                    (score.passed, latency as i64, response, score.detail.unwrap_or_default(), false)
+                    (
+                        score.passed,
+                        latency as i64,
+                        response,
+                        reasoning_content,
+                        score.detail.unwrap_or_default(),
+                        false,
+                    )
                 }
                 // Infra failure (LM Studio rejected the request, connection
                 // dropped, provider timeout) — the model never got a chance
@@ -348,7 +355,7 @@ async fn execute_run_inner(
                 // live 2026-07-08: without this, a config bug that blocks
                 // every request to a model made that model look like it
                 // fails every capability, when the truth was infrastructure.
-                Err(e) => (false, -1, String::new(), format!("execution error: {}", e), true),
+                Err(e) => (false, -1, String::new(), None, format!("execution error: {}", e), true),
             };
             if passed {
                 pass_count += 1;
@@ -358,8 +365,8 @@ async fn execute_run_inner(
             }
 
             sqlx::query(
-                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7)"#,
+                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"#,
             )
             .bind(run_id)
             .bind(trial_num)
@@ -368,18 +375,30 @@ async fn execute_run_inner(
             .bind(passed)
             .bind(&detail)
             .bind(is_infra_error)
+            .bind(&reasoning)
             .execute(db)
             .await?;
 
-            evidence_lines.push(format!(
-                "test={} trial={} passed={} latency_ms={} response={}",
-                test.name, trial_num, passed, latency_ms, raw
-            ));
+            // Evidence record includes the reasoning trace when present —
+            // this is sealed into the run's SHA3 provenance, so a model's
+            // chain-of-thought is part of the auditable evidence, not just
+            // a live-only UI convenience. User request: "put them into
+            // verbose mode... judge them against that too."
+            evidence_lines.push(match &reasoning {
+                Some(r) => format!(
+                    "test={} trial={} passed={} latency_ms={} reasoning={} response={}",
+                    test.name, trial_num, passed, latency_ms, r, raw
+                ),
+                None => format!(
+                    "test={} trial={} passed={} latency_ms={} response={}",
+                    test.name, trial_num, passed, latency_ms, raw
+                ),
+            });
 
             emit(tx, serde_json::json!({
                 "type": "trial_result", "run_id": run_id, "test": test.name,
                 "trial_num": trial_num, "passed": passed, "latency_ms": latency_ms,
-                "detail": detail, "at": now_iso()
+                "detail": detail, "reasoning_content": reasoning, "at": now_iso()
             }));
         }
     }

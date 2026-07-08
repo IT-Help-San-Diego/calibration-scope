@@ -58,7 +58,8 @@ fn dirs_home() -> std::path::PathBuf {
 }
 
 /// Execute one chat completion against a cloud provider.
-/// Returns (content, latency_ms).
+/// Returns (content, reasoning_content, latency_ms) — see lmstudio::chat for
+/// the reasoning_content contract (None when no trace was produced).
 pub async fn chat(
     client: &Client,
     provider: &str,
@@ -66,7 +67,7 @@ pub async fn chat(
     model: &str,
     messages: &[serde_json::Value],
     max_tokens: u32,
-) -> AppResult<(String, u64)> {
+) -> AppResult<(String, Option<String>, u64)> {
     let endpoint = endpoint_for(provider)?;
     let body = serde_json::json!({
         "model": model,
@@ -97,11 +98,13 @@ pub async fn chat(
         )));
     }
 
-    let content = json
+    let message = json
         .get("choices")
         .and_then(|c| c.as_array())
         .and_then(|a| a.first())
-        .and_then(|c| c.get("message"))
+        .and_then(|c| c.get("message"));
+
+    let content = message
         .and_then(|m| m.get("content"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
@@ -113,5 +116,11 @@ pub async fn chat(
             ))
         })?;
 
-    Ok((content, elapsed))
+    let reasoning_content = message
+        .and_then(|m| m.get("reasoning_content"))
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string());
+
+    Ok((content, reasoning_content, elapsed))
 }

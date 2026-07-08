@@ -35,6 +35,10 @@ pub async fn test_app() -> Router {
                 .post(archetype_mesh_dashboard::routes::runs::start_runs),
         )
         .route(
+            "/api/runs/{id}",
+            axum::routing::get(archetype_mesh_dashboard::routes::runs::get_run_detail),
+        )
+        .route(
             "/api/runs/{id}/abort",
             axum::routing::post(archetype_mesh_dashboard::routes::runs::abort_run),
         )

@@ -226,6 +226,76 @@ pub async fn list_runs(State(state): State<AppState>) -> AppResult<Json<serde_js
     Ok(Json(serde_json::json!({ "runs": runs })))
 }
 
+/// Row shape for the per-run trial detail — the audit view. User request:
+/// "put them into verbose mode... judge them against that too" — this is
+/// where a stored reasoning trace is actually surfaced for historical runs,
+/// not just live SSE telemetry (which is a compact one-line-per-trial
+/// stream, not meant for after-the-fact judgment).
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct TrialDetailRow {
+    id: i32,
+    trial_num: i32,
+    raw_response: Option<String>,
+    reasoning_content: Option<String>,
+    latency_ms: Option<i64>,
+    passed: bool,
+    detail: Option<String>,
+    is_infra_error: bool,
+}
+
+#[derive(sqlx::FromRow)]
+struct RunDetailHeader {
+    id: i32,
+    key: String,
+    axis: String,
+    status: String,
+    pass_count: i32,
+    total_count: i32,
+    sha3_provenance: Option<String>,
+    created_at: Option<chrono::NaiveDateTime>,
+    finished_at: Option<chrono::NaiveDateTime>,
+}
+
+pub async fn get_run_detail(
+    State(state): State<AppState>,
+    axum::extract::Path(run_id): axum::extract::Path<i32>,
+) -> AppResult<Json<serde_json::Value>> {
+    let header: Option<RunDetailHeader> = sqlx::query_as(
+        r#"SELECT r.id, m.key, r.axis, r.status, r.pass_count, r.total_count,
+                  r.sha3_provenance, r.created_at, r.finished_at
+           FROM test_runs r JOIN models m ON m.id = r.model_id
+           WHERE r.id = $1"#,
+    )
+    .bind(run_id)
+    .fetch_optional(&state.db)
+    .await?;
+
+    let Some(header) = header else {
+        return Err(AppError::Executor(format!("No run with id {}", run_id)));
+    };
+
+    let trials: Vec<TrialDetailRow> = sqlx::query_as(
+        r#"SELECT id, trial_num, raw_response, reasoning_content, latency_ms, passed, detail, is_infra_error
+           FROM trial_results WHERE run_id = $1 ORDER BY id"#,
+    )
+    .bind(run_id)
+    .fetch_all(&state.db)
+    .await?;
+
+    Ok(Json(serde_json::json!({
+        "id": header.id,
+        "model_key": header.key,
+        "axis": header.axis,
+        "status": header.status,
+        "pass_count": header.pass_count,
+        "total_count": header.total_count,
+        "sha3_provenance": header.sha3_provenance,
+        "created_at": header.created_at.map(|c| c.to_string()),
+        "finished_at": header.finished_at.map(|c| c.to_string()),
+        "trials": trials,
+    })))
+}
+
 /// POST /api/runs/:id/abort — the abort button.
 ///
 /// Signals the run's CancellationToken (registered by execute_run_inner at

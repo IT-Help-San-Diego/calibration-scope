@@ -170,19 +170,31 @@ pub async fn prompt_check_post(
     }
 
     let json: serde_json::Value = resp.json().await?;
-    let content = json
+    let message = json
         .get("choices")
         .and_then(|c| c.as_array())
         .and_then(|a| a.first())
-        .and_then(|c| c.get("message"))
+        .and_then(|c| c.get("message"));
+
+    let content = message
         .and_then(|m| m.get("content"))
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
 
+    // Reasoning trace, when the model produces one — surfaced to the Prompt
+    // Builder UI so a model's chain-of-thought can be inspected interactively,
+    // not just discarded. User request: "put them into verbose mode... judge
+    // them against that too."
+    let reasoning_content = message
+        .and_then(|m| m.get("reasoning_content"))
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty());
+
     Ok(Json(serde_json::json!({
         "model_key": model_key,
         "response": content,
+        "reasoning_content": reasoning_content,
         "prompt_tokens": json.get("usage").and_then(|u| u.get("prompt_tokens")).and_then(|t| t.as_u64()),
         "completion_tokens": json.get("usage").and_then(|u| u.get("completion_tokens")).and_then(|t| t.as_u64()),
     })))

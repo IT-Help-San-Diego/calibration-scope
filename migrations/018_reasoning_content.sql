@@ -1,0 +1,21 @@
+-- v018: Add trial_results.reasoning_content — capture extended-thinking /
+-- chain-of-thought traces separately from the final answer.
+--
+-- User request: "put them into verbose mode... judge them against that
+-- too" — right now the harness scores only the final committed answer and
+-- silently discards HOW a model got there. LM Studio's chat/completions API
+-- (and OpenAI-compatible cloud providers) already return this in a separate
+-- message.reasoning_content field for reasoning-tuned models
+-- (phi-4-reasoning-plus, DeepSeek-R1 style, etc.) — verified live: this
+-- session's own trial data on hermes-4-14b showed the pattern
+-- "...I'll now produce final answer.VALID" (reasoning-first models glue
+-- their answer onto the end of a trace) even BEFORE this column existed,
+-- meaning some models were already inlining reasoning into `content`
+-- because we never asked the API to split it out.
+--
+-- NULL means "no reasoning trace was returned" (most models, most of the
+-- time) — NOT "we forgot to capture it." Distinguishing those two would
+-- require a schema flag for "did we look," which is unnecessary complexity:
+-- every trial going forward always attempts to capture reasoning_content;
+-- a NULL is simply the honest answer "this model didn't produce one."
+ALTER TABLE trial_results ADD COLUMN IF NOT EXISTS reasoning_content TEXT;

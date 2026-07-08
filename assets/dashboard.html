@@ -1825,10 +1825,56 @@ async function loadRunsPage() {
   }
   el.innerHTML = d.runs.map(x => {
     const statusColor = x.status === 'done' ? (x.pass_count === x.total_count ? 'var(--safe)' : (x.pass_count === 0 ? 'var(--unsafe)' : 'var(--flaky)')) : 'var(--accent-blue)';
-    return `<div class="list-row">
+    return `<div class="list-row" style="cursor:pointer" onclick="toggleRunDetail(${x.id})">
       <span class="lr-axis" style="color:${statusColor}">${(x.status || '').toUpperCase()}</span>
       <span class="lr-name">${x.model_key} — ${x.axis}</span>
       <span class="lr-meta">${x.pass_count}/${x.total_count} · ${x.sha3_provenance ? x.sha3_provenance.slice(0,24) + '…' : 'no evidence yet'}</span>
+    </div>
+    <div class="run-detail" id="run-detail-${x.id}" style="display:none;padding:10px 14px;margin:0 0 8px;background:var(--bg-secondary);border-left:2px solid ${statusColor};font-size:12px;"></div>`;
+  }).join('');
+}
+
+// Per-run trial audit — the point of storing reasoning_content at all.
+// User request: "put them into verbose mode... judge them against that
+// too" — this renders each trial's reasoning trace (when the model
+// produced one) directly above its final answer, so a wrong verdict can be
+// judged as "reasoned correctly but misspoke" vs. "reasoned itself into the
+// wrong answer" vs. "no reasoning shown, just guessed" — fetched on demand,
+// not baked into the compact run list.
+const runDetailCache = {};
+async function toggleRunDetail(runId) {
+  const panel = document.getElementById('run-detail-' + runId);
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  panel.style.display = '';
+  if (!runDetailCache[runId]) {
+    panel.textContent = 'Loading trial detail…';
+    const r = await apiFetch('/api/runs/' + runId);
+    if (!r.ok) {
+      panel.innerHTML = `<span style="color:var(--unsafe)">Failed to load: ${r.error}</span>`;
+      return;
+    }
+    runDetailCache[runId] = r.data;
+  }
+  const run = runDetailCache[runId];
+  const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  if (!run.trials || !run.trials.length) {
+    panel.innerHTML = '<span style="color:var(--text-muted)">No trials recorded for this run.</span>';
+    return;
+  }
+  panel.innerHTML = run.trials.map(t => {
+    const badge = t.is_infra_error
+      ? '<span style="color:var(--text-muted);font-weight:700;">INFRA ERROR</span>'
+      : (t.passed ? '<span style="color:var(--safe);font-weight:700;">PASS</span>' : '<span style="color:var(--unsafe);font-weight:700;">FAIL</span>');
+    const reasoningHtml = t.reasoning_content
+      ? `<div style="margin:4px 0;padding:6px 8px;background:rgba(255,255,255,0.04);border-left:2px solid var(--accent-blue);border-radius:3px;">
+           <div style="font-size:10px;font-weight:700;color:var(--accent-blue);text-transform:uppercase;">🧠 Reasoning</div>
+           <div style="white-space:pre-wrap;color:var(--text-muted);">${esc(t.reasoning_content)}</div>
+         </div>`
+      : '';
+    return `<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border-color);">
+      <div>Trial ${t.trial_num}: ${badge} <span style="color:var(--text-muted);">${t.latency_ms >= 0 ? t.latency_ms + 'ms' : ''}</span></div>
+      ${reasoningHtml}
+      <div style="white-space:pre-wrap;font-family:var(--font-mono);">${esc(t.raw_response) || '<span style="color:var(--text-muted);">(empty response)</span>'}</div>
     </div>`;
   }).join('');
 }
@@ -2043,7 +2089,19 @@ async function runPromptTest() {
       resultEl.className = 'pb-result success';
       const tok = data.prompt_tokens != null
         ? `\n\n— tokens: ${data.prompt_tokens} prompt / ${data.completion_tokens} completion` : '';
-      resultEl.textContent = `MODEL RESPONSE (${elapsed}s wall)\n\n${data.response}${tok}`;
+      const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      // Reasoning trace, when the model produced one — shown in its own
+      // clearly-labeled block ABOVE the final answer, so a model's
+      // chain-of-thought can be judged separately from its committed
+      // response (did it reason correctly and just misspeak? guess right
+      // for the wrong reason? reason itself into the wrong answer?).
+      const reasoningBlock = data.reasoning_content
+        ? `<div style="margin-bottom:12px;padding:10px;background:rgba(255,255,255,0.04);border-left:3px solid var(--accent-blue);border-radius:4px;">
+             <div style="font-size:11px;font-weight:700;color:var(--accent-blue);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">🧠 Reasoning Trace</div>
+             <div style="white-space:pre-wrap;font-size:12px;color:var(--text-muted);">${esc(data.reasoning_content)}</div>
+           </div>`
+        : '';
+      resultEl.innerHTML = `${reasoningBlock}<div style="font-size:11px;font-weight:700;color:var(--safe);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">MODEL RESPONSE (${elapsed}s wall)</div><div style="white-space:pre-wrap;">${esc(data.response)}${esc(tok)}</div>`;
       statusEl.textContent = `Done in ${elapsed}s`;
     }
   } finally {
