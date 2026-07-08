@@ -465,3 +465,58 @@ async fn router_location_filter_actually_filters() {
         }
     }
 }
+
+// ── Host reality check (/api/host/reality, 2026-07-08) ─────────────────────
+// The Setup tab's step 0. Contract: every numeric claim carries a `source`
+// receipt, unmeasurable values are null (never invented), and the budget
+// block is labeled a heuristic with its formula exposed.
+
+#[tokio::test]
+async fn host_reality_measures_with_receipts_and_labeled_heuristic() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/host/reality").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let json: serde_json::Value = serde_json::from_str(&body_string(response).await).unwrap();
+
+    // Receipts: every Measured field must carry its source command.
+    for (section, field) in [
+        ("hardware", "total_ram_gb"),
+        ("hardware", "cpu_cores"),
+        ("memory", "free_pct"),
+        ("memory", "gpu_ceiling_gb"),
+        ("disk", "free_gb"),
+    ] {
+        let src = json[section][field]["source"].as_str().unwrap_or("");
+        assert!(
+            !src.is_empty(),
+            "{}.{} has no measurement receipt — numbers without sources are assertions",
+            section, field
+        );
+    }
+
+    // On the machine running this suite, RAM must actually measure (sysctl is
+    // always present on macOS); a null here means the measurement path broke.
+    let ram = json["hardware"]["total_ram_gb"]["value"].as_f64();
+    assert!(ram.is_some() && ram.unwrap() > 0.0, "hw.memsize failed to measure");
+
+    // The budget must self-identify as heuristic and show its formula —
+    // it is derived, not measured, and must never masquerade.
+    assert_eq!(json["budget"]["kind"], "heuristic");
+    assert!(json["budget"]["formula"].as_str().unwrap().contains("clamp"));
+
+    // Internal consistency: ai_budget can never exceed total RAM minus the
+    // life reserve (the formula's own upper bound).
+    let life = json["budget"]["life_reserve_gb"].as_f64().unwrap();
+    let ai = json["budget"]["ai_budget_gb"].as_f64().unwrap();
+    assert!(
+        ai <= ram.unwrap() - life + 0.001,
+        "ai_budget {} exceeds total {} - life_reserve {}",
+        ai, ram.unwrap(), life
+    );
+
+    // LM Studio block always reports reachability honestly (bool, either way).
+    assert!(json["lmstudio"]["reachable"].is_boolean());
+}

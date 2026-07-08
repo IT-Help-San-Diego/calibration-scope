@@ -433,6 +433,25 @@
   .router-reason { color: var(--text-muted); font-size: 12px; }
   .router-evidence { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); }
   .router-more { font-size: 11px; color: var(--text-muted); font-style: italic; padding: 4px 0 0 80px; }
+  /* ── Reality check (Setup step 0) ── */
+  .rc-row { display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(255,255,255,0.04); font-size: 13px; flex-wrap: wrap; }
+  .rc-row:first-child { border-top: none; }
+  .rc-check { width: 18px; flex-shrink: 0; }
+  .rc-label { color: var(--text-muted); width: 190px; flex-shrink: 0; }
+  .rc-value { font-family: var(--font-mono); font-weight: 600; cursor: help; border-bottom: 1px dotted rgba(255,255,255,0.25); }
+  .rc-note { color: var(--text-muted); font-size: 12px; }
+  .rc-unmeasured { color: var(--accent-amber, #fbbf24); font-style: italic; }
+  .rc-budget { margin-top: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-secondary); }
+  .rc-budget-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
+  .rc-bar { display: flex; height: 26px; border-radius: 6px; overflow: hidden; font-size: 11px; font-family: var(--font-mono); margin-bottom: 8px; }
+  .rc-bar-seg { display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
+  .rc-bar-life { background: rgba(96,165,250,0.30); }
+  .rc-bar-ai { background: rgba(52,211,153,0.30); }
+  .rc-bar-ceiling { background: rgba(148,163,184,0.18); }
+  .rc-tier { font-size: 13px; margin-top: 6px; }
+  .rc-formula { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 6px; }
+  .squad-slot-hermes, .router-hermes { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+  .router-hermes { margin-top: 0; margin-left: auto; text-align: right; max-width: 55%; }
   .loot-sort-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
   .loot-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .loot-table th {
@@ -784,6 +803,14 @@
     <div class="setup-hero">
       <div class="setup-hero-title">🧭 Hermes Agent Cloud/Local Setup — read this before you benchmark</div>
       <div class="setup-hero-sub">This dashboard talks to LM Studio directly, over the network — never through Hermes Desktop. That's why the science stays clean. Here's exactly how to configure Hermes so cloud and local both work correctly.</div>
+    </div>
+
+    <div class="setup-card" id="reality-card">
+      <div class="setup-card-title">0. Accept reality first — measured on <span id="rc-machine">this machine</span>, right now</div>
+      <p>Good science starts with gathering intelligence about what you actually have — <i>before</i> configuring anything. Every number below was measured from this machine when you opened this page (hover any value for the exact command it came from — every number has a receipt). Nothing here is a spec-sheet claim.</p>
+      <div id="reality-checks">Measuring…</div>
+      <div id="reality-budget"></div>
+      <p style="margin-top:12px;color:var(--text-muted);font-size:12px;">The mental model behind the budget line: in 2026, ~16–32GB is "the system plus an app or two." Around 64GB is where normal computing — the OS plus everything you leave open — actually lives comfortably. Whatever your machine has <b>above</b> that living space is what's honestly available to an AI stack, capped by macOS' GPU-wired memory ceiling. That's a heuristic, clearly labeled — the measurements above it are not.</p>
     </div>
 
     <div class="setup-card">
@@ -1435,6 +1462,7 @@ function showPage(name) {
     if (tab) tab.classList.toggle('active', p === name);
   });
   localStorage.setItem('amb-active-page', name);
+  if (name === 'setup') loadRealityCheck();
   if (name === 'loot-page') loadLootPage();
   if (name === 'tests-page') loadTestsPage();
   if (name === 'runs-page') loadRunsPage();
@@ -1444,6 +1472,74 @@ function showPage(name) {
 // Restore last-viewed page on load (defaults to benchmark).
 const savedPage = localStorage.getItem('amb-active-page');
 if (savedPage && PAGES.includes(savedPage)) showPage(savedPage);
+
+// ── Setup step 0: reality check — every number measured live, with receipts ──
+async function loadRealityCheck() {
+  const checksEl = document.getElementById('reality-checks');
+  const budgetEl = document.getElementById('reality-budget');
+  if (!checksEl) return;
+  const r = await apiFetch('/api/host/reality');
+  if (!r.ok) {
+    checksEl.innerHTML = `<div style="color:var(--unsafe)">Couldn't measure this machine: ${r.error}</div>`;
+    budgetEl.innerHTML = '';
+    return;
+  }
+  const d = r.data;
+  const machineEl = document.getElementById('rc-machine');
+  if (machineEl && d.hardware.model.value) machineEl.textContent = d.hardware.model.value;
+
+  const gb = v => v == null ? null : `${v.toFixed(v >= 100 ? 0 : 1)} GB`;
+  const row = (ok, label, value, source, note) => `
+    <div class="rc-row">
+      <span class="rc-check">${ok ? '✅' : '⚠️'}</span>
+      <span class="rc-label">${label}</span>
+      ${value != null
+        ? `<span class="rc-value" title="measured via: ${source}">${value}</span>`
+        : `<span class="rc-unmeasured" title="attempted via: ${source}">couldn't measure — not guessing</span>`}
+      ${note ? `<span class="rc-note">${note}</span>` : ''}
+    </div>`;
+
+  const hw = d.hardware, mem = d.memory, disk = d.disk, lms = d.lmstudio;
+  const rows = [
+    row(hw.total_ram_gb.value != null, 'Physical RAM', gb(hw.total_ram_gb.value), hw.total_ram_gb.source,
+        hw.cpu_cores.value ? `${hw.cpu_cores.value} CPU cores` : ''),
+    row(mem.free_pct.value != null, 'Memory free right now', mem.free_pct.value != null ? `${mem.free_pct.value}%` : null,
+        mem.free_pct.source, 'live pressure, not a spec'),
+    row(mem.gpu_ceiling_gb.value != null, 'GPU-wired memory ceiling', gb(mem.gpu_ceiling_gb.value),
+        mem.gpu_ceiling_gb.source, mem.gpu_ceiling_note),
+    row(disk.free_gb.value != null, 'Disk free', gb(disk.free_gb.value), disk.free_gb.source,
+        disk.total_gb.value != null ? `of ${gb(disk.total_gb.value)} total — models are 4–45GB each, this budget is real too` : ''),
+    row(lms.reachable, 'LM Studio server', lms.reachable
+          ? `reachable · ${lms.models_on_disk} models on disk · ${(lms.loaded_now || []).length} loaded now`
+          : null,
+        lms.source || `GET ${lms.base_url}/api/v0/models`,
+        lms.reachable
+          ? (lms.loaded_now || []).map(m => `${m.id}${m.loaded_context_length ? ' @' + (m.loaded_context_length/1024).toFixed(0) + 'k ctx' : ''}`).join(' · ')
+          : `not reachable at ${lms.base_url} — start LM Studio's server (Developer tab) and reopen this tab`),
+  ];
+  checksEl.innerHTML = rows.join('');
+
+  if (d.budget && hw.total_ram_gb.value != null) {
+    const total = hw.total_ram_gb.value;
+    const life = d.budget.life_reserve_gb;
+    const ai = d.budget.ai_budget_gb;
+    const rest = Math.max(0, total - life - ai);
+    const pct = v => (v / total * 100).toFixed(1) + '%';
+    budgetEl.innerHTML = `
+      <div class="rc-budget">
+        <div class="rc-budget-title">Your honest RAM budget — heuristic, formula shown, measurements above are the inputs</div>
+        <div class="rc-bar">
+          <div class="rc-bar-seg rc-bar-life" style="width:${pct(life)}" title="OS + the apps you leave open">life: ${gb(life)}</div>
+          <div class="rc-bar-seg rc-bar-ai" style="width:${pct(ai)}" title="what's honestly available to the AI stack">AI stack: ${gb(ai)}</div>
+          ${rest > 0.5 ? `<div class="rc-bar-seg rc-bar-ceiling" style="width:${pct(rest)}" title="above the GPU-wired ceiling — RAM the GPU can't wire">ceiling headroom</div>` : ''}
+        </div>
+        <div class="rc-tier">📍 ${d.budget.tier}</div>
+        <div class="rc-formula">${d.budget.formula}</div>
+      </div>`;
+  } else {
+    budgetEl.innerHTML = '';
+  }
+}
 
 // ============ Prompt Length Checker ============
 function toggleLengthCheck() {
@@ -1618,7 +1714,19 @@ loadNousExpTable();
 let lootData = null;
 let lootSortKey = 'overall_score';
 const AXIS_ORDER = ['vision', 'tools', 'reasoning', 'security'];
-const AXIS_ICON = { vision: '👁', tools: '🔧', reasoning: '🧠', security: '🛡' };
+const AXIS_ICON = { vision: '👁', tools: '🔧', reasoning: '🧠', security: '🛡', auxiliary: '⚙️' };
+// Reality bridge (user mandate 2026-07-08): each axis must point at the slot
+// the user will ACTUALLY SEE in Hermes' UI. "Security" is this dashboard's
+// name for resisting prompt injection — in Hermes' own Settings panel there
+// is no slot called Security; the surface that decision lives in is the
+// "Approval" auxiliary task (smart auto-approve). Guide to what's real.
+const AXIS_HERMES_MAP = {
+  vision:    'In Hermes: Settings → Model Settings → Auxiliary Tasks → <b>Vision</b>',
+  tools:     'In Hermes: Auxiliary Tasks → <b>MCP</b> (tool-call routing)',
+  reasoning: 'In Hermes: <b>MAIN MODEL</b> — your daily driver slot',
+  security:  'In Hermes you won\'t see a "Security" slot — this maps to Auxiliary Tasks → <b>Approval</b> (smart auto-approve): the model that judges risky shell commands',
+  auxiliary: 'In Hermes: the remaining Auxiliary Tasks (title generation, compression, triage, curator…)',
+};
 
 async function loadLootPage() {
   const squadEl = document.getElementById('squad-grid');
@@ -1671,6 +1779,7 @@ async function loadRouterPlan() {
       <div class="router-axis-head">
         <span class="router-axis-name">${AXIS_ICON[ax.axis] || '🧪'} ${ax.axis}</span>
         <span class="router-status ${ax.status}">${ax.status}</span>
+        <span class="router-hermes">${AXIS_HERMES_MAP[ax.axis] || ''}</span>
       </div>
       ${rows.join('')}${empty}${more}
     </div>`;
@@ -1695,6 +1804,7 @@ function renderSquad() {
       <div class="squad-slot-axis">${AXIS_ICON[axis]} ${axis} slot</div>
       <div class="squad-slot-model">${pick.display_name}</div>
       <div class="squad-slot-speed">⚡ ${fmtMs(pick.best_ms)} avg · verified ${new Date(pick.evidence_at).toLocaleString()}</div>
+      <div class="squad-slot-hermes">${AXIS_HERMES_MAP[axis] || ''}</div>
     </div>`;
   }).join('');
 }

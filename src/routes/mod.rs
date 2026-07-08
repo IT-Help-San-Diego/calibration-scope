@@ -7,5 +7,6 @@ pub mod runs;
 pub mod prompt_check;
 pub mod loot;
 pub mod router;
+pub mod host;
 pub mod lmstudio;
 pub mod tests;
