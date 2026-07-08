@@ -119,9 +119,27 @@ pub async fn prompt_check_post(
 
     let base_url = &state.config.lmstudio_base_url;
 
+    // Optional image (data URL from the Prompt Builder) — build OpenAI-style
+    // multimodal content so vision models receive the actual pixels.
+    let image = req.get("image").and_then(|v| v.as_str()).filter(|s| !s.is_empty());
+    let user_content = match image {
+        Some(data_url) => {
+            if !data_url.starts_with("data:image/") {
+                return Ok(Json(serde_json::json!({
+                    "error": "Image must be a data:image/* URL (base64)"
+                })));
+            }
+            serde_json::json!([
+                { "type": "text", "text": prompt },
+                { "type": "image_url", "image_url": { "url": data_url } }
+            ])
+        }
+        None => serde_json::json!(prompt),
+    };
+
     let body = serde_json::json!({
         "model": model_key,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [{"role": "user", "content": user_content}],
         "max_tokens": 512,
         "temperature": 0.0,
     });

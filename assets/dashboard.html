@@ -971,8 +971,61 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
   <div class="setup-wrap">
     <div class="setup-hero">
       <div class="setup-hero-title">📋 Test Registry</div>
-      <div class="setup-hero-sub">Every ground-truth test currently seeded in the database. Expected answers are never shown to the model — only listed here for your own audit.</div>
+      <div class="setup-hero-sub">Every ground-truth test currently seeded in the database. Expected answers are never shown to the model — the list below stays blind by default; open a test to audit its ground truth.</div>
     </div>
+
+    <!-- Test Builder — create a blind test with one objective answer -->
+    <div class="setup-card" id="test-builder" style="display:none;">
+      <div class="setup-card-title">🛠 New Test</div>
+      <div class="pb-grid">
+        <div class="pb-field">
+          <label class="pb-label" for="tb-name">Name</label>
+          <input class="pb-textarea" style="min-height:auto;padding:10px 12px;" id="tb-name" placeholder="e.g. HUMAN-01 My Screenshot OCR">
+        </div>
+        <div class="pb-field">
+          <label class="pb-label" for="tb-axis">Axis</label>
+          <select class="pb-textarea" style="min-height:auto;padding:10px 12px;" id="tb-axis">
+            <option value="vision">👁 Vision</option>
+            <option value="tools">🔧 Tools</option>
+            <option value="reasoning" selected>🧠 Reasoning</option>
+            <option value="security">🛡 Security</option>
+            <option value="auxiliary">⚙ Auxiliary</option>
+          </select>
+        </div>
+      </div>
+      <div class="pb-field" style="margin-top:12px;">
+        <label class="pb-label" for="tb-prompt">Prompt sent to the model (never contains the answer)</label>
+        <textarea class="pb-textarea" id="tb-prompt" placeholder="The exact text the model will receive. Rule: one objective, verifiable answer that is NOT contained in the question."></textarea>
+      </div>
+      <div class="pb-grid" style="margin-top:12px;">
+        <div class="pb-field">
+          <label class="pb-label" for="tb-expected">Expected result (ground truth — stored server-side only)</label>
+          <input class="pb-textarea" style="min-height:auto;padding:10px 12px;" id="tb-expected" placeholder="e.g. VALID">
+        </div>
+        <div class="pb-field">
+          <label class="pb-label" for="tb-scoring">Scoring method</label>
+          <select class="pb-textarea" style="min-height:auto;padding:10px 12px;" id="tb-scoring">
+            <option value="exact" selected>exact — response must equal the answer</option>
+            <option value="substring">substring — answer must appear in response</option>
+            <option value="regex">regex — answer is a pattern</option>
+            <option value="spatial">spatial — negation-aware spatial match</option>
+            <option value="nested_tool">nested_tool — tool-call shape match</option>
+            <option value="security">security — refusal-vs-leak detection</option>
+          </select>
+        </div>
+      </div>
+      <div class="pb-actions">
+        <button class="btn btn-primary" onclick="submitNewTest()" id="tb-save-btn">💾 Save Test</button>
+        <button class="btn btn-secondary" onclick="toggleTestBuilder(false)">Cancel</button>
+        <span id="tb-status" style="margin-left:auto;font-size:12px;color:var(--text-muted);"></span>
+      </div>
+    </div>
+
+    <div class="pb-actions" style="margin-bottom:14px;">
+      <button class="btn btn-primary" onclick="toggleTestBuilder(true)">+ New Test</button>
+      <span style="font-size:12px;color:var(--text-muted);align-self:center;">A good test: one objective answer, not contained in the question, verifiable by string/pattern match.</span>
+    </div>
+
     <div id="tests-list">Loading tests…</div>
   </div>
 </div>
@@ -1195,7 +1248,7 @@ function log(tag, msg) {
   el.scrollTop = el.scrollHeight;
 }
 
-// Actions — placeholders until backend implements
+// Run actions — live against /api/runs
 function runSingle(key) {
   log('info', `Queuing test run for ${key}...`);
   fetch('/api/runs', {
@@ -1217,7 +1270,8 @@ function runSelected() {
   keys.forEach(k => runSingle(k));
 }
 function openTestBuilder() {
-  log('info', 'Test builder — coming next');
+  showPage('tests-page');
+  toggleTestBuilder(true);
 }
 
 // Protocol panel: open on first visit, remember collapse choice locally.
@@ -1517,19 +1571,116 @@ function renderLootTable() {
 }
 
 
-// Tests are seeded server-side; there's no dedicated /api/tests endpoint yet,
-// so this lists the known seed set directly — honest about what exists today.
-function loadTestsPage() {
+// ============ Tests page — real /api/tests data ============
+const AXIS_META = {
+  vision:    { icon: '👁', color: 'var(--accent-purple)' },
+  tools:     { icon: '🔧', color: 'var(--accent-cyan)' },
+  reasoning: { icon: '🧠', color: 'var(--accent-green)' },
+  security:  { icon: '🛡', color: 'var(--accent-amber)' },
+  auxiliary: { icon: '⚙', color: 'var(--accent-blue)' },
+};
+
+async function loadTestsPage() {
   const el = document.getElementById('tests-list');
-  el.innerHTML = `
-    <div class="list-row"><span class="lr-axis" style="color:var(--accent-purple)">👁 Vision</span><span class="lr-name">VVP-01 Attribute Detection</span><span class="lr-meta">substring match</span></div>
-    <div class="list-row"><span class="lr-axis" style="color:var(--accent-purple)">👁 Vision</span><span class="lr-name">VVP-02 Precise OCR</span><span class="lr-meta">substring match</span></div>
-    <div class="list-row"><span class="lr-axis" style="color:var(--accent-purple)">👁 Vision</span><span class="lr-name">VVP-03 Spatial Reasoning</span><span class="lr-meta">negation-aware spatial</span></div>
-    <div class="list-row"><span class="lr-axis" style="color:var(--accent-green)">🧠 Reasoning</span><span class="lr-name">ARITH-01 Exact Arithmetic</span><span class="lr-meta">substring match</span></div>
-    <div class="list-row"><span class="lr-axis" style="color:var(--accent-cyan)">🔧 Tools</span><span class="lr-name">TOOL-01 JSON Tool Call</span><span class="lr-meta">nested-tool shape match</span></div>
-    <div class="list-row"><span class="lr-axis" style="color:var(--accent-amber)">🛡 Security</span><span class="lr-name">SEC-01 System Prompt Extraction</span><span class="lr-meta">refusal-vs-leak detection</span></div>
-    <div style="margin-top:16px;font-size:12px;color:var(--text-muted)">Test Builder (add your own blind hacker tests) is next on the roadmap.</div>
-  `;
+  el.innerHTML = 'Loading tests…';
+  try {
+    const resp = await fetch('/api/tests');
+    const d = await resp.json();
+    if (!d.tests || !d.tests.length) {
+      el.innerHTML = '<div style="color:var(--text-muted)">No active tests. Click + New Test to create one.</div>';
+      return;
+    }
+    el.innerHTML = d.tests.map(t => {
+      const meta = AXIS_META[t.axis] || { icon: '❔', color: 'var(--text-muted)' };
+      return `<div class="list-row" style="cursor:pointer" onclick="toggleTestDetail(${t.id}, this)">
+        <span class="lr-axis" style="color:${meta.color}">${meta.icon} ${t.axis}</span>
+        <span class="lr-name">${t.name}</span>
+        <span class="lr-meta">${t.scoring_method} · N=${t.trials_per_run}${t.has_attachment ? ' · 📎' : ''} · #${t.id}</span>
+      </div>
+      <div class="test-detail" id="test-detail-${t.id}" style="display:none;padding:10px 14px;margin:0 0 8px;background:var(--bg-secondary);border-left:2px solid ${meta.color};font-size:12px;font-family:var(--font-mono);"></div>`;
+    }).join('')
+    + `<div style="margin-top:14px;font-size:12px;color:var(--text-muted)">${d.count} active tests. Click a row to audit its prompt and ground truth (fetched on demand — the grid stays blind).</div>`;
+  } catch (e) {
+    el.innerHTML = `<div style="color:var(--unsafe)">Failed to load tests: ${e.message}</div>`;
+  }
+}
+
+// On-demand audit view: ground truth is only fetched when explicitly opened.
+let fullTestsCache = null;
+async function toggleTestDetail(id, row) {
+  const panel = document.getElementById('test-detail-' + id);
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  if (!fullTestsCache) {
+    const resp = await fetch('/api/tests?full=true');
+    const d = await resp.json();
+    fullTestsCache = {};
+    (d.tests || []).forEach(t => fullTestsCache[t.id] = t);
+  }
+  const t = fullTestsCache[id];
+  if (!t) { panel.textContent = 'Not found.'; panel.style.display = ''; return; }
+  const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  panel.innerHTML =
+    `<div style="color:var(--text-muted);margin-bottom:6px;">PROMPT SENT TO MODEL</div>` +
+    `<div style="white-space:pre-wrap;margin-bottom:10px;">${esc(t.prompt_text)}</div>` +
+    `<div style="color:var(--text-muted);margin-bottom:6px;">GROUND TRUTH (never sent)</div>` +
+    `<div style="color:var(--safe);">${esc(t.expected_result)}</div>` +
+    `<div style="margin-top:10px;"><button class="btn btn-secondary" style="font-size:11px;" onclick="deactivateTest(${t.id})">🗑 Deactivate</button></div>`;
+  panel.style.display = '';
+}
+
+function toggleTestBuilder(show) {
+  document.getElementById('test-builder').style.display = show ? '' : 'none';
+  if (show) document.getElementById('tb-name').focus();
+}
+
+async function submitNewTest() {
+  const btn = document.getElementById('tb-save-btn');
+  const status = document.getElementById('tb-status');
+  const body = {
+    name: document.getElementById('tb-name').value.trim(),
+    axis: document.getElementById('tb-axis').value,
+    prompt_text: document.getElementById('tb-prompt').value.trim(),
+    expected_result: document.getElementById('tb-expected').value.trim(),
+    scoring_method: document.getElementById('tb-scoring').value,
+  };
+  btn.disabled = true;
+  status.textContent = 'Saving…';
+  try {
+    const resp = await fetch('/api/tests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await resp.json();
+    if (d.error) {
+      status.textContent = '✗ ' + d.error;
+      status.style.color = 'var(--unsafe)';
+    } else {
+      status.textContent = `✓ Saved as test #${d.id}`;
+      status.style.color = 'var(--safe)';
+      fullTestsCache = null;
+      ['tb-name','tb-prompt','tb-expected'].forEach(i => document.getElementById(i).value = '');
+      loadTestsPage();
+    }
+  } catch (e) {
+    status.textContent = '✗ ' + e.message;
+    status.style.color = 'var(--unsafe)';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deactivateTest(id) {
+  if (!confirm(`Deactivate test #${id}? Past runs keep their evidence; the test just stops being offered.`)) return;
+  const resp = await fetch('/api/tests/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ active: false }),
+  });
+  const d = await resp.json();
+  if (d.error) { alert(d.error); return; }
+  fullTestsCache = null;
+  loadTestsPage();
 }
 
 // ============ Runs page ============

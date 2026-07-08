@@ -42,7 +42,11 @@ async fn main() {
         .route("/api/loot", get(routes::loot::loot_handler))
         .route("/api/lmstudio/status", get(routes::lmstudio::lmstudio_status))
         .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
+        .route("/api/tests", get(routes::tests::list_tests).post(routes::tests::create_test))
+        .route("/api/tests/{id}", axum::routing::put(routes::tests::update_test))
         .nest_service("/assets", static_files)
+        // 16MB body cap: a 10MB image (Prompt Builder max) is ~13.7MB as base64.
+        .layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024))
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
