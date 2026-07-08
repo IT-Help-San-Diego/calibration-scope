@@ -58,62 +58,61 @@ pub async fn start_runs(
     .ok_or_else(|| AppError::Executor(format!("Unknown model key: {}", req.model_key)))?;
 
     let mut run_ids = Vec::new();
-        // Create ONE test_run row PER TEST on each requested axis (not one per axis).
-        // The executor's tests_for_axis runs ALL active tests on that axis.
-        for axis in &req.axes {
-            let tests_on_axis: Vec<(i32,)> = sqlx::query_as(
-                "SELECT id FROM tests WHERE active = true AND axis = $1 ORDER BY id",
-            )
-            .bind(axis)
-            .fetch_all(&state.db)
-            .await?;
+    // ONE run per (model, axis). The executor runs every active test on the
+    // axis inside that single run — pass_count/total_count aggregate the whole
+    // battery. (Previously this inserted one run per test while the executor
+    // still ran the full battery per run: N² executions. Fixed 2026-07-07.)
+    for axis in &req.axes {
+        let (test_count,): (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM tests WHERE active = true AND axis = $1",
+        )
+        .bind(axis)
+        .fetch_one(&state.db)
+        .await?;
 
-            if tests_on_axis.is_empty() {
-                return Err(AppError::Executor(format!("No active tests for axis '{}'", axis)));
-            }
-
-            for (test_id,) in tests_on_axis {
-                let (run_id,): (i32,) = sqlx::query_as(
-                    r#"INSERT INTO test_runs (model_id, test_id, axis, status)
-                       VALUES ($1, $2, $3, 'queued') RETURNING id"#,
-                )
-                .bind(model.id)
-                .bind(test_id)
-                .bind(axis)
-                .fetch_one(&state.db)
-                .await?;
-                run_ids.push(run_id);
-
-                let db = state.db.clone();
-                let config = state.config.clone();
-                let tx = state.events_tx.clone();
-                let model_id = model.id;
-                let model_key = model.key.clone();
-                let location = model.location.clone();
-                let provider = model.provider.clone();
-                let axis = axis.clone();
-
-                tokio::spawn(async move {
-                    // Serialize local runs — clean-room integrity.
-                    let _guard = if location == "local" {
-                        Some(LOCAL_RUN_LOCK.lock().await)
-                    } else {
-                        None
-                    };
-                    crate::executor::execute_run(
-                        db, config, tx, run_id, model_id, model_key, location, provider, axis,
-                    )
-                    .await;
-                });
-            }
+        if test_count == 0 {
+            return Err(AppError::Executor(format!("No active tests for axis '{}'", axis)));
         }
 
-        Ok(Json(serde_json::json!({
-            "run_id": run_ids[0],
-            "run_ids": run_ids,
-            "model_key": req.model_key,
-            "axes": req.axes,
-        })))
+        let (run_id,): (i32,) = sqlx::query_as(
+            r#"INSERT INTO test_runs (model_id, test_id, axis, status)
+               VALUES ($1, NULL, $2, 'queued') RETURNING id"#,
+        )
+        .bind(model.id)
+        .bind(axis)
+        .fetch_one(&state.db)
+        .await?;
+        run_ids.push(run_id);
+
+        let db = state.db.clone();
+        let config = state.config.clone();
+        let tx = state.events_tx.clone();
+        let model_id = model.id;
+        let model_key = model.key.clone();
+        let location = model.location.clone();
+        let provider = model.provider.clone();
+        let axis = axis.clone();
+
+        tokio::spawn(async move {
+            // Serialize local runs — clean-room integrity.
+            let _guard = if location == "local" {
+                Some(LOCAL_RUN_LOCK.lock().await)
+            } else {
+                None
+            };
+            crate::executor::execute_run(
+                db, config, tx, run_id, model_id, model_key, location, provider, axis,
+            )
+            .await;
+        });
+    }
+
+    Ok(Json(serde_json::json!({
+        "run_id": run_ids[0],
+        "run_ids": run_ids,
+        "model_key": req.model_key,
+        "axes": req.axes,
+    })))
 }
 
 pub async fn list_runs(State(state): State<AppState>) -> AppResult<Json<serde_json::Value>> {
