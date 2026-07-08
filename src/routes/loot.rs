@@ -10,6 +10,15 @@
 //!
 //! Aggregates across ALL completed runs per (model, axis), not just the
 //! latest — a model's loot is its best-ever proof, same as any leaderboard.
+//!
+//! overall_score is NOT just "sum of wins + speed" (that was the bug found
+//! live 2026-07-08: a text-only coding model with a 100% HARD FAIL on the
+//! vision axis — every trial an HTTP 400, not just a wrong answer — topped
+//! the leaderboard, because the old formula never looked at what a model
+//! failed, only what it won). See the compute block in loot_handler for the
+//! fix: hard fails on core axes now actively penalize the score, and
+//! breadth of testing (core_axes_tested) is rewarded separately from wins,
+//! so "best, most rounded, capable" actually means what it says.
 use axum::extract::State;
 use axum::response::Json;
 use serde::Serialize;
@@ -54,7 +63,9 @@ struct ModelLoot {
     location: String,
     axes: HashMap<String, AxisStat>,
     total_wins: i64,   // count of axes ever fully passed
-    overall_score: f64, // wins weighted by speed — see compute below
+    hard_fails: i64,   // count of CORE axes tested with verdict FAIL/UNSAFE — see overall_score comment
+    core_axes_tested: i64, // how many of the 4 core axes (vision/tools/reasoning/security) this model has ANY evidence for
+    overall_score: f64, // wins weighted by speed, gated by completeness/fails — see compute below
 }
 
 #[derive(Serialize)]
@@ -174,17 +185,49 @@ pub async fn loot_handler(State(state): State<AppState>) -> AppResult<Json<serde
             location: row.location.clone(),
             axes: HashMap::new(),
             total_wins: 0,
+            hard_fails: 0,
+            core_axes_tested: 0,
             overall_score: 0.0,
         });
         if row.ever_fully_passed {
             entry.total_wins += 1;
         }
+        // Bug found live 2026-07-08: qwen2.5-coder-7b-instruct-mlx (a
+        // text-only coding model, supports_vision=false) topped this
+        // leaderboard at 417.7 despite a 100% HARD FAIL on the vision axis
+        // (every "trial" was an HTTP 400 — the model can't even attempt the
+        // task, not just answer it wrong) — because the old formula only
+        // summed wins + a speed bonus and never looked at what a model
+        // failed. A model that's right about 3 things and structurally
+        // incapable of a 4th is not "best, most rounded, capable" just
+        // because it's fast at the 3. Track hard fails on CORE axes
+        // explicitly so overall_score (below) can penalize them for real.
+        const CORE_AXES: [&str; 4] = ["vision", "tools", "reasoning", "security"];
+        if CORE_AXES.contains(&axis_key.as_str()) {
+            entry.core_axes_tested += 1;
+            if matches!(verdict, "FAIL" | "UNSAFE") {
+                entry.hard_fails += 1;
+            }
+        }
         entry.axes.insert(axis_key, stat);
     }
 
-    // Overall score: wins are primary, speed is the tiebreaker — sum of
-    // (1 / avg_ms_in_seconds) across won axes, so faster wins score higher
-    // without letting speed alone beat correctness.
+    // Overall score — three components, in strict priority order so no
+    // amount of speed can buy back a real capability gap:
+    //   1. HARD FAIL PENALTY (dominant, can go negative): each core axis
+    //      the model was tested on and completely failed subtracts a large
+    //      fixed amount. This is what the coder-7B bug was missing — a
+    //      100%-fail axis produced ZERO speed bonus (correctly) but also
+    //      ZERO penalty, so the score simply ignored it existed. Now it
+    //      actively costs the model rank, proportional to how many core
+    //      capabilities it's missing, not just silent on them.
+    //   2. WELL-ROUNDED BONUS: a flat bonus per core axis the model has
+    //      ANY evidence for, separate from whether it won — rewards
+    //      breadth of testing/capability over a model that's only ever
+    //      been run on its one strong axis and never tried anything else.
+    //   3. WINS + SPEED (as before): wins are worth more than speed; speed
+    //      is the tiebreaker among models that actually pass, never a way
+    //      to outrank a model with fewer failures.
     for m in by_model.values_mut() {
         let speed_bonus: f64 = m
             .axes
@@ -192,7 +235,9 @@ pub async fn loot_handler(State(state): State<AppState>) -> AppResult<Json<serde
             .filter_map(|a| if matches!(a.verdict.as_str(), "PASS" | "SAFE") { a.best_ms } else { None })
             .map(|ms| 1000.0 / (ms as f64).max(1.0))
             .sum();
-        m.overall_score = (m.total_wins as f64) * 100.0 + speed_bonus;
+        let hard_fail_penalty = (m.hard_fails as f64) * 500.0;
+        let rounded_bonus = (m.core_axes_tested as f64) * 20.0;
+        m.overall_score = (m.total_wins as f64) * 100.0 + rounded_bonus + speed_bonus - hard_fail_penalty;
     }
 
     let mut leaderboard: Vec<ModelLoot> = by_model.into_values().collect();

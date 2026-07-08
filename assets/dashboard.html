@@ -1680,7 +1680,10 @@ function renderLootTable() {
       <td class="loot-model-name">${m.display_name}<div style="font-size:10px;color:var(--text-muted);">${m.location === 'local' ? '💻 Local' : '☁️ Cloud'}</div></td>
       <td style="text-align:center;font-weight:700;">${m.total_wins}/4</td>
       ${axisCells}
-      <td style="text-align:right;font-family:var(--font-mono);color:var(--text-muted);">${m.overall_score.toFixed(1)}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--text-muted);">
+        ${m.overall_score.toFixed(1)}
+        ${m.hard_fails > 0 ? `<div style="font-size:10px;color:var(--unsafe);font-weight:600;" title="This many core axes came back a hard FAIL/UNSAFE — the score above is already penalized for this, not silent on it.">⚠ ${m.hard_fails} hard fail${m.hard_fails > 1 ? 's' : ''}</div>` : ''}
+      </td>
     </tr>`;
   }).join('');
 

@@ -205,6 +205,41 @@ async fn loot_has_contract_shape() {
     assert!(json.get("missing_axes").is_some());
 }
 
+// Regression test for the bug found live 2026-07-08: a model with a 100%
+// HARD FAIL on any core axis (vision/tools/reasoning/security) must never
+// outrank a model with zero hard fails, no matter how much faster/more-won
+// the failing model is on the axes it CAN do. Asserted directly against the
+// leaderboard shape rather than re-deriving overall_score's formula here —
+// if the fix regresses, this catches the RESULT (wrong rank), not just a
+// changed constant.
+#[tokio::test]
+async fn leaderboard_never_ranks_a_hard_failer_above_a_clean_model() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/loot").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let json: serde_json::Value = serde_json::from_str(&body_string(response).await).unwrap();
+    let leaderboard = json["leaderboard"].as_array().unwrap();
+
+    for a in leaderboard {
+        for b in leaderboard {
+            let a_hard_fails = a["hard_fails"].as_i64().unwrap_or(0);
+            let b_hard_fails = b["hard_fails"].as_i64().unwrap_or(0);
+            let a_score = a["overall_score"].as_f64().unwrap();
+            let b_score = b["overall_score"].as_f64().unwrap();
+            if a_hard_fails > b_hard_fails {
+                assert!(
+                    a_score < b_score,
+                    "{} has MORE hard fails ({}) than {} ({}) but scored >= it ({} vs {}) — the leaderboard bug is back",
+                    a["model_key"], a_hard_fails, b["model_key"], b_hard_fails, a_score, b_score
+                );
+            }
+        }
+    }
+}
+
 // ── Abort endpoint (self-harm audit follow-up, 2026-07-08) ─────────────────
 // The end-to-end "actually cancels real inference" behavior is proven live
 // against the real LM Studio process (see the session's manual verification:
