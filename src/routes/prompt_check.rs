@@ -86,3 +86,77 @@ pub async fn prompt_check(
         "live_available": model.location == "local",
     })))
 }
+
+// POST /api/prompt-check — run a prompt against a model and return the response
+pub async fn prompt_check_post(
+    State(state): State<AppState>,
+    axum::extract::Json(req): axum::extract::Json<serde_json::Value>,
+) -> AppResult<Json<serde_json::Value>> {
+    let Some(model_key) = req.get("model_key").and_then(|v| v.as_str()) else {
+        return Ok(Json(serde_json::json!({ "error": "Missing model_key" })));
+    };
+    let Some(prompt) = req.get("prompt").and_then(|v| v.as_str()) else {
+        return Ok(Json(serde_json::json!({ "error": "Missing prompt" })));
+    };
+
+    let model: Option<ModelCtx> =
+        sqlx::query_as("SELECT context_length, location FROM models WHERE key = $1")
+            .bind(model_key)
+            .fetch_optional(&state.db)
+            .await?;
+
+    let Some(model) = model else {
+        return Ok(Json(serde_json::json!({
+            "error": format!("Unknown model key: {}", model_key)
+        })));
+    };
+    // Cloud models are out of scope for this endpoint (LM Studio only).
+    if model.location != "local" {
+        return Ok(Json(serde_json::json!({
+            "error": format!("Model '{}' is not local — live prompt test targets LM Studio only", model_key)
+        })));
+    }
+
+    let base_url = &state.config.lmstudio_base_url;
+
+    let body = serde_json::json!({
+        "model": model_key,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 512,
+        "temperature": 0.0,
+    });
+
+    let client = reqwest::Client::new();
+    let resp = client
+        .post(format!("{}/api/v0/chat/completions", base_url))
+        .json(&body)
+        .timeout(std::time::Duration::from_secs(60))
+        .send()
+        .await?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body_text = resp.text().await.unwrap_or_default();
+        return Ok(Json(serde_json::json!({
+            "error": format!("LM Studio returned HTTP {}: {}", status, body_text)
+        })));
+    }
+
+    let json: serde_json::Value = resp.json().await?;
+    let content = json
+        .get("choices")
+        .and_then(|c| c.as_array())
+        .and_then(|a| a.first())
+        .and_then(|c| c.get("message"))
+        .and_then(|m| m.get("content"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+
+    Ok(Json(serde_json::json!({
+        "model_key": model_key,
+        "response": content,
+        "prompt_tokens": json.get("usage").and_then(|u| u.get("prompt_tokens")).and_then(|t| t.as_u64()),
+        "completion_tokens": json.get("usage").and_then(|u| u.get("completion_tokens")).and_then(|t| t.as_u64()),
+    })))
+}

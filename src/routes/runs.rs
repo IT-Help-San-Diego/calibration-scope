@@ -92,7 +92,6 @@ pub async fn start_runs(
                 let location = model.location.clone();
                 let provider = model.provider.clone();
                 let axis = axis.clone();
-                let test_id = test_id;
 
                 tokio::spawn(async move {
                     // Serialize local runs — clean-room integrity.

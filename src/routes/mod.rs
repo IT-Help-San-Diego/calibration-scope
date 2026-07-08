@@ -6,3 +6,4 @@ pub mod events;
 pub mod runs;
 pub mod prompt_check;
 pub mod loot;
+pub mod lmstudio;

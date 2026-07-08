@@ -8,7 +8,7 @@ mod executor;
 
 use config::Config;
 use state::AppState;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::Router;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
@@ -38,8 +38,10 @@ async fn main() {
         .route("/api/models", get(routes::models::models_handler))
         .route("/api/events", get(routes::events::sse_handler))
         .route("/api/runs", get(routes::runs::list_runs).post(routes::runs::start_runs))
-        .route("/api/prompt-check", get(routes::prompt_check::prompt_check))
+        .route("/api/prompt-check", get(routes::prompt_check::prompt_check).post(routes::prompt_check::prompt_check_post))
         .route("/api/loot", get(routes::loot::loot_handler))
+        .route("/api/lmstudio/status", get(routes::lmstudio::lmstudio_status))
+        .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
         .nest_service("/assets", static_files)
         .layer(TraceLayer::new_for_http())
         .with_state(state);
