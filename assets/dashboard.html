@@ -1510,8 +1510,9 @@ async function loadRealityCheck() {
         hw.cpu_cores.value ? `${hw.cpu_cores.value} CPU cores` : ''),
     row(mem.free_pct.value != null, 'Memory free right now', mem.free_pct.value != null ? `${mem.free_pct.value}%` : null,
         mem.free_pct.source, 'live pressure, not a spec'),
-    row(mem.gpu_ceiling_gb.value != null, 'GPU-wired memory ceiling', gb(mem.gpu_ceiling_gb.value),
-        mem.gpu_ceiling_gb.source, mem.gpu_ceiling_note),
+    row(mem.gpu_ceiling_gb.value != null, 'GPU memory ceiling', gb(mem.gpu_ceiling_gb.value),
+        mem.gpu_ceiling_gb.source,
+        `${mem.gpu_ceiling_note} — <a href="${mem.gpu_ceiling_doc}" target="_blank" rel="noopener" style="color:var(--accent-cyan)">Apple's documentation</a>`),
     row(disk.free_gb.value != null, 'Disk free', gb(disk.free_gb.value), disk.free_gb.source,
         disk.total_gb.value != null ? `of ${gb(disk.total_gb.value)} total — models are 4–45GB each, this budget is real too` : ''),
     row(lms.reachable, 'LM Studio server', lms.reachable

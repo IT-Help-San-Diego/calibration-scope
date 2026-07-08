@@ -18,8 +18,9 @@
 //! everything ABOVE that line is what's genuinely available to an AI stack.
 //! Two ceilings gate the AI budget and we report both:
 //!   1. life_reserve_gb  = clamp(total/2, 16, 64) — the OS + apps living space
-//!   2. gpu_ceiling_gb   — macOS caps GPU-wired memory (iogpu.wired_limit_mb;
-//!      0 means the dynamic default, ~75% of RAM on Apple Silicon)
+//!   2. gpu_ceiling_gb   — MEASURED from Metal's recommendedMaxWorkingSetSize
+//!      (Apple-documented per-GPU allocation ceiling; reflects any
+//!      iogpu.wired_limit_mb override automatically)
 //!
 //! ai_budget_gb = min(total − life_reserve, gpu_ceiling)
 //!
@@ -32,6 +33,25 @@ use tokio::process::Command;
 
 use crate::error::AppResult;
 use crate::state::AppState;
+
+/// GPU memory ceiling, measured — never estimated.
+///
+/// Source of truth: Metal's `MTLDevice.recommendedMaxWorkingSetSize` —
+/// Apple-documented as "an approximation of how much memory, in bytes, this
+/// GPU device can allocate without affecting its runtime performance"
+/// (developer.apple.com/documentation/metal/mtldevice/recommendedmaxworkingsetsize,
+/// macOS 10.12+). This is the number LM Studio and llama.cpp actually live
+/// under, and it already reflects any iogpu.wired_limit_mb override.
+///
+/// HISTORY (2026-07-08): this replaced a "≈75% of RAM" community-folklore
+/// estimate after the user demanded science over social media. Measured
+/// reality on the dev machine: 107.5 GiB of 128 GiB = 84% — the folklore
+/// number was 11.5 GB wrong. Estimates lie; APIs measure.
+fn metal_working_set_bytes() -> Option<u64> {
+    use objc2_metal::MTLDevice as _;
+    let device = objc2_metal::MTLCreateSystemDefaultDevice()?;
+    Some(device.recommendedMaxWorkingSetSize())
+}
 
 /// One measured value + the command that produced it. The receipt travels
 /// with the number.
@@ -96,14 +116,16 @@ pub async fn host_reality(State(state): State<AppState>) -> AppResult<Json<serde
 
     let total_ram_gb = memsize.map(|b| b as f64 / 1073741824.0);
 
-    // GPU-wired ceiling: explicit sysctl value wins; 0 means macOS' dynamic
-    // default, ~75% of physical RAM on Apple Silicon (documented Apple
-    // behavior; still labeled "estimated" in the response because we compute
-    // it rather than read it).
-    let (gpu_ceiling_gb, gpu_ceiling_note) = match (iogpu_limit_mb, total_ram_gb) {
-        (Some(mb), _) if mb > 0 => (Some(mb as f64 / 1024.0), "explicit iogpu.wired_limit_mb"),
-        (_, Some(ram)) => (Some(ram * 0.75), "estimated: dynamic default ≈75% of RAM (iogpu.wired_limit_mb=0)"),
-        _ => (None, "unmeasurable"),
+    // GPU ceiling — MEASURED via Metal's documented API, never estimated.
+    // The sysctl is reported alongside as the override knob's state; Metal's
+    // value already reflects it when set. No measurement → honest null.
+    let metal_ceiling_gb = metal_working_set_bytes().map(|b| b as f64 / 1073741824.0);
+    let (gpu_ceiling_gb, gpu_ceiling_note) = match metal_ceiling_gb {
+        Some(gb) => (
+            Some(gb),
+            "measured: Metal recommendedMaxWorkingSetSize — Apple's documented per-GPU allocation ceiling",
+        ),
+        None => (None, "unmeasurable: no Metal device responded — not guessing"),
     };
 
     // The budget heuristic — labeled, never presented as a measurement.
@@ -198,8 +220,13 @@ pub async fn host_reality(State(state): State<AppState>) -> AppResult<Json<serde
         },
         "memory": {
             "free_pct": Measured { value: free_pct, source: "memory_pressure -Q" },
-            "gpu_ceiling_gb": Measured { value: gpu_ceiling_gb, source: "sysctl -n iogpu.wired_limit_mb" },
+            "gpu_ceiling_gb": Measured { value: gpu_ceiling_gb, source: "Metal MTLDevice.recommendedMaxWorkingSetSize" },
             "gpu_ceiling_note": gpu_ceiling_note,
+            "gpu_ceiling_doc": "https://developer.apple.com/documentation/metal/mtldevice/recommendedmaxworkingsetsize",
+            // The user-overridable kernel knob, reported for transparency:
+            // 0 = macOS dynamic default (Metal's measured value above is the
+            // effective ceiling either way — it reflects this knob when set).
+            "iogpu_wired_limit_mb": Measured { value: iogpu_limit_mb, source: "sysctl -n iogpu.wired_limit_mb" },
         },
         "disk": {
             "total_gb": Measured { value: disk.map(|d| d.0), source: "df -k /" },

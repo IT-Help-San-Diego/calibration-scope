@@ -606,3 +606,54 @@ async fn budget_always_names_its_binding_constraints() {
         );
     }
 }
+
+// ── GPU ceiling: measured, not folklore (2026-07-08) ───────────────────────
+// User mandate: "if the numbers are only from community, we need to measure
+// against real science." The ~75%-of-RAM community estimate was replaced by
+// Metal's recommendedMaxWorkingSetSize (Apple-documented API). On the dev
+// machine the folklore number was off by 11.5GB (96 est vs 107.5 measured).
+
+#[tokio::test]
+async fn gpu_ceiling_is_measured_from_metal_not_estimated() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/host/reality").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    let json: serde_json::Value = serde_json::from_str(&body_string(response).await).unwrap();
+
+    let mem = &json["memory"];
+    // Receipt must name the Metal API, and the note must say "measured",
+    // never "estimated" — the folklore path is gone.
+    assert_eq!(
+        mem["gpu_ceiling_gb"]["source"], "Metal MTLDevice.recommendedMaxWorkingSetSize",
+        "ceiling receipt must cite the Metal API"
+    );
+    let note = mem["gpu_ceiling_note"].as_str().unwrap();
+    assert!(note.starts_with("measured") || note.starts_with("unmeasurable"),
+        "ceiling note must be measured-or-honest-null, got: {}", note);
+    assert!(!note.contains("estimated"), "estimation path must not exist anymore");
+    // The Apple doc citation travels with the number.
+    assert!(mem["gpu_ceiling_doc"].as_str().unwrap()
+        .starts_with("https://developer.apple.com/documentation/metal/"));
+
+    // Cross-validate the measurement itself against an INDEPENDENT reading
+    // of the same API via the Swift toolchain — two implementations, one
+    // truth. Skip (honestly) if swift isn't available on this host.
+    if let Some(gb) = mem["gpu_ceiling_gb"]["value"].as_f64() {
+        let out = std::process::Command::new("swift")
+            .args(["-e", "import Metal; print(MTLCreateSystemDefaultDevice()!.recommendedMaxWorkingSetSize)"])
+            .output();
+        if let Ok(o) = out {
+            if o.status.success() {
+                let swift_bytes: f64 = String::from_utf8_lossy(&o.stdout).trim().parse().unwrap();
+                let swift_gb = swift_bytes / 1073741824.0;
+                assert!(
+                    (gb - swift_gb).abs() < 0.01,
+                    "Rust Metal binding ({} GiB) disagrees with Swift Metal ({} GiB)",
+                    gb, swift_gb
+                );
+            }
+        }
+    }
+}
