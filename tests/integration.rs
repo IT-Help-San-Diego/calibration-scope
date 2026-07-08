@@ -54,3 +54,153 @@ async fn test_index_returns_html() {
         .unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 }
+
+// ── Write-path validation (no inference is ever triggered: every request
+//    below is designed to be rejected before an executor task spawns) ──────
+
+fn json_post(uri: &str, body: &str) -> Request<Body> {
+    Request::builder()
+        .method("POST")
+        .uri(uri)
+        .header("content-type", "application/json")
+        .body(Body::from(body.to_string()))
+        .unwrap()
+}
+
+fn json_put(uri: &str, body: &str) -> Request<Body> {
+    Request::builder()
+        .method("PUT")
+        .uri(uri)
+        .header("content-type", "application/json")
+        .body(Body::from(body.to_string()))
+        .unwrap()
+}
+
+async fn body_string(response: axum::response::Response) -> String {
+    let bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+    String::from_utf8_lossy(&bytes).to_string()
+}
+
+#[tokio::test]
+async fn start_runs_rejects_empty_axes() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_post("/api/runs", r#"{"model_key":"x","axes":[]}"#))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    assert!(body_string(response).await.contains("non-empty"));
+}
+
+#[tokio::test]
+async fn start_runs_rejects_invalid_axis_with_actionable_message() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_post("/api/runs", r#"{"model_key":"x","axes":["magic"]}"#))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body = body_string(response).await;
+    assert!(body.contains("Invalid axis: magic"), "error must name the bad axis, got: {}", body);
+}
+
+#[tokio::test]
+async fn start_runs_rejects_unknown_model() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_post(
+            "/api/runs",
+            r#"{"model_key":"no-such-model-xyz","axes":["reasoning"]}"#,
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    assert!(body_string(response).await.contains("Unknown model key"));
+}
+
+#[tokio::test]
+async fn create_test_rejects_answer_leakage() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_post(
+            "/api/tests",
+            r#"{"name":"IT-LEAK","axis":"reasoning","prompt_text":"The answer is Canberra. What is the capital?","expected_result":"Canberra"}"#,
+        ))
+        .await
+        .unwrap();
+    // Anti-cheating invariant: a test containing its own answer must never persist.
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_string(response).await;
+    assert!(body.contains("Answer leakage"), "leakage guard must fire, got: {}", body);
+}
+
+#[tokio::test]
+async fn create_test_rejects_missing_ground_truth() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_post(
+            "/api/tests",
+            r#"{"name":"IT-NOGT","axis":"reasoning","prompt_text":"What is 2+2?"}"#,
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(body_string(response).await.contains("expected_result"));
+}
+
+#[tokio::test]
+async fn create_test_rejects_invalid_scoring_method() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_post(
+            "/api/tests",
+            r#"{"name":"IT-BADSCORE","axis":"reasoning","prompt_text":"What is 2+2?","expected_result":"4","scoring_method":"vibes"}"#,
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(body_string(response).await.contains("Invalid scoring_method"));
+}
+
+#[tokio::test]
+async fn update_test_rejects_unknown_id() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_put("/api/tests/999999", r#"{"name":"x"}"#))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(body_string(response).await.contains("No test with id 999999"));
+}
+
+#[tokio::test]
+async fn tests_list_is_blind_by_default() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/tests").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_string(response).await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    // Anti-cheating invariant: the default list view must never carry ground truth.
+    for t in json["tests"].as_array().unwrap() {
+        assert!(t.get("expected_result").is_none(), "blind list leaked ground truth: {}", t);
+        assert!(t.get("prompt_text").is_none(), "blind list leaked prompt: {}", t);
+    }
+}
+
+#[tokio::test]
+async fn loot_has_contract_shape() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/loot").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = body_string(response).await;
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert!(json.get("leaderboard").is_some());
+    assert!(json.get("recommended_squad").is_some());
+    assert!(json.get("missing_axes").is_some());
+}

@@ -24,6 +24,21 @@ pub async fn test_app() -> Router {
         .route("/api/summary", axum::routing::get(archetype_mesh_dashboard::routes::summary::summary_handler))
         .route("/api/models", axum::routing::get(archetype_mesh_dashboard::routes::models::models_handler))
         .route("/api/events", axum::routing::get(archetype_mesh_dashboard::routes::events::sse_handler))
+        .route(
+            "/api/runs",
+            axum::routing::get(archetype_mesh_dashboard::routes::runs::list_runs)
+                .post(archetype_mesh_dashboard::routes::runs::start_runs),
+        )
+        .route(
+            "/api/tests",
+            axum::routing::get(archetype_mesh_dashboard::routes::tests::list_tests)
+                .post(archetype_mesh_dashboard::routes::tests::create_test),
+        )
+        .route(
+            "/api/tests/{id}",
+            axum::routing::put(archetype_mesh_dashboard::routes::tests::update_test),
+        )
+        .route("/api/loot", axum::routing::get(archetype_mesh_dashboard::routes::loot::loot_handler))
         .nest_service("/assets", static_files)
         .layer(TraceLayer::new_for_http())
         .with_state(state)
