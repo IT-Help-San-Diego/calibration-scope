@@ -38,21 +38,32 @@ pub fn score_response(actual: &str, expected: &str, method: &str) -> TrialScore 
 
     let passed = match m {
         ScoringMethod::Exact => {
-            // First-token exact match. Single-word-answer tests instruct
-            // "answer with exactly one word"; reasoning-trace models (e.g.
-            // Claude with extended thinking) often append an explanation after
-            // their committed answer. The leading token IS the answer — whole-
-            // response equality would score verbosity, not correctness.
-            // Token = first whitespace-delimited word, with trailing
-            // punctuation stripped ("INVALID." -> "INVALID") but interior
-            // characters kept ("391.0" stays "391.0" and correctly fails
-            // against "391" — the test suite guards this case).
-            let first_token = actual_clean
+            // Committed-answer match: first token OR final alphanumeric run.
+            // Two real model styles, both verified in stored trial data:
+            //   - Answer-first (Claude/Fable, run 40): "INVALID\n\nThis is the
+            //     fallacy of..." — commitment is the FIRST token.
+            //   - Reasoning-first (phi-4-reasoning-plus, run 41): "...I'll now
+            //     produce final answer.VALID" — commitment is the LAST word,
+            //     and it can be glued to the previous word by punctuation, so
+            //     whitespace tokenization is not enough for the tail: we take
+            //     the final maximal alphanumeric run instead.
+            // First-token-only misscored run 41 (model right, scorer wrong).
+            // Guards that stay closed (all regression-tested):
+            //   "391.0"   vs "391"  — first token keeps interior chars; final
+            //                          run is "0". Both fail. Correct.
+            //   "INVALID" vs "VALID" — exact token compare, no substring.
+            //   never-committed reasoning (budget exhaustion) — no match.
+            let first = actual_clean
                 .split_whitespace()
                 .next()
                 .unwrap_or("")
                 .trim_end_matches(|c: char| !c.is_ascii_alphanumeric());
-            first_token.eq_ignore_ascii_case(expected_clean)
+            let last_run = actual_clean
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .rfind(|t| !t.is_empty())
+                .unwrap_or("");
+            first.eq_ignore_ascii_case(expected_clean)
+                || last_run.eq_ignore_ascii_case(expected_clean)
         }
         ScoringMethod::Substring => actual_clean
             .to_lowercase()
@@ -160,7 +171,7 @@ mod tests {
 
     #[test]
     fn exact_first_token_tolerates_reasoning_trace() {
-        // Reasoning models answer then explain — the committed first token is scored.
+        // Answer-first style (Claude/Fable, run 40): answer then explanation.
         assert!(
             score_response(
                 "INVALID\n\nThis is the fallacy of affirming the consequent.",
@@ -169,10 +180,37 @@ mod tests {
             )
             .passed
         );
-        // But a wrong first word still fails even if the right word appears later.
-        assert!(!score_response("VALID — wait, actually INVALID.", "INVALID", "exact").passed);
-        // And the classic substring trap stays closed: VALID != INVALID.
+        // Reasoning-first style (phi-4-reasoning-plus, run 41): trace ends with
+        // the committed answer, possibly punctuation-glued to the prior word.
+        assert!(
+            score_response(
+                "We'll check the premises... I'll now produce final answer.VALID",
+                "VALID",
+                "exact"
+            )
+            .passed
+        );
+        assert!(
+            score_response(
+                "The argument is invalid because... I'll produce final answer: \"INVALID\".",
+                "INVALID",
+                "exact"
+            )
+            .passed
+        );
+        // Buried mid-response answer with a non-answer tail still fails —
+        // no reliable commitment, and rescuing it would risk false positives.
+        assert!(
+            !score_response(
+                "So answer: TRUE. I'll produce exactly one word.",
+                "TRUE",
+                "exact"
+            )
+            .passed
+        );
+        // The classic substring trap stays closed on both ends: VALID != INVALID.
         assert!(!score_response("INVALID", "VALID", "exact").passed);
+        assert!(!score_response("It is VALID. Wait — INVALID", "VALID", "exact").passed);
         assert!(!score_response("", "VALID", "exact").passed);
     }
 
