@@ -318,3 +318,150 @@ async fn abort_run_is_idempotent_when_called_twice() {
         assert_eq!(json["aborted"], false);
     }
 }
+
+// ── Capability router (/api/router/plan, 2026-07-08) ───────────────────────
+// The router is a pure decision function over the same evidence substrate as
+// the leaderboard. These tests pin its POLICY INVARIANTS against real data:
+// whatever the DB currently contains, the plan must be internally consistent.
+
+#[tokio::test]
+async fn router_plan_returns_all_axes_with_policy_echo() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/router/plan").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let json: serde_json::Value = serde_json::from_str(&body_string(response).await).unwrap();
+
+    // Policy must be echoed — a plan that doesn't state its own rules is
+    // unauditable.
+    assert_eq!(json["policy"]["min_trials"], 3);
+    assert_eq!(json["policy"]["fallback_threshold"], 0.8);
+
+    let axes = json["axes"].as_array().unwrap();
+    let names: Vec<&str> = axes.iter().map(|a| a["axis"].as_str().unwrap()).collect();
+    assert_eq!(names, vec!["vision", "tools", "reasoning", "security", "auxiliary"]);
+}
+
+#[tokio::test]
+async fn router_primary_is_always_perfect_and_sufficiently_evidenced() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/router/plan").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    let json: serde_json::Value = serde_json::from_str(&body_string(response).await).unwrap();
+
+    for axis in json["axes"].as_array().unwrap() {
+        if let Some(primary) = axis["primary"].as_object() {
+            let rate = primary["pass_rate"].as_f64().unwrap();
+            let trials = primary["total_trials"].as_i64().unwrap();
+            assert!(
+                (rate - 1.0).abs() < f64::EPSILON,
+                "axis {} primary {} has pass_rate {} — a primary must be 100%",
+                axis["axis"], primary["model_key"], rate
+            );
+            assert!(
+                trials >= 3,
+                "axis {} primary {} has only {} trials — under the min_trials floor",
+                axis["axis"], primary["model_key"], trials
+            );
+            // Every placement must carry sealed evidence.
+            assert!(
+                primary["evidence"]["run_id"].is_i64(),
+                "primary without an evidence run_id is an unaudited claim"
+            );
+            // A routed axis must say so.
+            assert_eq!(axis["status"], "routed");
+        }
+    }
+}
+
+#[tokio::test]
+async fn router_never_excludes_a_model_above_threshold_or_routes_one_below() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(Request::builder().uri("/api/router/plan").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    let json: serde_json::Value = serde_json::from_str(&body_string(response).await).unwrap();
+
+    for axis in json["axes"].as_array().unwrap() {
+        for excluded in axis["excluded"].as_array().unwrap() {
+            let rate = excluded["pass_rate"].as_f64().unwrap();
+            assert!(
+                rate < 0.8,
+                "axis {} excluded {} at pass_rate {} — exclusion above the fallback floor",
+                axis["axis"], excluded["model_key"], rate
+            );
+            // Silence is the old leaderboard bug: every exclusion states why.
+            assert!(
+                !excluded["reason"].as_str().unwrap().is_empty(),
+                "exclusion without a reason"
+            );
+        }
+        for fallback in axis["fallbacks"].as_array().unwrap() {
+            let rate = fallback["pass_rate"].as_f64().unwrap();
+            assert!(
+                rate >= 0.8,
+                "axis {} fallback {} at pass_rate {} — routable below the floor",
+                axis["axis"], fallback["model_key"], rate
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn router_plan_rejects_out_of_bounds_policy_knobs() {
+    for uri in [
+        "/api/router/plan?min_trials=0",
+        "/api/router/plan?min_trials=1001",
+        "/api/router/plan?fallback_threshold=0.0",
+        "/api/router/plan?fallback_threshold=1.5",
+        "/api/router/plan?location=orbit",
+    ] {
+        let app = common::test_app().await;
+        let response = app
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(
+            response.status(),
+            StatusCode::BAD_REQUEST,
+            "{} should be a 400, not silently clamped",
+            uri
+        );
+    }
+}
+
+#[tokio::test]
+async fn router_location_filter_actually_filters() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/router/plan?location=local")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let json: serde_json::Value = serde_json::from_str(&body_string(response).await).unwrap();
+    for axis in json["axes"].as_array().unwrap() {
+        let mut everyone: Vec<&serde_json::Value> = Vec::new();
+        if axis["primary"].is_object() {
+            everyone.push(&axis["primary"]);
+        }
+        everyone.extend(axis["fallbacks"].as_array().unwrap());
+        everyone.extend(axis["excluded"].as_array().unwrap());
+        for m in everyone {
+            assert_eq!(
+                m["location"], "local",
+                "location=local plan contains cloud model {}",
+                m["model_key"]
+            );
+        }
+    }
+}

@@ -62,6 +62,7 @@ async fn main() {
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
         .route("/api/prompt-check", get(routes::prompt_check::prompt_check).post(routes::prompt_check::prompt_check_post))
         .route("/api/loot", get(routes::loot::loot_handler))
+        .route("/api/router/plan", get(routes::router::router_plan))
         .route("/api/lmstudio/status", get(routes::lmstudio::lmstudio_status))
         .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
         .route("/api/tests", get(routes::tests::list_tests).post(routes::tests::create_test))

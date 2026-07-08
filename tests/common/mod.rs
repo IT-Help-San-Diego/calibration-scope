@@ -52,6 +52,10 @@ pub async fn test_app() -> Router {
             axum::routing::put(archetype_mesh_dashboard::routes::tests::update_test),
         )
         .route("/api/loot", axum::routing::get(archetype_mesh_dashboard::routes::loot::loot_handler))
+        .route(
+            "/api/router/plan",
+            axum::routing::get(archetype_mesh_dashboard::routes::router::router_plan),
+        )
         .nest_service("/assets", static_files)
         .layer(TraceLayer::new_for_http())
         .with_state(state)

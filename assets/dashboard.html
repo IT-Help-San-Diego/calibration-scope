@@ -415,6 +415,24 @@
   .squad-slot-model { font-size: 14px; font-weight: 700; font-family: var(--font-mono); margin-bottom: 4px; }
   .squad-slot-speed { font-size: 12px; color: var(--accent-cyan); font-family: var(--font-mono); }
   .squad-slot-empty { color: var(--text-muted); font-style: italic; font-size: 13px; }
+  /* ── Capability router plan ── */
+  .router-axis { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; background: var(--bg-secondary); }
+  .router-axis-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .router-axis-name { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
+  .router-status { font-size: 10px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .router-status.routed { background: rgba(52,211,153,0.15); color: var(--accent-green, #34d399); }
+  .router-status.degraded { background: rgba(251,191,36,0.15); color: var(--accent-amber, #fbbf24); }
+  .router-status.unrouted { background: rgba(248,113,113,0.12); color: #f87171; }
+  .router-row { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; font-size: 13px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.04); }
+  .router-row:first-of-type { border-top: none; }
+  .router-tier { font-size: 10px; font-family: var(--font-mono); width: 72px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+  .router-tier.primary { color: var(--accent-green, #34d399); font-weight: 700; }
+  .router-tier.fallback { color: var(--accent-cyan); }
+  .router-tier.excluded { color: #f87171; }
+  .router-model { font-family: var(--font-mono); font-weight: 600; }
+  .router-reason { color: var(--text-muted); font-size: 12px; }
+  .router-evidence { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); }
+  .router-more { font-size: 11px; color: var(--text-muted); font-style: italic; padding: 4px 0 0 80px; }
   .loot-sort-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
   .loot-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .loot-table th {
@@ -838,6 +856,13 @@
       <div class="setup-card-title">🎯 Recommended Squad — one champion per axis, picked by fastest-to-ever-fully-pass</div>
       <p style="margin-bottom:14px;">This is the loadout mindset: don't pick one model and run everything through it at low/medium/high — put your fastest verified-correct model in each slot, the same way you'd pin Hermes auxiliary tasks to different backends.</p>
       <div class="squad-grid" id="squad-grid">Loading…</div>
+    </div>
+
+    <!-- Capability Router -->
+    <div class="setup-card" id="router-card">
+      <div class="setup-card-title">🧭 Capability Router — who actually gets the job</div>
+      <p style="margin-bottom:14px;">The squad above is the <b>trophy</b> answer: fastest model to ever fully pass. This is the <b>trust</b> answer: a primary needs a <b>100% lifetime record across ≥3 trials</b> — one lucky run is a win, not a routing basis. Every placement below states its reason and links the sealed run that justifies it. Models with no evidence on an axis simply don't appear: absence of evidence is not a verdict.</p>
+      <div id="router-plan-wrap">Loading…</div>
     </div>
 
     <!-- Leaderboard -->
@@ -1609,6 +1634,47 @@ async function loadLootPage() {
   lootData = r.data;
   renderSquad();
   renderLootTable();
+  loadRouterPlan();
+}
+
+// ── Capability router panel — trust-tier plan from /api/router/plan ──
+async function loadRouterPlan() {
+  const el = document.getElementById('router-plan-wrap');
+  if (!el) return;
+  const r = await apiFetch('/api/router/plan');
+  if (!r.ok) {
+    el.innerHTML = `<div style="color:var(--unsafe)">Failed to load router plan: ${r.error}</div>`;
+    return;
+  }
+  const routedRow = (m, tier) => `
+    <div class="router-row">
+      <span class="router-tier ${tier}">${tier}</span>
+      <span class="router-model">${m.display_name}</span>
+      <span class="router-evidence">${m.location} · ${(m.pass_rate * 100).toFixed(0)}% over ${m.total_trials} trials${m.best_ms ? ' · ⚡' + fmtMs(m.best_ms) : ''}</span>
+      <span class="router-reason">${m.reason}</span>
+      <span class="router-evidence" title="${m.evidence.sha3 || ''}">run #${m.evidence.run_id ?? '—'}</span>
+    </div>`;
+  el.innerHTML = r.data.axes.map(ax => {
+    const rows = [];
+    if (ax.primary) rows.push(routedRow(ax.primary, 'primary'));
+    ax.fallbacks.slice(0, 3).forEach(m => rows.push(routedRow(m, 'fallback')));
+    ax.excluded.slice(0, 2).forEach(m => rows.push(routedRow(m, 'excluded')));
+    const hiddenFb = Math.max(0, ax.fallbacks.length - 3);
+    const hiddenEx = Math.max(0, ax.excluded.length - 2);
+    const more = (hiddenFb + hiddenEx) > 0
+      ? `<div class="router-more">+ ${hiddenFb ? hiddenFb + ' more fallback(s)' : ''}${hiddenFb && hiddenEx ? ', ' : ''}${hiddenEx ? hiddenEx + ' more excluded' : ''} — full detail in the API: <code>/api/router/plan</code></div>`
+      : '';
+    const empty = rows.length === 0
+      ? `<div class="squad-slot-empty">No evidence on this axis yet — nothing to route. Run benchmarks.</div>`
+      : '';
+    return `<div class="router-axis">
+      <div class="router-axis-head">
+        <span class="router-axis-name">${AXIS_ICON[ax.axis] || '🧪'} ${ax.axis}</span>
+        <span class="router-status ${ax.status}">${ax.status}</span>
+      </div>
+      ${rows.join('')}${empty}${more}
+    </div>`;
+  }).join('');
 }
 
 function renderSquad() {
