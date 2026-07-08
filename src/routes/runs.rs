@@ -115,25 +115,38 @@ pub async fn start_runs(
     })))
 }
 
+/// Row shape for the run-history listing (typed, not a bare tuple —
+/// clippy::type_complexity and future column changes both point the same way).
+#[derive(sqlx::FromRow)]
+struct RunListRow {
+    id: i32,
+    key: String,
+    axis: String,
+    status: String,
+    pass_count: i32,
+    total_count: i32,
+    sha3_provenance: Option<String>,
+    created_at: Option<chrono::NaiveDateTime>,
+}
+
 pub async fn list_runs(State(state): State<AppState>) -> AppResult<Json<serde_json::Value>> {
-    let rows: Vec<(i32, String, String, String, i32, i32, Option<String>, Option<chrono::NaiveDateTime>)> =
-        sqlx::query_as(
-            r#"SELECT r.id, m.key, r.axis, r.status, r.pass_count, r.total_count,
-                      r.sha3_provenance, r.created_at
-               FROM test_runs r JOIN models m ON m.id = r.model_id
-               ORDER BY r.created_at DESC LIMIT 100"#,
-        )
-        .fetch_all(&state.db)
-        .await?;
+    let rows: Vec<RunListRow> = sqlx::query_as(
+        r#"SELECT r.id, m.key, r.axis, r.status, r.pass_count, r.total_count,
+                  r.sha3_provenance, r.created_at
+           FROM test_runs r JOIN models m ON m.id = r.model_id
+           ORDER BY r.created_at DESC LIMIT 100"#,
+    )
+    .fetch_all(&state.db)
+    .await?;
 
     let runs: Vec<serde_json::Value> = rows
         .into_iter()
-        .map(|(id, key, axis, status, pass, total, sha3, created)| {
+        .map(|r| {
             serde_json::json!({
-                "id": id, "model_key": key, "axis": axis, "status": status,
-                "pass_count": pass, "total_count": total,
-                "sha3_provenance": sha3,
-                "created_at": created.map(|c| c.to_string()),
+                "id": r.id, "model_key": r.key, "axis": r.axis, "status": r.status,
+                "pass_count": r.pass_count, "total_count": r.total_count,
+                "sha3_provenance": r.sha3_provenance,
+                "created_at": r.created_at.map(|c| c.to_string()),
             })
         })
         .collect();

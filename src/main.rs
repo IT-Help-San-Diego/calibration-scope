@@ -29,6 +29,24 @@ async fn main() {
         .await
         .expect("Failed to initialize application state");
 
+    // Startup reaper: runs stuck in a non-terminal state belong to a previous
+    // process (crash, launchd restart, reboot mid-run) — no executor task
+    // exists for them anymore, so without this they'd read "running" forever.
+    // Marking them 'error' is honest: their execution genuinely did not finish.
+    match sqlx::query(
+        "UPDATE test_runs SET status = 'error', finished_at = NOW()
+         WHERE status NOT IN ('done', 'error')",
+    )
+    .execute(&state.db)
+    .await
+    {
+        Ok(r) if r.rows_affected() > 0 => {
+            tracing::warn!("Reaped {} orphaned run(s) from a previous process", r.rows_affected())
+        }
+        Ok(_) => {}
+        Err(e) => tracing::error!("Orphan-run reaper failed: {}", e),
+    }
+
     let static_files = ServeDir::new(&config.assets_dir);
 
     let app = Router::new()
@@ -54,8 +72,21 @@ async fn main() {
         .await
         .expect("Failed to bind listener");
 
-    tracing::info!("Listening on {}", listener.local_addr().unwrap());
+    tracing::info!("Listening on {}", listener.local_addr().expect("listener has a local addr"));
+    // Graceful shutdown: launchd sends SIGTERM on unload/kickstart. Draining
+    // in-flight HTTP (incl. open SSE streams) instead of dropping mid-write;
+    // the startup reaper covers any executor tasks cut off by the exit.
     axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .expect("Server error");
+}
+
+async fn shutdown_signal() {
+    use tokio::signal::unix::{signal, SignalKind};
+    let mut sigterm = signal(SignalKind::terminate()).expect("install SIGTERM handler");
+    tokio::select! {
+        _ = tokio::signal::ctrl_c() => tracing::info!("SIGINT received — shutting down"),
+        _ = sigterm.recv() => tracing::info!("SIGTERM received — shutting down"),
+    }
 }

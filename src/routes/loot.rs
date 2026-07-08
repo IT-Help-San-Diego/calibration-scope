@@ -7,6 +7,7 @@
 //!   2. "Which bots should I load into which slots?" — a recommended squad:
 //!      one model per axis, chosen the same way, framed explicitly as a
 //!      loadout (mirrors Hermes' main-model / auxiliary-task split).
+//!
 //! Aggregates across ALL completed runs per (model, axis), not just the
 //! latest — a model's loot is its best-ever proof, same as any leaderboard.
 use axum::extract::State;
@@ -195,7 +196,8 @@ pub async fn loot_handler(State(state): State<AppState>) -> AppResult<Json<serde
     }
 
     let mut leaderboard: Vec<ModelLoot> = by_model.into_values().collect();
-    leaderboard.sort_by(|a, b| b.overall_score.partial_cmp(&a.overall_score).unwrap());
+    // total_cmp: total order over floats — no unwrap, no NaN panic path.
+    leaderboard.sort_by(|a, b| b.overall_score.total_cmp(&a.overall_score));
 
     let axis_order = ["vision", "tools", "reasoning", "security"];
     let squad: Vec<SquadPick> = axis_order
