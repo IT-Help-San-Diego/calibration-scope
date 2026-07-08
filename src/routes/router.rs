@@ -213,7 +213,7 @@ pub async fn router_plan(
             (
                 Tier::Fallback,
                 format!(
-                    "flaky: {verb} {}/{} trials ({:.0}%) — meets the {:.0}% fallback floor, not routable as primary",
+                    "unstable: {verb} {}/{} trials ({:.0}%) — meets the {:.0}% fallback floor, not routable as primary",
                     row.total_passed,
                     row.total_trials,
                     pass_rate * 100.0,
@@ -296,7 +296,11 @@ pub async fn router_plan(
                 })
                 .collect();
             // Flaky/under-evidenced fallbacks: highest pass rate first, then
-            // evidence volume, then key for determinism.
+            // evidence volume, then key for determinism. Vocabulary note
+            // (user mandate 2026-07-08): reason strings use "unstable", not
+            // "flaky" — the router is a science surface, and every claim on
+            // it carries its measurement (n, pass rate) in the same breath.
+            // "Flaky" stays in the Loot tab's fun register only.
             fallbacks.sort_by(|a, b| {
                 b.pass_rate
                     .total_cmp(&a.pass_rate)
@@ -337,7 +341,7 @@ pub async fn router_plan(
             "location_filter": params.location,
             "rules": [
                 "PRIMARY: 100% lifetime pass rate AND total_trials >= min_trials; fastest wins, evidence volume breaks ties",
-                "FALLBACK: 100% but under-evidenced, or pass_rate >= fallback_threshold; verified-but-slower rank above flaky",
+                "FALLBACK: 100% but under-evidenced, or pass_rate >= fallback_threshold; verified-but-slower rank above unstable",
                 "EXCLUDED: pass_rate below fallback_threshold; every exclusion states its reason",
                 "UNTESTED: absent from the plan entirely — absence of evidence is not a verdict"
             ],
