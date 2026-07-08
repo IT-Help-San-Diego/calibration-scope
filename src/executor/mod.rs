@@ -176,7 +176,7 @@ async fn execute_run_inner(
     tx: &broadcast::Sender<String>,
     cancel_token: &CancellationToken,
     run_id: i32,
-    _model_id: i32,
+    model_id: i32,
     model_key: &str,
     location: &str,
     provider: &str,
@@ -192,6 +192,36 @@ async fn execute_run_inner(
         "type": "run_started", "run_id": run_id, "model_key": model_key,
         "axis": axis, "location": location, "at": now_iso()
     }));
+
+    // Pre-flight capability gate: refuse a vision-axis run against a model
+    // LM Studio's own metadata already says has no vision support, BEFORE
+    // spending a clean-room eject+load cycle and a real GPU inference
+    // attempt on a request that's guaranteed to be rejected. Found live
+    // 2026-07-08 by auditing historical data: EVERY vision-axis run against
+    // a supports_vision=false model (10 of 10 checked — every harmonic-
+    // hermes-9b quant, granite-3.2-8b, granite-4-h-tiny, llama-3.2-3b,
+    // qwen2.5-coder-7b-instruct-mlx, hermes-4-14b) came back 100%
+    // infra-contaminated (HTTP 400, the model never got to answer). This is
+    // the simplest, most certain form of "never hand a model a job it
+    // can't do": we already HAVE the ground truth (LM Studio told us this
+    // model has no vision), so there's no need to spend a real load+
+    // inference cycle to discover the same fact again every single run.
+    if axis == "vision" {
+        let supports_vision: Option<bool> =
+            sqlx::query_scalar("SELECT supports_vision FROM models WHERE id = $1")
+                .bind(model_id)
+                .fetch_optional(db)
+                .await?;
+        if supports_vision == Some(false) {
+            return Err(AppError::Executor(format!(
+                "{} has no vision support (LM Studio capabilities metadata) — refusing to spend a \
+                 clean-room load + inference attempt on a request guaranteed to fail. This is not a \
+                 capability FAIL; the model was correctly never asked. If this model has gained vision \
+                 support since the last LM Studio sync, run a sync and try again.",
+                model_key
+            )));
+        }
+    }
 
     // Every await point below that can take real wall-clock time (clean-room
     // ejection, model load, each chat call) races against cancel_token so an
@@ -257,6 +287,7 @@ async fn execute_run_inner(
 
     let mut pass_count: i32 = 0;
     let mut total_count: i32 = 0;
+    let mut infra_error_count: i32 = 0;
     let mut evidence_lines: Vec<String> = Vec::new();
 
     for test in &tests {
@@ -302,21 +333,33 @@ async fn execute_run_inner(
             };
 
             total_count += 1;
-            let (passed, latency_ms, raw, detail) = match outcome {
+            let (passed, latency_ms, raw, detail, is_infra_error) = match outcome {
                 Ok((response, latency)) => {
                     let expected = test.expected_result.as_deref().unwrap_or("");
                     let score = scoring::score_response(&response, expected, &test.scoring_method);
-                    (score.passed, latency as i64, response, score.detail.unwrap_or_default())
+                    (score.passed, latency as i64, response, score.detail.unwrap_or_default(), false)
                 }
-                Err(e) => (false, -1, String::new(), format!("execution error: {}", e)),
+                // Infra failure (LM Studio rejected the request, connection
+                // dropped, provider timeout) — the model never got a chance
+                // to answer. This must NOT be scored as a capability FAIL;
+                // is_infra_error flags it so aggregation (loot.rs) can
+                // exclude it from the verdict instead of silently treating
+                // "we never asked" the same as "it answered wrong." Found
+                // live 2026-07-08: without this, a config bug that blocks
+                // every request to a model made that model look like it
+                // fails every capability, when the truth was infrastructure.
+                Err(e) => (false, -1, String::new(), format!("execution error: {}", e), true),
             };
             if passed {
                 pass_count += 1;
             }
+            if is_infra_error {
+                infra_error_count += 1;
+            }
 
             sqlx::query(
-                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail)
-                   VALUES ($1, $2, $3, $4, $5, $6)"#,
+                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)"#,
             )
             .bind(run_id)
             .bind(trial_num)
@@ -324,6 +367,7 @@ async fn execute_run_inner(
             .bind(latency_ms)
             .bind(passed)
             .bind(&detail)
+            .bind(is_infra_error)
             .execute(db)
             .await?;
 
@@ -341,6 +385,49 @@ async fn execute_run_inner(
     }
 
     // ── Verdict + provenance ───────────────────────────────────────────────
+    // Infra-contaminated trials (LM Studio/provider rejected the request —
+    // the model never got a chance to answer) must NOT count toward the
+    // capability denominator. Found live 2026-07-08: hermes-4-14b showed
+    // FAIL/UNSAFE on every core axis and looked like a genuinely terrible
+    // model — every single trial had actually died to the exact
+    // speculative-decoding config bug found earlier in this session (draft
+    // model + batched load = LM Studio rejects the request outright). The
+    // harness never reached the model once. Excluding infra trials from
+    // the denominator here (not just at query time in loot.rs) means the
+    // fix applies everywhere the run's totals are read, including future
+    // capability-routing features — a router trained on "fails everything"
+    // when the truth is "never asked" would be actively wrong, not just
+    // imprecise.
+    let real_total_count = total_count - infra_error_count;
+    if real_total_count == 0 {
+        // Every single trial was infrastructure noise — this axis was
+        // never actually tested. Return an error (not a FAIL/UNSAFE
+        // verdict): loot.rs only aggregates status='done' runs, so this
+        // correctly disappears from the capability leaderboard instead of
+        // reporting a false 100% failure.
+        return Err(AppError::Executor(format!(
+            "All {} trial(s) for {} on axis '{}' failed at the infrastructure level \
+             (LM Studio/provider rejected every request before the model could answer) — \
+             this is NOT a capability failure, the model was never actually tested. \
+             Check connectivity/model load config (see LM Studio's server log) and re-run.",
+            total_count, model_key, axis
+        )));
+    }
+    if infra_error_count > 0 {
+        emit(tx, serde_json::json!({
+            "type": "phase", "run_id": run_id, "phase": "scoring",
+            "message": format!(
+                "{} of {} trials were infrastructure errors (excluded from the capability score, not counted as failures)",
+                infra_error_count, total_count
+            ),
+            "at": now_iso()
+        }));
+    }
+    // Shadow total_count with the corrected (infra-excluded) denominator —
+    // everything downstream (verdict, pass_rate stored on test_runs,
+    // evidence record) must agree on what was actually tested.
+    let total_count = real_total_count;
+
     emit(tx, serde_json::json!({
         "type": "phase", "run_id": run_id, "phase": "scoring",
         "message": format!("Scoring: {}/{} trials passed", pass_count, total_count), "at": now_iso()

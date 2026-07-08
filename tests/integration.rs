@@ -118,6 +118,33 @@ async fn start_runs_rejects_unknown_model() {
     assert!(body_string(response).await.contains("Unknown model key"));
 }
 
+// Capability pre-flight (found + fixed 2026-07-08): a vision-axis request
+// against a model with supports_vision=false must be silently skipped, not
+// sent to the executor to burn a real clean-room load + guaranteed-reject
+// inference cycle. Uses a real registered non-vision model already in the
+// live DB (ibm/granite-3.2-8b) rather than a fixture, since the guard reads
+// live model metadata.
+#[tokio::test]
+async fn start_runs_skips_vision_axis_for_non_vision_model() {
+    let app = common::test_app().await;
+    let response = app
+        .oneshot(json_post(
+            "/api/runs",
+            r#"{"model_key":"ibm/granite-3.2-8b","axes":["vision"]}"#,
+        ))
+        .await
+        .unwrap();
+    // Every requested axis was skipped -> no run to start -> a clean error,
+    // not a silently-created queued row that's guaranteed to fail.
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let body = body_string(response).await;
+    assert!(
+        body.contains("no vision support"),
+        "must name why vision was skipped, got: {}",
+        body
+    );
+}
+
 #[tokio::test]
 async fn create_test_rejects_answer_leakage() {
     let app = common::test_app().await;

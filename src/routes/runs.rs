@@ -29,6 +29,7 @@ struct ModelRow {
     key: String,
     provider: String,
     location: String,
+    supports_vision: bool,
 }
 
 pub async fn start_runs(
@@ -53,12 +54,44 @@ pub async fn start_runs(
     }
 
     let model = sqlx::query_as::<_, ModelRow>(
-        "SELECT id, key, provider, location FROM models WHERE key = $1 AND active = true",
+        "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND active = true",
     )
     .bind(&req.model_key)
     .fetch_optional(&state.db)
     .await?
     .ok_or_else(|| AppError::Executor(format!("Unknown model key: {}", req.model_key)))?;
+
+    // Capability pre-flight, at the API boundary — the cheapest possible
+    // place to refuse a job a model is already known to be unable to do.
+    // Found live 2026-07-08 auditing historical data: every vision-axis run
+    // against a supports_vision=false model came back 100%
+    // infra-contaminated (LM Studio rejects the request outright; the model
+    // never gets a chance to answer). Silently SKIP the incompatible axis
+    // rather than reject the whole request — the model grid's "▶ Run"
+    // button asks for all 4 core axes on every model, including non-vision
+    // ones, so a hard rejection here would break Run for most of the fleet.
+    // The executor also carries this same check (defense in depth against
+    // any other caller of execute_run), but skipping it HERE means we never
+    // even create a queued row, let alone spend a clean-room load cycle.
+    let mut skipped_axes: Vec<(&str, String)> = Vec::new();
+    axes.retain(|axis| {
+        if *axis == "vision" && !model.supports_vision {
+            skipped_axes.push((
+                axis,
+                format!("{} has no vision support (LM Studio capabilities metadata)", model.key),
+            ));
+            false
+        } else {
+            true
+        }
+    });
+    if axes.is_empty() {
+        return Err(AppError::Executor(format!(
+            "Every requested axis was skipped as incompatible with {}: {}",
+            model.key,
+            skipped_axes.iter().map(|(_, r)| r.as_str()).collect::<Vec<_>>().join("; ")
+        )));
+    }
 
     // Refuse to stack a duplicate battery behind an identical one already
     // queued/running: the clean-room lock serializes local runs, so a repeat
@@ -150,6 +183,7 @@ pub async fn start_runs(
         "run_ids": run_ids,
         "model_key": req.model_key,
         "axes": axes,
+        "skipped_axes": skipped_axes.iter().map(|(a, reason)| serde_json::json!({"axis": a, "reason": reason})).collect::<Vec<_>>(),
     })))
 }
 
