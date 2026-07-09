@@ -6,29 +6,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
-    --bg-primary: #0a0e17;
-    --bg-secondary: #111827;
-    --bg-card: #1a1f2e;
-    --bg-card-hover: #242b3d;
-    --border: #2a3142;
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --accent-blue: #3b82f6;
-    --accent-cyan: #06b6d4;
-    --accent-green: #10b981;
-    --accent-amber: #f59e0b;
-    --accent-purple: #8b5cf6;
-    --accent-red: #ef4444;
-    --accent-orange: #f97316;
-    --safe: #10b981;
-    --unsafe: #ef4444;
-    --flaky: #f59e0b;
-    --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    /* ═══ IT Help San Diego corporate design language ═══
+       Tokens extracted from the live family properties (2026-07-09):
+       www.it-help.tech/css/tokens.css + dnstool.it-help.tech custom.css.
+       Surfaces are GitHub-dark; the accent voice is the Athena gold /
+       copper family with brand blue — NOT the Tailwind default swatch
+       (#58a6ff/#06b6d4/#c8956a…) this page shipped with, which is the
+       exact palette every AI-generated dashboard defaults to. */
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-card: #21262d;
+    --bg-card-hover: #30363d;
+    --border: #30363d;
+    --text-primary: rgba(230, 237, 243, 0.9);
+    --text-secondary: #9ca3af;
+    --text-muted: #8b949e;
+    /* Brand accents — same remapping trick DNS Tool uses: the variable
+       NAMES stay (so every downstream rule follows automatically), the
+       VALUES become corporate. Gold is the primary voice. */
+    --accent-gold: #d4a853;          /* Athena gold — primary accent  */
+    --accent-cyan: #d4a853;          /* remapped to gold, as on DNS Tool */
+    --accent-blue: #58a6ff;          /* brand blue                     */
+    --accent-green: #3fb950;         /* GitHub-dark success            */
+    --accent-amber: #e3b341;         /* GitHub-dark warning            */
+    --accent-purple: #c8956a;        /* copper — replaces AI violet    */
+    --accent-red: #f85149;           /* GitHub-dark danger             */
+    --accent-orange: #e8b54a;        /* warm amber-gold                */
+    --accent-steel: #9a8f82;
+    --safe: #3fb950;
+    --unsafe: #f85149;
+    --flaky: #e3b341;
+    /* Fibonacci spacing scale (px): 5 8 13 21 34 55 — adjacent steps sit
+       in golden-ratio proportion, so nested rhythm stays consonant. */
+    --fib-1: 5px; --fib-2: 8px; --fib-3: 13px; --fib-4: 21px;
+    --fib-5: 34px; --fib-6: 55px;
+    --font-mono: 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* Corporate footer — brand attribution, DNS Tool register */
+  .site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg-secondary);
+    margin-top: var(--fib-6);
+    padding: var(--fib-4) var(--fib-4) var(--fib-5);
+  }
+  .site-footer-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; flex-wrap: wrap; gap: var(--fib-2); align-items: baseline;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .site-footer a { color: var(--accent-gold); text-decoration: none; border-bottom: 1px dotted rgba(212,168,83,0.4); }
+  .site-footer a:hover { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+  .site-footer-brand { font-weight: 600; }
+  .site-footer-sep { opacity: 0.5; }
+  .site-footer-note { font-style: italic; }
 
   body {
     background: var(--bg-primary);
@@ -119,7 +153,7 @@
   }
   .btn-primary {
     background: var(--accent-cyan);
-    color: #0a0e17;
+    color: #0d1117;
   }
   .btn-primary:hover { background: #22d3ee; }
   .btn-secondary {
@@ -132,7 +166,7 @@
     background: var(--accent-red);
     color: #fff;
   }
-  .btn-danger:hover { background: #f87171; }
+  .btn-danger:hover { background: #f85149; }
 
   /* Main layout */
   .main {
@@ -202,9 +236,9 @@
   }
   .chip:hover { background: var(--bg-card-hover); }
   .chip.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
-  .chip.safe { background: rgba(16,185,129,0.15); color: var(--safe); border-color: var(--safe); }
-  .chip.unsafe { background: rgba(239,68,68,0.15); color: var(--unsafe); border-color: var(--unsafe); }
-  .chip.flaky { background: rgba(245,158,11,0.15); color: var(--flaky); border-color: var(--flaky); }
+  .chip.safe { background: rgba(63,185,80,0.15); color: var(--safe); border-color: var(--safe); }
+  .chip.unsafe { background: rgba(248,81,73,0.15); color: var(--unsafe); border-color: var(--unsafe); }
+  .chip.flaky { background: rgba(227,179,65,0.15); color: var(--flaky); border-color: var(--flaky); }
 
   /* Model grid — bird's-eye scroll */
   .model-grid {
@@ -255,14 +289,14 @@
     text-transform: uppercase;
   }
   .badge-local {
-    background: rgba(16,185,129,0.15);
+    background: rgba(63,185,80,0.15);
     color: var(--safe);
-    border: 1px solid rgba(16,185,129,0.3);
+    border: 1px solid rgba(63,185,80,0.3);
   }
   .badge-cloud {
-    background: rgba(59,130,246,0.15);
+    background: rgba(88,166,255,0.15);
     color: var(--accent-blue);
-    border: 1px solid rgba(59,130,246,0.3);
+    border: 1px solid rgba(88,166,255,0.3);
   }
   .provider-tag {
     font-size: 11px;
@@ -286,7 +320,7 @@
     cursor: pointer;
     font-family: var(--font-sans);
   }
-  .btn-mini:hover { background: var(--accent-blue); border-color: var(--accent-blue); color: #0a0e17; }
+  .btn-mini:hover { background: var(--accent-blue); border-color: var(--accent-blue); color: #0d1117; }
 
   /* Verdict grid */
   .verdict-grid {
@@ -420,15 +454,15 @@
   .router-axis-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .router-axis-name { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 700; }
   .router-status { font-size: 10px; font-family: var(--font-mono); padding: 2px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-  .router-status.routed { background: rgba(52,211,153,0.15); color: var(--accent-green, #34d399); }
-  .router-status.degraded { background: rgba(251,191,36,0.15); color: var(--accent-amber, #fbbf24); }
-  .router-status.unrouted { background: rgba(248,113,113,0.12); color: #f87171; }
+  .router-status.routed { background: rgba(63,185,80,0.15); color: var(--accent-green, #3fb950); }
+  .router-status.degraded { background: rgba(227,179,65,0.15); color: var(--accent-amber, #e3b341); }
+  .router-status.unrouted { background: rgba(248,81,73,0.12); color: #f85149; }
   .router-row { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; font-size: 13px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.04); }
   .router-row:first-of-type { border-top: none; }
   .router-tier { font-size: 10px; font-family: var(--font-mono); width: 72px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.04em; }
-  .router-tier.primary { color: var(--accent-green, #34d399); font-weight: 700; }
+  .router-tier.primary { color: var(--accent-green, #3fb950); font-weight: 700; }
   .router-tier.fallback { color: var(--accent-cyan); }
-  .router-tier.excluded { color: #f87171; }
+  .router-tier.excluded { color: #f85149; }
   .router-model { font-family: var(--font-mono); font-weight: 600; }
   .router-reason { color: var(--text-muted); font-size: 12px; }
   .router-evidence { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); }
@@ -440,25 +474,25 @@
   .rc-label { color: var(--text-muted); width: 190px; flex-shrink: 0; }
   .rc-value { font-family: var(--font-mono); font-weight: 600; cursor: help; border-bottom: 1px dotted rgba(255,255,255,0.25); }
   .rc-note { color: var(--text-muted); font-size: 12px; }
-  .rc-unmeasured { color: var(--accent-amber, #fbbf24); font-style: italic; }
+  .rc-unmeasured { color: var(--accent-amber, #e3b341); font-style: italic; }
   .rc-budget { margin-top: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-secondary); }
   .rc-budget-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
   .rc-bar { display: flex; height: 26px; border-radius: 6px; overflow: visible; font-size: 11px; font-family: var(--font-mono); margin-bottom: 8px; position: relative; }
   .rc-bar-seg { display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; }
   .rc-bar-seg:first-child { border-radius: 6px 0 0 6px; }
   .rc-bar-seg:last-of-type { border-radius: 0 6px 6px 0; }
-  .rc-ceiling-mark { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--accent-amber, #fbbf24); opacity: 0.85; }
-  .rc-ceiling-label { position: absolute; top: -22px; transform: translateX(-50%); font-size: 10px; color: var(--accent-amber, #fbbf24); white-space: nowrap; }
-  .rc-bar-life { background: rgba(96,165,250,0.30); }
-  .rc-bar-ai { background: rgba(52,211,153,0.30); }
+  .rc-ceiling-mark { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--accent-amber, #e3b341); opacity: 0.85; }
+  .rc-ceiling-label { position: absolute; top: -22px; transform: translateX(-50%); font-size: 10px; color: var(--accent-amber, #e3b341); white-space: nowrap; }
+  .rc-bar-life { background: rgba(88,166,255,0.30); }
+  .rc-bar-ai { background: rgba(63,185,80,0.30); }
   .rc-bar-ceiling { background: rgba(148,163,184,0.18); }
   .rc-tier { font-size: 13px; margin-top: 6px; }
   .rc-formula { font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); margin-top: 6px; }
   .squad-slot-hermes, .router-hermes { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
   .router-hermes { margin-top: 0; margin-left: auto; text-align: right; max-width: 55%; }
   .hermes-verify { font-size: 12px; font-family: var(--font-mono); padding: 8px 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-secondary); color: var(--text-muted); line-height: 1.7; }
-  .hermes-verify .hv-ok { color: var(--accent-green, #34d399); }
-  .hermes-verify .hv-warn { color: var(--accent-amber, #fbbf24); }
+  .hermes-verify .hv-ok { color: var(--accent-green, #3fb950); }
+  .hermes-verify .hv-warn { color: var(--accent-amber, #e3b341); }
   .loot-sort-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
   .loot-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .loot-table th {
@@ -645,8 +679,8 @@
   .pb-collapse-head { cursor: pointer; user-select: none; }
   .pb-collapse-head .pb-caret { float: right; transition: transform 0.15s; }
   .pb-collapsible.collapsed .pb-caret { transform: rotate(-90deg); }
-  .pb-no-answer { border-left: 3px solid var(--accent-amber, #fbbf24); background: rgba(251,191,36,0.06); padding: 10px 12px; border-radius: 4px; margin-bottom: 10px; }
-  .pb-no-answer-title { font-size: 11px; font-weight: 700; color: var(--accent-amber, #fbbf24); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .pb-no-answer { border-left: 3px solid var(--accent-amber, #e3b341); background: rgba(227,179,65,0.06); padding: 10px 12px; border-radius: 4px; margin-bottom: 10px; }
+  .pb-no-answer-title { font-size: 11px; font-weight: 700; color: var(--accent-amber, #e3b341); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
   .pb-result {
     background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px;
     padding: 16px; margin-top: 16px; font-family: var(--font-mono); font-size: 12px;
@@ -2497,6 +2531,16 @@ function showPbHistory(i) {
 }
 
 </script>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <span class="site-footer-brand">Made by <a href="https://www.it-help.tech/" target="_blank" rel="noopener">IT&nbsp;Help&nbsp;San&nbsp;Diego&nbsp;Inc.</a></span>
+    <span class="site-footer-sep">·</span>
+    <span>A project of the <a href="https://www.it-help.tech/intellectual-resistance/" target="_blank" rel="noopener">Intellectual&nbsp;Resistance</a></span>
+    <span class="site-footer-sep">·</span>
+    <span class="site-footer-note">Every verdict on this page is reproducible: sealed evidence, pinned stimuli, your hardware.</span>
+  </div>
+</footer>
 
 </body>
 </html>
