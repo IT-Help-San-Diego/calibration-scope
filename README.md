@@ -4,7 +4,7 @@
 
 A local-first benchmarking dashboard for [LM Studio](https://lmstudio.ai) and cloud LLMs that measures what models can *actually* do — vision, tool use, reasoning, prompt-injection resistance — using ground-truth tests, N=3 trials, SHA3-sealed evidence, and zero trust in anyone's marketing numbers. Built in Rust (Axum + Tokio + SQLx + PostgreSQL) with a single-file live dashboard driven by Server-Sent Events.
 
-Made by [IT Help San Diego Inc.](https://www.it-help.tech/) · A project of the [Intellectual Resistance](https://www.it-help.tech/intellectual-resistance/)
+Made by [IT Help San Diego Inc.](https://www.it-help.tech/) · A project of the [Intellectual Resistance](https://intellectualresistance.com/)
 
 ---
 
@@ -76,4 +76,4 @@ If a number on the screen can't cite where it came from, that's a bug. File it.
 
 ## License & attribution
 
-© IT Help San Diego Inc. Research published under Carey James Balboa and IT Help San Diego Inc. — see the [Intellectual Resistance](https://www.it-help.tech/intellectual-resistance/) program.
+© IT Help San Diego Inc. Research published under Carey James Balboa and IT Help San Diego Inc. — see the [Intellectual Resistance](https://intellectualresistance.com/) program.
