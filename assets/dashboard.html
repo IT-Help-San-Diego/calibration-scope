@@ -767,8 +767,8 @@
   /* Landing hero — the interactive guided flow */
   .landing-hero { padding: var(--fib-6) var(--fib-4); text-align: center; background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%); border-radius: 0 0 12px 12px; margin: -8px 0 var(--fib-4); position: relative; overflow: hidden; }
   .landing-hero::before { content: ''; position: absolute; top: 50%; left: 50%; width: 200px; height: 200px; transform: translate(-50%,-50%); background: url('/assets/owl-semaphore-logo.png') center/contain no-repeat; opacity: 0.04; pointer-events: none; }
-  .landing-hero-title { font-size: 28px; font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); margin-bottom: var(--fib-2); position: relative; }
-  .landing-hero-sub { font-size: 14px; color: var(--text-secondary); max-width: 600px; margin: 0 auto var(--fib-4); position: relative; }
+  .landing-hero-title { font-size: 32px; font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); margin-bottom: var(--fib-2); position: relative; }
+  .landing-hero-sub { font-size: 15px; color: var(--text-secondary); max-width: 600px; margin: 0 auto var(--fib-4); position: relative; }
   .landing-actions { display: flex; gap: var(--fib-3); justify-content: center; flex-wrap: wrap; position: relative; }
   .landing-btn { padding: 10px 24px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--accent-gold); background: rgba(212,168,83,0.08); color: var(--accent-gold); font-family: var(--font-mono); transition: all 0.2s; }
   .landing-btn:hover { background: rgba(212,168,83,0.15); border-color: var(--text-primary); }
@@ -829,9 +829,15 @@
   .lb-metric { font-family: var(--font-mono); font-size: 11px; }
   .lb-bar { height: 4px; background: var(--bg-primary); border-radius: 2px; overflow: hidden; }
   .lb-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+
+  /* Prominent owl — louder, prouder, not a watermark */
+  .landing-hero img[src*='owl-semaphore-logo.png'] { height: 96px !important; filter: drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15)); animation: owlPulse 4s ease-in-out infinite; }
+  @keyframes owlPulse { 0%, 100% { filter: drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15)); } 50% { filter: drop-shadow(0 0 28px rgba(212,168,83,0.45)) drop-shadow(0 0 56px rgba(212,168,83,0.25)); } }
+  /* Also make the nav owl slightly larger */
+  .top-nav img.logo { height: 36px !important; }
 </style>
   <div class="landing-hero" id="landing-hero">
-    <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:64px;margin-bottom:var(--fib-3);position:relative" onerror="this.style.display='none'">
+    <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:96px;margin-bottom:var(--fib-4);position:relative;filter:drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15));animation:owlPulse 4s ease-in-out infinite" onerror="this.style.display='none'">
     <div class="landing-hero-title">Archetype Mesh Benchmark</div>
     <div class="landing-hero-sub">Scientific LLM capability verification — test what your models can actually do, on your hardware, with evidence you can audit. Blind testing, clean-room execution, SHA-3 provenance.</div>
     <div class="landing-actions">
