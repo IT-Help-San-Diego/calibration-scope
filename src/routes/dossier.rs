@@ -35,6 +35,7 @@ struct RegistryRow {
     notes: Option<String>,
     tags: Option<Vec<String>>,
     active: bool,
+    hf_repo: Option<String>,
     created_at: Option<chrono::NaiveDateTime>,
     updated_at: Option<chrono::NaiveDateTime>,
 }
@@ -71,7 +72,7 @@ pub async fn model_dossier(
     // ── 1. REGISTRY ──────────────────────────────────────────────────────
     let registry: RegistryRow = sqlx::query_as(
         r#"SELECT id, key, display_name, provider, location, context_length,
-                  supports_vision, size_gb, notes, tags, active, created_at, updated_at
+                  supports_vision, size_gb, notes, tags, active, hf_repo, created_at, updated_at
            FROM models WHERE key = $1"#,
     )
     .bind(&key)

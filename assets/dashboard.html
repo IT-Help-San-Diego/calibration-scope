@@ -139,9 +139,10 @@
     background: linear-gradient(180deg, var(--bg-secondary), var(--bg-primary));
   }
   .logo {
-    width: 32px;
-    height: 32px;
-    margin-right: 12px;
+    width: 55px;
+    height: 55px;
+    margin-right: var(--fib-3);
+    filter: drop-shadow(0 0 8px rgba(212,168,83,0.25));
   }
   .header-title {
     font-size: 22px;
@@ -297,11 +298,18 @@
   .model-card-unresolved:hover {
     border-color: var(--flaky);
   }
+  /* Spatial math (DNS-Tool topology discipline, 2026-07-09): the card
+     header owns IDENTITY (badge + name + status chips) and reserves
+     right-side clearance for the absolutely-positioned actions block;
+     the actions block owns VERBS (Dossier, Run) and never overlaps
+     content because the header's padding-right is sized to the widest
+     two-button pair (~150px) plus one fib gap. One owner per zone. */
   .model-card-header {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
+    padding-right: 158px; /* reserved actions corridor: 150px + fib-2 */
   }
   .model-name {
     font-size: 14px;
@@ -1461,19 +1469,20 @@ function renderGrid() {
     const runBtn = unresolved
       ? `<button class="btn-mini" disabled title="LM Studio reports no context length or capabilities for this model — likely an incomplete/in-progress download. Not loadable.">⏳ Incomplete</button>`
       : `<button class="btn-mini" onclick="runSingle('${m.key}')">▶ Run</button>`;
+    const dossierBtn = `<button class="btn-mini dossier-btn" onclick="event.stopPropagation(); openDossier('${m.key.replace(/'/g, "\\'")}')" title="Every factual thing we know about this model — registry, live state, full evidence record">📋 Dossier</button>`;
 
     return `<div class="${cardClasses}" data-key="${m.key}" data-unresolved="${unresolved}">
       <div class="model-card-header">
         ${locBadge}
         <span class="model-name">${m.display_name}</span>
         ${unresolved ? '<span class="chip" style="font-size:9px;padding:1px 5px;background:var(--flaky);color:#000;">INCOMPLETE DOWNLOAD?</span>' : ''}
-        <button class="btn-mini dossier-btn" onclick="event.stopPropagation(); openDossier('${m.key.replace(/'/g, "\\'")}')" title="Every factual thing we know about this model — registry, live state, full evidence record">📋 Dossier</button>
       </div>
       <div class="provider-tag">${m.provider} · ${m.key}</div>
       ${m.size_gb ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${m.size_gb} GB · ${m.context_length || 0} ctx</div>` : ''}
       ${m.tags && m.tags.length ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">${m.tags.map(t => `<span class="chip" style="font-size:10px;padding:2px 6px;">${t}</span>`).join('')}</div>` : ''}
       <div class="verdict-grid">${verdictCells}</div>
       <div class="model-card-actions">
+        ${dossierBtn}
         ${runBtn}
       </div>
     </div>`;
@@ -2650,6 +2659,12 @@ async function openDossier(key) {
       <div class="dossier-src">source: ${esc(d.sources.registry)}</div>
     </div>
     <div class="dossier-section">
+      <div class="dossier-section-title">What the maker says — primary sources</div>
+      <div id="dossier-maker">${reg.hf_repo
+        ? `loading the maker's own record from Hugging Face…`
+        : `<span class="dossier-src">No verified public model card for this key (private/local build or closed cloud model) — we don't guess URLs.</span>`}</div>
+    </div>
+    <div class="dossier-section">
       <div class="dossier-section-title">Live — LM Studio, right now</div>
       ${liveHtml}
       <div class="dossier-src">source: ${esc(d.sources.live)}</div>
@@ -2660,6 +2675,33 @@ async function openDossier(key) {
       ${ptHtml ? `<div style="margin-top:var(--fib-3)"></div><div class="dossier-section-title">Per-test breakdown</div>${ptHtml}` : ''}
       <div class="dossier-src">source: ${esc(d.sources.evidence)}</div>
     </div>`;
+
+  // ── What the maker says: live factual metadata from the HF model API ──
+  // Primary sources only (user mandate): the maker's own model card +
+  // arXiv papers the maker linked on it. hf_repo values were verified
+  // against the HF API before being seeded (migration 022) — no guessing.
+  if (reg.hf_repo) {
+    const makerEl = modal.querySelector('#dossier-maker');
+    try {
+      const hf = await fetch(`https://huggingface.co/api/models/${reg.hf_repo}`);
+      if (!hf.ok) throw new Error(`HF API ${hf.status}`);
+      const h = await hf.json();
+      const papers = (h.tags || []).filter(t => t.startsWith('arxiv:')).map(t => t.slice(6));
+      const license = (h.tags || []).find(t => t.startsWith('license:'))?.slice(8);
+      makerEl.innerHTML = kv([
+        ['maker\u2019s model card', `<a href="https://huggingface.co/${esc(reg.hf_repo)}" target="_blank" rel="noopener" style="color:var(--accent-gold)">huggingface.co/${esc(reg.hf_repo)}</a> — the maker\u2019s own document`],
+        ['license', esc(license || '—')],
+        ['pipeline', esc(h.pipeline_tag)],
+        ['community adoption', `${(h.downloads ?? 0).toLocaleString()} downloads/mo · ${(h.likes ?? 0).toLocaleString()} likes (usage stats, not endorsement)`],
+        ['research papers', papers.length
+          ? papers.map(p => `<a href="https://arxiv.org/abs/${p}" target="_blank" rel="noopener" style="color:var(--accent-gold)">arXiv:${p}</a>`).join(' · ') + ' — peer-review track, linked by the maker'
+          : 'none linked on the model card'],
+        ['card updated', esc((h.lastModified || '').slice(0, 10))],
+      ]) + `<div class="dossier-src">source: Hugging Face model API (the maker\u2019s registry entry), fetched just now — read the card itself for the maker\u2019s full claims, then test them here</div>`;
+    } catch (e) {
+      makerEl.innerHTML = `<span class="dossier-src">⚠️ Couldn\u2019t reach the Hugging Face API just now (${esc(e.message)}) — the maker\u2019s card is at <a href="https://huggingface.co/${esc(reg.hf_repo)}" target="_blank" rel="noopener" style="color:var(--accent-gold)">huggingface.co/${esc(reg.hf_repo)}</a></span>`;
+    }
+  }
 }
 
 </script>
