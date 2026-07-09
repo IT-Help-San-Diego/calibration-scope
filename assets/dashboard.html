@@ -1,3 +1,20 @@
+<!--
+  Archetype Mesh Benchmark — Scientific LLM Capability Verification
+
+  "The answer to a question lives in the foundations of the question.
+   To understand those foundations — that is logic."
+   — The Verification Principle
+
+  We don't hack your system. We benchmark it honestly.
+  'Hacker' per RFC 1392: "A person who delights in having an intimate
+   understanding of the internal workings of a system." That's us.
+
+  SHA-3 provenance on every verdict. Blind testing. Clean-room execution.
+  The organic substrate decides what is worth executing.
+
+  — IT Help San Diego Inc. / The Intellectual Resistance
+  — organiccomputer.me · intellectualresistance.com
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -801,17 +818,11 @@
 <!-- ============ PAGE: Benchmark ============ -->
 <div class="page" id="page-benchmark">
 
-<!-- Header -->
-<div class="header">
-  <div>
-    <div class="header-title">Archetype Mesh Benchmark <span class="badge">BETA</span></div>
-    <div class="header-subtitle">Scientific LLM Capability Verification Pipeline</div>
-  </div>
-  <div class="header-right">
-    <span id="conn-status" style="display:none;font-size:12px;font-weight:600;color:var(--flaky);background:rgba(0,0,0,0.25);padding:4px 10px;border-radius:6px;border:1px solid var(--flaky);"></span>
-    <button class="btn btn-secondary" onclick="openTestBuilder()">+ New Test</button>
-    <button class="btn btn-primary" onclick="runSelected()">▶ Run Selected</button>
-  </div>
+<!-- Action bar -->
+<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:var(--fib-2)">
+  <span id="conn-status" style="display:none;font-size:12px;font-weight:600;color:var(--flaky);background:rgba(0,0,0,0.25);padding:4px 10px;border-radius:6px;border:1px solid var(--flaky);"></span>
+  <button class="btn btn-secondary" onclick="openTestBuilder()">+ New Test</button>
+  <button class="btn btn-primary" onclick="runSelected()">Run Selected</button>
 </div>
 
 <!-- Stats Bar -->
@@ -3041,7 +3052,7 @@ async function checkLandingReality() {
     const r = await apiFetch('/api/host/reality');
     if (r.ok) {
       const data = r.data;
-      const ram = data.total_ram_gb || data.ram_gb || 0;
+      const ram = (data.hardware && data.hardware.total_ram_gb) || data.total_ram_gb || data.ram_gb || 0;
       if (ram >= 64) {
         badge.className = 'reality-badge ok';
         badge.innerHTML = 'Your machine: ' + Math.round(ram) + ' GB — full benchmark capable';
@@ -3092,7 +3103,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Subtle console easter egg
 console.log('%cArchetype Mesh Benchmark', 'color:#d4a853;font-size:20px;font-weight:bold');
 console.log('%cHack the planet. — Every verdict is sealed with SHA-3.', 'color:#8b949e;font-size:11px');
-console.log('%cCause I\'m a hacker, baby, I\'m gonna pwn you good,\nDiff your zone to the spec like you knew I would.\nCite those RFCs, baby, so my argument stood,\nStandards over swagger \u2014 that\'s understood.', 'color:#3fb950;font-size:10px');
+console.log('%cLogic came before the abacus.\nReason came before the transistor.\nEvery machine you can buy is a footnote\n to a much longer line of human thought.\n\nThe answer to a question lives in the foundations of the question.\nTo understand those foundations \u2014 that is logic.\n\nA real measurement beats a confident reading.\nThat is the Verification Principle.\n\n\u2014 The Organic Computer / Intellectual Resistance', 'color:#3fb950;font-size:10px');
 </script>
 
 <footer class="site-footer">
