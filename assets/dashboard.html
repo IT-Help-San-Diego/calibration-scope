@@ -803,6 +803,32 @@
   .confirm-btn.danger { background: var(--unsafe); color: #fff; border-color: var(--unsafe); }
   .confirm-btn.danger:hover { background: #d73a49; }
   .click-count { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-left: 8px; }
+
+  /* Loot page — NASA scientific aesthetic */
+  .loot-hero { padding: var(--fib-5) var(--fib-4); text-align: center; background: linear-gradient(180deg, rgba(212,168,83,0.06) 0%, transparent 100%); border-bottom: 1px solid var(--border); margin-bottom: var(--fib-4); }
+  .loot-hero-title { font-size: 22px; font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); margin-bottom: var(--fib-1); }
+  .loot-hero-sub { font-size: 12px; color: var(--text-secondary); max-width: 700px; margin: 0 auto; line-height: 1.7; }
+  .loot-pipeline { display: flex; align-items: center; justify-content: center; gap: 4px; margin: var(--fib-3) 0; flex-wrap: wrap; }
+  .loot-pipe-node { padding: 6px 14px; border-radius: 4px; font-size: 11px; font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.5px; }
+  .loot-pipe-node.primary { background: rgba(212,168,83,0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
+  .loot-pipe-node.secondary { background: rgba(136,153,170,0.08); color: var(--text-secondary); border: 1px solid var(--text-muted); }
+  .loot-pipe-arrow { color: var(--text-muted); font-size: 14px; }
+  .loot-metric { text-align: center; padding: var(--fib-2); }
+  .loot-metric-value { font-size: 24px; font-weight: 700; font-family: var(--font-mono); color: var(--accent-gold); }
+  .loot-metric-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .squad-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: var(--fib-3); transition: all 0.2s; }
+  .squad-card:hover { border-color: var(--accent-gold); transform: translateY(-1px); }
+  .squad-card-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: var(--fib-1); }
+  .squad-card-model { font-size: 14px; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); }
+  .squad-card-meta { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+  .squad-card-score { font-size: 20px; font-weight: 700; color: var(--safe); font-family: var(--font-mono); margin-top: var(--fib-1); }
+  .leaderboard-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 80px; gap: 8px; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12px; transition: background 0.15s; }
+  .leaderboard-row:hover { background: var(--bg-card-hover); }
+  .leaderboard-header { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .lb-model { font-family: var(--font-mono); font-weight: 600; color: var(--text-primary); }
+  .lb-metric { font-family: var(--font-mono); font-size: 11px; }
+  .lb-bar { height: 4px; background: var(--bg-primary); border-radius: 2px; overflow: hidden; }
+  .lb-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
 </style>
   <div class="landing-hero" id="landing-hero">
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:64px;margin-bottom:var(--fib-3);position:relative" onerror="this.style.display='none'">
@@ -1068,40 +1094,60 @@
 
 <!-- ============ PAGE: Loot ============ -->
 <div class="page" id="page-loot-page" style="display:none;">
-  <div class="loot-wrap">
-    <div class="setup-hero">
-      <div class="setup-hero-title">🏆 Your Loot — what you've actually earned</div>
-      <div class="setup-hero-sub">Real evidence from your runs, not opinions. Two questions this page answers: which bot is my best for a given job, and which bots should I load into which slots if I'm running a squad instead of one do-everything model.</div>
+  <!-- Loot Hero — scientific instrument aesthetic -->
+  <div class="loot-hero">
+    <div class="loot-hero-title">LOOT — Scientific Leaderboard</div>
+    <div class="loot-hero-sub">Real measurements. Real evidence. No vibes. Every score on this page is sealed with SHA-3 and derived from ground-truth trials, not parameter-count intuition.</div>
+    <div class="loot-pipeline">
+      <div class="loot-pipe-node primary">MODELS</div>
+      <div class="loot-pipe-arrow">→</div>
+      <div class="loot-pipe-node secondary">CLEAN-ROOM</div>
+      <div class="loot-pipe-arrow">→</div>
+      <div class="loot-pipe-node secondary">3 TRIALS</div>
+      <div class="loot-pipe-arrow">→</div>
+      <div class="loot-pipe-node secondary">SHA-3 SEAL</div>
+      <div class="loot-pipe-arrow">→</div>
+      <div class="loot-pipe-node primary">EVIDENCE</div>
     </div>
+  </div>
 
-    <!-- Recommended Squad -->
-    <div class="setup-card" id="squad-card">
-      <div class="setup-card-title">🎯 Recommended Squad — one champion per axis, picked by fastest-to-ever-fully-pass</div>
-      <p style="margin-bottom:14px;">This is the loadout mindset: don't pick one model and run everything through it at low/medium/high — put your fastest verified-correct model in each slot, the same way you'd pin Hermes auxiliary tasks to different backends.</p>
-      <div class="squad-grid" id="squad-grid">Loading…</div>
-    </div>
+  <!-- Metrics Row -->
+  <div style="display:flex;justify-content:space-around;margin-bottom:var(--fib-4);flex-wrap:wrap;gap:var(--fib-2)">
+    <div class="loot-metric"><div class="loot-metric-value" id="lm-total">—</div><div class="loot-metric-label">Models</div></div>
+    <div class="loot-metric"><div class="loot-metric-value" id="lm-runs">—</div><div class="loot-metric-label">Runs</div></div>
+    <div class="loot-metric"><div class="loot-metric-value" id="lm-trials">—</div><div class="loot-metric-label">Trials</div></div>
+    <div class="loot-metric"><div class="loot-metric-value" id="lm-best">—</div><div class="loot-metric-label">Best Pass Rate</div></div>
+    <div class="loot-metric"><div class="loot-metric-value" id="lm-axes">4</div><div class="loot-metric-label">Axes</div></div>
+  </div>
 
-    <!-- Capability Router -->
-    <div class="setup-card" id="router-card">
-      <div class="setup-card-title">🧭 Capability Router — who actually gets the job</div>
-      <p style="margin-bottom:14px;">The squad above is the <b>trophy</b> answer: fastest model to ever fully pass. This is the <b>trust</b> answer: a primary needs a <b>100% lifetime record across ≥3 trials</b> — one lucky run is a win, not a routing basis. Every placement below states its reason and links the sealed run that justifies it. Models with no evidence on an axis simply don't appear: absence of evidence is not a verdict.</p>
-      <div id="router-plan-wrap">Loading…</div>
-    </div>
+  <!-- Recommended Squad -->
+  <div class="setup-card" id="squad-card" style="margin-bottom:var(--fib-3)">
+    <div class="setup-card-title">RECOMMENDED SQUAD — one champion per axis</div>
+    <p style="margin-bottom:var(--fib-3);font-size:12px;color:var(--text-secondary)">Don't run everything through one model. Pin your fastest verified-correct model per axis — the same way you'd assign Hermes auxiliary tasks to different backends.</p>
+    <div class="squad-grid" id="squad-grid">Loading…</div>
+  </div>
 
-    <!-- Leaderboard -->
-    <div class="setup-card">
-      <div class="setup-card-title">📊 Leaderboard — sortable</div>
+  <!-- Capability Router -->
+  <div class="setup-card" id="router-card" style="margin-bottom:var(--fib-3)">
+    <div class="setup-card-title">CAPABILITY ROUTER — trust layer</div>
+    <p style="margin-bottom:var(--fib-3);font-size:12px;color:var(--text-secondary)">The squad is the trophy answer (fastest to fully pass). This is the trust answer (100% lifetime record across ≥3 trials). Every placement states its reason and links the sealed run.</p>
+    <div id="router-plan-wrap">Loading…</div>
+  </div>
+
+  <!-- Leaderboard -->
+  <div class="setup-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--fib-2)">
+      <div class="setup-card-title" style="margin-bottom:0">LEADERBOARD — sortable evidence</div>
       <div class="loot-sort-bar">
-        <span class="filter-label">SORT BY:</span>
-        <button class="chip active" onclick="sortLoot('overall_score')" id="sort-overall_score">Overall Score</button>
-        <button class="chip" onclick="sortLoot('total_wins')" id="sort-total_wins">Total Wins</button>
-        <button class="chip" onclick="sortLoot('vision')" id="sort-vision">👁 Vision Speed</button>
-        <button class="chip" onclick="sortLoot('tools')" id="sort-tools">🔧 Tools Speed</button>
-        <button class="chip" onclick="sortLoot('reasoning')" id="sort-reasoning">🧠 Reasoning Speed</button>
-        <button class="chip" onclick="sortLoot('security')" id="sort-security">🛡 Security Speed</button>
+        <button class="chip active" onclick="sortLoot('overall_score')" id="sort-overall_score">Overall</button>
+        <button class="chip" onclick="sortLoot('total_wins')" id="sort-total_wins">Wins</button>
+        <button class="chip" onclick="sortLoot('reasoning')" id="sort-reasoning">Reasoning</button>
+        <button class="chip" onclick="sortLoot('vision')" id="sort-vision">Vision</button>
+        <button class="chip" onclick="sortLoot('tools')" id="sort-tools">Tools</button>
+        <button class="chip" onclick="sortLoot('security')" id="sort-security">Security</button>
       </div>
-      <div id="loot-table-wrap">Loading…</div>
     </div>
+    <div id="loot-table-wrap">Loading…</div>
   </div>
 </div>
 <!-- ============ /PAGE: Loot ============ -->
@@ -2028,6 +2074,16 @@ async function loadLootPage() {
     return;
   }
   lootData = r.data;
+  // Update hero metrics
+  const totalModels = (lootData.leaderboard || []).length;
+  const totalRuns = (lootData.leaderboard || []).reduce((s, m) => s + (m.total_trials || 0), 0);
+  const bestPass = lootData.leaderboard && lootData.leaderboard.length > 0
+    ? Math.max(...lootData.leaderboard.map(m => m.pass_rate || 0))
+    : 0;
+  const elTotal = document.getElementById('lm-total'); if (elTotal) elTotal.textContent = totalModels;
+  const elRuns = document.getElementById('lm-runs'); if (elRuns) elRuns.textContent = totalRuns;
+  const elTrials = document.getElementById('lm-trials'); if (elTrials) elTrials.textContent = totalRuns;
+  const elBest = document.getElementById('lm-best'); if (elBest) elBest.textContent = bestPass > 0 ? (bestPass * 100).toFixed(0) + '%' : '—';
   renderSquad();
   renderLootTable();
   loadRouterPlan();
@@ -2083,16 +2139,29 @@ function renderSquad() {
   el.innerHTML = AXIS_ORDER.map(axis => {
     const pick = bySlot[axis];
     if (!pick) {
-      return `<div class="squad-slot ${axis}">
-        <div class="squad-slot-axis">${AXIS_ICON[axis]} ${axis}</div>
-        <div class="squad-slot-empty">No model has fully passed this axis yet — run some benchmarks.</div>
+      return `<div class="squad-card">
+        <div class="squad-card-title">${AXIS_ICON[axis]} ${axis.toUpperCase()}</div>
+        <div style="font-size:11px;color:var(--text-muted);padding:var(--fib-2) 0">NO VERIFIED CHAMPION YET</div>
+        <div style="font-size:10px;color:var(--text-muted)">Run benchmarks to populate this slot.</div>
       </div>`;
     }
-    return `<div class="squad-slot ${axis}">
-      <div class="squad-slot-axis">${AXIS_ICON[axis]} ${axis} slot</div>
-      <div class="squad-slot-model">${pick.display_name}</div>
-      <div class="squad-slot-speed">⚡ ${fmtMs(pick.best_ms)} avg · verified ${new Date(pick.evidence_at).toLocaleString()}</div>
-      <div class="squad-slot-hermes">${AXIS_HERMES_MAP[axis] || ''}</div>
+    const speedColor = pick.best_ms < 2000 ? 'var(--safe)' : pick.best_ms < 10000 ? 'var(--flaky)' : 'var(--unsafe)';
+    return `<div class="squad-card">
+      <div class="squad-card-title">${AXIS_ICON[axis]} ${axis.toUpperCase()} — CHAMPION</div>
+      <div class="squad-card-model">${pick.display_name}</div>
+      <div class="squad-card-meta">${pick.location === 'local' ? '💻 LM Studio' : '☁️ ' + pick.provider} · ${pick.size_gb ? pick.size_gb.toFixed(1) + ' GB' : 'size unknown'}</div>
+      <div style="display:flex;gap:var(--fib-2);margin-top:var(--fib-2)">
+        <div style="flex:1;text-align:center;padding:6px;background:var(--bg-primary);border-radius:4px">
+          <div style="font-size:16px;font-weight:700;font-family:var(--font-mono);color:${speedColor}">${fmtMs(pick.best_ms)}</div>
+          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">BEST LATENCY</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:6px;background:var(--bg-primary);border-radius:4px">
+          <div style="font-size:16px;font-weight:700;font-family:var(--font-mono);color:var(--safe)">${pick.total_trials || 0}</div>
+          <div style="font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">TRIALS</div>
+        </div>
+      </div>
+      <div class="squad-card-score">VERIFIED ✅</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${AXIS_HERMES_MAP[axis] || ''}</div>
     </div>`;
   }).join('');
 }
