@@ -427,7 +427,7 @@ async fn check_memory_safety(
                     // Resolved per run (not at process start): Nous OAuth agent
                     // keys rotate on the order of hours.
                     let key = cloud::resolve_api_key(provider, config_key)?;
-                    cancellable!(cloud::chat(&client, provider, &key, model_key, &messages, 512))
+                    cancellable!(cloud::chat(&client, provider, &key, model_key, &messages, 1024))
                 }
             };
 

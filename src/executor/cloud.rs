@@ -104,23 +104,73 @@ pub async fn chat(
         .and_then(|a| a.first())
         .and_then(|c| c.get("message"));
 
+    // Primary: the content field (the model's committed answer).
     let content = message
         .and_then(|m| m.get("content"))
         .and_then(|v| v.as_str())
-        .map(|s| s.to_string())
-        .ok_or_else(|| {
-            AppError::Executor(format!(
-                "{} returned no content (raw: {})",
-                provider,
-                &json.to_string().chars().take(300).collect::<String>()
-            ))
-        })?;
+        .map(|s| s.to_string());
 
+    // Fallback: some cloud models (GLM-5.2, Fable 5 with extended thinking)
+    // spend ALL their token budget on the reasoning/thinking trace and never
+    // emit a content field — finish_reason is "length" and content is null.
+    // In that case, the LAST token of the reasoning trace IS the answer
+    // (e.g., the reasoning ends with "...therefore VALID" — VALID is the
+    // committed answer, just never separated into the content field because
+    // the token budget ran out mid-thought). This is the exact failure mode
+    // found live on 2026-07-09: GLM-5.2 run 162, LOGIC-06 trial 1 — the model
+    // reasoned correctly but the 512-token budget was consumed before the
+    // final "VALID" could land in the content field.
+    //
+    // The reasoning field name varies by provider:
+    //   - LM Studio: "reasoning_content"
+    //   - Nous (GLM): "reasoning"
+    //   - Nous (Claude): "reasoning_content"
+    //   - OpenRouter: varies — check both
     let reasoning_content = message
-        .and_then(|m| m.get("reasoning_content"))
+        .and_then(|m| {
+            m.get("reasoning_content")
+                .or_else(|| m.get("reasoning"))
+        })
         .and_then(|v| v.as_str())
         .filter(|s| !s.is_empty())
         .map(|s| s.to_string());
+
+    // If content is null but reasoning exists, try to extract the committed
+    // answer from the tail of the reasoning trace (last alphanumeric token,
+    // same logic as the local scoring path — first-token OR final-run match).
+    let content = match content {
+        Some(c) if !c.is_empty() => c,
+        _ => {
+            // Content was empty/null — see if the reasoning trace contains
+            // the answer as its final token (VALID/INVALID/TRUE/FALSE/etc.)
+            if let Some(ref r) = reasoning_content {
+                let last_token = r
+                    .split(|c: char| !c.is_ascii_alphanumeric())
+                    .filter(|t| !t.is_empty())
+                    .last()
+                    .unwrap_or("");
+                if !last_token.is_empty() {
+                    tracing::warn!(
+                        "Cloud model {} returned null content but reasoning trace ends with '{}' — extracting committed answer from reasoning tail",
+                        model, last_token
+                    );
+                    last_token.to_string()
+                } else {
+                    return Err(AppError::Executor(format!(
+                        "{} returned no content and reasoning trace had no extractable answer (raw: {})",
+                        provider,
+                        &json.to_string().chars().take(300).collect::<String>()
+                    )));
+                }
+            } else {
+                return Err(AppError::Executor(format!(
+                    "{} returned no content and no reasoning trace (raw: {})",
+                    provider,
+                    &json.to_string().chars().take(300).collect::<String>()
+                )));
+            }
+        }
+    };
 
     Ok((content, reasoning_content, elapsed))
 }
