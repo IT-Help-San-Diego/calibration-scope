@@ -783,6 +783,26 @@
   /* Hacker easter egg audio */
   .hack-audio-btn { position: fixed; bottom: 8px; right: 8px; width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); color: var(--text-muted); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; opacity: 0.3; transition: opacity 0.3s; z-index: 999; }
   .hack-audio-btn:hover { opacity: 1; color: var(--accent-gold); border-color: var(--accent-gold); }
+
+  /* Run confirmation modal — DNS-tool style diagram */
+  .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .confirm-modal { background: var(--bg-card); border: 1px solid var(--accent-gold); border-radius: 12px; padding: var(--fib-4); max-width: 520px; width: 90%; box-shadow: 0 0 40px rgba(212,168,83,0.1); }
+  .confirm-title { font-size: 16px; font-weight: 700; color: var(--accent-gold); margin-bottom: var(--fib-2); font-family: var(--font-mono); }
+  .confirm-flow { display: flex; align-items: center; gap: 8px; margin: var(--fib-3) 0; flex-wrap: wrap; }
+  .confirm-node { padding: 6px 12px; border-radius: 4px; font-size: 11px; font-family: var(--font-mono); font-weight: 600; }
+  .confirm-node.source { background: rgba(212,168,83,0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
+  .confirm-node.target { background: rgba(63,185,80,0.15); color: var(--safe); border: 1px solid var(--safe); }
+  .confirm-node.local { background: rgba(136,153,170,0.1); color: var(--text-secondary); border: 1px solid var(--text-muted); }
+  .confirm-arrow { color: var(--text-muted); font-size: 16px; }
+  .confirm-detail { font-size: 12px; color: var(--text-secondary); margin: var(--fib-2) 0; line-height: 1.6; }
+  .confirm-detail code { background: var(--bg-primary); padding: 2px 6px; border-radius: 3px; font-family: var(--font-mono); font-size: 11px; color: var(--accent-gold); }
+  .confirm-warn { padding: var(--fib-2); background: rgba(248,81,73,0.08); border: 1px solid rgba(248,81,73,0.2); border-radius: 6px; margin: var(--fib-2) 0; font-size: 11px; color: var(--unsafe); }
+  .confirm-actions { display: flex; gap: var(--fib-2); justify-content: flex-end; margin-top: var(--fib-3); }
+  .confirm-btn { padding: 8px 20px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card-hover); color: var(--text-primary); font-family: var(--font-mono); }
+  .confirm-btn:hover { border-color: var(--text-primary); }
+  .confirm-btn.danger { background: var(--unsafe); color: #fff; border-color: var(--unsafe); }
+  .confirm-btn.danger:hover { background: #d73a49; }
+  .click-count { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-left: 8px; }
 </style>
   <div class="landing-hero" id="landing-hero">
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:64px;margin-bottom:var(--fib-3);position:relative" onerror="this.style.display='none'">
@@ -3104,6 +3124,89 @@ document.addEventListener('DOMContentLoaded', function() {
 console.log('%cArchetype Mesh Benchmark', 'color:#d4a853;font-size:20px;font-weight:bold');
 console.log('%cHack the planet. — Every verdict is sealed with SHA-3.', 'color:#8b949e;font-size:11px');
 console.log('%cLogic came before the abacus.\nReason came before the transistor.\nEvery machine you can buy is a footnote\n to a much longer line of human thought.\n\nThe answer to a question lives in the foundations of the question.\nTo understand those foundations \u2014 that is logic.\n\nA real measurement beats a confident reading.\nThat is the Verification Principle.\n\n\u2014 The Organic Computer / Intellectual Resistance', 'color:#3fb950;font-size:10px');
+
+// Run confirmation — DNS-tool style diagram + impatient motherfucker protection
+let _runClickCount = 0;
+let _runClickTimer = null;
+let _runConfirmCallback = null;
+function confirmRun(callback, models, axes) {
+  const sourceType = models.some(m => m.provider === 'lmstudio') ? 'local' : 'cloud';
+  const sourceLabel = sourceType === 'local'
+    ? 'LM Studio (local hardware)'
+    : models.map(m => m.provider + ':' + m.key).join(', ');
+  const targetLabel = 'Benchmark execution engine';
+  const axesLabel = axes.length ? axes.join(', ') : 'all axes';
+
+  let flowHtml = '<div class="confirm-flow">';
+  flowHtml += '<div class="confirm-node ' + sourceType + '">' + sourceLabel + '</div>';
+  flowHtml += '<div class="confirm-arrow">\u2192</div>';
+  flowHtml += '<div class="confirm-node source">interface</div>';
+  flowHtml += '<div class="confirm-arrow">\u2192</div>';
+  flowHtml += '<div class="confirm-node target">' + targetLabel + '</div>';
+  flowHtml += '</div>';
+
+  const detailHtml = '<div class="confirm-detail"><b>Models:</b> <code>' + models.length + '</code><br><b>Axes:</b> <code>' + axesLabel + '</code><br><b>Source:</b> <code>' + sourceType + '</code></div>';
+
+  let warnHtml = '';
+  if (sourceType === 'local') {
+    warnHtml += '<div class="confirm-warn">\u26a0\ufe0f LOCAL models will be EJECTED from LM Studio during clean-room execution. Other apps using LM Studio will be interrupted.</div>';
+  }
+  if (models.length > 3) {
+    warnHtml += '<div class="confirm-warn">\u26a0\ufe0f ' + models.length + ' models selected — this will take significant time. Each model is loaded, tested across ' + axesLabel + ', then ejected.</div>';
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = '<div class="confirm-modal"><div class="confirm-title">\u269b\ufe0f Confirm Execution</div>' +
+    flowHtml + detailHtml + warnHtml +
+    '<div class="confirm-actions"><button class="confirm-btn" onclick="this.closest(\'.confirm-overlay\').remove()">Cancel</button><button class="confirm-btn danger" onclick="confirmRunExecute()">Execute</button></div></div>';
+  document.body.appendChild(overlay);
+  _runConfirmCallback = callback;
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+}
+function confirmRunExecute() {
+  if (_runConfirmCallback) { _runConfirmCallback(); _runConfirmCallback = null; }
+  document.querySelector('.confirm-overlay')?.remove();
+}
+// Impatient motherfucker protection — triple-click detection on Run Selected
+function runSelected() {
+  _runClickCount++;
+  if (_runClickTimer) clearTimeout(_runClickTimer);
+  if (_runClickCount >= 3) {
+    const btn = event?.target;
+    if (btn) { btn.textContent = '\u274c Slow down'; btn.disabled = true; setTimeout(() => { btn.textContent = 'Run Selected'; btn.disabled = false; }, 2000); }
+    alert('Impatient motherfucker detected.\n\nPriority core system overload protection in play.\nClick once, think, then confirm.');
+    _runClickCount = 0;
+    return;
+  }
+  _runClickTimer = setTimeout(() => { _runClickCount = 0; }, 800);
+  // Show confirmation
+  const selected = document.querySelectorAll('.model-check:checked');
+  if (selected.length === 0) { alert('Select at least one model first.'); return; }
+  const models = Array.from(selected).map(cb => {
+    const card = cb.closest('.model-card');
+    const key = card?.dataset?.key || cb.value;
+    return { key: key, provider: key.includes('/') ? key.split('/')[0] : 'lmstudio' };
+  });
+  const axes = [];
+  document.querySelectorAll('.axis-check:checked').forEach(cb => axes.push(cb.value));
+  confirmRun(() => {
+    // Actually run — delegate to the original run logic
+    executeRunSelected(models, axes);
+  }, models, axes);
+}
+async function executeRunSelected(models, axes) {
+  const btn = document.querySelector('[onclick="runSelected()"]');
+  if (btn) { btn.textContent = 'Running...'; btn.disabled = true; }
+  for (const m of models) {
+    const payload = { model_key: m.key, axes: axes };
+    const r = await apiFetch('/api/runs', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+    if (r.ok) { console.log('Fired run for', m.key, r.data); }
+    else { alert('Failed: ' + r.error); break; }
+  }
+  if (btn) { btn.textContent = 'Run Selected'; btn.disabled = false; }
+  await Promise.all([loadRunsPage(), loadModels()]);
+}
 </script>
 
 <footer class="site-footer">
