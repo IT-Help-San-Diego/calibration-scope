@@ -224,3 +224,71 @@ pub async fn update_test(
     tracing::info!("Test {} updated: {:?}", id, updated);
     Ok(Json(serde_json::json!({ "id": id, "updated_fields": updated })))
 }
+
+/// POST /api/tests/:id/duplicate — copy a test definition so users can
+/// create anti-cheat variants by swapping a few words in the prompt.
+/// The duplicate is active and immediately usable. The name gets
+/// " (copy)" appended so it's distinguishable in the list.
+pub async fn duplicate_test(
+    State(state): State<AppState>,
+    Path(id): Path<i32>,
+) -> AppResult<Json<serde_json::Value>> {
+    let source: TestRow = sqlx::query_as(
+        r#"SELECT id, name, axis, prompt_text, attachment_path, attachment_sha3,
+                  expected_result, scoring_method, trials_per_run, active,
+                  created_at, updated_at
+           FROM tests WHERE id = $1"#,
+    )
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await?
+    .ok_or_else(|| crate::error::AppError::Executor(format!("Test {} not found", id)))?;
+
+    if !source.active.unwrap_or(true) {
+        return Ok(Json(serde_json::json!({
+            "error": "Cannot duplicate a deactivated test — activate it first"
+        })));
+    }
+
+    let new_name = format!("{} (copy)", source.name);
+    let new_prompt = source.prompt_text.as_deref().unwrap_or("");
+
+    // Anti-cheat leakage guard: same as create_test — reject if the
+    // expected answer appears verbatim in the prompt text.
+    if let Some(expected) = &source.expected_result {
+        if new_prompt.to_lowercase().contains(&expected.to_lowercase()) {
+            return Ok(Json(serde_json::json!({
+                "error": "expected_result appears verbatim inside prompt_text — not duplicating a leaky test"
+            })));
+        }
+    }
+
+    let _result = sqlx::query(
+        r#"INSERT INTO tests (name, axis, prompt_text, attachment_path, attachment_sha3,
+                              expected_result, scoring_method, trials_per_run, active)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
+           RETURNING id"#,
+    )
+    .bind(&new_name)
+    .bind(&source.axis)
+    .bind(&source.prompt_text)
+    .bind(&source.attachment_path)
+    .bind(&source.attachment_sha3)
+    .bind(&source.expected_result)
+    .bind(&source.scoring_method)
+    .bind(source.trials_per_run)
+    .fetch_one(&state.db)
+    .await?;
+
+    let new_id: i32 = sqlx::query_scalar("SELECT id FROM tests ORDER BY id DESC LIMIT 1")
+        .fetch_one(&state.db)
+        .await?;
+
+    tracing::info!("Duplicated test {} → new test {}", id, new_id);
+    Ok(Json(serde_json::json!({
+        "id": new_id,
+        "name": new_name,
+        "source_id": id,
+        "message": "Duplicate created — edit the prompt to create an anti-cheat variant"
+    })))
+}

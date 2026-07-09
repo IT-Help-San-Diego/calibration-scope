@@ -24,6 +24,11 @@ async fn main() {
         .init();
 
     let config = Config::from_env();
+    // Load cloud API keys from the secrets file (~/.archetype-mesh/cloud-keys.json)
+    // into the environment, so cloud runs work without manual env setup or
+    // launchd plist edits. Keys set via the dashboard's setup page are persisted
+    // there and auto-loaded on every restart.
+    routes::cloud_keys::load_keys_to_env();
     tracing::info!("Starting Archetype Mesh Dashboard on {}:{}", config.listen_addr, config.listen_port);
 
     let state = AppState::new(config.clone())
@@ -72,6 +77,9 @@ async fn main() {
         .route("/api/tests", get(routes::tests::list_tests).post(routes::tests::create_test))
         .route("/api/tests/{id}", axum::routing::put(routes::tests::update_test))
         .route("/api/model-insights/{key}", get(routes::insights::model_insights))
+        .route("/api/cloud-keys", get(routes::cloud_keys::list_keys))
+        .route("/api/cloud-keys/{provider}", post(routes::cloud_keys::set_key).delete(routes::cloud_keys::delete_key))
+        .route("/api/tests/{id}/duplicate", post(routes::tests::duplicate_test))
         .nest_service("/assets", static_files)
         // 16MB body cap: a 10MB image (Prompt Builder max) is ~13.7MB as base64.
         .layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024))
