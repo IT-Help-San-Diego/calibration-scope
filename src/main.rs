@@ -71,6 +71,7 @@ async fn main() {
         .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
         .route("/api/tests", get(routes::tests::list_tests).post(routes::tests::create_test))
         .route("/api/tests/{id}", axum::routing::put(routes::tests::update_test))
+        .route("/api/model-insights/{key}", get(routes::insights::model_insights))
         .nest_service("/assets", static_files)
         // 16MB body cap: a 10MB image (Prompt Builder max) is ~13.7MB as base64.
         .layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024))

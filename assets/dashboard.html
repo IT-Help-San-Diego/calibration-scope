@@ -1469,6 +1469,7 @@ function renderGrid() {
     const runBtn = unresolved
       ? `<button class="btn-mini" disabled title="LM Studio reports no context length or capabilities for this model — likely an incomplete/in-progress download. Not loadable.">⏳ Incomplete</button>`
       : `<button class="btn-mini" onclick="runSingle('${m.key}')">▶ Run</button>`;
+    const insightsBtn = `<button class="btn-mini" onclick="event.stopPropagation(); openInsights('${m.key.replace(/'/g, "\\'")}')" title="Latency, fallacy patterns, reasoning traces, hardware fit">📊 Insights</button>`;
     const dossierBtn = `<button class="btn-mini dossier-btn" onclick="event.stopPropagation(); openDossier('${m.key.replace(/'/g, "\\'")}')" title="Every factual thing we know about this model — registry, live state, full evidence record">📋 Dossier</button>`;
 
     return `<div class="${cardClasses}" data-key="${m.key}" data-unresolved="${unresolved}">
@@ -1482,6 +1483,7 @@ function renderGrid() {
       ${m.tags && m.tags.length ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">${m.tags.map(t => `<span class="chip" style="font-size:10px;padding:2px 6px;">${t}</span>`).join('')}</div>` : ''}
       <div class="verdict-grid">${verdictCells}</div>
       <div class="model-card-actions">
+        ${insightsBtn}
         ${dossierBtn}
         ${runBtn}
       </div>
@@ -2569,6 +2571,60 @@ function showPbHistory(i) {
   resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 // ── Model dossier: every factual thing we know, sourced (2026-07-09) ──
+// ── Insights modal — the teaching layer ───────────────────────────────
+async function openInsights(key) {
+  document.querySelector('.dossier-overlay')?.remove();
+  const overlay = document.createElement('div');
+  overlay.className = 'dossier-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = '<div class="dossier-modal"><button class="dossier-close" onclick="this.closest(\'.dossier-overlay\').remove()">✕</button><div class="dossier-title">Insights</div><div class="dossier-sub">loading...</div></div>';
+  document.body.appendChild(overlay);
+  document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } });
+
+  const r = await apiFetch(`/api/model-insights/${encodeURIComponent(key)}`);
+  const modal = overlay.querySelector('.dossier-modal');
+  if (!r.ok) { modal.querySelector('.dossier-sub').textContent = 'Failed: ' + r.error; return; }
+  const d = r.data, m = d.model;
+  const esc = s => String(s ?? '—').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const fmtMs = ms => ms != null ? (ms < 1000 ? ms + 'ms' : (ms/1000).toFixed(1) + 's') : '—';
+
+  const assessment = d.assessment || {};
+  const strengths = (assessment.strengths || []).map(s => '<li style="color:var(--safe)">✓ ' + esc(s) + '</li>').join('');
+  const weaknesses = (assessment.weaknesses || []).map(s => '<li style="color:var(--unsafe)">✗ ' + esc(s) + '</li>').join('');
+  const tradeoffs = (assessment.tradeoffs || []).map(s => '<li style="color:var(--flaky)">→ ' + esc(s) + '</li>').join('');
+  const assessmentHtml = (strengths || weaknesses || tradeoffs) ? '<ul style="list-style:none;padding:0;font-size:13px;line-height:1.8;">' + strengths + weaknesses + tradeoffs + '</ul>' : '<div class="dossier-src">Not enough data.</div>';
+
+  const latRows = (d.latency || []).map(l => '<tr><td>' + esc(l.axis) + '</td><td>' + (l.avg_ms != null ? fmtMs(l.avg_ms) : '—') + '</td><td>' + (l.min_ms != null ? fmtMs(l.min_ms) : '—') + '</td><td>' + (l.max_ms != null ? fmtMs(l.max_ms) : '—') + '</td><td>' + l.trial_count + '</td></tr>').join('');
+  const latHtml = latRows ? '<table class="loot-table"><thead><tr><th>axis</th><th>avg</th><th>min</th><th>max</th><th>trials</th></tr></thead><tbody>' + latRows + '</tbody></table>' : '<div class="dossier-src">No latency data.</div>';
+
+  const fallacyRows = (d.fallacy_map || []).map(f => {
+    const p = f.failure_pattern;
+    const icon = p === 'passed' ? '✅' : p === 'deterministic_fail' ? '❌' : p === 'intermittent_fail' ? '⚠️' : '—';
+    const color = p === 'passed' ? 'var(--safe)' : p === 'deterministic_fail' ? 'var(--unsafe)' : p === 'intermittent_fail' ? 'var(--flaky)' : 'var(--text-muted)';
+    return '<tr><td style="color:' + color + ';font-weight:600">' + icon + ' ' + esc(f.formal_name) + '</td><td style="font-size:11px;color:var(--text-muted)">' + esc(f.description) + '</td><td>' + f.passed + '/' + f.trials + '</td><td style="color:' + color + '">' + esc(p) + '</td></tr>';
+  }).join('');
+  const fallacyHtml = fallacyRows ? '<table class="loot-table"><thead><tr><th>known fallacy test</th><th>what it tests</th><th>passed</th><th>result</th></tr></thead><tbody>' + fallacyRows + '</tbody></table>' : '<div class="dossier-src">No fallacy tests.</div>';
+
+  const testRows = (d.all_tests || []).map(t => {
+    const failed = t.failed, isF = t.is_known_fallacy;
+    const color = failed ? (isF ? 'var(--unsafe)' : 'var(--flaky)') : 'var(--safe)';
+    return '<tr><td style="color:' + color + '">' + (failed ? '✗' : '✓') + ' ' + esc(t.test_name) + (isF ? ' <span style="font-size:10px;color:var(--flaky)">[fallacy]</span>' : '') + '</td><td>' + esc(t.axis) + '</td><td>' + t.passed + '/' + t.trials + '</td><td>' + (t.avg_ms != null ? fmtMs(t.avg_ms) : '—') + '</td></tr>';
+  }).join('');
+  const testsHtml = testRows ? '<table class="loot-table"><thead><tr><th>test</th><th>axis</th><th>passed</th><th>avg</th></tr></thead><tbody>' + testRows + '</tbody></table>' : '';
+
+  const traces = d.reasoning_traces || [];
+  const tracesHtml = traces.length > 0 ? traces.map(t => {
+    const reasoning = t.reasoning_content ? '<div style="margin-top:6px;padding:8px;background:var(--bg-primary);border-radius:4px;font-size:11px;color:var(--text-secondary);max-height:200px;overflow-y:auto;white-space:pre-wrap;">' + esc(t.reasoning_content) + '</div>' : '<div class="dossier-src">(no reasoning trace captured)</div>';
+    return '<div style="margin-bottom:12px;padding:10px;background:var(--bg-card);border-radius:6px;border-left:3px solid var(--unsafe);"><div style="font-size:12px;font-weight:600;color:var(--unsafe)">✗ ' + esc(t.test_name) + ' — trial ' + t.trial_num + ' — ' + fmtMs(t.latency_ms) + '</div><div style="margin-top:4px;font-size:11px;color:var(--text-muted)">Response: ' + esc(t.raw_response).slice(0,200) + '</div><div style="margin-top:4px;font-size:10px;color:var(--text-muted)">Detail: ' + esc(t.detail) + '</div>' + reasoning + '</div>';
+  }).join('') : '<div class="dossier-src">No failed trials with captured reasoning.</div>';
+
+  const hf = d.hardware_fit || {};
+  const tierRows = (hf.tiers || []).map(t => '<tr><td>' + esc(t.label) + '</td><td style="color:' + (t.fits ? 'var(--safe)' : 'var(--unsafe)') + '">' + (t.fits ? '✅ fits' : '❌ too small') + '</td></tr>').join('');
+  const hwHtml = hf.model_size_gb != null ? '<div class="dossier-kv" style="margin-bottom:12px"><dt>model size</dt><dd>' + hf.model_size_gb.toFixed(1) + ' GB</dd><dt>est. RAM needed</dt><dd>' + hf.estimated_ram_gb.toFixed(1) + ' GB (incl. spec-decode overhead + safety)</dd></div><table class="loot-table"><thead><tr><th>hardware tier</th><th>fits?</th></tr></thead><tbody>' + tierRows + '</tbody></table>' : '<div class="dossier-src">Model size unknown.</div>';
+
+  modal.innerHTML = '<button class="dossier-close" onclick="this.closest(\'.dossier-overlay\').remove()">✕</button><div class="dossier-title">' + esc(m.display_name) + ' — Insights</div><div class="dossier-sub">' + esc(m.provider) + ' · ' + esc(m.key) + ' · ' + (m.size_gb ? m.size_gb.toFixed(1) + ' GB' : 'unknown') + ' · ' + (m.supports_vision ? 'vision' : 'no vision') + '</div><div class="dossier-section"><div class="dossier-section-title">Assessment — what this means for you</div>' + assessmentHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Fallacy map — the universal reasoning blind spot</div>' + fallacyHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Latency profile</div>' + latHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Reasoning traces — HOW the model was wrong</div><div class="dossier-src" style="margin-bottom:8px">When this model failed, here is what it was actually thinking.</div>' + tracesHtml + '</div><div class="dossier-section"><div class="dossier-section-title">All tests — complete breakdown</div>' + testsHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Hardware fit — will this run on your machine?</div>' + hwHtml + '</div>';
+}
+
 async function openDossier(key) {
   // Remove any existing modal first
   document.querySelector('.dossier-overlay')?.remove();

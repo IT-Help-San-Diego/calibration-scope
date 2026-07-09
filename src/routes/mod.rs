@@ -12,3 +12,4 @@ pub mod hermes_check;
 pub mod dossier;
 pub mod lmstudio;
 pub mod tests;
+pub mod insights;
