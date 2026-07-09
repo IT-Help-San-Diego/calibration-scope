@@ -365,8 +365,8 @@ async fn execute_run_inner(
             }
 
             sqlx::query(
-                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"#,
+                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
             )
             .bind(run_id)
             .bind(trial_num)
@@ -376,6 +376,7 @@ async fn execute_run_inner(
             .bind(&detail)
             .bind(is_infra_error)
             .bind(&reasoning)
+            .bind(test.id)
             .execute(db)
             .await?;
 
