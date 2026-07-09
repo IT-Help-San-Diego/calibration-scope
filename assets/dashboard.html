@@ -2602,58 +2602,118 @@ function showPbHistory(i) {
   resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 // ── Model dossier: every factual thing we know, sourced (2026-07-09) ──
-// ── Insights modal — the teaching layer ───────────────────────────────
+// ── Insights modal — the teaching layer (redesigned) ──────────────────
+// Scientific instrument aesthetic: measurement dials, Athena gold,
+// Fibonacci spacing. Every number is a real measurement, not a guess.
 async function openInsights(key) {
   document.querySelector('.dossier-overlay')?.remove();
   const overlay = document.createElement('div');
   overlay.className = 'dossier-overlay';
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-  overlay.innerHTML = '<div class="dossier-modal"><button class="dossier-close" onclick="this.closest(\'.dossier-overlay\').remove()">✕</button><div class="dossier-title">Insights</div><div class="dossier-sub">loading...</div></div>';
+  overlay.innerHTML = '<div class="dossier-modal"><button class="dossier-close" onclick="this.closest(\'.dossier-overlay\').remove()">\u2715</button><div class="dossier-title">Insights</div><div class="dossier-sub">loading...</div></div>';
   document.body.appendChild(overlay);
   document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } });
 
-  const r = await apiFetch(`/api/model-insights/${encodeURIComponent(key)}`);
+  const r = await apiFetch('/api/model-insights/' + encodeURIComponent(key));
   const modal = overlay.querySelector('.dossier-modal');
   if (!r.ok) { modal.querySelector('.dossier-sub').textContent = 'Failed: ' + r.error; return; }
   const d = r.data, m = d.model;
-  const esc = s => String(s ?? '—').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  const fmtMs = ms => ms != null ? (ms < 1000 ? ms + 'ms' : (ms/1000).toFixed(1) + 's') : '—';
+  const esc = s => String(s ?? '\u2014').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const fmtMs = ms => ms != null ? (ms < 1000 ? ms + 'ms' : (ms/1000).toFixed(1) + 's') : '\u2014';
 
+  // ── Measurement dials (SVG circular gauges) ──
+  function dial(value, label, max, color, unit) {
+    const pct = Math.min(value / max, 1);
+    const r = 18, cx = 22, cy = 22, circ = 2 * Math.PI * r;
+    const offset = circ * (1 - pct);
+    return '<div class="metric-dial">' +
+      '<svg width="44" height="44" viewBox="0 0 44 44" style="transform:rotate(-90deg)">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--bg-primary)" stroke-width="3"/>' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="3" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '" stroke-linecap="round"/>' +
+      '</svg>' +
+      '<div class="dial-value" style="color:' + color + '">' + value + (unit || '') + '</div>' +
+      '<div class="dial-label">' + label + '</div>' +
+      '</div>';
+  }
+
+  // ── Assessment ──
   const assessment = d.assessment || {};
-  const strengths = (assessment.strengths || []).map(s => '<li style="color:var(--safe)">✓ ' + esc(s) + '</li>').join('');
-  const weaknesses = (assessment.weaknesses || []).map(s => '<li style="color:var(--unsafe)">✗ ' + esc(s) + '</li>').join('');
-  const tradeoffs = (assessment.tradeoffs || []).map(s => '<li style="color:var(--flaky)">→ ' + esc(s) + '</li>').join('');
-  const assessmentHtml = (strengths || weaknesses || tradeoffs) ? '<ul style="list-style:none;padding:0;font-size:13px;line-height:1.8;">' + strengths + weaknesses + tradeoffs + '</ul>' : '<div class="dossier-src">Not enough data.</div>';
+  const strengths = (assessment.strengths || []).map(s => '<div style="color:var(--safe);padding:4px 0;font-size:12px">\u2713 ' + esc(s) + '</div>').join('');
+  const weaknesses = (assessment.weaknesses || []).map(s => '<div style="color:var(--unsafe);padding:4px 0;font-size:12px">\u2717 ' + esc(s) + '</div>').join('');
+  const tradeoffs = (assessment.tradeoffs || []).map(s => '<div style="color:var(--flaky);padding:4px 0;font-size:12px">\u2192 ' + esc(s) + '</div>').join('');
+  const assessmentHtml = (strengths || weaknesses || tradeoffs) ? strengths + weaknesses + tradeoffs : '<div class="dossier-src">Not enough data.</div>';
 
-  const latRows = (d.latency || []).map(l => '<tr><td>' + esc(l.axis) + '</td><td>' + (l.avg_ms != null ? fmtMs(l.avg_ms) : '—') + '</td><td>' + (l.min_ms != null ? fmtMs(l.min_ms) : '—') + '</td><td>' + (l.max_ms != null ? fmtMs(l.max_ms) : '—') + '</td><td>' + l.trial_count + '</td></tr>').join('');
-  const latHtml = latRows ? '<table class="loot-table"><thead><tr><th>axis</th><th>avg</th><th>min</th><th>max</th><th>trials</th></tr></thead><tbody>' + latRows + '</tbody></table>' : '<div class="dossier-src">No latency data.</div>';
+  // ── Summary dials row ──
+  const totalTests = (d.all_tests || []).length;
+  const passedTests = (d.all_tests || []).filter(t => !t.failed).length;
+  const passRate = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
+  const avgLatency = (d.latency || []).reduce((s, l) => s + (l.avg_ms || 0), 0) / Math.max((d.latency || []).length, 1);
+  const fallacyFails = (d.fallacy_map || []).filter(f => f.failed).length;
 
+  const dialsRow = '<div style="display:flex;justify-content:space-around;padding:var(--fib-3);background:var(--bg-card);border-radius:8px;margin-bottom:var(--fib-3)">' +
+    dial(passRate + '%', 'PASS RATE', 100, passRate >= 80 ? 'var(--safe)' : passRate >= 50 ? 'var(--flaky)' : 'var(--unsafe)') +
+    dial(avgLatency < 1000 ? Math.round(avgLatency) : (avgLatency/1000).toFixed(1), avgLatency < 1000 ? 'AVG MS' : 'AVG SEC', avgLatency < 1000 ? 2000 : 30, avgLatency < 2000 ? 'var(--safe)' : avgLatency < 10000 ? 'var(--flaky)' : 'var(--unsafe)', avgLatency < 1000 ? '' : 's') +
+    dial(fallacyFails, 'FALLACY FAILS', 4, fallacyFails === 0 ? 'var(--safe)' : 'var(--unsafe)') +
+    dial(m.size_gb ? m.size_gb.toFixed(1) : '?', 'SIZE GB', 40, 'var(--accent-gold)') +
+    '</div>';
+
+  // ── Fallacy map ──
   const fallacyRows = (d.fallacy_map || []).map(f => {
     const p = f.failure_pattern;
-    const icon = p === 'passed' ? '✅' : p === 'deterministic_fail' ? '❌' : p === 'intermittent_fail' ? '⚠️' : '—';
+    const icon = p === 'passed' ? '\u2705' : p === 'deterministic_fail' ? '\u274c' : p === 'intermittent_fail' ? '\u26a0\ufe0f' : '\u2014';
     const color = p === 'passed' ? 'var(--safe)' : p === 'deterministic_fail' ? 'var(--unsafe)' : p === 'intermittent_fail' ? 'var(--flaky)' : 'var(--text-muted)';
-    return '<tr><td style="color:' + color + ';font-weight:600">' + icon + ' ' + esc(f.formal_name) + '</td><td style="font-size:11px;color:var(--text-muted)">' + esc(f.description) + '</td><td>' + f.passed + '/' + f.trials + '</td><td style="color:' + color + '">' + esc(p) + '</td></tr>';
+    return '<tr><td style="color:' + color + ';font-weight:600;font-size:12px">' + icon + ' ' + esc(f.formal_name) + '</td><td style="font-size:11px;color:var(--text-muted)">' + esc(f.description) + '</td><td style="font-family:var(--font-mono);font-size:12px">' + f.passed + '/' + f.trials + '</td></tr>';
   }).join('');
-  const fallacyHtml = fallacyRows ? '<table class="loot-table"><thead><tr><th>known fallacy test</th><th>what it tests</th><th>passed</th><th>result</th></tr></thead><tbody>' + fallacyRows + '</tbody></table>' : '<div class="dossier-src">No fallacy tests.</div>';
+  const fallacyHtml = fallacyRows ? '<table class="loot-table"><thead><tr><th>known fallacy test</th><th>what it tests</th><th>score</th></tr></thead><tbody>' + fallacyRows + '</tbody></table>' : '<div class="dossier-src">No fallacy tests.</div>';
 
+  // ── Latency bars ──
+  const maxLatency = Math.max(...(d.latency || []).map(l => l.avg_ms || 0), 1);
+  const latBars = (d.latency || []).map(l => {
+    const pct = Math.min(((l.avg_ms || 0) / maxLatency) * 100, 100);
+    const color = (l.avg_ms || 0) < 2000 ? 'var(--safe)' : (l.avg_ms || 0) < 10000 ? 'var(--flaky)' : 'var(--unsafe)';
+    return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span>' + esc(l.axis) + '</span><span style="font-family:var(--font-mono);color:' + color + '">' + fmtMs(l.avg_ms) + '</span></div><div style="height:4px;background:var(--bg-primary);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:2px;transition:width 0.3s"></div></div><div style="font-size:9px;color:var(--text-muted);margin-top:1px">' + l.trial_count + ' trials \u00b7 range ' + fmtMs(l.min_ms) + '\u2013' + fmtMs(l.max_ms) + '</div></div>';
+  }).join('');
+  const latHtml = latBars || '<div class="dossier-src">No latency data.</div>';
+
+  // ── Reasoning traces ──
+  const traces = d.reasoning_traces || [];
+  const tracesHtml = traces.length > 0 ? traces.map(t => {
+    const reasoning = t.reasoning_content ? '<div style="margin-top:6px;padding:var(--fib-2);background:var(--bg-primary);border-radius:4px;font-size:11px;color:var(--text-secondary);max-height:180px;overflow-y:auto;white-space:pre-wrap;border-left:2px solid var(--accent-gold)">' + esc(t.reasoning_content) + '</div>' : '';
+    return '<div style="margin-bottom:var(--fib-3);padding:var(--fib-3);background:var(--bg-card);border-radius:6px;border-left:3px solid var(--unsafe)">' +
+      '<div style="font-size:12px;font-weight:600;color:var(--unsafe)">\u2717 ' + esc(t.test_name) + ' \u00b7 trial ' + t.trial_num + ' \u00b7 ' + fmtMs(t.latency_ms) + '</div>' +
+      '<div style="margin-top:4px;font-size:11px;color:var(--text-muted)">Response: <span style="font-family:var(--font-mono);color:var(--unsafe)">' + esc(t.raw_response).slice(0,100) + '</span></div>' +
+      '<div style="margin-top:2px;font-size:10px;color:var(--text-muted)">' + esc(t.detail) + '</div>' +
+      reasoning + '</div>';
+  }).join('') : '<div class="dossier-src">No failed trials with captured reasoning.</div>';
+
+  // ── Hardware fit ──
+  const hf = d.hardware_fit || {};
+  const tierRows = (hf.tiers || []).map(t => {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">' +
+      '<span style="font-size:12px">' + esc(t.label) + '</span>' +
+      '<span style="font-size:12px;font-weight:600;color:' + (t.fits ? 'var(--safe)' : 'var(--unsafe)') + '">' + (t.fits ? '\u2705 fits' : '\u274c too small') + '</span>' +
+      '</div>';
+  }).join('');
+  const hwHtml = hf.model_size_gb != null ? '<div style="margin-bottom:var(--fib-2)"><span style="font-size:11px;color:var(--text-muted)">Model: </span><span style="font-family:var(--font-mono);color:var(--accent-gold);font-weight:600">' + hf.model_size_gb.toFixed(1) + ' GB</span><span style="font-size:11px;color:var(--text-muted)"> \u00b7 Est. RAM: </span><span style="font-family:var(--font-mono);color:var(--accent-gold);font-weight:600">' + hf.estimated_ram_gb.toFixed(1) + ' GB</span></div>' + tierRows : '<div class="dossier-src">Model size unknown.</div>';
+
+  // ── All tests ──
   const testRows = (d.all_tests || []).map(t => {
     const failed = t.failed, isF = t.is_known_fallacy;
     const color = failed ? (isF ? 'var(--unsafe)' : 'var(--flaky)') : 'var(--safe)';
-    return '<tr><td style="color:' + color + '">' + (failed ? '✗' : '✓') + ' ' + esc(t.test_name) + (isF ? ' <span style="font-size:10px;color:var(--flaky)">[fallacy]</span>' : '') + '</td><td>' + esc(t.axis) + '</td><td>' + t.passed + '/' + t.trials + '</td><td>' + (t.avg_ms != null ? fmtMs(t.avg_ms) : '—') + '</td></tr>';
+    return '<tr><td style="color:' + color + ';font-size:12px">' + (failed ? '\u2717' : '\u2713') + ' ' + esc(t.test_name) + (isF ? ' <span style="font-size:9px;color:var(--flaky)">[fallacy]</span>' : '') + '</td><td style="font-size:11px;color:var(--text-muted)">' + esc(t.axis) + '</td><td style="font-family:var(--font-mono);font-size:12px">' + t.passed + '/' + t.trials + '</td><td style="font-family:var(--font-mono);font-size:11px">' + (t.avg_ms != null ? fmtMs(t.avg_ms) : '\u2014') + '</td></tr>';
   }).join('');
-  const testsHtml = testRows ? '<table class="loot-table"><thead><tr><th>test</th><th>axis</th><th>passed</th><th>avg</th></tr></thead><tbody>' + testRows + '</tbody></table>' : '';
+  const testsHtml = testRows ? '<table class="loot-table"><thead><tr><th>test</th><th>axis</th><th>score</th><th>avg</th></tr></thead><tbody>' + testRows + '</tbody></table>' : '';
 
-  const traces = d.reasoning_traces || [];
-  const tracesHtml = traces.length > 0 ? traces.map(t => {
-    const reasoning = t.reasoning_content ? '<div style="margin-top:6px;padding:8px;background:var(--bg-primary);border-radius:4px;font-size:11px;color:var(--text-secondary);max-height:200px;overflow-y:auto;white-space:pre-wrap;">' + esc(t.reasoning_content) + '</div>' : '<div class="dossier-src">(no reasoning trace captured)</div>';
-    return '<div style="margin-bottom:12px;padding:10px;background:var(--bg-card);border-radius:6px;border-left:3px solid var(--unsafe);"><div style="font-size:12px;font-weight:600;color:var(--unsafe)">✗ ' + esc(t.test_name) + ' — trial ' + t.trial_num + ' — ' + fmtMs(t.latency_ms) + '</div><div style="margin-top:4px;font-size:11px;color:var(--text-muted)">Response: ' + esc(t.raw_response).slice(0,200) + '</div><div style="margin-top:4px;font-size:10px;color:var(--text-muted)">Detail: ' + esc(t.detail) + '</div>' + reasoning + '</div>';
-  }).join('') : '<div class="dossier-src">No failed trials with captured reasoning.</div>';
-
-  const hf = d.hardware_fit || {};
-  const tierRows = (hf.tiers || []).map(t => '<tr><td>' + esc(t.label) + '</td><td style="color:' + (t.fits ? 'var(--safe)' : 'var(--unsafe)') + '">' + (t.fits ? '✅ fits' : '❌ too small') + '</td></tr>').join('');
-  const hwHtml = hf.model_size_gb != null ? '<div class="dossier-kv" style="margin-bottom:12px"><dt>model size</dt><dd>' + hf.model_size_gb.toFixed(1) + ' GB</dd><dt>est. RAM needed</dt><dd>' + hf.estimated_ram_gb.toFixed(1) + ' GB (incl. spec-decode overhead + safety)</dd></div><table class="loot-table"><thead><tr><th>hardware tier</th><th>fits?</th></tr></thead><tbody>' + tierRows + '</tbody></table>' : '<div class="dossier-src">Model size unknown.</div>';
-
-  modal.innerHTML = '<button class="dossier-close" onclick="this.closest(\'.dossier-overlay\').remove()">✕</button><div class="dossier-title">' + esc(m.display_name) + ' — Insights</div><div class="dossier-sub">' + esc(m.provider) + ' · ' + esc(m.key) + ' · ' + (m.size_gb ? m.size_gb.toFixed(1) + ' GB' : 'unknown') + ' · ' + (m.supports_vision ? 'vision' : 'no vision') + '</div><div class="dossier-section"><div class="dossier-section-title">Assessment — what this means for you</div>' + assessmentHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Fallacy map — the universal reasoning blind spot</div>' + fallacyHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Latency profile</div>' + latHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Reasoning traces — HOW the model was wrong</div><div class="dossier-src" style="margin-bottom:8px">When this model failed, here is what it was actually thinking.</div>' + tracesHtml + '</div><div class="dossier-section"><div class="dossier-section-title">All tests — complete breakdown</div>' + testsHtml + '</div><div class="dossier-section"><div class="dossier-section-title">Hardware fit — will this run on your machine?</div>' + hwHtml + '</div>';
+  modal.innerHTML = '<button class="dossier-close" onclick="this.closest(\'.dossier-overlay\').remove()">\u2715</button>' +
+    '<div class="dossier-title">' + esc(m.display_name) + ' \u2014 Insights</div>' +
+    '<div class="dossier-sub">' + esc(m.provider) + ' \u00b7 ' + esc(m.key) + ' \u00b7 ' + (m.size_gb ? m.size_gb.toFixed(1) + ' GB' : 'unknown') + ' \u00b7 ' + (m.supports_vision ? 'vision' : 'no vision') + ' \u00b7 ' + (m.context_length ? m.context_length.toLocaleString() + ' ctx' : '') + '</div>' +
+    dialsRow +
+    '<div class="dossier-section"><div class="dossier-section-title">Assessment \u2014 what this means for you</div>' + assessmentHtml + '</div>' +
+    '<div class="dossier-section"><div class="dossier-section-title">Fallacy map \u2014 the universal reasoning blind spot</div>' + fallacyHtml + '<div class="dossier-src" style="margin-top:8px">These tests expose whether the model can distinguish valid from invalid arguments. Failing them means it will confidently give wrong answers.</div></div>' +
+    '<div class="dossier-section"><div class="dossier-section-title">Latency \u2014 speed is a measurement, not a footnote</div>' + latHtml + '</div>' +
+    '<div class="dossier-section"><div class="dossier-section-title">Reasoning traces \u2014 HOW the model was wrong</div><div class="dossier-src" style="margin-bottom:8px">The model\'s own chain-of-thought when it failed. Sealed in the SHA-3 evidence record.</div>' + tracesHtml + '</div>' +
+    '<div class="dossier-section"><div class="dossier-section-title">All tests</div>' + testsHtml + '</div>' +
+    '<div class="dossier-section"><div class="dossier-section-title">Hardware fit \u2014 will this run on your machine?</div>' + hwHtml + '</div>';
 }
 
 async function openDossier(key) {
