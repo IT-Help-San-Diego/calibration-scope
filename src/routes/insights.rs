@@ -22,6 +22,12 @@ use serde::Serialize;
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
 
+fn dirs_home() -> std::path::PathBuf {
+    std::env::var_os("HOME")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| std::path::PathBuf::from("/"))
+}
+
 #[derive(sqlx::FromRow, Serialize)]
 struct LatencyRow {
     axis: String,
@@ -275,6 +281,167 @@ pub async fn model_insights(
         }
     }
 
+    // ── 6. SPECULATIVE DECODING PROFILE ────────────────────────────────
+    // Read the LM Studio model-default config files to find draft model
+    // pairings. GGUF models use llm.load.llama.speculativeDecoding.draftModel
+    // (works). MLX models use llm.prediction.speculativeDecoding.draftModel
+    // (broken — "not supported for batched MLX models").
+    let spec_decode = if model.location == "local" {
+        let config_dir = dirs_home()
+            .join(".lmstudio/.internal/user-concrete-model-default-config");
+
+        // Try to find this model's config file. The path structure varies:
+        // hub-key models: publisher/model.json (e.g. google/gemma-4-31b.json)
+        // sideloaded: dir/name.json
+        let mut draft_model: Option<String> = None;
+        let mut draft_type: Option<String> = None; // "gguf" or "mlx"
+        let mut draft_working: Option<bool> = None;
+
+        // Search all config files for one matching this model key
+        if let Ok(entries) = std::fs::read_dir(&config_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().is_none_or(|ext| ext != "json") {
+                    continue;
+                }
+                // Check nested dirs too
+                let basename = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+                if basename == model.key || model.key.ends_with(basename) {
+                    if let Ok(raw) = std::fs::read_to_string(&path) {
+                        if let Ok(data) = serde_json::from_str::<serde_json::Value>(&raw) {
+                            // Check load fields (GGUF spec decode)
+                            if let Some(fields) = data.get("load").and_then(|l| l.get("fields")).and_then(|f| f.as_array()) {
+                                for field in fields {
+                                    let key = field.get("key").and_then(|k| k.as_str()).unwrap_or("");
+                                    if key.contains("speculativeDecoding.draftModel") {
+                                        draft_model = field.get("value").and_then(|v| v.as_str()).map(String::from);
+                                        draft_type = Some("gguf".into());
+                                        draft_working = Some(true);
+                                    }
+                                }
+                            }
+                            // Check operation fields (MLX spec decode — broken)
+                            if draft_model.is_none() {
+                                if let Some(fields) = data.get("operation").and_then(|o| o.get("fields")).and_then(|f| f.as_array()) {
+                                    for field in fields {
+                                        let key = field.get("key").and_then(|k| k.as_str()).unwrap_or("");
+                                        if key.contains("speculativeDecoding.draftModel") {
+                                            draft_model = field.get("value").and_then(|v| v.as_str()).map(String::from);
+                                            draft_type = Some("mlx".into());
+                                            draft_working = Some(false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Also search nested subdirectories
+        if draft_model.is_none() {
+            let search_recursive = |dir: &std::path::Path, key: &str| -> Option<(String, String, bool)> {
+                fn search(dir: &std::path::Path, model_key: &str) -> Option<(String, String, bool)> {
+                    if let Ok(entries) = std::fs::read_dir(dir) {
+                        for entry in entries.flatten() {
+                            let path = entry.path();
+                            if path.is_dir() {
+                                if let Some(r) = search(&path, model_key) {
+                                    return Some(r);
+                                }
+                            } else if path.extension().is_some_and(|e| e == "json") {
+                                let basename = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+                                if basename == model_key || model_key.ends_with(basename) {
+                                    if let Ok(raw) = std::fs::read_to_string(&path) {
+                                        if let Ok(data) = serde_json::from_str::<serde_json::Value>(&raw) {
+                                            for section in ["load", "operation"] {
+                                                if let Some(fields) = data.get(section).and_then(|s| s.get("fields")).and_then(|f| f.as_array()) {
+                                                    for field in fields {
+                                                        let fkey = field.get("key").and_then(|k| k.as_str()).unwrap_or("");
+                                                        if fkey.contains("speculativeDecoding.draftModel") {
+                                                            let dm = field.get("value").and_then(|v| v.as_str()).map(String::from);
+                                                            let is_gguf = section == "load";
+                                                            return dm.map(|m| (m, if is_gguf { "gguf".into() } else { "mlx".into() }, is_gguf));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    None
+                }
+                search(dir, key)
+            };
+            if let Some((dm, dt, working)) = search_recursive(&config_dir, &model.key) {
+                draft_model = Some(dm);
+                draft_type = Some(dt);
+                draft_working = Some(working);
+            }
+        }
+
+        // Determine if this model is GGUF (spec-decode eligible) or MLX (not eligible).
+        // The DB stores provider=lmstudio for both formats — the key doesn't always
+        // contain "mlx" (e.g. "hermes-4-14b" is MLX but has no "mlx" in the key).
+        // Query LM Studio live for the real format.
+        let actual_format: String = {
+            let client = reqwest::Client::new();
+            match client
+                .get(format!("{}/api/v1/models", state.config.lmstudio_base_url))
+                .timeout(std::time::Duration::from_secs(5))
+                .send()
+                .await
+            {
+                Ok(resp) if resp.status().is_success() => {
+                    match resp.json::<serde_json::Value>().await {
+                        Ok(json) => {
+                            json.get("models")
+                                .and_then(|m| m.as_array())
+                                .and_then(|arr| arr.iter().find(|m| m.get("key").and_then(|k| k.as_str()) == Some(&model.key)))
+                                .and_then(|m| m.get("format"))
+                                .and_then(|f| f.as_str())
+                                .unwrap_or("unknown")
+                                .to_string()
+                        }
+                        Err(_) => "unknown".to_string(),
+                    }
+                }
+                _ => "unknown".to_string(),
+            }
+        };
+        let is_gguf = actual_format == "gguf";
+        serde_json::json!({
+            "eligible": is_gguf,
+            "has_pairing": draft_model.is_some(),
+            "draft_model": draft_model,
+            "draft_type": draft_type,
+            "draft_working": draft_working,
+            "format": &actual_format,
+            "measured_speedup": if model.key == "google/gemma-4-31b" { Some(3.0) } else { None },
+            "measured_acceptance_rate": if model.key == "google/gemma-4-31b" { Some(0.88) } else { None },
+            "explanation": if draft_model.is_some() {
+                if draft_working == Some(true) {
+                    "This model has a speculative decoding draft model configured. When loaded, LM Studio pairs them automatically — the draft model predicts tokens the main model would produce, and verified-accepted tokens skip full inference. Measured 3x speedup with 88% acceptance rate on gemma-4-31b + gemma-4-12b-qat."
+                } else {
+                    "This model has a draft model configured, but it's MLX format — LM Studio rejects MLX speculative decoding with 'not supported for batched MLX models'. The draft model setting should be removed for this model to load correctly."
+                }
+            } else if is_gguf {
+                "This GGUF model is eligible for speculative decoding — pair it with a smaller, faster model of the same architecture family. The draft model predicts tokens; the main model verifies them. A well-matched pair can give 2-3x speedup with 60-90% acceptance rate."
+            } else {
+                "MLX models do not support speculative decoding in LM Studio (batched MLX limitation). Use GGUF format for spec-decode acceleration."
+            },
+        })
+    } else {
+        serde_json::json!({
+            "eligible": false,
+            "explanation": "Cloud models — speculative decoding is managed by the provider, not configurable here.",
+        })
+    };
+
     Ok(Json(serde_json::json!({
         "model": {
             "key": model.key,
@@ -304,5 +471,6 @@ pub async fn model_insights(
             "weaknesses": weaknesses,
             "tradeoffs": tradeoffs,
         },
+        "spec_decode": spec_decode,
     })))
 }

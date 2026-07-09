@@ -2713,6 +2713,27 @@ async function openInsights(key) {
     '<div class="dossier-section"><div class="dossier-section-title">Latency \u2014 speed is a measurement, not a footnote</div>' + latHtml + '</div>' +
     '<div class="dossier-section"><div class="dossier-section-title">Reasoning traces \u2014 HOW the model was wrong</div><div class="dossier-src" style="margin-bottom:8px">The model\'s own chain-of-thought when it failed. Sealed in the SHA-3 evidence record.</div>' + tracesHtml + '</div>' +
     '<div class="dossier-section"><div class="dossier-section-title">All tests</div>' + testsHtml + '</div>' +
+    (function() {
+      const sd = d.spec_decode || {};
+      if (sd.has_pairing) {
+        const working = sd.draft_working;
+        const badge = working ? '<span style="color:var(--safe);font-weight:600">WORKING</span>' : '<span style="color:var(--unsafe);font-weight:600">BROKEN</span>';
+        let html = '<div class="dossier-section"><div class="dossier-section-title">Speculative decoding \u2014 acceleration pairing</div>';
+        html += '<div style="margin-bottom:var(--fib-2)">Paired with <span style="font-family:var(--font-mono);color:var(--accent-gold);font-weight:600">' + esc(sd.draft_model) + '</span> ' + badge + '</div>';
+        if (sd.measured_speedup) {
+          html += '<div style="display:flex;gap:var(--fib-3);margin-bottom:var(--fib-2)">';
+          html += '<div class="metric-dial"><div class="dial-value" style="color:var(--safe)">' + sd.measured_speedup + 'x</div><div class="dial-label">SPEEDUP</div></div>';
+          html += '<div class="metric-dial"><div class="dial-value" style="color:var(--safe)">' + Math.round(sd.measured_acceptance_rate * 100) + '%</div><div class="dial-label">DRAFT ACCEPT</div></div>';
+          html += '</div>';
+        }
+        html += '<div class="dossier-src">' + esc(sd.explanation) + '</div></div>';
+        return html;
+      } else if (sd.eligible) {
+        return '<div class="dossier-section"><div class="dossier-section-title">Speculative decoding \u2014 acceleration pairing</div><div style="padding:var(--fib-2);background:rgba(212,168,83,0.08);border:1px solid var(--accent-gold);border-radius:6px;margin-bottom:var(--fib-2)"><div style="font-size:12px;color:var(--accent-gold);font-weight:600">ELIGIBLE BUT UNPAIRED</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px">' + esc(sd.explanation) + '</div></div></div>';
+      } else {
+        return '<div class="dossier-section"><div class="dossier-section-title">Speculative decoding</div><div class="dossier-src">' + esc(sd.explanation) + '</div></div>';
+      }
+    })() +
     '<div class="dossier-section"><div class="dossier-section-title">Hardware fit \u2014 will this run on your machine?</div>' + hwHtml + '</div>';
 }
 
