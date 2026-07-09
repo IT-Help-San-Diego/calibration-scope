@@ -492,6 +492,31 @@
     color: var(--accent-cyan); font-family: var(--font-mono);
   }
   .protocol-chevron { color: var(--text-muted); font-size: 12px; transition: transform .2s; }
+  /* ── Expand/collapse affordance (user 2026-07-09: "It isn't deadly clear
+     that hey, this is expandable"). A bare chevron is a decoration, not a
+     signal. Every collapsible header now carries an explicit state pill —
+     'CLICK TO EXPAND ▸' / 'COLLAPSE ▴' — driven by the .collapsed class so
+     the label can never disagree with the state. ── */
+  .protocol-chevron, .pb-caret {
+    font-size: 0; /* hide the raw glyph; the pill below replaces it */
+    transform: none !important;
+  }
+  .protocol-chevron::before, .pb-caret::before {
+    content: "COLLAPSE ▴";
+    font-size: 10px; font-family: var(--font-mono); letter-spacing: 0.06em;
+    color: var(--text-muted); border: 1px solid var(--border);
+    border-radius: 10px; padding: 3px 10px; white-space: nowrap;
+  }
+  .collapsed .protocol-chevron::before, .collapsed .pb-caret::before {
+    content: "CLICK TO EXPAND ▸";
+    color: var(--accent-cyan); border-color: var(--accent-cyan);
+  }
+  .protocol-head:hover .protocol-chevron::before,
+  .length-check-head:hover .protocol-chevron::before,
+  .nous-exp-head:hover .protocol-chevron::before,
+  .pb-collapse-head:hover .pb-caret::before {
+    color: var(--text-primary); border-color: var(--text-primary);
+  }
   .protocol.collapsed .protocol-chevron { transform: rotate(-90deg); }
   .protocol-body {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
@@ -769,26 +794,6 @@
 </div>
 
 <!-- Prompt Length Checker — non-live, zero-cost validation -->
-<div class="length-check" id="length-check">
-  <div class="length-check-head" onclick="toggleLengthCheck()">
-    <span class="protocol-title">📏 WILL YOUR PROMPT FIT? — check before you send it, no inference spent</span>
-    <span class="protocol-chevron" id="lc-chevron">▾</span>
-  </div>
-  <div class="length-check-body" id="lc-body">
-    <div class="lc-row">
-      <select id="lc-model"></select>
-      <textarea id="lc-prompt" placeholder="Paste the prompt you're about to send… (checked instantly, nothing is sent to the model)" oninput="onPromptInput()"></textarea>
-    </div>
-    <div class="lc-result" id="lc-result">
-      <span style="color:var(--text-muted)">Paste a prompt above — we'll estimate its token count against the selected model's context window instantly, with zero inference cost.</span>
-    </div>
-    <div style="margin-top:10px;">
-      <button class="btn-mini" id="lc-live-btn" onclick="runLiveVerify()" style="display:none;">🎯 Verify exact count (real inference, local models only)</button>
-      <span id="lc-live-note" style="font-size:11px;color:var(--text-muted);margin-left:8px;"></span>
-    </div>
-  </div>
-</div>
-
 <!-- Nous-necessity experiment: does auxiliary.approval / auxiliary.mcp need a frontier cloud model? -->
 <div class="nous-exp" id="nous-exp-panel">
   <div class="nous-exp-head" onclick="toggleNousExp()">
@@ -979,6 +984,27 @@
         </div>
       </div>
     </div>
+
+    <div class="length-check" id="length-check" style="margin:0 0 16px;">
+  <div class="length-check-head" onclick="toggleLengthCheck()">
+    <span class="protocol-title">📏 WILL YOUR PROMPT FIT? — check before you send it, no inference spent</span>
+    <span class="protocol-chevron" id="lc-chevron">▾</span>
+  </div>
+  <div class="length-check-body" id="lc-body">
+    <div class="lc-row">
+      <select id="lc-model"></select>
+      <textarea id="lc-prompt" placeholder="Paste the prompt you're about to send… (checked instantly, nothing is sent to the model)" oninput="onPromptInput()"></textarea>
+    </div>
+    <div class="lc-result" id="lc-result">
+      <span style="color:var(--text-muted)">Paste a prompt above — we'll estimate its token count against the selected model's context window instantly, with zero inference cost.</span>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn-mini" id="lc-live-btn" onclick="runLiveVerify()" style="display:none;">🎯 Verify exact count (real inference, local models only)</button>
+      <span id="lc-live-note" style="font-size:11px;color:var(--text-muted);margin-left:8px;"></span>
+    </div>
+  </div>
+</div>
+
 
     <!-- History — every run persisted server-side; click to reinspect -->
     <div class="pb-section">
