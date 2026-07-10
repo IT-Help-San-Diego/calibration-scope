@@ -5,6 +5,7 @@ use tokio::sync::broadcast;
 use crate::config::Config;
 use crate::error::AppError;
 use crate::error::AppResult;
+use crate::gpu_telemetry::ActiveRuns;
 use crate::lm_guard::CancellationRegistry;
 
 /// Capacity of the run-event broadcast channel. Slow SSE subscribers that lag
@@ -26,6 +27,9 @@ pub struct AppState {
     /// genuinely halts GPU work, so cancellation here is a real abort, not
     /// a cosmetic one).
     pub cancellations: CancellationRegistry,
+    /// Live count of executing runs — gates the GPU telemetry sampler
+    /// (gpu_telemetry.rs): 1Hz samples while > 0, dormant at 0.
+    pub active_runs: ActiveRuns,
 }
 
 impl AppState {
@@ -39,7 +43,13 @@ impl AppState {
         let (events_tx, _) = broadcast::channel(EVENT_CHANNEL_CAPACITY);
 
         tracing::info!("Database connected and migrations applied");
-        Ok(AppState { db, config, events_tx, cancellations: CancellationRegistry::new() })
+        Ok(AppState {
+            db,
+            config,
+            events_tx,
+            cancellations: CancellationRegistry::new(),
+            active_runs: ActiveRuns::new(),
+        })
     }
 
     async fn connect_with_retry(url: &str, max_seconds: u64) -> AppResult<PgPool> {

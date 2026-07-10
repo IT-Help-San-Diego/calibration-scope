@@ -1010,6 +1010,17 @@
   </div>
 </div>
 
+<!-- Live GPU telemetry strip — appears only while runs execute (server samples
+     ioreg at 1Hz and streams gpu_sample SSE events; idle = zero samples). -->
+<div id="gpu-strip" style="display:none;background:var(--bg-secondary);border-top:1px solid var(--border);padding:8px 24px;font-family:var(--font-mono);font-size:11px;">
+  <span style="color:var(--text-muted);">GPU</span>
+  <span style="display:inline-block;width:180px;height:8px;background:var(--bg-card);border-radius:4px;margin:0 8px;vertical-align:middle;overflow:hidden;"><span id="gpu-util-bar" style="display:block;height:100%;width:0%;background:linear-gradient(90deg,#3fb950,#d4a853);transition:width 900ms linear;"></span></span>
+  <span id="gpu-util-txt" style="color:var(--text-primary);">—%</span>
+  <span style="color:var(--text-muted);margin-left:16px;">GPU memory</span>
+  <span id="gpu-mem-txt" style="color:var(--text-primary);margin-left:6px;">—</span>
+  <span id="gpu-src" style="color:var(--text-muted);margin-left:16px;" title="ioreg -r -d 1 -c IOAccelerator → PerformanceStatistics — the same counters Activity Monitor reads">source: IOAccelerator</span>
+</div>
+
 <!-- Live Log -->
 <div class="live-log" id="live-log">
   <div class="log-line"><span class="ts">—</span> <span style="color: var(--text-muted)">Select a model and click Run Selected to begin telemetry</span></div>
@@ -1513,6 +1524,8 @@ evtSource.onmessage = (e) => {
     log('verdict', `VERDICT: ${data.overall} — ${data.pass_count}/${data.total_count} trials passed`);
   } else if (data.type === 'run_complete') {
     log('verdict', `Run ${data.run_id} complete. Overall: ${data.overall}`);
+  } else if (data.type === 'gpu_sample') {
+    updateGpuStrip(data);
   } else if (data.type === 'fountain_started') {
     log('info', `Fountain probe ${data.probe_id} started: ${data.model_key} (${data.provider}) — ${data.requests_planned} requests @ ${data.interval_ms}ms spacing`);
   } else if (data.type === 'fountain_request') {
@@ -1782,6 +1795,24 @@ function clearFilters() {
 }
 
 // Logging
+// ── Live GPU strip ────────────────────────────────────────────────────
+// Fed by gpu_sample SSE events (1Hz, only while runs execute). The strip
+// self-hides after 5s without samples — the server going quiet IS the
+// signal that the run finished; no polling, no timers tied to run state.
+let _gpuHideTimer = null;
+function updateGpuStrip(s) {
+  const strip = document.getElementById('gpu-strip');
+  strip.style.display = 'block';
+  const pct = s.device_util_pct;
+  document.getElementById('gpu-util-bar').style.width = (pct ?? 0) + '%';
+  document.getElementById('gpu-util-txt').textContent = pct != null ? pct + '%' : 'unmeasured';
+  const mem = s.in_use_gpu_bytes;
+  document.getElementById('gpu-mem-txt').textContent =
+    mem != null ? (mem / 1073741824).toFixed(1) + ' GB wired' : 'unmeasured';
+  clearTimeout(_gpuHideTimer);
+  _gpuHideTimer = setTimeout(() => { strip.style.display = 'none'; }, 5000);
+}
+
 function log(tag, msg) {
   const el = document.getElementById('live-log');
   const now = new Date().toLocaleTimeString();

@@ -150,6 +150,7 @@ pub async fn start_runs(
         let config = state.config.clone();
         let tx = state.events_tx.clone();
         let cancellations = state.cancellations.clone();
+        let active_runs = state.active_runs.clone();
         let model_id = model.id;
         let model_key = model.key.clone();
         let location = model.location.clone();
@@ -170,6 +171,9 @@ pub async fn start_runs(
             } else {
                 None
             };
+            // RAII: while this guard lives, the 1Hz GPU telemetry sampler
+            // (gpu_telemetry.rs) is active and streaming gpu_sample events.
+            let _telemetry = active_runs.guard();
             crate::executor::execute_run(
                 db, config, tx, cancellations, run_id, model_id, model_key, location, provider,
                 axis,

@@ -5,6 +5,7 @@ mod models;
 mod db;
 mod routes;
 mod executor;
+mod gpu_telemetry;
 mod lm_guard;
 
 use config::Config;
@@ -55,6 +56,10 @@ async fn main() {
     }
 
     let static_files = ServeDir::new(&config.assets_dir);
+
+    // GPU telemetry sampler: 1Hz gpu_sample SSE events while runs execute,
+    // fully dormant when idle. See gpu_telemetry.rs for the measured cost.
+    tokio::spawn(gpu_telemetry::sampler_loop(state.clone()));
 
     let app = Router::new()
         .route("/", get(routes::index::index_handler))

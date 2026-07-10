@@ -16,6 +16,7 @@ pub async fn test_app() -> Router {
         config,
         events_tx,
         cancellations: archetype_mesh_dashboard::lm_guard::CancellationRegistry::new(),
+        active_runs: archetype_mesh_dashboard::gpu_telemetry::ActiveRuns::new(),
     };
 
     use tower_http::services::ServeDir;

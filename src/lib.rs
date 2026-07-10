@@ -5,4 +5,5 @@ pub mod models;
 pub mod db;
 pub mod routes;
 pub mod executor;
+pub mod gpu_telemetry;
 pub mod lm_guard;
