@@ -871,6 +871,12 @@
   .top-nav img.logo { height: 32px; cursor: pointer; }
   body:has(#page-benchmark:not([style*="display: none"])) .top-nav img.logo { visibility: hidden; }
 </style>
+<!-- KaTeX 0.16.21 — vendored locally (assets/vendor/katex), no CDN dependency.
+     Math rendering for test stimuli + formal logic specs. Loaded deferred so it
+     never blocks first paint; renderMathIn() is a no-op until it arrives. -->
+<link rel="stylesheet" href="/assets/vendor/katex/katex.min.css">
+<script defer src="/assets/vendor/katex/katex.min.js"></script>
+<script defer src="/assets/vendor/katex/contrib/auto-render.min.js"></script>
 </head>
 <body>
 
@@ -2573,14 +2579,85 @@ async function toggleTestDetail(id, row) {
        </a>
        <div style="color:var(--text-muted);font-size:10px;margin-top:4px;word-break:break-all;">pinned ${esc(t.attachment_sha3 || 'no hash')}</div>`
     : '';
+  // Formal spec block (LOGIC-* tests carry machine notation like ∀x(M→P) ⊢ …).
+  // Rendered as real typeset math via KaTeX — the notation IS the ground truth's
+  // provenance, so it deserves textbook presentation, not ASCII soup.
+  const formalBlock = t.formal_spec
+    ? `<div style="color:var(--text-muted);margin:10px 0 6px;">FORMAL SPECIFICATION (machine-verified)</div>
+       <div class="formal-spec-math" data-spec="${esc(t.formal_spec).replace(/"/g,'&quot;')}" style="font-size:15px;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;display:inline-block;">${esc(t.formal_spec)}</div>`
+    : '';
   panel.innerHTML =
     `<div style="color:var(--text-muted);margin-bottom:6px;">PROMPT SENT TO MODEL</div>` +
-    `<div style="white-space:pre-wrap;margin-bottom:10px;">${esc(t.prompt_text)}</div>` +
+    `<div class="prompt-math" style="white-space:pre-wrap;margin-bottom:10px;">${esc(t.prompt_text)}</div>` +
+    formalBlock +
     attachBlock +
     `<div style="color:var(--text-muted);margin:10px 0 6px;">GROUND TRUTH (never sent)</div>` +
     `<div style="color:var(--safe);">${esc(t.expected_result)}</div>` +
     `<div style="margin-top:10px;display:flex;gap:8px;"><button class="btn btn-secondary" style="font-size:11px;" onclick="deactivateTest(${t.id})">Deactivate</button><button class="dup-btn" style="font-size:11px;padding:4px 10px;border:1px solid var(--accent-gold);background:transparent;color:var(--accent-gold);border-radius:4px;cursor:pointer" onclick="duplicateTest(${t.id})" title="Copy this test to create an anti-cheat variant">Duplicate</button></div>`;
   panel.style.display = '';
+  renderMathIn(panel);
+}
+
+// ═══ Math rendering (KaTeX, vendored) ══════════════════════════════════
+// Two surfaces: (1) formal_spec strings in Unicode logic notation
+// (∀x(M→P), ∀x(S→M) ⊢ ∀x(S→P)) get transliterated to LaTeX and typeset
+// whole; (2) prompt bodies get auto-render for $…$ / $$…$$ / \(…\) LaTeX
+// islands. Both degrade gracefully: if KaTeX hasn't loaded (deferred) or a
+// string fails to parse, the escaped source text stays visible — a render
+// failure must never hide the stimulus the model actually received.
+const LOGIC_TO_LATEX = [
+  [/∀/g, '\\forall '], [/∃/g, '\\exists '], [/¬/g, '\\neg '],
+  [/∧/g, '\\land '], [/∨/g, '\\lor '], [/→/g, '\\rightarrow '],
+  [/↔/g, '\\leftrightarrow '], [/⟷/g, '\\longleftrightarrow '],
+  [/⊢/g, '\\vdash '], [/⊬/g, '\\nvdash '],
+  [/≡/g, '\\equiv '], [/⊥/g, '\\bot '], [/⊤/g, '\\top '],
+  [/≠/g, '\\neq '], [/∈/g, '\\in '], [/∉/g, '\\notin '],
+];
+const LOGIC_SYMBOL_RE = /[∀∃¬∧∨→↔⟷⊢⊬≡⊥⊤]/;
+function logicToLatex(s) {
+  let out = s;
+  for (const [re, tex] of LOGIC_TO_LATEX) out = out.replace(re, tex);
+  return out;
+}
+function renderMathIn(root) {
+  if (typeof katex === 'undefined') return; // deferred script not ready — source text already visible
+  // Formal specs. Shape observed in DB: "NOTATION — prose annotation" or pure
+  // prose (MAFALDA taxonomy lines). Only the notation half goes through KaTeX;
+  // prose typeset as math turns into italic soup, so annotations stay text.
+  root.querySelectorAll('.formal-spec-math[data-spec]').forEach(el => {
+    const spec = el.getAttribute('data-spec');
+    const dashIdx = spec.indexOf(' — ');
+    const notation = dashIdx >= 0 ? spec.slice(0, dashIdx) : spec;
+    const annotation = dashIdx >= 0 ? spec.slice(dashIdx) : '';
+    if (!LOGIC_SYMBOL_RE.test(notation)) return; // pure prose (MAFALDA) — leave as-is
+    try {
+      const mathSpan = document.createElement('span');
+      katex.render(logicToLatex(notation), mathSpan, { throwOnError: true, displayMode: false });
+      el.textContent = '';
+      el.appendChild(mathSpan);
+      if (annotation) {
+        const note = document.createElement('span');
+        note.style.cssText = 'color:var(--text-muted);font-size:12px;margin-left:6px;';
+        note.textContent = annotation;
+        el.appendChild(note);
+      }
+    } catch (_) { /* keep escaped source text — never blank the evidence */ }
+  });
+  // Prompt bodies: render $…$ / $$…$$ / \(…\) islands only; prose untouched.
+  if (typeof renderMathInElement !== 'undefined') {
+    root.querySelectorAll('.prompt-math').forEach(el => {
+      try {
+        renderMathInElement(el, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '$', right: '$', display: false },
+          ],
+          throwOnError: false,
+        });
+      } catch (_) { /* source text stays */ }
+    });
+  }
 }
 
 function toggleTestBuilder(show) {

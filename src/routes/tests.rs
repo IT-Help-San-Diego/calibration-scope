@@ -29,6 +29,8 @@ pub struct TestRow {
     pub scoring_method: String,
     pub trials_per_run: Option<i32>,
     pub active: Option<bool>,
+    pub formal_spec: Option<String>,
+    pub user_action: Option<String>,
     pub created_at: Option<chrono::NaiveDateTime>,
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
@@ -48,7 +50,7 @@ pub async fn list_tests(
     let rows = sqlx::query_as::<_, TestRow>(
         r#"SELECT id, name, axis, prompt_text, attachment_path, attachment_sha3,
                   expected_result, scoring_method, trials_per_run, active,
-                  created_at, updated_at
+                  formal_spec, user_action, created_at, updated_at
            FROM tests WHERE active = true
            ORDER BY axis, id"#,
     )
@@ -65,6 +67,7 @@ pub async fn list_tests(
                 "scoring_method": t.scoring_method,
                 "trials_per_run": t.trials_per_run.unwrap_or(3),
                 "has_attachment": t.attachment_path.is_some(),
+                "user_action": t.user_action,
                 "created_at": t.created_at.map(|d| d.to_string()),
             });
             if q.full {
@@ -72,6 +75,7 @@ pub async fn list_tests(
                 v["expected_result"] = serde_json::json!(t.expected_result);
                 v["attachment_path"] = serde_json::json!(t.attachment_path);
                 v["attachment_sha3"] = serde_json::json!(t.attachment_sha3);
+                v["formal_spec"] = serde_json::json!(t.formal_spec);
             }
             v
         })
