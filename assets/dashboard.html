@@ -915,7 +915,7 @@
   </div>
   <div class="stat">
     <div class="stat-value" id="stat-flaky" style="color: var(--flaky)">—</div>
-    <div class="stat-label">intermittent_pass/div>
+    <div class="stat-label">Intermittent</div>
   </div>
 </div>
 
@@ -1455,23 +1455,32 @@ async function apiFetch(url, options) {
   return { ok: true, status: resp.status, data, error: null };
 }
 
+// Single render pipeline — SSE envelopes and explicit fetches both land here,
+// so the grid can never disagree with itself about what a "model update" means.
+function applyModelSnapshot(list) {
+  models = list;
+  updateStats();
+  renderGrid();
+  populateLcModels();
+  populateNousExpModels();
+  loadNewestBots();
+}
+
+// Explicit registry refresh — used right after a sync so new models appear
+// immediately instead of waiting for the next SSE snapshot.
+async function loadModels() {
+  const r = await apiFetch('/api/models');
+  if (r.ok && Array.isArray(r.data)) applyModelSnapshot(r.data);
+  else console.warn('loadModels: registry fetch failed —', r.error);
+}
+
 // SSE — live data push, zero polling
 const evtSource = new EventSource('/api/events');
 
 evtSource.onmessage = (e) => {
   const data = JSON.parse(e.data);
-  if (data.type === 'initial') {
-    models = data.models;
-    updateStats();
-    renderGrid();
-    populateLcModels();
-    populateNousExpModels();
-  } else if (data.type === 'refresh') {
-    models = data.models;
-    updateStats();
-    renderGrid();
-    populateLcModels();
-    populateNousExpModels();
+  if (data.type === 'initial' || data.type === 'refresh') {
+    applyModelSnapshot(data.models);
   } else if (data.type === 'run_started') {
     log('info', `Run ${data.run_id} started: ${data.model_key} — ${data.axis}${data.axes ? ' + ' + data.axes.join(',') : ''}`);
   } else if (data.type === 'phase') {
@@ -3113,7 +3122,8 @@ async function syncCloud() {
         ? p.provider + ': ' + p.models_seen + ' models (' + p.models_added + ' new)'
         : p.provider + ': skipped — ' + (p.skipped_reason || 'no key'));
       alert('Cloud sync (' + r.data.duration_ms + 'ms)\n\n' + lines.join('\n'));
-      await loadModels();
+      // No fetch-back: the server broadcasts a 'refresh' SSE snapshot the
+      // moment the registry mutates — the grid re-renders from that push.
     } else {
       alert('Cloud sync failed: ' + r.error);
     }
@@ -3132,7 +3142,7 @@ async function syncLMStudio() {
       if (d.models_added > 0) {
         alert(msg + '\n\nNew models added! Check the Setup page for newest bots.');
       }
-      await loadModels();
+      // No fetch-back: server broadcasts a 'refresh' SSE snapshot on mutation.
       if (btn) { btn.textContent = 'Sync Models'; btn.disabled = false; }
     } else {
       alert('Sync failed: ' + r.error);
