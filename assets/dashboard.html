@@ -3144,7 +3144,16 @@ async function checkLandingReality() {
     const r = await apiFetch('/api/host/reality');
     if (r.ok) {
       const data = r.data;
-      const ram = (data.hardware && data.hardware.total_ram_gb) || data.total_ram_gb || data.ram_gb || 0;
+      // The reality API wraps every measurement with its source citation:
+      // hardware.total_ram_gb = { source: "sysctl -n hw.memsize", value: 128.0 }
+      // Unwrap .value; tolerate a bare number for forward compatibility.
+      const unwrap = (v) => (v && typeof v === 'object' && 'value' in v) ? v.value : v;
+      const ram = Number(unwrap(data.hardware && data.hardware.total_ram_gb) ?? unwrap(data.total_ram_gb) ?? unwrap(data.ram_gb) ?? 0);
+      if (!Number.isFinite(ram) || ram <= 0) {
+        badge.className = 'reality-badge warn';
+        badge.textContent = 'Hardware check returned no usable RAM figure — see Setup for the full reality report';
+        return;
+      }
       if (ram >= 64) {
         badge.className = 'reality-badge ok';
         badge.innerHTML = 'Your machine: ' + Math.round(ram) + ' GB — full benchmark capable';
