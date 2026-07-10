@@ -832,17 +832,28 @@
   /* Prominent owl — louder, prouder, not a watermark */
   .landing-hero img[src*='owl-semaphore-logo.png'] { height: 96px !important; filter: drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15)); animation: owlPulse 4s ease-in-out infinite; }
   @keyframes owlPulse { 0%, 100% { filter: drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15)); } 50% { filter: drop-shadow(0 0 28px rgba(212,168,83,0.45)) drop-shadow(0 0 56px rgba(212,168,83,0.25)); } }
+
+  .nav-arrow { user-select: none; }
+
+  .nav-arrow { color: var(--text-muted); font-size: 11px; padding: 0 3px; user-select: none; align-self: center; }
+  .top-nav img.logo { height: 32px; cursor: pointer; }
 </style>
 </head>
 <body>
 
 <!-- Top Nav -->
 <div class="top-nav">
+  <img class="logo" src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" onerror="this.style.display='none'" style="height:32px;margin-right:6px;cursor:pointer" onclick="showPage('benchmark')">
   <div class="tab" onclick="showPage('setup')" id="tab-setup">Setup</div>
+  <span class="nav-arrow">→</span>
   <div class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">Benchmark</div>
+  <span class="nav-arrow">→</span>
   <div class="tab" onclick="showPage('prompt-builder')" id="tab-prompt-builder">Prompt Builder</div>
+  <span class="nav-arrow">→</span>
   <div class="tab" onclick="showPage('loot-page')" id="tab-loot-page">Loot</div>
+  <span class="nav-arrow">→</span>
   <div class="tab" onclick="showPage('tests-page')" id="tab-tests-page">Tests</div>
+  <span class="nav-arrow">→</span>
   <div class="tab" onclick="showPage('runs-page')" id="tab-runs-page">Runs</div>
   <div class="spacer"></div>
   <button class="btn-mini" onclick="syncLMStudio()" title="Check for newly downloaded models" style="margin-right:4px">Sync Models</button>
@@ -1744,7 +1755,7 @@ function showPage(name) {
     if (tab) tab.classList.toggle('active', p === name);
   });
   localStorage.setItem('amb-active-page', name);
-  if (name === 'setup') { loadRealityCheck(); loadHermesVerify(); }
+  if (name === 'Setup') { loadRealityCheck(); loadHermesVerify(); loadCloudKeys(); loadNewestBots(); }
   if (name === 'loot-page') loadLootPage();
   if (name === 'tests-page') loadTestsPage();
   if (name === 'runs-page') loadRunsPage();
