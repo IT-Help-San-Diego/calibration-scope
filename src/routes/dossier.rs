@@ -36,6 +36,10 @@ struct RegistryRow {
     tags: Option<Vec<String>>,
     active: bool,
     hf_repo: Option<String>,
+    // Provider-stated facts (migration 026) — threaded to the dossier too.
+    publisher: Option<String>,
+    quantization: Option<String>,
+    arch: Option<String>,
     created_at: Option<chrono::NaiveDateTime>,
     updated_at: Option<chrono::NaiveDateTime>,
 }
@@ -72,7 +76,8 @@ pub async fn model_dossier(
     // ── 1. REGISTRY ──────────────────────────────────────────────────────
     let registry: RegistryRow = sqlx::query_as(
         r#"SELECT id, key, display_name, provider, location, context_length,
-                  supports_vision, size_gb, notes, tags, active, hf_repo, created_at, updated_at
+                  supports_vision, size_gb, notes, tags, active, hf_repo,
+                  publisher, quantization, arch, created_at, updated_at
            FROM models WHERE key = $1"#,
     )
     .bind(&key)
