@@ -857,7 +857,8 @@
   <span class="nav-arrow">→</span>
   <div class="tab" onclick="showPage('runs-page')" id="tab-runs-page">Runs</div>
   <div class="spacer"></div>
-  <button class="btn-mini" onclick="syncLMStudio()" title="Check for newly downloaded models" style="margin-right:4px">Sync Models</button>
+  <button class="btn-mini" onclick="syncLMStudio()" title="Check for newly downloaded local models" style="margin-right:4px">Sync Local</button>
+  <button class="btn-mini" onclick="syncCloud()" title="Discover every cloud model your API keys can reach (Nous / OpenRouter / OpenAI)" style="margin-right:4px">Sync Cloud</button>
   <div class="tab" onclick="showPage('lmstudio')" id="tab-lmstudio">LM Studio</div>
 </div>
 
@@ -3082,6 +3083,27 @@ async function duplicateTest(id) {
 }
 
 // Sync LM Studio models — check for newly downloaded models
+
+// Sync cloud models — asks each provider's /v1/models with YOUR key.
+// Providers without a key are skipped and reported, never errored.
+async function syncCloud() {
+  const btn = event?.target;
+  if (btn) { btn.textContent = 'Syncing...'; btn.disabled = true; }
+  try {
+    const r = await apiFetch('/api/cloud/sync', { method: 'POST' });
+    if (r.ok) {
+      const lines = r.data.providers.map(p => p.reachable
+        ? p.provider + ': ' + p.models_seen + ' models (' + p.models_added + ' new)'
+        : p.provider + ': skipped — ' + (p.skipped_reason || 'no key'));
+      alert('Cloud sync (' + r.data.duration_ms + 'ms)\n\n' + lines.join('\n'));
+      await loadModels();
+    } else {
+      alert('Cloud sync failed: ' + r.error);
+    }
+  } catch(e) { alert('Cloud sync error: ' + e.message); }
+  if (btn) { btn.textContent = 'Sync Cloud'; btn.disabled = false; }
+}
+
 async function syncLMStudio() {
   const btn = event?.target;
   if (btn) { btn.textContent = 'Syncing...'; btn.disabled = true; }

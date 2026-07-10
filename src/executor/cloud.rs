@@ -9,6 +9,7 @@ fn endpoint_for(provider: &str) -> AppResult<&'static str> {
     match provider {
         "openrouter" => Ok("https://openrouter.ai/api/v1/chat/completions"),
         "nous" => Ok("https://inference-api.nousresearch.com/v1/chat/completions"),
+        "openai" => Ok("https://api.openai.com/v1/chat/completions"),
         other => Err(AppError::Executor(format!("Unknown provider: {}", other))),
     }
 }
@@ -46,7 +47,7 @@ pub fn resolve_api_key(provider: &str, config_key: &Option<String>) -> AppResult
         ));
     }
     Err(AppError::Executor(format!(
-        "No API key configured for provider '{}' (set NOUS_API_KEY / OPENROUTER_API_KEY)",
+        "No API key configured for provider '{}' (set NOUS_API_KEY / OPENROUTER_API_KEY / OPENAI_API_KEY)",
         provider
     )))
 }

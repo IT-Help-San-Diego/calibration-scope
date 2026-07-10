@@ -13,6 +13,7 @@ pub struct Config {
     /// Cloud API keys — read from env, never persisted. None = cloud runs refuse honestly.
     pub nous_api_key: Option<String>,
     pub openrouter_api_key: Option<String>,
+    pub openai_api_key: Option<String>,
 }
 
 impl Config {
@@ -47,6 +48,7 @@ impl Config {
             lmstudio_base_url,
             nous_api_key: std::env::var("NOUS_API_KEY").ok().filter(|s| !s.is_empty()),
             openrouter_api_key: std::env::var("OPENROUTER_API_KEY").ok().filter(|s| !s.is_empty()),
+            openai_api_key: std::env::var("OPENAI_API_KEY").ok().filter(|s| !s.is_empty()),
         }
     }
 

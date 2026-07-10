@@ -14,3 +14,4 @@ pub mod lmstudio;
 pub mod tests;
 pub mod insights;
 pub mod cloud_keys;
+pub mod cloud_sync;

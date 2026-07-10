@@ -420,6 +420,7 @@ async fn check_memory_safety(
                     let config_key = match provider {
                         "nous" => &config.nous_api_key,
                         "openrouter" => &config.openrouter_api_key,
+                        "openai" => &config.openai_api_key,
                         other => {
                             return Err(AppError::Executor(format!("Unknown provider: {}", other)))
                         }

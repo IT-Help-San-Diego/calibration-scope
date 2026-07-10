@@ -78,6 +78,7 @@ async fn main() {
         .route("/api/tests/{id}", axum::routing::put(routes::tests::update_test))
         .route("/api/model-insights/{key}", get(routes::insights::model_insights))
         .route("/api/cloud-keys", get(routes::cloud_keys::list_keys))
+        .route("/api/cloud/sync", axum::routing::post(routes::cloud_sync::cloud_sync))
         .route("/api/cloud-keys/{provider}", post(routes::cloud_keys::set_key).delete(routes::cloud_keys::delete_key))
         .route("/api/tests/{id}/duplicate", post(routes::tests::duplicate_test))
         .nest_service("/assets", static_files)

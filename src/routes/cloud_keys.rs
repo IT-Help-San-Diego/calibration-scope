@@ -5,14 +5,13 @@
 //! Keys are stored in ~/.archetype-mesh/cloud-keys.json (chmod 600), never
 //! in the database, never in git, never logged. The dashboard can set them
 //! up without touching the shell or launchd plist.
-use axum::extract::{Path, State};
+use axum::extract::Path;
 use axum::response::Json;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 
 use crate::error::{AppError, AppResult};
-use crate::state::AppState;
 
 const SECRETS_DIR: &str = ".archetype-mesh";
 const SECRETS_FILE: &str = "cloud-keys.json";
