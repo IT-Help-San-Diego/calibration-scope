@@ -81,6 +81,8 @@ async fn main() {
         .route("/api/cloud/sync", axum::routing::post(routes::cloud_sync::cloud_sync))
         .route("/api/cloud-keys/{provider}", post(routes::cloud_keys::set_key).delete(routes::cloud_keys::delete_key))
         .route("/api/tests/{id}/duplicate", post(routes::tests::duplicate_test))
+        .route("/api/fountain", get(routes::fountain::list_probes).post(routes::fountain::start_probe))
+        .route("/api/fountain/{id}", get(routes::fountain::probe_detail))
         .nest_service("/assets", static_files)
         // 16MB body cap: a 10MB image (Prompt Builder max) is ~13.7MB as base64.
         .layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024))

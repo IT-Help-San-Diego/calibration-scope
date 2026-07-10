@@ -169,11 +169,13 @@ pub async fn ensure_loaded(
 
 /// Execute one chat completion. `messages` are raw OpenAI-shaped values so
 /// callers can pass plain text or vision content arrays identically.
-/// Returns (content, reasoning_content, latency_ms). reasoning_content is
-/// None when the model produced no separate thinking trace (the overwhelming
-/// common case) — LM Studio's response always carries the field (empty
-/// string when unused), so an empty/missing value is normalized to None
-/// here rather than persisted as a meaningless "".
+/// Returns a ChatOutcome; reasoning_content is None when the model produced
+/// no separate thinking trace (the overwhelming common case) — LM Studio's
+/// response always carries the field (empty string when unused), so an
+/// empty/missing value is normalized to None here rather than persisted as
+/// a meaningless "". Token counts are read from usage.* — LM Studio's own
+/// meter (electricity is the real local cost; tokens are still the honest
+/// throughput measurement).
 pub async fn chat(
     client: &Client,
     base_url: &str,
@@ -181,7 +183,7 @@ pub async fn chat(
     messages: &[serde_json::Value],
     max_tokens: u32,
     temperature: f32,
-) -> AppResult<(String, Option<String>, u64)> {
+) -> AppResult<super::ChatOutcome> {
     let body = serde_json::json!({
         "model": model_key,
         "messages": messages,
@@ -227,5 +229,13 @@ pub async fn chat(
         .filter(|s| !s.is_empty())
         .map(|s| s.to_string());
 
-    Ok((content, reasoning_content, elapsed))
+    let (prompt_tokens, completion_tokens) = super::usage_tokens(&json);
+
+    Ok(super::ChatOutcome {
+        content,
+        reasoning_content,
+        latency_ms: elapsed,
+        prompt_tokens,
+        completion_tokens,
+    })
 }

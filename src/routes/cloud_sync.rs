@@ -47,11 +47,17 @@ fn models_endpoint(provider: &str) -> &'static str {
 
 /// Filter out non-chat entries: embeddings, image/audio/video generators,
 /// moderation endpoints, and alias rows (Nous prefixes those with '~').
+/// Embedding families are matched by id prefix too — bge/e5/minilm/mpnet
+/// style ids don't contain the word "embedding" (found live 2026-07-09:
+/// sentence-transformers/* slipped through and synced as chat models).
 fn is_chat_model(id: &str) -> bool {
     let lower = id.to_lowercase();
     !(id.starts_with('~')
         || lower.contains("embedding")
         || lower.contains("embed-")
+        || lower.starts_with("sentence-transformers/")
+        || lower.starts_with("baai/bge")
+        || lower.starts_with("intfloat/e5")
         || lower.contains("-image")
         || lower.contains("image-")
         || lower.contains("audio")
@@ -78,6 +84,19 @@ fn context_from_entry(entry: &serde_json::Value) -> i64 {
         .and_then(|v| v.as_i64())
         .or_else(|| entry.pointer("/top_provider/context_length").and_then(|v| v.as_i64()))
         .unwrap_or(0)
+}
+
+/// Catalog unit price in USD per token, exactly as the provider states it.
+/// Both Nous and OpenRouter serve pricing.prompt / pricing.completion as
+/// decimal STRINGS ("0.0000002000") — parsed here, never guessed. None when
+/// the field is absent or unparseable: an unpriced model stays honestly
+/// unpriced rather than defaulting to 0 (which would claim "free").
+fn price_from_entry(entry: &serde_json::Value, field: &str) -> Option<f64> {
+    entry
+        .pointer(&format!("/pricing/{}", field))
+        .and_then(|v| v.as_str())
+        .and_then(|s| s.parse::<f64>().ok())
+        .filter(|p| p.is_finite() && *p >= 0.0)
 }
 
 pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSyncResult>> {
@@ -179,6 +198,8 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
                 .unwrap_or_else(|| format!("{} (Cloud · {})", id, provider));
             let ctx = context_from_entry(entry);
             let vision = vision_from_entry(entry);
+            let price_prompt = price_from_entry(entry, "prompt");
+            let price_completion = price_from_entry(entry, "completion");
 
             // Upsert keyed on (key, provider): a model id can exist on both
             // Nous and OpenRouter with different routing/pricing — those are
@@ -186,11 +207,17 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
             let result = sqlx::query(
                 r#"
                 INSERT INTO models (key, display_name, provider, location, context_length,
-                                    supports_vision, tags, active)
-                VALUES ($1, $2, $3, 'cloud', $4, $5, ARRAY['cloud', $3], true)
+                                    supports_vision, price_prompt, price_completion,
+                                    pricing_updated_at, tags, active)
+                VALUES ($1, $2, $3, 'cloud', $4, $5, $6, $7,
+                        CASE WHEN $6::numeric IS NULL AND $7::numeric IS NULL THEN NULL ELSE NOW() END,
+                        ARRAY['cloud', $3], true)
                 ON CONFLICT (key, provider) DO UPDATE SET
                     context_length = EXCLUDED.context_length,
                     supports_vision = EXCLUDED.supports_vision,
+                    price_prompt = EXCLUDED.price_prompt,
+                    price_completion = EXCLUDED.price_completion,
+                    pricing_updated_at = EXCLUDED.pricing_updated_at,
                     updated_at = CURRENT_TIMESTAMP
                 RETURNING (xmax = 0) AS inserted
                 "#,
@@ -200,6 +227,8 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
             .bind(provider)
             .bind(ctx as i32)
             .bind(vision)
+            .bind(price_prompt)
+            .bind(price_completion)
             .fetch_one(&state.db)
             .await;
 

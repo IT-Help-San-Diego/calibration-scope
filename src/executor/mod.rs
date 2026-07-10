@@ -19,6 +19,32 @@ use crate::config::Config;
 use crate::error::{AppError, AppResult};
 use crate::models::tests::TestDef;
 
+/// One chat completion's full measurement record. Both executors (local
+/// LM Studio, cloud providers) return this shape so the trial loop treats
+/// them identically. Token counts come from the response's `usage` object —
+/// the provider's own meter, read back verbatim; None when the provider
+/// omitted usage. Cost is NEVER computed here: dollars = tokens × catalog
+/// unit price, derived at read time (see migration 024).
+#[derive(Debug)]
+pub struct ChatOutcome {
+    pub content: String,
+    pub reasoning_content: Option<String>,
+    pub latency_ms: u64,
+    pub prompt_tokens: Option<i64>,
+    pub completion_tokens: Option<i64>,
+}
+
+/// Parse usage.{prompt_tokens,completion_tokens} from an OpenAI-shaped
+/// response body. Shared by both executors; absent fields stay None.
+pub(crate) fn usage_tokens(json: &serde_json::Value) -> (Option<i64>, Option<i64>) {
+    let get = |field: &str| {
+        json.pointer(&format!("/usage/{}", field))
+            .and_then(|v| v.as_i64())
+            .filter(|n| *n >= 0)
+    };
+    (get("prompt_tokens"), get("completion_tokens"))
+}
+
 /// Emit one telemetry envelope to every open SSE connection.
 /// Best-effort: zero subscribers is not an error (runs still persist evidence).
 fn emit(tx: &broadcast::Sender<String>, value: serde_json::Value) {
@@ -433,17 +459,19 @@ async fn check_memory_safety(
             };
 
             total_count += 1;
-            let (passed, latency_ms, raw, reasoning, detail, is_infra_error) = match outcome {
-                Ok((response, reasoning_content, latency)) => {
+            let (passed, latency_ms, raw, reasoning, detail, is_infra_error, ptok, ctok) = match outcome {
+                Ok(o) => {
                     let expected = test.expected_result.as_deref().unwrap_or("");
-                    let score = scoring::score_response(&response, expected, &test.scoring_method);
+                    let score = scoring::score_response(&o.content, expected, &test.scoring_method);
                     (
                         score.passed,
-                        latency as i64,
-                        response,
-                        reasoning_content,
+                        o.latency_ms as i64,
+                        o.content,
+                        o.reasoning_content,
                         score.detail.unwrap_or_default(),
                         false,
+                        o.prompt_tokens,
+                        o.completion_tokens,
                     )
                 }
                 // Infra failure (LM Studio rejected the request, connection
@@ -455,7 +483,7 @@ async fn check_memory_safety(
                 // live 2026-07-08: without this, a config bug that blocks
                 // every request to a model made that model look like it
                 // fails every capability, when the truth was infrastructure.
-                Err(e) => (false, -1, String::new(), None, format!("execution error: {}", e), true),
+                Err(e) => (false, -1, String::new(), None, format!("execution error: {}", e), true, None, None),
             };
             if passed {
                 pass_count += 1;
@@ -465,8 +493,8 @@ async fn check_memory_safety(
             }
 
             sqlx::query(
-                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"#,
+                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id, prompt_tokens, completion_tokens)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"#,
             )
             .bind(run_id)
             .bind(trial_num)
@@ -477,6 +505,8 @@ async fn check_memory_safety(
             .bind(is_infra_error)
             .bind(&reasoning)
             .bind(test.id)
+            .bind(ptok)
+            .bind(ctok)
             .execute(db)
             .await?;
 

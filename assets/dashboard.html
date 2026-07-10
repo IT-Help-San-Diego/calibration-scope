@@ -287,6 +287,14 @@
   .chip.unsafe { background: rgba(248,81,73,0.15); color: var(--unsafe); border-color: var(--unsafe); }
   .chip.flaky { background: rgba(227,179,65,0.15); color: var(--flaky); border-color: var(--flaky); }
 
+  /* Cost-reality tiers: FREE* (claim, unverified) → TRICKLE → STANDARD → PREMIUM.
+     Palette is deliberately spread across hue space — green / cyan / blue /
+     gold — so FREE and TRICKLE can never be confused at a glance. */
+  .chip.cost-free { background: rgba(63,185,80,0.18); color: #3fb950; border-color: #3fb950; }
+  .chip.cost-trickle { background: rgba(34,211,238,0.14); color: #22d3ee; border-color: #22d3ee; }
+  .chip.cost-standard { background: rgba(88,166,255,0.12); color: var(--accent-blue); border-color: var(--accent-blue); }
+  .chip.cost-premium { background: rgba(212,168,83,0.15); color: #d4a853; border-color: #d4a853; }
+
   /* Model grid — bird's-eye scroll */
   .model-grid {
     display: grid;
@@ -947,6 +955,20 @@
     <option value="INTERMITTENT">INTERMITTENT</option>
     <option value="untested">Untested</option>
   </select>
+  <select id="filter-cost" onchange="applyFilters()" title="Catalog price tier — FREE* is the provider's claim; probe it to verify">
+    <option value="all">All Costs</option>
+    <option value="FREE*">FREE* (claimed)</option>
+    <option value="TRICKLE">TRICKLE (≤$0.50/M)</option>
+    <option value="STANDARD">STANDARD (≤$5/M)</option>
+    <option value="PREMIUM">PREMIUM</option>
+    <option value="local">Local (your watts)</option>
+  </select>
+  <select id="sort-by" onchange="applyFilters()" title="Order the grid">
+    <option value="name">Sort: Name</option>
+    <option value="cost-asc">Sort: Cheapest first</option>
+    <option value="cost-desc">Sort: Priciest first</option>
+    <option value="spend">Sort: Measured spend</option>
+  </select>
   <input type="text" id="filter-search" placeholder="Search model…" oninput="applyFilters()"
          style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:13px;font-family:var(--font-sans);width:180px;">
 </div>
@@ -1491,6 +1513,14 @@ evtSource.onmessage = (e) => {
     log('verdict', `VERDICT: ${data.overall} — ${data.pass_count}/${data.total_count} trials passed`);
   } else if (data.type === 'run_complete') {
     log('verdict', `Run ${data.run_id} complete. Overall: ${data.overall}`);
+  } else if (data.type === 'fountain_started') {
+    log('info', `Fountain probe ${data.probe_id} started: ${data.model_key} (${data.provider}) — ${data.requests_planned} requests @ ${data.interval_ms}ms spacing`);
+  } else if (data.type === 'fountain_request') {
+    log(data.ok ? 'trial' : 'err', `Probe ${data.probe_id} req ${data.request_num}/${data.of}: HTTP ${data.http_status} (${data.latency_ms}ms)${data.retry_after ? ' Retry-After: ' + data.retry_after : ''}`);
+  } else if (data.type === 'fountain_verdict') {
+    log('verdict', `FOUNTAIN VERDICT probe ${data.probe_id}: ${data.verdict} — ${data.ok}/${data.sent} ok, ${data.rate_limited} rate-limited${data.first_429_at_request ? ', first 429 at req ' + data.first_429_at_request : ''} (${(data.duration_ms/1000).toFixed(1)}s)`);
+  } else if (data.type === 'fountain_error') {
+    log('err', `Fountain probe ${data.probe_id} failed: ${data.message}`);
   } else if (data.type === 'error') {
     log('err', `ERROR: ${data.message}`);
   }
@@ -1569,10 +1599,16 @@ function renderGrid() {
   const fProv = document.getElementById('filter-provider').value;
   const fAxis = document.getElementById('filter-axis').value;
   const fVerd = document.getElementById('filter-verdict').value;
+  const fCost = document.getElementById('filter-cost').value;
+  const sortBy = document.getElementById('sort-by').value;
 
   let rows = models.filter(m => {
     if (fLoc !== 'all' && m.location !== fLoc) return false;
     if (fProv !== 'all' && m.provider !== fProv) return false;
+    if (fCost !== 'all') {
+      if (fCost === 'local') { if (m.location !== 'local') return false; }
+      else { const t = costTier(m); if (!t || t.label !== fCost) return false; }
+    }
     if (q && !m.display_name.toLowerCase().includes(q) && !m.key.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1596,6 +1632,18 @@ function renderGrid() {
       if (fVerd === 'bad') return vs.some(v => BAD.includes(v));
       return vs.some(v => v === fVerd);
     });
+  }
+
+  // Order: name (default), catalog unit price, or measured spend.
+  // Cost sorts group local models (no catalog price) at the end under
+  // cost-asc — "cheapest first" means cheapest PRICED; local models' real
+  // cost is your electricity, which the catalog can't see.
+  if (sortBy === 'cost-asc') {
+    rows.sort((a, b) => (a.price_prompt ?? Infinity) - (b.price_prompt ?? Infinity) || a.display_name.localeCompare(b.display_name));
+  } else if (sortBy === 'cost-desc') {
+    rows.sort((a, b) => (b.price_prompt ?? -1) - (a.price_prompt ?? -1) || a.display_name.localeCompare(b.display_name));
+  } else if (sortBy === 'spend') {
+    rows.sort((a, b) => (b.measured_cost_usd ?? -1) - (a.measured_cost_usd ?? -1) || a.display_name.localeCompare(b.display_name));
   }
 
   if (rows.length === 0) {
@@ -1648,6 +1696,7 @@ function renderGrid() {
       </div>
       <div class="provider-tag">${m.provider} · ${m.key}</div>
       ${m.size_gb ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${m.size_gb} GB · ${m.context_length || 0} ctx</div>` : ''}
+      ${costLine(m)}
       ${m.tags && m.tags.length ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">${m.tags.map(t => `<span class="chip" style="font-size:10px;padding:2px 6px;">${t}</span>`).join('')}</div>` : ''}
       <div class="verdict-grid">${verdictCells}</div>
       <div class="model-card-actions">
@@ -1657,6 +1706,43 @@ function renderGrid() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Cost reality ──────────────────────────────────────────────────────
+// Catalog unit prices arrive as USD/token; humans reason in USD per
+// MILLION tokens, so display converts (×1e6). measured_cost_usd is the
+// SQL-derived Σ(metered tokens × unit price) across every completed run.
+// Tier vocabulary (display only — verdicts about rate REALITY come from
+// fountain probes, never from the price sheet):
+//   FREE (catalog $0) · TRICKLE (≤ $0.50/M in) · STANDARD (≤ $5/M) · PREMIUM
+function costTier(m) {
+  if (m.price_prompt == null) return null;             // unpriced (local etc.)
+  const perM = m.price_prompt * 1e6;
+  if (perM === 0) return { label: 'FREE*', cls: 'cost-free', note: 'Catalog claims $0 — run a fountain probe to verify it\u2019s real' };
+  if (perM <= 0.5) return { label: 'TRICKLE', cls: 'cost-trickle', note: 'Near-zero unit price' };
+  if (perM <= 5)   return { label: 'STANDARD', cls: 'cost-standard', note: 'Mid-market unit price' };
+  return { label: 'PREMIUM', cls: 'cost-premium', note: 'Frontier-tier unit price' };
+}
+function fmtPerM(unit) {
+  const perM = unit * 1e6;
+  if (perM === 0) return '$0';
+  return perM < 0.01 ? '$' + perM.toFixed(4) : '$' + perM.toFixed(2);
+}
+function fmtSpend(usd) {
+  if (usd == null) return null;
+  if (usd === 0) return '$0';
+  if (usd < 0.0001) return '<$0.0001';
+  return '$' + usd.toFixed(4);
+}
+function costLine(m) {
+  const tier = costTier(m);
+  if (!tier) return '';
+  const spend = fmtSpend(m.measured_cost_usd);
+  return `<div class="cost-line" style="font-size:11px;margin-top:3px;display:flex;gap:6px;align-items:center;">
+    <span class="chip ${tier.cls}" style="font-size:9px;padding:1px 6px;" title="${tier.note}">${tier.label}</span>
+    <span style="color:var(--text-muted);">${fmtPerM(m.price_prompt)}/M in · ${m.price_completion != null ? fmtPerM(m.price_completion) + '/M out' : '—'}</span>
+    ${spend ? `<span style="color:var(--gold,#d4a853);" title="Measured: provider-metered tokens × catalog unit price, across all completed runs">spent ${spend}</span>` : ''}
+  </div>`;
 }
 
 function updateStats() {
@@ -1689,6 +1775,8 @@ function clearFilters() {
   document.getElementById('filter-provider').value = 'all';
   document.getElementById('filter-axis').value = 'all';
   document.getElementById('filter-verdict').value = 'all';
+  document.getElementById('filter-cost').value = 'all';
+  document.getElementById('sort-by').value = 'name';
   document.getElementById('filter-search').value = '';
   renderGrid();
 }

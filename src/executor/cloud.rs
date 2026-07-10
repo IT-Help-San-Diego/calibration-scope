@@ -5,7 +5,10 @@ use std::time::{Duration, Instant};
 
 use crate::error::{AppError, AppResult};
 
-fn endpoint_for(provider: &str) -> AppResult<&'static str> {
+/// Chat-completions endpoint per provider. `pub` because fountain probes
+/// (routes::fountain) fire raw requests to read HTTP status + Retry-After —
+/// evidence cloud::chat's error path doesn't surface.
+pub fn endpoint_for(provider: &str) -> AppResult<&'static str> {
     match provider {
         "openrouter" => Ok("https://openrouter.ai/api/v1/chat/completions"),
         "nous" => Ok("https://inference-api.nousresearch.com/v1/chat/completions"),
@@ -59,8 +62,9 @@ fn dirs_home() -> std::path::PathBuf {
 }
 
 /// Execute one chat completion against a cloud provider.
-/// Returns (content, reasoning_content, latency_ms) — see lmstudio::chat for
-/// the reasoning_content contract (None when no trace was produced).
+/// Returns a ChatOutcome — see lmstudio::chat for the reasoning_content
+/// contract (None when no trace was produced). Token counts come from the
+/// provider's usage object: their own billing meter, read back verbatim.
 pub async fn chat(
     client: &Client,
     provider: &str,
@@ -68,7 +72,7 @@ pub async fn chat(
     model: &str,
     messages: &[serde_json::Value],
     max_tokens: u32,
-) -> AppResult<(String, Option<String>, u64)> {
+) -> AppResult<super::ChatOutcome> {
     let endpoint = endpoint_for(provider)?;
     let body = serde_json::json!({
         "model": model,
@@ -104,6 +108,9 @@ pub async fn chat(
         .and_then(|c| c.as_array())
         .and_then(|a| a.first())
         .and_then(|c| c.get("message"));
+
+    // Provider's own billing meter, read back verbatim (None if omitted).
+    let (usage_prompt, usage_completion) = super::usage_tokens(&json);
 
     // Primary: the content field (the model's committed answer).
     let content = message
@@ -173,5 +180,11 @@ pub async fn chat(
         }
     };
 
-    Ok((content, reasoning_content, elapsed))
+    Ok(super::ChatOutcome {
+        content,
+        reasoning_content,
+        latency_ms: elapsed,
+        prompt_tokens: usage_prompt,
+        completion_tokens: usage_completion,
+    })
 }

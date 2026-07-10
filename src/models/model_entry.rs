@@ -20,4 +20,13 @@ pub struct ModelEntry {
     /// Computed from the latest completed test_run per (model, axis); '{}' = untested.
     /// The dashboard parses this with JSON.parse(m.verdicts || '{}').
     pub verdicts: Option<String>,
+    /// Catalog unit prices (USD per token) captured at cloud sync from the
+    /// provider's own /v1/models. None = unpriced (local models, or the
+    /// provider omitted pricing). 0.0 = the provider explicitly says free —
+    /// a CLAIM the fountain probe exists to verify, not a fact.
+    pub price_prompt: Option<f64>,
+    pub price_completion: Option<f64>,
+    /// Measured spend: Σ(trial tokens × unit price) over every completed run
+    /// of this model, computed at read time in SQL. None = no priced usage.
+    pub measured_cost_usd: Option<f64>,
 }

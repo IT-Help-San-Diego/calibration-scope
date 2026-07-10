@@ -30,8 +30,24 @@ pub async fn fetch_unique_models(db: &PgPool) -> AppResult<Vec<ModelEntry>> {
             m.id, m.key, m.display_name, m.provider, m.location,
             m.context_length, m.size_gb, m.notes, m.tags, m.active,
             m.created_at, m.updated_at,
-            COALESCE(v.verdicts::text, '{}') AS verdicts
+            COALESCE(v.verdicts::text, '{}') AS verdicts,
+            m.price_prompt::float8 AS price_prompt,
+            m.price_completion::float8 AS price_completion,
+            -- Measured spend, derived at read time: provider-metered tokens ×
+            -- catalog unit price. NULL when nothing priced was ever measured.
+            c.measured_cost_usd
         FROM models m
+        LEFT JOIN (
+            SELECT r.model_id,
+                   SUM(t.prompt_tokens * m2.price_prompt
+                       + t.completion_tokens * m2.price_completion)::float8 AS measured_cost_usd
+            FROM trial_results t
+            JOIN test_runs r ON r.id = t.run_id
+            JOIN models m2 ON m2.id = r.model_id
+            WHERE t.prompt_tokens IS NOT NULL
+              AND m2.price_prompt IS NOT NULL
+            GROUP BY r.model_id
+        ) c ON c.model_id = m.id
         LEFT JOIN (
             SELECT model_id,
                    jsonb_object_agg(axis, jsonb_build_object('v', verdict, 'ms', avg_ms)) AS verdicts
