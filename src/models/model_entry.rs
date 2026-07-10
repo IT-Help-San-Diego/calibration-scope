@@ -12,6 +12,12 @@ pub struct ModelEntry {
     pub notes: Option<String>,
     pub tags: Option<Vec<String>>,
     pub active: bool,
+    /// Provider modality metadata: can this model accept image input? Drives
+    /// the 👁/text-only card badge, the capability filter, and the vision-axis
+    /// skip in execute_run. Sourced from LM Studio model_type='vlm' (local) or
+    /// the cloud catalog's input_modalities (verified against the live Nous
+    /// catalog). A vision-axis run against a false model is skipped, not failed.
+    pub supports_vision: bool,
     // DB columns are TIMESTAMP (without time zone) — sqlx maps those to NaiveDateTime.
     // DateTime<Utc> would require TIMESTAMPTZ and fails to decode at runtime.
     pub created_at: Option<chrono::NaiveDateTime>,

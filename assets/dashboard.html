@@ -1020,6 +1020,11 @@
     <option value="PREMIUM">PREMIUM</option>
     <option value="local">Local (your watts)</option>
   </select>
+  <select id="filter-vision" onchange="applyFilters()" title="Vision capability — can the model actually see images? (provider modality metadata, verified against the live catalog)">
+    <option value="all">All Capabilities</option>
+    <option value="vision">👁 Can see (vision)</option>
+    <option value="novision">Text-only</option>
+  </select>
   <select id="sort-by" onchange="applyFilters()" title="Order the grid">
     <option value="name">Sort: Name</option>
     <option value="cost-asc">Sort: Cheapest first</option>
@@ -1068,6 +1073,11 @@
     </div>
   </div>
 </div>
+
+<!-- ═══ Run theatre banner — the user's anchor when a run starts. Hidden
+     until Run is clicked; then names what's under test and (via JS) scrolls
+     the brain + live log into view so focus follows the action. -->
+<div id="run-theatre" style="display:none;background:linear-gradient(90deg,rgba(212,168,83,0.08),transparent);border-top:1px solid var(--border);border-left:3px solid var(--accent-gold,#d4a853);padding:10px 24px;font-family:var(--font-mono);font-size:12px;"></div>
 
 <!-- ═══ Brain topology — the benchmark's axes mapped onto the organ that
      invented them. ALWAYS VISIBLE (user mandate 2026-07-09): this is a
@@ -1796,6 +1806,15 @@ evtSource.onmessage = (e) => {
   } else if (data.type === 'run_complete') {
     log('verdict', `Run ${data.run_id} complete. Overall: ${data.overall}`);
     brainRunComplete(data);
+    // Update the focus banner with the finished verdict, so the user who
+    // followed the run down sees the result in the same place they landed.
+    const banner = document.getElementById('run-theatre');
+    if (banner && banner.style.display !== 'none' && _brainActiveRuns.size === 0) {
+      const good = data.overall === 'PASS' || data.overall === 'SAFE';
+      const col = good ? 'var(--safe)' : (data.overall === 'FAIL' || data.overall === 'UNSAFE') ? 'var(--unsafe)' : 'var(--flaky,#d4a853)';
+      banner.innerHTML = `<span style="color:${col};font-weight:600;">✔ Run ${data.run_id} complete — ${data.overall}</span>` +
+        `<span style="color:var(--text-muted);margin-left:8px;">full evidence in the 📊 Runs tab · card verdicts updated below</span>`;
+    }
   } else if (data.type === 'gpu_sample') {
     updateGpuStrip(data);
   } else if (data.type === 'fountain_started') {
@@ -1885,11 +1904,14 @@ function renderGrid() {
   const fAxis = document.getElementById('filter-axis').value;
   const fVerd = document.getElementById('filter-verdict').value;
   const fCost = document.getElementById('filter-cost').value;
+  const fVision = document.getElementById('filter-vision').value;
   const sortBy = document.getElementById('sort-by').value;
 
   let rows = models.filter(m => {
     if (fLoc !== 'all' && m.location !== fLoc) return false;
     if (fProv !== 'all' && m.provider !== fProv) return false;
+    if (fVision === 'vision' && !m.supports_vision) return false;
+    if (fVision === 'novision' && m.supports_vision) return false;
     if (fCost !== 'all') {
       if (fCost === 'local') { if (m.location !== 'local') return false; }
       else { const t = costTier(m); if (!t || t.label !== fCost) return false; }
@@ -2021,6 +2043,11 @@ function fmtCtx(n) {
 }
 function factsLine(m) {
   const facts = [];
+  // Vision capability leads — it's the single most-asked question of a model
+  // ("can it see?") and the reason a vision-axis run gets skipped. Eye = sees,
+  // muted "text-only" = blind. Sourced from provider modality metadata.
+  if (m.supports_vision) facts.push('<span style="color:var(--accent-gold,#d4a853);" title="Vision-capable — image input supported (provider modality metadata)">👁 vision</span>');
+  else facts.push('<span style="color:var(--text-muted);" title="Text-only — no image input. A vision-axis run against this model is skipped, not failed.">text-only</span>');
   if (m.size_gb) facts.push(m.size_gb + ' GB');
   const ctx = fmtCtx(m.context_length);
   if (ctx) facts.push(ctx + ' ctx');
@@ -2147,6 +2174,7 @@ function clearFilters() {
   document.getElementById('filter-axis').value = 'all';
   document.getElementById('filter-verdict').value = 'all';
   document.getElementById('filter-cost').value = 'all';
+  document.getElementById('filter-vision').value = 'all';
   document.getElementById('sort-by').value = 'name';
   document.getElementById('filter-search').value = '';
   renderGrid();
@@ -2308,15 +2336,70 @@ function runSingle(key) {
     log('err', `Refusing to run ${key} — LM Studio reports no context length (likely an incomplete download). See the model card for details.`);
     return;
   }
+  // FOCUS-FOLLOW (user mandate 2026-07-09): the whole point of hitting Run is
+  // to WATCH it. Bring the user to the live telemetry theatre — brain + log —
+  // and announce exactly what's under test, so they never have to scroll back
+  // up hunting for where their model went.
+  focusRunTheatre(key);
   log('info', `Queuing test run for ${key}...`);
   apiFetch('/api/runs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model_key: key, axes: ['vision','tools','reasoning','security'] })
   }).then(r => {
-    if (r.ok && r.data && r.data.run_id) log('info', `Run ${r.data.run_id} queued`);
-    else log('err', `Failed: ${r.error || JSON.stringify(r.data)}`);
+    if (r.ok && r.data && r.data.run_id) {
+      const ids = (r.data.run_ids || [r.data.run_id]).join(', ');
+      log('info', `Run ${ids} queued for ${key}`);
+      // Skipped axes are NOT failures — communicate the WHY loudly. The most
+      // common case: a text-only model asked for the vision axis. The user
+      // needs to see this or they'll think the tool is broken (it isn't — the
+      // model genuinely can't see). Surface it in the focus banner + log.
+      const skipped = r.data.skipped_axes || [];
+      if (skipped.length) {
+        skipped.forEach(s => log('phase', `[skipped] ${axisLabel(s.axis) || s.axis}: ${s.reason}`));
+        announceSkips(key, skipped);
+      }
+    } else {
+      log('err', `Failed: ${r.error || JSON.stringify(r.data)}`);
+      setRunTheatreStatus(`Could not start ${key}: ${r.error || 'unknown error'}`, 'err');
+    }
   });
+}
+// ── Run theatre: the focus surface between the grid and the telemetry ──
+// A sticky banner that names what's being tested and scrolls the brain +
+// live log into view. This is the user's anchor — "you clicked Run, HERE is
+// what's happening, right now." Cleared when the run completes.
+function focusRunTheatre(key) {
+  const m = models.find(x => x.key === key);
+  const banner = document.getElementById('run-theatre');
+  if (banner) {
+    const visNote = m && !m.supports_vision
+      ? ' · <span style="color:var(--flaky,#d4a853)">vision axis will be skipped (text-only model)</span>'
+      : '';
+    banner.innerHTML = `<span style="color:var(--accent-gold,#d4a853);font-weight:600;">▶ Now testing: ${m ? m.display_name : key}</span>` +
+      `<span style="color:var(--text-muted);margin-left:8px;">${m ? m.provider : ''} · watch the brain + live log below${visNote}</span>`;
+    banner.style.display = '';
+  }
+  // Bring the theatre (brain viz) into view — that's where the action shows.
+  const anchor = document.getElementById('brain-viz');
+  if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function setRunTheatreStatus(msg, kind) {
+  const banner = document.getElementById('run-theatre');
+  if (!banner) return;
+  banner.innerHTML = `<span style="color:var(--${kind === 'err' ? 'unsafe' : 'text-secondary'});">${msg}</span>`;
+  banner.style.display = '';
+}
+function announceSkips(key, skipped) {
+  const banner = document.getElementById('run-theatre');
+  if (!banner) return;
+  const visSkipped = skipped.find(s => s.axis === 'vision');
+  if (visSkipped) {
+    const existing = banner.innerHTML;
+    banner.innerHTML = existing +
+      `<div style="margin-top:6px;font-size:11px;color:var(--flaky,#d4a853);">⚠ Vision skipped — this model is text-only, so there's no image capability to measure (not a failure). ` +
+      `<a href="#" onclick="event.preventDefault(); document.getElementById('filter-vision').value='vision'; applyFilters(); document.getElementById('model-grid').scrollIntoView({behavior:'smooth'}); return false;" style="color:var(--accent-gold,#d4a853);text-decoration:underline;">Show me vision-capable models →</a></div>`;
+  }
 }
 // Run-selection guard: triple-click protection + confirmation modal.
 // Backend already blocks duplicate (model,axis) while queued/running.

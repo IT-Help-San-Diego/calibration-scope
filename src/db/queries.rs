@@ -30,6 +30,7 @@ pub async fn fetch_unique_models(db: &PgPool) -> AppResult<Vec<ModelEntry>> {
             m.id, m.key, m.display_name, m.provider, m.location,
             m.context_length, m.size_gb, m.notes, m.tags, m.active,
             m.created_at, m.updated_at,
+            m.supports_vision,
             COALESCE(v.verdicts::text, '{}') AS verdicts,
             m.price_prompt::float8 AS price_prompt,
             m.price_completion::float8 AS price_completion,
