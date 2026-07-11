@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+# Load project secrets (DATABASE_URL, etc.) before any step runs.
+if [[ -f .env ]]; then
+  set -a
+  source .env
+  set +a
+fi
 # ═══════════════════════════════════════════════════════════════════════════
 # deploy.sh — the ONE way to ship the Archetype Mesh dashboard.
 #

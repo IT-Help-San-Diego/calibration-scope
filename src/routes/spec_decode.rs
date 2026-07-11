@@ -122,8 +122,6 @@ fn scan_draft_pairs() -> Vec<SpecPair> {
                         match key {
                             "llm.load.llama.speculativeDecoding.draftModel" => {
                                 draft_model = value.and_then(|v| v.as_str()).map(|s| s.to_string());
-                                let simple = value == Some(&serde_json::json!(true))
-                                    || value.is_some();
                                 let mtp = fields.iter().any(|f2| {
                                     f2.get("key").and_then(|k| k.as_str())
                                         == Some("llm.load.llama.speculativeDecoding.draftMtp")

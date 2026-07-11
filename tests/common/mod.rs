@@ -1,7 +1,35 @@
 use axum::Router;
 use sqlx::PgPool;
 
+// Integration tests run in a fresh process that does not inherit shell dotfiles,
+// so we load the project .env here before any DATABASE_URL lookup.
+fn load_project_dotenv() {
+    use std::{env, fs, path::PathBuf};
+    let home = env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+    let candidates = [
+        home.join(".env"),
+        PathBuf::from(env::current_dir().unwrap_or_default()).join(".env"),
+    ];
+    for path in candidates {
+        if let Ok(raw) = fs::read_to_string(path) {
+            for line in raw.lines() {
+                let line = line.trim();
+                if line.is_empty() || line.starts_with('#') {
+                    continue;
+                }
+                if let Some(sep) = line.find('=') {
+                    let key = line[..sep].trim();
+                    let val = line[sep + 1..].trim().trim_matches('"').trim_matches('\'');
+                    let _ = env::set_var(key, val);
+                }
+            }
+            break;
+        }
+    }
+}
+
 pub async fn test_app() -> Router {
+    load_project_dotenv();
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL must be set to run integration tests (see .env.example)");
 
