@@ -1,4 +1,4 @@
-//! GET /api/lmstudio/status — LM Studio connection status + model count
+//! GET /api/lmstudio/status — LM Studio connection status + loaded models
 //! POST /api/lmstudio/sync — trigger full LM Studio model registry sync
 use axum::extract::State;
 use axum::response::Json;
@@ -47,6 +47,17 @@ pub struct SyncResult {
 }
 
 #[derive(Serialize)]
+pub struct LoadedModel {
+    pub id: String,
+    pub state: String,
+    pub max_context_length: Option<i64>,
+    pub model_type: Option<String>,
+    pub publisher: Option<String>,
+    pub quantization: Option<String>,
+    pub arch: Option<String>,
+}
+
+#[derive(Serialize)]
 pub struct LmStudioStatus {
     pub connected: bool,
     pub base_url: String,
@@ -54,6 +65,7 @@ pub struct LmStudioStatus {
     pub loaded_models: i64,
     pub registered_models: i64,
     pub last_sync: Option<String>,
+    pub loaded: Vec<LoadedModel>,
 }
 
 async fn fetch_lmstudio_models(client: &Client, base_url: &str) -> AppResult<Vec<LsModelInfo>> {
@@ -100,6 +112,7 @@ pub async fn lmstudio_status(State(state): State<AppState>) -> AppResult<Json<Lm
                 loaded_models: 0,
                 registered_models: 0,
                 last_sync: None,
+                loaded: vec![],
             }));
         }
     };
@@ -129,6 +142,19 @@ pub async fn lmstudio_status(State(state): State<AppState>) -> AppResult<Json<Lm
         loaded_models: loaded,
         registered_models: registered,
         last_sync,
+        loaded: models
+            .into_iter()
+            .filter(|m| m.state == "loaded")
+            .map(|m| LoadedModel {
+                id: m.id,
+                state: m.state,
+                max_context_length: m.max_context_length,
+                model_type: m.model_type,
+                publisher: m.publisher,
+                quantization: m.quantization,
+                arch: m.arch,
+            })
+            .collect(),
     }))
 }
 
