@@ -1394,7 +1394,7 @@ async function runSpecDecodeTest(mainModel) {
   <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px;">
     <div style="font-size:13px;letter-spacing:1.2px;color:var(--text-muted);">SPECULATIVE DECODE</div>
     <button id="sd-refresh" onclick="loadSpecDecodePairs()" class="btn-secondary" style="padding:6px 12px;font-size:11px;">Refresh</button>
-    <span id="sd-status" style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">Loading…</span>
+    <span id="sd-status" style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">Idle — waiting for model registry</span>
   </div>
   <div id="sd-pairs" style="display:grid;gap:8px;"></div>
   <div id="sd-result" style="margin-top:12px;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);font-family:var(--font-mono);font-size:12px;display:none;"></div>
@@ -1801,6 +1801,7 @@ let models = [];
 let runs = {};
 let activeRunId = null;
 let logEntries = [];
+let specDecodeLoaded = false;
 
 // ── Unified fetch wrapper ────────────────────────────────────────────────
 // Every API caller in this file used to do `fetch(...).then(r => r.json())`
@@ -1852,6 +1853,10 @@ function applyModelSnapshot(list) {
   populateLcModels();
   populateNousExpModels();
   loadNewestBots();
+  if (!specDecodeLoaded && models.length) {
+    specDecodeLoaded = true;
+    loadSpecDecodePairs();
+  }
 }
 
 // Explicit registry refresh — used right after a sync so new models appear
