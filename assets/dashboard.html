@@ -897,6 +897,28 @@
   .top-nav img.logo { height: 32px; cursor: pointer; }
   body:has(#page-benchmark:not([style*="display: none"])) .top-nav img.logo { visibility: hidden; }
 </style>
+<script>
+window.__ambSelfHeal = {
+  revision: 'a97549b-selfheal',
+  lastEvent: Date.now(),
+  stallMs: 12000,
+  required: ['selectModel','showPage','loadModels','loadSpecDecodePairs','loadLmStudioPage','apiFetch'],
+  check() {
+    const missing = this.required.filter(n => typeof window[n] !== 'function');
+    const grid = document.getElementById('model-grid');
+    const stale = grid && /Loading model registry via SSE|waiting/i.test((grid.textContent || ''));
+    return missing.length > 0 || stale;
+  },
+  reload() {
+    const u = new URL(location.href);
+    if (!u.searchParams.has('_selfheal')) u.searchParams.set('_selfheal', Date.now().toString(36));
+    location.replace(u.toString());
+  }
+};
+setTimeout(() => { if (window.__ambSelfHeal.check()) window.__ambSelfHeal.reload(); }, 16000);
+setInterval(() => { if (window.__ambSelfHeal.check()) window.__ambSelfHeal.reload(); }, 32000);
+</script>
+
 <!-- KaTeX 0.16.21 — vendored locally (assets/vendor/katex), no CDN dependency.
      Math rendering for test stimuli + formal logic specs. Loaded deferred so it
      never blocks first paint; renderMathIn() is a no-op until it arrives. -->
