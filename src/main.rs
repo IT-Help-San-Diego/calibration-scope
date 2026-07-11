@@ -79,6 +79,8 @@ async fn main() {
         .route("/api/hermes/reality", get(routes::hermes_check::hermes_reality))
         .route("/api/lmstudio/status", get(routes::lmstudio::lmstudio_status))
         .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
+        .route("/api/spec-decode/pairs", get(routes::spec_decode::spec_decode_pairs))
+        .route("/api/spec-decode/test", post(routes::spec_decode::spec_decode_test))
         .route("/api/tests", get(routes::tests::list_tests).post(routes::tests::create_test))
         .route("/api/tests/{id}", axum::routing::put(routes::tests::update_test))
         .route("/api/model-insights/{key}", get(routes::insights::model_insights))
