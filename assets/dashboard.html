@@ -901,7 +901,68 @@
      Math rendering for test stimuli + formal logic specs. Loaded deferred so it
      never blocks first paint; renderMathIn() is a no-op until it arrives. -->
 <link rel="stylesheet" href="/assets/vendor/katex/katex.min.css">
-<script defer src="/assets/vendor/katex/katex.min.js"></script>
+<script defer src="/assets/vendor/katex/katex.min.js">
+// ── speculative decode panel ───────────────────────────────────────
+async function loadSpecDecodePairs() {
+  const out = document.getElementById('sd-pairs');
+  const status = document.getElementById('sd-status');
+  status.textContent = 'Loading…';
+  try {
+    const r = await fetch('/api/spec-decode/pairs');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    status.textContent = 'LM Studio ' + (data.lmstudio_connected ? 'connected' : 'unreachable');
+    if (!data.pairs.length) {
+      out.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No draftModel entries found in LM Studio persistent config.</div>';
+      return;
+    }
+    out.innerHTML = data.pairs.map((p, i) => {
+      const badge = p.spec_active
+        ? '<span style="color:var(--safe);">ACTIVE</span>'
+        : (p.main_loaded ? '<span style="color:var(--unsafe);">DRAFT MISSING</span>' : '<span style="color:var(--text-muted);">MAIN UNLOADED</span>');
+      const reason = p.reason ? `<div style="color:var(--text-muted);font-size:11px;">${escHtml(p.reason)}</div>` : '';
+      return `<div style="padding:10px 12px;background:var(--bg-primary);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-weight:600;">${escHtml(p.main_model)}</span>
+          <span style="color:var(--text-muted);">+</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--accent-gold,#d4a853);">${escHtml(p.draft_model)}</span>
+          ${badge}
+          <button onclick="runSpecDecodeTest('${escHtml(p.main_model)}')" class="btn-primary" style="padding:4px 10px;font-size:11px;">Test timing</button>
+        </div>
+        ${reason}
+        <div id="sd-test-${i}" style="margin-top:8px;"></div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    status.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function runSpecDecodeTest(mainModel) {
+  const resultBox = document.getElementById('sd-result');
+  resultBox.style.display = 'block';
+  resultBox.innerHTML = '<span style="color:var(--text-muted);">Running timing test…</span>';
+  try {
+    const r = await fetch('/api/spec-decode/test', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({main_model: mainModel, max_tokens: 80})
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    resultBox.innerHTML = `
+      <div style="margin-bottom:6px;"><strong>${escHtml(d.main_model)} + ${escHtml(d.draft_model)}</strong></div>
+      <div>with draft:    ${d.with_draft.elapsed_secs.toFixed(2)}s · ${d.with_draft.tokens_per_sec.toFixed(1)} tok/s</div>
+      <div>without draft: ${d.without_draft.elapsed_secs.toFixed(2)}s · ${d.without_draft.tokens_per_sec.toFixed(1)} tok/s</div>
+      <div style="margin-top:6px;font-weight:600;">speedup: ${d.speedup_ratio.toFixed(2)}x · ${escHtml(d.verdict)}</div>
+      <div style="font-size:11px;color:var(--text-muted);">draft_was_active=${d.draft_was_active} — timing-based verification, LM Studio does not expose activation via REST</div>
+    `;
+  } catch (e) {
+    resultBox.innerHTML = '<span style="color:var(--unsafe);">Test failed: ' + escHtml(e.message) + '</span>';
+  }
+}
+
+</script>
 <script defer src="/assets/vendor/katex/contrib/auto-render.min.js"></script>
 </head>
 <body>
@@ -1327,6 +1388,17 @@
   </div>
 </div>
 
+
+<!-- Speculative Decode Panel -->
+<div id="spec-decode-panel" style="background:var(--bg-secondary);border-top:1px solid var(--border);padding:16px 24px;">
+  <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px;">
+    <div style="font-size:13px;letter-spacing:1.2px;color:var(--text-muted);">SPECULATIVE DECODE</div>
+    <button id="sd-refresh" onclick="loadSpecDecodePairs()" class="btn-secondary" style="padding:6px 12px;font-size:11px;">Refresh</button>
+    <span id="sd-status" style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">Loading…</span>
+  </div>
+  <div id="sd-pairs" style="display:grid;gap:8px;"></div>
+  <div id="sd-result" style="margin-top:12px;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);font-family:var(--font-mono);font-size:12px;display:none;"></div>
+</div>
 <!-- Model Grid -->
 <div class="model-grid" id="model-grid">
   <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
