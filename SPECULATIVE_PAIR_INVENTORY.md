@@ -4,6 +4,7 @@
 - `google/gemma-4-31b` + `google/gemma-4-12b` — draft stats confirmed
 - `google/gemma-4-31b-qat` + `google/gemma-4-12b-qat` — loaded successfully
 - `ibm/granite-3.2-8b` + `ibm/granite-3.1-8b` — loaded successfully
+- `nvidia/nemotron-3-nano-omni` + `nvidia/nemotron-3-nano-4b` — loaded successfully, draft stats confirmed
 
 ## Confirmed Blockers / Not Verified
 - `ibm/granite-3.3-8b-instruct` + `ibm/granite-3.2-8b` — model_not_found in LM Studio registry
@@ -15,5 +16,6 @@
 - Path: `~/Downloads/lmstudio-backup-20260713/`
 - Contains: draft-model-compatibility-cache.json, settings.json, user-concrete-model-default-config/
 
-## Tested At
-2026-07-13
+## Notes
+- LM Studio supports multiple simultaneous loaded instances on this host.
+- Unload API returns 200 but instance lists can remain stale; use inference canary for verification.
