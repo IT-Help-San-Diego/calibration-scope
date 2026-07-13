@@ -186,5 +186,6 @@ pub async fn chat(
         latency_ms: elapsed,
         prompt_tokens: usage_prompt,
         completion_tokens: usage_completion,
+        speculative_decode: None,
     })
 }

@@ -32,6 +32,15 @@ pub struct ChatOutcome {
     pub latency_ms: u64,
     pub prompt_tokens: Option<i64>,
     pub completion_tokens: Option<i64>,
+    pub speculative_decode: Option<SpeculativeDecodeStats>,
+}
+
+#[derive(Debug)]
+pub struct SpeculativeDecodeStats {
+    pub draft_model: Option<String>,
+    pub total_draft_tokens_count: Option<i64>,
+    pub accepted_draft_tokens_count: Option<i64>,
+    pub rejected_draft_tokens_count: Option<i64>,
 }
 
 /// Parse usage.{prompt_tokens,completion_tokens} from an OpenAI-shaped
@@ -469,6 +478,7 @@ async fn check_memory_safety(
         .bind(run_id)
         .execute(db)
         .await?;
+    progress(run_id, "tests_loaded");
 
     let mut pass_count: i32 = 0;
     let mut total_count: i32 = 0;
@@ -639,10 +649,12 @@ async fn check_memory_safety(
     // evidence record) must agree on what was actually tested.
     let total_count = real_total_count;
 
+    progress(run_id, &format!("scoring_start pass={} total={}", pass_count, total_count));
     emit(tx, serde_json::json!({
         "type": "phase", "run_id": run_id, "phase": "scoring",
         "message": format!("Scoring: {}/{} trials passed", pass_count, total_count), "at": now_iso()
     }));
+    progress(run_id, "scoring_emitted");
 
     // Verdict vocabulary lives in ONE place: models::verdict. Partial passes
     // are INTERMITTENT (IEEE reliability term) — "flaky" blames the harness,

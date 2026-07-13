@@ -136,17 +136,29 @@ pub async fn ensure_pair_loaded(
         }
     }
 
-    // Load primary if absent; unload extras so only one instance remains.
+    // Load primary with speculative binding when a draft key was supplied.
+    // Empty draft_key means clean-room mode: load primary normally.
     let primary_instances = list_loaded_instances(client, base_url)
         .await?
         .into_iter()
         .filter(|(k, _)| k == primary_key)
         .collect::<Vec<_>>();
     if primary_instances.is_empty() {
-        tracing::warn!("ensure_pair_loaded: loading primary {}", primary_key);
+        tracing::warn!("ensure_pair_loaded: loading primary {} with draft={}", primary_key, draft_key);
+        let mut payload = serde_json::json!({ "model": primary_key });
+        if !draft_key.is_empty() {
+            payload
+                .as_object_mut()
+                .unwrap()
+                .insert("speculative_draft_model".into(), serde_json::json!(draft_key));
+            payload
+                .as_object_mut()
+                .unwrap()
+                .insert("speculative_draft_simple".into(), serde_json::json!(true));
+        }
         let _ = client
             .post(format!("{}/api/v1/models/load", base_url))
-            .json(&serde_json::json!({ "model": primary_key }))
+            .json(&payload)
             .timeout(std::time::Duration::from_secs(max_wait_secs))
             .send()
             .await;
@@ -372,11 +384,50 @@ pub async fn chat(
 
     let (prompt_tokens, completion_tokens) = super::usage_tokens(&json);
 
+    let speculative_decode = extract_speculative_stats(&json);
+
     Ok(super::ChatOutcome {
         content,
         reasoning_content,
         latency_ms: elapsed,
         prompt_tokens,
         completion_tokens,
+        speculative_decode,
+    })
+}
+
+fn extract_speculative_stats(json: &serde_json::Value) -> Option<super::SpeculativeDecodeStats> {
+    let draft_model = json
+        .get("draft_model")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    let usage = json.get("usage")?;
+    let total_draft_tokens_count = usage
+        .get("total_draft_tokens_count")
+        .and_then(|v| v.as_i64())
+        .filter(|n| *n >= 0);
+    let accepted_draft_tokens_count = usage
+        .get("accepted_draft_tokens_count")
+        .and_then(|v| v.as_i64())
+        .filter(|n| *n >= 0);
+    let rejected_draft_tokens_count = usage
+        .get("rejected_draft_tokens_count")
+        .and_then(|v| v.as_i64())
+        .filter(|n| *n >= 0);
+
+    if draft_model.is_none()
+        && total_draft_tokens_count.is_none()
+        && accepted_draft_tokens_count.is_none()
+        && rejected_draft_tokens_count.is_none()
+    {
+        return None;
+    }
+
+    Some(super::SpeculativeDecodeStats {
+        draft_model,
+        total_draft_tokens_count,
+        accepted_draft_tokens_count,
+        rejected_draft_tokens_count,
     })
 }
