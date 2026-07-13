@@ -500,10 +500,22 @@ async fn check_memory_safety(
                 ))?;
                 progress(run_id, "pair_load_done");
 
+                let lmstudio_config_json = lmstudio::fetch_instance_config(
+                    &client,
+                    &config.lmstudio_base_url,
+                    model_key,
+                )
+                .await
+                .ok()
+                .flatten()
+                .map(|v| serde_json::to_string(&v).ok())
+                .flatten();
+
                 let _ = sqlx::query(
-                    "UPDATE test_runs SET draft_model_key = $1 WHERE id = $2"
+                    "UPDATE test_runs SET draft_model_key = $1, lmstudio_runtime_config = COALESCE($2, lmstudio_runtime_config) WHERE id = $3"
                 )
                 .bind(draft_key)
+                .bind(lmstudio_config_json)
                 .bind(run_id)
                 .execute(db)
                 .await;
@@ -622,8 +634,8 @@ async fn check_memory_safety(
             }
 
             sqlx::query(
-                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id, prompt_tokens, completion_tokens)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"#,
+                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id, prompt_tokens, completion_tokens, speculative_draft_model, total_draft_tokens_count, accepted_draft_tokens_count, rejected_draft_tokens_count)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"#,
             )
             .bind(run_id)
             .bind(trial_num)
@@ -636,6 +648,10 @@ async fn check_memory_safety(
             .bind(test.id)
             .bind(ptok)
             .bind(ctok)
+            .bind(spec_decode.as_ref().and_then(|s| s.draft_model.clone()))
+            .bind(spec_decode.as_ref().and_then(|s| s.total_draft_tokens_count))
+            .bind(spec_decode.as_ref().and_then(|s| s.accepted_draft_tokens_count))
+            .bind(spec_decode.as_ref().and_then(|s| s.rejected_draft_tokens_count))
             .execute(db)
             .await?;
 

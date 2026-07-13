@@ -106,6 +106,36 @@ pub async fn list_loaded_instances(client: &Client, base_url: &str) -> AppResult
     Ok(out)
 }
 
+/// Fetch the loaded instance config for a model key from `/api/v1/models`.
+/// Returns None when the model is not resident or the config shape is missing.
+pub async fn fetch_instance_config(
+    client: &Client,
+    base_url: &str,
+    model_key: &str,
+) -> AppResult<Option<serde_json::Value>> {
+    let resp = client
+        .get(format!("{}/api/v1/models", base_url))
+        .send()
+        .await?
+        .error_for_status()?;
+    let v: serde_json::Value = resp.json().await?;
+    if let Some(models) = v.get("models").and_then(|m| m.as_array()) {
+        for m in models {
+            let key = m.get("key").and_then(|i| i.as_str()).or_else(|| m.get("id").and_then(|i| i.as_str())).unwrap_or("");
+            if key != model_key {
+                continue;
+            }
+            if let Some(instances) = m.get("loaded_instances").and_then(|i| i.as_array()) {
+                if let Some(first) = instances.first() {
+                    return Ok(first.get("config").cloned());
+                }
+            }
+            return Ok(None);
+        }
+    }
+    Ok(None)
+}
+
 /// Speculative-pair helper: ensure BOTH primary and draft models are loaded
 /// and resident. Returns (primary_instance_id, draft_instance_id).
 /// This does NOT eject first; it is the caller's responsibility to prepare
@@ -145,7 +175,14 @@ pub async fn ensure_pair_loaded(
         .collect::<Vec<_>>();
     if primary_instances.is_empty() {
         tracing::warn!("ensure_pair_loaded: loading primary {} with draft={}", primary_key, draft_key);
-        let mut payload = serde_json::json!({ "model": primary_key });
+        let mut payload = serde_json::json!({
+            "model": primary_key,
+            "eval_batch_size": 2048,
+            "physical_batch_size": 512,
+            "parallel": 4,
+            "flash_attention": true,
+            "offload_kv_cache_to_gpu": true,
+        });
         if !draft_key.is_empty() {
             payload
                 .as_object_mut()
@@ -155,6 +192,18 @@ pub async fn ensure_pair_loaded(
                 .as_object_mut()
                 .unwrap()
                 .insert("speculative_draft_simple".into(), serde_json::json!(true));
+            payload
+                .as_object_mut()
+                .unwrap()
+                .insert("speculative_draft_max_tokens".into(), serde_json::json!(64));
+            payload
+                .as_object_mut()
+                .unwrap()
+                .insert("speculative_draft_min_tokens".into(), serde_json::json!(0));
+            payload
+                .as_object_mut()
+                .unwrap()
+                .insert("speculative_draft_min_continue_probability".into(), serde_json::json!(0.75));
         }
         let resp = client
             .post(format!("{}/api/v1/models/load", base_url))
