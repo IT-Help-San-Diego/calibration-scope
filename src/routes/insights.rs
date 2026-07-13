@@ -106,7 +106,7 @@ pub async fn model_insights(
                   COUNT(*) AS trial_count
            FROM trial_results tr
            JOIN test_runs r ON r.id = tr.run_id
-           WHERE r.model_id = $1 AND r.status = 'done'
+           WHERE r.model_id = $1 AND r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE)
              AND tr.latency_ms >= 0
            GROUP BY r.axis ORDER BY r.axis"#,
     )
@@ -126,7 +126,7 @@ pub async fn model_insights(
            FROM trial_results tr
            JOIN test_runs r ON r.id = tr.run_id
            LEFT JOIN tests t ON t.id = tr.test_id
-           WHERE r.model_id = $1 AND r.status = 'done'
+           WHERE r.model_id = $1 AND r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE)
            GROUP BY tr.test_id, t.name, r.axis
            ORDER BY r.axis, t.name NULLS LAST"#,
     )
@@ -193,7 +193,7 @@ pub async fn model_insights(
            FROM trial_results tr
            JOIN test_runs r ON r.id = tr.run_id
            LEFT JOIN tests t ON t.id = tr.test_id
-           WHERE r.model_id = $1 AND r.status = 'done'
+           WHERE r.model_id = $1 AND r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE)
              AND tr.passed = false
              AND tr.is_infra_error = false
            ORDER BY r.created_at DESC, tr.id DESC

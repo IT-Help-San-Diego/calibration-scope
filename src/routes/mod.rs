@@ -18,3 +18,5 @@ pub mod cloud_sync;
 pub mod fountain;
 pub mod spec_decode;
 pub mod neurovault;
+pub mod quarantine;
+

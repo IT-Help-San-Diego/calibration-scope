@@ -139,7 +139,7 @@ pub async fn model_dossier(
                (ARRAY_AGG(r.sha3_provenance ORDER BY r.created_at DESC))[1] AS latest_sha3
         FROM test_runs r
         LEFT JOIN trial_results tr ON tr.run_id = r.id
-        WHERE r.model_id = $1 AND r.status = 'done'
+        WHERE r.model_id = $1 AND r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE)
         GROUP BY r.axis ORDER BY r.axis
         "#,
     )
@@ -157,7 +157,7 @@ pub async fn model_dossier(
         FROM trial_results tr
         JOIN test_runs r ON r.id = tr.run_id
         LEFT JOIN tests t ON t.id = tr.test_id
-        WHERE r.model_id = $1 AND r.status = 'done'
+        WHERE r.model_id = $1 AND r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE)
         GROUP BY tr.test_id, t.name, r.axis
         ORDER BY r.axis, t.name NULLS LAST
         "#,

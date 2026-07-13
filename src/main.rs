@@ -90,6 +90,9 @@ async fn main() {
         .route("/api/tests/{id}/duplicate", post(routes::tests::duplicate_test))
         .route("/api/fountain", get(routes::fountain::list_probes).post(routes::fountain::start_probe))
         .route("/api/fountain/{id}", get(routes::fountain::probe_detail))
+        .route("/api/quarantine", get(routes::quarantine::list_quarantined))
+        .route("/api/quarantine/{id}/release", post(routes::quarantine::release_quarantined))
+        .route("/api/quarantine/{id}/notes", post(routes::quarantine::append_notes))
         .nest_service("/assets", static_files)
         // 16MB body cap: a 10MB image (Prompt Builder max) is ~13.7MB as base64.
         .layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024))

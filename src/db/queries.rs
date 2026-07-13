@@ -84,7 +84,7 @@ pub async fn fetch_unique_models(db: &PgPool) -> AppResult<Vec<ModelEntry>> {
                      FROM trial_results t
                      WHERE t.run_id = r.id AND t.latency_ms >= 0) AS avg_ms
                 FROM test_runs r
-                WHERE r.status = 'done' AND r.total_count > 0
+                WHERE r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE) AND r.total_count > 0
                 ORDER BY r.model_id, r.axis, r.created_at DESC
             ) latest
             GROUP BY model_id

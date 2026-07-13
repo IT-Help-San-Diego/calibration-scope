@@ -122,6 +122,43 @@ fn build_messages(
     }
 }
 
+/// Regenerate SHA3 provenance for a completed/failed run from persisted
+/// `trial_results`. This is used when the inner run fails after partial
+/// trials have already been written, so the audit ledger can still seal
+/// exactly what happened instead of leaving `sha3_provenance = NULL`.
+async fn recompute_run_sha3(db: &PgPool, run_id: i32, model_key: &str, axis: &str) -> Option<String> {
+    let rows = sqlx::query_as::<_, (String,)>(
+        r#"SELECT COALESCE(reasoning_content, '') || ' ' || COALESCE(raw_response, '')
+           FROM trial_results
+           WHERE run_id = $1
+           ORDER BY test_id, trial_num"#,
+    )
+    .bind(run_id)
+    .fetch_all(db)
+    .await
+    .ok()?;
+
+    let mut evidence_lines: Vec<String> = Vec::new();
+    let mut pass_count: i32 = 0;
+    let mut total_count: i32 = 0;
+    for (idx, (payload,)) in rows.iter().enumerate() {
+        total_count += 1;
+        if payload.contains("infrastructure error") {
+            continue;
+        }
+        if !payload.trim().is_empty() {
+            pass_count += 1;
+        }
+        evidence_lines.push(format!("trial={} response={}", idx + 1, payload));
+    }
+    let real_total_count = total_count;
+    let evidence_record = format!(
+        "run_id={} model={} axis={} pass={}/{}\n{}",
+        run_id, model_key, axis, pass_count, real_total_count, evidence_lines.join("\n")
+    );
+    Some(provenance::sha3_hex(&evidence_record))
+}
+
 /// Execute one full run: all active tests on `axis` against `model_key`.
 /// Persists test_runs + trial_results + verdict + SHA3-512 provenance.
 #[allow(clippy::too_many_arguments)]
@@ -184,10 +221,30 @@ pub async fn execute_run(
         }
         Err(e) => {
             tracing::error!("Run {} failed: {}", run_id, e);
-            let _ = sqlx::query("UPDATE test_runs SET status = 'error', finished_at = NOW() WHERE id = $1")
-                .bind(run_id)
-                .execute(&db)
-                .await;
+            let sha3: Option<(Option<String>,)> = sqlx::query_as::<_, (Option<String>,)>(
+                "SELECT sha3_provenance FROM test_runs WHERE id = $1",
+            )
+            .bind(run_id)
+            .fetch_optional(&db)
+            .await
+            .ok()
+            .flatten();
+            let sha3 = sha3.and_then(|t| t.0);
+            let _ = sqlx::query(
+                r#"UPDATE test_runs
+                   SET status = CASE
+                       WHEN pass_count IS NULL AND total_count IS NULL
+                       THEN 'error'
+                       ELSE 'completed_with_errors'
+                   END,
+                       finished_at = NOW(),
+                       sha3_provenance = COALESCE(sha3_provenance, $2)
+                   WHERE id = $1"#,
+            )
+            .bind(run_id)
+            .bind(&sha3)
+            .execute(&db)
+            .await;
             emit(
                 &tx,
                 serde_json::json!({
@@ -529,7 +586,7 @@ async fn check_memory_safety(
             };
 
             total_count += 1;
-            let (passed, latency_ms, raw, reasoning, detail, is_infra_error, ptok, ctok, spec_decode) = match outcome {
+            let (passed, latency_ms, raw, reasoning, mut detail, is_infra_error, ptok, ctok, spec_decode) = match outcome {
                 Ok(o) => {
                     let expected = test.expected_result.as_deref().unwrap_or("");
                     let score = scoring::score_response(&o.content, expected, &test.scoring_method);
@@ -545,17 +602,18 @@ async fn check_memory_safety(
                         o.speculative_decode,
                     )
                 }
-                // Infra failure (LM Studio rejected the request, connection
-                // dropped, provider timeout) — the model never got a chance
-                // to answer. This must NOT be scored as a capability FAIL;
-                // is_infra_error flags it so aggregation (loot.rs) can
-                // exclude it from the verdict instead of silently treating
-                // "we never asked" the same as "it answered wrong." Found
-                // live 2026-07-08: without this, a config bug that blocks
-                // every request to a model made that model look like it
-                // fails every capability, when the truth was infrastructure.
                 Err(e) => (false, -1, String::new(), None, format!("execution error: {}", e), true, None, None, None),
             };
+            let mut is_infra_error = is_infra_error;
+            if !is_infra_error && raw.trim().is_empty() {
+                is_infra_error = true;
+            }
+            if !is_infra_error && latency_ms == -1 && raw.is_empty() {
+                is_infra_error = true;
+            }
+            if is_infra_error {
+                detail = format!("infrastructure error: {}", detail);
+            }
             if passed {
                 pass_count += 1;
             }
@@ -678,16 +736,37 @@ async fn check_memory_safety(
     );
     let sha3 = provenance::sha3_hex(&evidence_record);
 
+    // Auto-quarantine bad runs so they never pollute the leaderboard, but
+    // preserve them in trial_results for post-mortem learning.
+    // Reasons:
+    //   infrastructure_error — LM Studio/provider rejected requests before the
+    //     model could answer; the model was never actually tested.
+    //   blank_responses — model returned empty content on every trial.
+    //   all_failed — model answered every trial but got zero passes.
+    let quarantine_reason = if infra_error_count > 0 {
+        Some("infrastructure_error")
+    } else if pass_count == 0 && total_count > 0 {
+        Some("blank_responses")
+    } else if pass_count == 0 {
+        Some("all_failed")
+    } else {
+        None
+    };
+
     sqlx::query(
         r#"UPDATE test_runs
            SET status = 'done', finished_at = NOW(),
-               pass_count = $2, total_count = $3, sha3_provenance = $4
+               pass_count = $2, total_count = $3, sha3_provenance = $4,
+               quarantined = COALESCE($5, FALSE),
+               quarantine_reason = $6
            WHERE id = $1"#,
     )
     .bind(run_id)
     .bind(pass_count)
     .bind(total_count)
     .bind(&sha3)
+    .bind(quarantine_reason.is_some())
+    .bind(quarantine_reason)
     .execute(db)
     .await?;
 

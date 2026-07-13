@@ -122,7 +122,7 @@ pub async fn loot_handler(State(state): State<AppState>, Query(params): Query<Lo
                     FROM trial_results t
                     WHERE t.run_id = tr.id AND t.latency_ms >= 0) AS avg_ms
             FROM test_runs tr
-            WHERE tr.status = 'done' AND tr.total_count > 0
+            WHERE tr.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE) AND tr.total_count > 0
         ) r
         JOIN models m ON m.id = r.model_id
         WHERE m.active = true

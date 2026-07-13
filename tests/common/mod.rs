@@ -101,6 +101,11 @@ pub async fn test_app() -> Router {
             "/api/models/{key}/dossier",
             axum::routing::get(archetype_mesh_dashboard::routes::dossier::model_dossier),
         )
+        .route("/api/fountain", axum::routing::get(archetype_mesh_dashboard::routes::fountain::list_probes).post(archetype_mesh_dashboard::routes::fountain::start_probe))
+        .route("/api/fountain/{id}", axum::routing::get(archetype_mesh_dashboard::routes::fountain::probe_detail))
+        .route("/api/quarantine", axum::routing::get(archetype_mesh_dashboard::routes::quarantine::list_quarantined))
+        .route("/api/quarantine/{id}/release", axum::routing::post(archetype_mesh_dashboard::routes::quarantine::release_quarantined))
+        .route("/api/quarantine/{id}/notes", axum::routing::post(archetype_mesh_dashboard::routes::quarantine::append_notes))
         .nest_service("/assets", static_files)
         .layer(TraceLayer::new_for_http())
         .with_state(state)
