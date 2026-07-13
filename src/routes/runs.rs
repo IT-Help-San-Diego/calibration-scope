@@ -276,6 +276,8 @@ struct TrialDetailRow {
     total_draft_tokens_count: Option<i64>,
     accepted_draft_tokens_count: Option<i64>,
     rejected_draft_tokens_count: Option<i64>,
+    test_name: Option<String>,
+    formal_spec: Option<String>,
 }
 
 #[derive(sqlx::FromRow)]
@@ -314,9 +316,12 @@ pub async fn get_run_detail(
     };
 
     let trials: Vec<TrialDetailRow> = sqlx::query_as(
-        r#"SELECT id, trial_num, raw_response, reasoning_content, latency_ms, passed, detail, is_infra_error,
-                  speculative_draft_model, total_draft_tokens_count, accepted_draft_tokens_count, rejected_draft_tokens_count
-           FROM trial_results WHERE run_id = $1 ORDER BY id"#,
+        r#"SELECT tr.id, tr.trial_num, tr.raw_response, tr.reasoning_content, tr.latency_ms, tr.passed, tr.detail, tr.is_infra_error,
+                  tr.speculative_draft_model, tr.total_draft_tokens_count, tr.accepted_draft_tokens_count, tr.rejected_draft_tokens_count,
+                  t.name as test_name, t.formal_spec
+           FROM trial_results tr
+           LEFT JOIN tests t ON t.id = tr.test_id
+           WHERE tr.run_id = $1 ORDER BY tr.id"#,
     )
     .bind(run_id)
     .fetch_all(&state.db)

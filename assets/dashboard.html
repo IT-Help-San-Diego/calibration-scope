@@ -3524,7 +3524,8 @@ async function toggleRunDetail(runId) {
          </div>`
       : '';
     return `<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border-color);">
-      <div>Trial ${t.trial_num}: ${badge} <span style="color:var(--text-muted);">${t.latency_ms >= 0 ? t.latency_ms + 'ms' : ''}</span></div>
+      <div>Trial ${t.trial_num}: ${badge} <span style="color:var(--text-muted);">${t.latency_ms >= 0 ? t.latency_ms + 'ms' : ''}</span>${t.test_name ? ` <span style="color:var(--text-muted);font-size:11px;">· ${esc(t.test_name)}</span>` : ''}</div>
+      ${t.formal_spec ? `<div class="formal-spec-math" data-spec="${esc(t.formal_spec).replace(/"/g,'&quot;')}" style="margin:4px 0;font-size:13px;padding:6px 8px;background:rgba(212,168,83,0.06);border:1px solid rgba(212,168,83,0.2);border-radius:4px;color:var(--accent-gold);">${esc(t.formal_spec)}</div>` : ''}
       ${reasoningHtml}
       <div style="white-space:pre-wrap;font-family:var(--font-mono);">${esc(t.raw_response) || '<span style="color:var(--text-muted);">(empty response)</span>'}</div>
     </div>`;
