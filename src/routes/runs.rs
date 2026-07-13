@@ -272,6 +272,10 @@ struct TrialDetailRow {
     passed: bool,
     detail: Option<String>,
     is_infra_error: bool,
+    speculative_draft_model: Option<String>,
+    total_draft_tokens_count: Option<i64>,
+    accepted_draft_tokens_count: Option<i64>,
+    rejected_draft_tokens_count: Option<i64>,
 }
 
 #[derive(sqlx::FromRow)]
@@ -287,6 +291,7 @@ struct RunDetailHeader {
     finished_at: Option<chrono::NaiveDateTime>,
     load_mode: Option<String>,
     draft_model_key: Option<String>,
+    lmstudio_runtime_config: Option<serde_json::Value>,
 }
 
 pub async fn get_run_detail(
@@ -295,7 +300,8 @@ pub async fn get_run_detail(
 ) -> AppResult<Json<serde_json::Value>> {
     let header: Option<RunDetailHeader> = sqlx::query_as(
         r#"SELECT r.id, m.key, r.axis, r.status, r.pass_count, r.total_count,
-                  r.sha3_provenance, r.created_at, r.finished_at, r.load_mode, r.draft_model_key
+                  r.sha3_provenance, r.created_at, r.finished_at, r.load_mode, r.draft_model_key,
+                  r.lmstudio_runtime_config
            FROM test_runs r JOIN models m ON m.id = r.model_id
            WHERE r.id = $1"#,
     )
@@ -308,7 +314,8 @@ pub async fn get_run_detail(
     };
 
     let trials: Vec<TrialDetailRow> = sqlx::query_as(
-        r#"SELECT id, trial_num, raw_response, reasoning_content, latency_ms, passed, detail, is_infra_error
+        r#"SELECT id, trial_num, raw_response, reasoning_content, latency_ms, passed, detail, is_infra_error,
+                  speculative_draft_model, total_draft_tokens_count, accepted_draft_tokens_count, rejected_draft_tokens_count
            FROM trial_results WHERE run_id = $1 ORDER BY id"#,
     )
     .bind(run_id)
@@ -324,6 +331,7 @@ pub async fn get_run_detail(
         "total_count": header.total_count,
         "load_mode": header.load_mode,
         "draft_model_key": header.draft_model_key,
+        "lmstudio_runtime_config": header.lmstudio_runtime_config,
         "sha3_provenance": header.sha3_provenance,
         "created_at": header.created_at.map(|c| c.to_string()),
         "finished_at": header.finished_at.map(|c| c.to_string()),
