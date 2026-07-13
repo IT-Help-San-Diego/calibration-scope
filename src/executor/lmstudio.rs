@@ -156,12 +156,20 @@ pub async fn ensure_pair_loaded(
                 .unwrap()
                 .insert("speculative_draft_simple".into(), serde_json::json!(true));
         }
-        let _ = client
+        let resp = client
             .post(format!("{}/api/v1/models/load", base_url))
             .json(&payload)
             .timeout(std::time::Duration::from_secs(max_wait_secs))
             .send()
-            .await;
+            .await?;
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let body = resp.text().await.unwrap_or_default();
+            return Err(AppError::Executor(format!(
+                "LM Studio rejected speculative pair primary load for {} (HTTP {}): {}",
+                primary_key, status, body
+            )));
+        }
     } else if primary_instances.len() > 1 {
         tracing::warn!("ensure_pair_loaded: unloading duplicate primary {} found={:?}", primary_key, primary_instances);
         for (_, iid) in &primary_instances[1..] {
