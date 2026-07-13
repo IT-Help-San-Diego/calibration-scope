@@ -178,8 +178,8 @@ pub async fn ensure_pair_loaded(
         let mut payload = serde_json::json!({
             "model": primary_key,
             "context_length": 131072,
-            "eval_batch_size": 2048,
-            "physical_batch_size": 512,
+            "eval_batch_size": 4096,
+            "physical_batch_size": 1024,
             "parallel": 4,
             "flash_attention": true,
             "offload_kv_cache_to_gpu": true,
@@ -314,8 +314,8 @@ pub async fn ensure_loaded(
         .json(&serde_json::json!({
             "model": model_key,
             "context_length": 131072,
-            "eval_batch_size": 2048,
-            "physical_batch_size": 512,
+            "eval_batch_size": 4096,
+            "physical_batch_size": 1024,
             "parallel": 4,
             "flash_attention": true,
             "offload_kv_cache_to_gpu": true,
