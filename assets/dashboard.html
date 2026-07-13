@@ -3467,10 +3467,15 @@ async function loadRunsPage() {
   }
   el.innerHTML = d.runs.map(x => {
     const statusColor = x.status === 'done' ? (x.pass_count === x.total_count ? 'var(--safe)' : (x.pass_count === 0 ? 'var(--unsafe)' : 'var(--flaky)')) : 'var(--accent-blue)';
+    const isLive = x.status === 'queued' || x.status === 'running' || x.status === 'loading';
+    const abortBtn = isLive
+      ? `<button class="btn" style="background:var(--unsafe);color:#fff;border:none;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:11px;margin-left:8px;" onclick="event.stopPropagation();abortRun(${x.id})" title="Stop this run immediately">⛔ Abort</button>`
+      : '';
     return `<div class="list-row" style="cursor:pointer" onclick="toggleRunDetail(${x.id})">
       <span class="lr-axis" style="color:${statusColor}">${(x.status || '').toUpperCase()}</span>
       <span class="lr-name">${x.model_key} — ${x.axis}</span>
       <span class="lr-meta">${x.pass_count}/${x.total_count} · ${x.sha3_provenance ? x.sha3_provenance.slice(0,24) + '…' : 'no evidence yet'}</span>
+      ${abortBtn}
     </div>
     <div class="run-detail" id="run-detail-${x.id}" style="display:none;padding:10px 14px;margin:0 0 8px;background:var(--bg-secondary);border-left:2px solid ${statusColor};font-size:12px;"></div>`;
   }).join('');
