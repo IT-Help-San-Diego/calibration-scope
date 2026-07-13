@@ -4,7 +4,7 @@ use axum::extract::State;
 use axum::response::Json;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
@@ -177,7 +177,17 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
     let mut deactivated = 0;
 
     // Get currently active LM Studio models in registry
-    let existing: HashMap<String, i32> = sqlx::query_as::<_, (String, i32)>(
+    // LM Studio can expose the same GGUF file under multiple ids, e.g.
+    // `unsloth/step-3.7-flash` and `stepfun-ai/step-3.7-flash@q3_k_m` for the
+    // same underlying filename `Step-3.7-Flash-UD-Q3_K_M-00001-of-00003.gguf`.
+    // If we insert both, they become duplicate local cards/rows. Normalize by
+    // filename so sync is idempotent and newest-bots shows one entry per GGUF.
+    let gguf_filename_for = |id: &str| -> String {
+      id.rsplit('/').next().unwrap_or(id).to_string()
+    };
+
+    // Existing active registry rows by lmstudio_key.
+    let mut existing_by_key: HashMap<String, i32> = sqlx::query_as::<_, (String, i32)>(
         "SELECT lmstudio_key, id FROM models WHERE provider = 'lmstudio' AND active = true AND lmstudio_key IS NOT NULL",
     )
     .fetch_all(&state.db)
@@ -185,22 +195,86 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
     .into_iter()
     .collect();
 
-    let mut seen_keys = std::collections::HashSet::new();
+    // Existing active registry rows by GGUF filename so deduped LM entries
+    // can find their canonical row even when the key changed.
+    let existing_by_file: HashMap<String, i32> = sqlx::query_as::<_, (String, i32)>(
+        "SELECT lmstudio_key, id FROM models WHERE provider = 'lmstudio' AND active = true AND lmstudio_key IS NOT NULL",
+    )
+    .fetch_all(&state.db)
+    .await?
+    .into_iter()
+    .map(|(k, id)| (gguf_filename_for(&k), id))
+    .collect();
+
+    let canonical_by_file: HashMap<String, (String, i32, Option<bool>, Option<String>, Option<String>, Option<String>, Option<bool>)> = sqlx::query_as::<_, (String, i32, Option<bool>, Option<String>, Option<String>, Option<String>, Option<bool>)>(
+        "SELECT lmstudio_key, context_length, supports_vision, publisher, quantization, arch, active FROM models WHERE provider = 'lmstudio' AND active = true AND lmstudio_key IS NOT NULL",
+    )
+    .fetch_all(&state.db)
+    .await?
+    .into_iter()
+    .map(|row| (gguf_filename_for(&row.0), row))
+    .collect();
+
+    let mut seen_files = HashSet::new();
+    let mut seen_keys = HashSet::new();
 
     for lm in &lm_models {
         let key = &lm.id;
-        seen_keys.insert(key.clone());
-
-        // Vision capability detection — type == "vlm" is the real signal.
-        // BUG HISTORY (2026-07-08, caught by a live 400 on a vision run):
-        // this used to probe capabilities.vision as a bool, which NEVER
-        // exists (capabilities is ["tool_use"]-style array) — so every model
-        // including qwen3-vl-8b synced as supports_vision=false and the
-        // pre-flight gate blocked ALL vision runs after any sync.
+        let file = gguf_filename_for(key);
         let supports_vision = lm.model_type.as_deref() == Some("vlm");
 
-        if let Some(&model_id) = existing.get(key) {
-            // Update existing
+        // Prefer existing row by exact key, then by GGUF filename.
+        let existing_id = existing_by_key.get(key)
+            .or_else(|| existing_by_file.get(&file))
+            .copied();
+
+        // Prefer publisher-prefixed id when multiple LM ids map to one file.
+        let canonical = canonical_by_file.get(&file).cloned();
+        let canonical_key = canonical
+            .as_ref()
+            .map(|(k, _, _, _, _, _, _)| {
+                let ck = gguf_filename_for(k);
+                if ck.contains('/') { k.clone() } else { key.clone() }
+            })
+            .unwrap_or_else(|| key.clone());
+
+        let final_key = if canonical_key.contains('/') { canonical_key } else { key.clone() };
+        let final_context = canonical
+            .as_ref()
+            .and_then(|(_, ctx, _, _, _, _, _)| if ctx > &0 { Some(*ctx as i64) } else { lm.max_context_length })
+            .or(lm.max_context_length)
+            .and_then(|v| if v > 0 { Some(v) } else { None })
+            .map(i32::try_from)
+            .and_then(std::result::Result::ok)
+            .unwrap_or(0);
+        let final_supports_vision = canonical
+            .as_ref()
+            .and_then(|(_, _, sv, _, _, _, _)| *sv)
+            .unwrap_or(supports_vision);
+        let final_publisher = canonical
+            .as_ref()
+            .and_then(|(_, _, _, pub_, _, _, _)| pub_.clone())
+            .or(lm.publisher.clone());
+        let final_quantization = canonical
+            .as_ref()
+            .and_then(|(_, _, _, _, quant, _, _)| quant.clone())
+            .or(lm.quantization.clone());
+        let final_arch = canonical
+            .as_ref()
+            .and_then(|(_, _, _, _, _, arch, _)| arch.clone())
+            .or(lm.arch.clone());
+
+        let final_key_ref = &final_key;
+        let final_context_ref = &final_context;
+        let final_supports_vision_ref = &final_supports_vision;
+        let final_publisher_ref = &final_publisher;
+        let final_quantization_ref = &final_quantization;
+        let final_arch_ref = &final_arch;
+
+        seen_keys.insert(final_key.clone());
+        seen_files.insert(file.clone());
+
+        if let Some(model_id) = existing_id {
             let rows = sqlx::query(
                 r#"UPDATE models SET
                        display_name = $2,
@@ -209,28 +283,25 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
                        publisher = $5,
                        quantization = $6,
                        arch = $7,
+                       lmstudio_key = $8,
                        last_seen_in_lmstudio = NOW(),
                        updated_at = NOW()
                    WHERE id = $1"#,
             )
             .bind(model_id)
-            .bind(&lm.id)
-            .bind(lm.max_context_length.unwrap_or(0))
-            .bind(supports_vision)
-            .bind(&lm.publisher)
-            .bind(&lm.quantization)
-            .bind(&lm.arch)
+            .bind(final_key_ref)
+            .bind(*final_context_ref)
+            .bind(*final_supports_vision_ref)
+            .bind(final_publisher_ref)
+            .bind(final_quantization_ref)
+            .bind(final_arch_ref)
+            .bind(final_key_ref)
             .execute(&state.db)
             .await?;
             if rows.rows_affected() > 0 {
                 updated += 1;
             }
         } else {
-            // Insert new. ON CONFLICT target is (key, provider) — the
-            // key-only unique constraint was DROPPED in migration 023
-            // (a model id can exist on several providers); a bare
-            // ON CONFLICT (key) matches no constraint and 500s the sync
-            // (found live 2026-07-09, first new-model insert post-023).
             sqlx::query(
                 r#"INSERT INTO models (key, display_name, provider, location, context_length, supports_vision, publisher, quantization, arch, lmstudio_key, last_seen_in_lmstudio, active)
                    VALUES ($1, $2, 'lmstudio', 'local', $3, $4, $5, $6, $7, $8, NOW(), true)
@@ -246,28 +317,33 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
                        updated_at = NOW(),
                        active = true"#,
             )
-            .bind(&lm.id)
-            .bind(&lm.id)
-            .bind(lm.max_context_length.unwrap_or(0))
-            .bind(supports_vision)
-            .bind(&lm.publisher)
-            .bind(&lm.quantization)
-            .bind(&lm.arch)
-            .bind(&lm.id)
+            .bind(final_key_ref)
+            .bind(final_key_ref)
+            .bind(*final_context_ref)
+            .bind(*final_supports_vision_ref)
+            .bind(final_publisher_ref)
+            .bind(final_quantization_ref)
+            .bind(final_arch_ref)
+            .bind(final_key_ref)
             .execute(&state.db)
             .await?;
             added += 1;
         }
     }
 
-    // Deactivate models no longer in LM Studio
-    for (key, id) in existing {
+    // Deactivate only LM keys that were active before and neither duplicated
+    // nor seen in this sync. Avoid nuking alternate ids for files we just
+    // kept under a canonical key.
+    for (key, id) in existing_by_key {
         if !seen_keys.contains(&key) {
-            sqlx::query("UPDATE models SET active = false, updated_at = NOW() WHERE id = $1")
-                .bind(id)
-                .execute(&state.db)
-                .await?;
-            deactivated += 1;
+            let file = gguf_filename_for(&key);
+            if !seen_files.contains(&file) {
+                sqlx::query("UPDATE models SET active = false, updated_at = NOW() WHERE id = $1")
+                    .bind(id)
+                    .execute(&state.db)
+                    .await?;
+                deactivated += 1;
+            }
         }
     }
 

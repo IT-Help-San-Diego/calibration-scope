@@ -19,9 +19,9 @@
 //! fix: hard fails on core axes now actively penalize the score, and
 //! breadth of testing (core_axes_tested) is rewarded separately from wins,
 //! so "best, most rounded, capable" actually means what it says.
-use axum::extract::State;
+use axum::extract::{Query, State};
 use axum::response::Json;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::error::AppResult;
@@ -79,7 +79,18 @@ struct SquadPick {
     evidence_at: String,
 }
 
-pub async fn loot_handler(State(state): State<AppState>) -> AppResult<Json<serde_json::Value>> {
+#[derive(Debug, Deserialize)]
+pub struct LootParams {
+    /// Pool filter: `local`, `cloud`, or omit/`all` for the full fleet.
+    pub pool: Option<String>,
+}
+
+pub async fn loot_handler(State(state): State<AppState>, Query(params): Query<LootParams>) -> AppResult<Json<serde_json::Value>> {
+    let pool_filter = match params.pool.as_deref() {
+        Some("local") => Some("local"),
+        Some("cloud") => Some("cloud"),
+        _ => None,
+    };
     let rows = sqlx::query_as::<_, AxisAggRow>(
         r#"
         SELECT
@@ -115,9 +126,11 @@ pub async fn loot_handler(State(state): State<AppState>) -> AppResult<Json<serde
         ) r
         JOIN models m ON m.id = r.model_id
         WHERE m.active = true
+          AND ($1::text IS NULL OR m.location = $1)
         GROUP BY m.id, m.key, m.display_name, m.location, r.axis
         "#,
     )
+    .bind(pool_filter)
     .fetch_all(&state.db)
     .await?;
 

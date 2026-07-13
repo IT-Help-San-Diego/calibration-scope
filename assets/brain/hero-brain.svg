@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="520" height="560" viewBox="0 0 520 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Brain outline (simplified) -->
+  <path d="M 100 80 
+           C 120 50, 400 50, 420 80
+           L 430 120
+           C 440 150, 440 250, 430 280
+           L 420 320
+           C 410 350, 380 380, 350 390
+           L 260 400
+           C 230 410, 170 410, 140 400
+           L 100 380
+           C 70 370, 40 340, 40 300
+           L 40 250
+           C 40 210, 70 180, 100 160
+           L 100 120
+           C 120 100, 180 100, 200 120
+           L 220 140
+           C 240 160, 240 200, 220 220
+           L 200 240
+           C 180 260, 120 260, 100 240
+           L 80 220
+           C 60 200, 60 160, 80 140
+           L 100 120 Z" 
+        fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+  
+  <!-- Frontal Lobe -->
+  <path id="frontal-lobe" class="brain-region" 
+        d="M 180 120
+           C 200 100, 280 100, 300 120
+           L 320 140
+           C 340 160, 340 200, 320 220
+           L 300 240
+           C 280 260, 220 260, 200 240
+           L 180 220
+           C 160 200, 160 160, 180 140
+           L 180 120 Z"
+        fill="#ff6b6b" stroke="#333" stroke-width="1.5" opacity="0.9"/>
+  
+  <!-- Parietal Lobe -->
+  <path id="parietal-lobe" class="brain-region"
+        d="M 200 240
+           C 220 260, 280 260, 300 240
+           L 320 220
+           C 340 200, 340 160, 320 140
+           L 300 120
+           C 280 100, 200 100, 180 120
+           L 200 140
+           C 220 160, 220 200, 200 220
+           L 200 240 Z"
+        fill="#4ecdc4" stroke="#333" stroke-width="1.5" opacity="0.9"/>
+  
+  <!-- Temporal Lobe -->
+  <path id="temporal-lobe" class="brain-region"
+        d="M 100 160
+           C 80 180, 40 210, 40 250
+           L 40 300
+           C 40 340, 70 370, 100 380
+           L 140 400
+           C 170 410, 230 410, 260 400
+           L 350 390
+           C 380 380, 410 350, 420 320
+           L 430 280
+           C 440 250, 440 150, 430 120
+           L 420 80
+           C 400 50, 120 50, 100 80
+           L 100 120
+           C 120 100, 180 100, 200 120
+           L 220 140
+           C 240 160, 240 200, 220 220
+           L 200 240
+           C 180 260, 120 260, 100 240
+           L 80 220
+           C 60 200, 60 160, 80 140
+           L 100 120 Z"
+        fill="#45b7d1" stroke="#333" stroke-width="1.5" opacity="0.9"/>
+  
+  <!-- Occipital Lobe -->
+  <path id="occipital-lobe" class="brain-region"
+        d="M 260 400
+           C 290 410, 350 410, 380 400
+           L 410 380
+           C 440 370, 440 340, 410 300
+           L 380 280
+           C 350 260, 290 260, 260 280
+           L 260 300
+           C 240 320, 240 360, 260 380
+           L 260 400 Z"
+        fill="#96ceb4" stroke="#333" stroke-width="1.5" opacity="0.9"/>
+  
+  <!-- Cerebellum -->
+  <path id="cerebellum" class="brain-region"
+        d="M 180 440
+           C 200 460, 240 460, 260 440
+           L 280 420
+           C 300 400, 300 360, 280 340
+           L 260 320
+           C 240 300, 200 300, 180 320
+           L 160 340
+           C 140 360, 140 400, 160 420
+           L 180 440 Z"
+        fill="#ffeaa7" stroke="#333" stroke-width="1.5" opacity="0.9"/>
+  
+  <!-- Brainstem -->
+  <path id="brainstem" class="brain-region"
+        d="M 240 320
+           C 250 340, 270 360, 260 380
+           L 250 400
+           C 240 420, 220 420, 210 400
+           L 220 380
+           C 210 360, 190 340, 200 320
+           L 240 320 Z"
+        fill="#dda0dd" stroke="#333" stroke-width="1.5" opacity="0.9"/>
+        
+  <!-- Labels for debugging/verification -->
+  <text x="250" y="140" font-family="sans-serif" font-size="10" fill="#333" text-anchor="middle">frontal</text>
+  <text x="250" y="180" font-family="sans-serif" font-size="10" fill="#333" text-anchor="middle">parietal</text>
+  <text x="120" y="260" font-family="sans-serif" font-size="10" fill="#333" text-anchor="middle">temporal</text>
+  <text x="330" y="340" font-family="sans-serif" font-size="10" fill="#333" text-anchor="middle">occipital</text>
+  <text x="220" y="460" font-family="sans-serif" font-size="10" fill="#333" text-anchor="middle">cerebellum</text>
+  <text x="230" y="360" font-family="sans-serif" font-size="10" fill="#333" text-anchor="middle">brainstem</text>
+</svg>

@@ -1,11 +1,16 @@
-use axum::response::Json;
-use axum::extract::State;
-use crate::state::AppState;
-use crate::error::AppError;
+use axum::{extract::State, response::Json};
 use crate::db::queries;
 use crate::routes::events::annotate_runnable;
 
-pub async fn models_handler(State(state): State<AppState>) -> Result<Json<serde_json::Value>, AppError> {
-    let rows = queries::fetch_unique_models(&state.db).await?;
-    Ok(Json(serde_json::json!(annotate_runnable(rows))))
+pub async fn models_handler(State(state): State<crate::state::AppState>) -> Json<Vec<serde_json::Value>> {
+    match queries::fetch_unique_models(&state.db).await {
+        Ok(models) => {
+            let annotated = annotate_runnable(models);
+            Json(annotated)
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch registry models: {}", e);
+            Json(Vec::new())
+        }
+    }
 }

@@ -127,6 +127,8 @@ pub async fn execute_run(
     location: String,
     provider: String,
     axis: String,
+    load_mode: crate::routes::runs::LoadMode,
+    draft_model_key: Option<String>,
 ) {
     let cancel_token = cancellations.register(run_id).await;
 
@@ -134,7 +136,7 @@ pub async fn execute_run(
         std::time::Duration::from_secs(RUN_BUDGET_SECS),
         execute_run_inner(
             &db, &config, &tx, &cancel_token, run_id, model_id, &model_key, &location, &provider,
-            &axis,
+            &axis, load_mode, draft_model_key,
         ),
     )
     .await
@@ -207,6 +209,8 @@ async fn execute_run_inner(
     location: &str,
     provider: &str,
     axis: &str,
+    load_mode: crate::routes::runs::LoadMode,
+    draft_model_key: Option<String>,
 ) -> AppResult<()> {
     let client = reqwest::Client::new();
 
@@ -357,46 +361,102 @@ async fn check_memory_safety(
     Ok(())
 }
 
-    // ── Clean-room prep (local models only) ────────────────────────────────
+    // ── Local-model prep ────────────────────────────────────────────────
     if location == "local" {
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "ejecting",
-            "message": "Clean room: ejecting all loaded models from LM Studio", "at": now_iso()
-        }));
-        let ejected = cancellable!(lmstudio::eject_all(&client, &config.lmstudio_base_url))?;
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "ejected",
-            "message": format!("Ejected {} instance(s): {:?}", ejected.len(), ejected), "at": now_iso()
-        }));
+        match load_mode {
+            crate::routes::runs::LoadMode::CleanRoom => {
+                emit(tx, serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "ejecting",
+                    "message": "Clean room: ejecting all loaded models from LM Studio", "at": now_iso()
+                }));
+                let ejected = cancellable!(lmstudio::eject_all(&client, &config.lmstudio_base_url))?;
+                emit(tx, serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "ejected",
+                    "message": format!("Ejected {} instance(s): {:?}", ejected.len(), ejected), "at": now_iso()
+                }));
 
-        // Memory guard: refuse to load if the model won't fit safely.
-        // See check_memory_safety doc comment for the kernel-panic incident
-        // that motivated this — speculative-decoding pairs can exceed RAM
-        // and freeze the system, especially on smaller hardware.
-        check_memory_safety(db, tx, run_id, model_id, model_key).await?;
+                check_memory_safety(db, tx, run_id, model_id, model_key).await?;
 
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "loading",
-            "message": format!("Loading {} — watch LM Studio's server tab", model_key), "at": now_iso()
-        }));
-        let load_start = std::time::Instant::now();
-        let resident = cancellable!(lmstudio::ensure_loaded(
-            &client,
-            &config.lmstudio_base_url,
-            model_key,
-            300
-        ))?;
-        if !resident {
-            return Err(AppError::Executor(format!(
-                "{} did not become resident within 300s",
-                model_key
-            )));
+                emit(tx, serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "loading",
+                    "message": format!("Loading {} — watch LM Studio's server tab", model_key), "at": now_iso()
+                }));
+                let load_start = std::time::Instant::now();
+                let resident = cancellable!(lmstudio::ensure_loaded(
+                    &client,
+                    &config.lmstudio_base_url,
+                    model_key,
+                    300
+                ))?;
+                if !resident {
+                    return Err(AppError::Executor(format!(
+                        "{} did not become resident within 300s",
+                        model_key
+                    )));
+                }
+                emit(tx, serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "resident",
+                    "message": format!("{} verified resident in RAM ({}s load)", model_key, load_start.elapsed().as_secs()),
+                    "at": now_iso()
+                }));
+            }
+            crate::routes::runs::LoadMode::SpeculativePair => {
+                let draft_key = draft_model_key.as_ref().ok_or_else(|| {
+                    AppError::Executor("speculative-pair mode requires draft_model_key".into())
+                })?;
+
+                emit(tx, serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "pair_loading",
+                    "message": format!("Speculative pair: loading {} + {}", model_key, draft_key), "at": now_iso()
+                }));
+
+                let draft_model_id = sqlx::query_scalar::<_, Option<i32>>(
+                    "SELECT id FROM models WHERE key = $1 AND active = true"
+                )
+                .bind(draft_key)
+                .fetch_optional(db)
+                .await?
+                .ok_or_else(|| AppError::Executor(format!("Unknown draft model key: {}", draft_key)))?;
+
+                check_memory_safety(db, tx, run_id, model_id, model_key).await?;
+                if let Some(draft_id) = draft_model_id {
+                    check_memory_safety(db, tx, run_id, draft_id, draft_key).await?;
+                }
+
+                let pair_load_start = std::time::Instant::now();
+                progress(run_id, "pair_load_start");
+                let (_primary_inst, _draft_inst) = cancellable!(lmstudio::ensure_pair_loaded(
+                    &client,
+                    &config.lmstudio_base_url,
+                    model_key,
+                    draft_key,
+                    300
+                ))?;
+                progress(run_id, "pair_load_done");
+
+                let _ = sqlx::query(
+                    "UPDATE test_runs SET draft_model_key = $1 WHERE id = $2"
+                )
+                .bind(draft_key)
+                .bind(run_id)
+                .execute(db)
+                .await;
+
+                emit(tx, serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "pair_resident",
+                    "message": format!("Pair verified resident in RAM ({}s load): {} + {}",
+                        pair_load_start.elapsed().as_secs(), model_key, draft_key),
+                    "at": now_iso()
+                }));
+                progress(run_id, "pair_resident_emitted");
+            }
         }
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "resident",
-            "message": format!("{} verified resident in RAM ({}s load)", model_key, load_start.elapsed().as_secs()),
-            "at": now_iso()
-        }));
+    }
+
+    // ── Progress log helper ──────────────────────────────────────────────
+    fn progress(run_id: i32, msg: &str) {
+        let line = format!("{} run={} {}\n", chrono::Utc::now().to_rfc3339(), run_id, msg);
+        let _ = std::fs::OpenOptions::new().create(true).append(true).open("/tmp/progress.log").and_then(|mut f| std::io::Write::write_all(&mut f, line.as_bytes()));
     }
 
     // ── Trials ─────────────────────────────────────────────────────────────

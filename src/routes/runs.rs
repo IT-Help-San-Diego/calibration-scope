@@ -6,7 +6,7 @@
 //! clean-room runs can never fight over LM Studio RAM residency.
 use axum::extract::State;
 use axum::response::Json;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
@@ -21,6 +21,17 @@ const VALID_AXES: [&str; 6] = ["vision", "tools", "reasoning", "security", "lite
 pub struct StartRunRequest {
     pub model_key: String,
     pub axes: Vec<String>,
+    #[serde(default)]
+    pub load_mode: Option<LoadMode>,
+    #[serde(default)]
+    pub draft_model_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum LoadMode {
+    CleanRoom,
+    SpeculativePair,
 }
 
 #[derive(sqlx::FromRow)]
@@ -119,6 +130,15 @@ pub async fn start_runs(
         }
     }
 
+    let load_mode = req.load_mode.unwrap_or(LoadMode::CleanRoom);
+    if matches!(load_mode, LoadMode::SpeculativePair) {
+        if req.draft_model_key.as_ref().map(|s| s.trim().is_empty()).unwrap_or(false) {
+            return Err(AppError::Executor(
+                "draft_model_key is required when load_mode is 'speculative-pair'".into(),
+            ));
+        }
+    }
+
     let mut run_ids = Vec::new();
     // ONE run per (model, axis). The executor runs every active test on the
     // axis inside that single run — pass_count/total_count aggregate the whole
@@ -137,11 +157,16 @@ pub async fn start_runs(
         }
 
         let (run_id,): (i32,) = sqlx::query_as(
-            r#"INSERT INTO test_runs (model_id, test_id, axis, status)
-               VALUES ($1, NULL, $2, 'queued') RETURNING id"#,
+            r#"INSERT INTO test_runs (model_id, test_id, axis, status, load_mode, draft_model_key)
+               VALUES ($1, NULL, $2, 'queued', $3, $4) RETURNING id"#,
         )
         .bind(model.id)
         .bind(axis)
+        .bind(match load_mode {
+            LoadMode::CleanRoom => "clean-room",
+            LoadMode::SpeculativePair => "speculative-pair",
+        })
+        .bind(req.draft_model_key.clone())
         .fetch_one(&state.db)
         .await?;
         run_ids.push(run_id);
@@ -156,6 +181,8 @@ pub async fn start_runs(
         let location = model.location.clone();
         let provider = model.provider.clone();
         let axis = axis.to_string();
+        let run_load_mode = load_mode.clone();
+        let draft_model_key = req.draft_model_key.clone();
 
         tokio::spawn(async move {
             // Serialize LOCAL LM Studio access via the shared process-wide
@@ -176,7 +203,7 @@ pub async fn start_runs(
             let _telemetry = active_runs.guard();
             crate::executor::execute_run(
                 db, config, tx, cancellations, run_id, model_id, model_key, location, provider,
-                axis,
+                axis, run_load_mode, draft_model_key,
             )
             .await;
         });

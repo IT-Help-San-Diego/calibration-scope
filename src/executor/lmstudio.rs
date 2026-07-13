@@ -79,6 +79,147 @@ pub async fn eject_all(client: &Client, base_url: &str) -> AppResult<Vec<String>
     Ok(ejected)
 }
 
+/// Inspect current loaded instances and return (model_key, instance_id)
+/// pairs for every resident instance. Used by speculative-pair mode to
+/// verify both primary and draft models are loaded simultaneously.
+pub async fn list_loaded_instances(client: &Client, base_url: &str) -> AppResult<Vec<(String, String)>> {
+    let resp = client
+        .get(format!("{}/api/v1/models", base_url))
+        .send()
+        .await?
+        .error_for_status()?;
+    let v: serde_json::Value = resp.json().await?;
+
+    let mut out = Vec::new();
+    if let Some(models) = v.get("models").and_then(|m| m.as_array()) {
+        for m in models {
+            let key = m.get("key").and_then(|i| i.as_str()).or_else(|| m.get("id").and_then(|i| i.as_str())).unwrap_or("");
+            if let Some(instances) = m.get("loaded_instances").and_then(|i| i.as_array()) {
+                for inst in instances {
+                    if let Some(iid) = inst.get("id").and_then(|i| i.as_str()) {
+                        out.push((key.to_string(), iid.to_string()));
+                    }
+                }
+            }
+        }
+    }
+    Ok(out)
+}
+
+/// Speculative-pair helper: ensure BOTH primary and draft models are loaded
+/// and resident. Returns (primary_instance_id, draft_instance_id).
+/// This does NOT eject first; it is the caller's responsibility to prepare
+/// the clean-room state or deliberately preserve existing residents.
+pub async fn ensure_pair_loaded(
+    client: &Client,
+    base_url: &str,
+    primary_key: &str,
+    draft_key: &str,
+    max_wait_secs: u64,
+) -> AppResult<(String, String)> {
+    // Prevent duplicate-instance bloat from repeated runs. Only one
+    // resident instance per model key is needed for a clean pair.
+    for target in [primary_key, draft_key] {
+        let instances = list_loaded_instances(client, base_url).await?
+            .into_iter()
+            .filter(|(k, _)| k == target)
+            .collect::<Vec<_>>();
+        if instances.len() > 1 {
+            tracing::warn!("ensure_pair_loaded: unloading duplicates for {} found={:?}", target, instances);
+            for (_, iid) in &instances[1..] {
+                let _ = client
+                    .post(format!("{}/api/v1/models/unload", base_url))
+                    .json(&serde_json::json!({ "instance_id": iid }))
+                    .send()
+                    .await;
+            }
+        }
+    }
+
+    // Load primary if absent; unload extras so only one instance remains.
+    let primary_instances = list_loaded_instances(client, base_url)
+        .await?
+        .into_iter()
+        .filter(|(k, _)| k == primary_key)
+        .collect::<Vec<_>>();
+    if primary_instances.is_empty() {
+        tracing::warn!("ensure_pair_loaded: loading primary {}", primary_key);
+        let _ = client
+            .post(format!("{}/api/v1/models/load", base_url))
+            .json(&serde_json::json!({ "model": primary_key }))
+            .timeout(std::time::Duration::from_secs(max_wait_secs))
+            .send()
+            .await;
+    } else if primary_instances.len() > 1 {
+        tracing::warn!("ensure_pair_loaded: unloading duplicate primary {} found={:?}", primary_key, primary_instances);
+        for (_, iid) in &primary_instances[1..] {
+            let _ = client
+                .post(format!("{}/api/v1/models/unload", base_url))
+                .json(&serde_json::json!({ "instance_id": iid }))
+                .send()
+                .await;
+        }
+    }
+
+    // Load draft if absent; unload extras so only one instance remains.
+    let draft_instances = list_loaded_instances(client, base_url)
+        .await?
+        .into_iter()
+        .filter(|(k, _)| k == draft_key)
+        .collect::<Vec<_>>();
+    if draft_instances.is_empty() {
+        tracing::warn!("ensure_pair_loaded: loading draft {}", draft_key);
+        let _ = client
+            .post(format!("{}/api/v1/models/load", base_url))
+            .json(&serde_json::json!({ "model": draft_key }))
+            .timeout(std::time::Duration::from_secs(max_wait_secs))
+            .send()
+            .await;
+    } else if draft_instances.len() > 1 {
+        tracing::warn!("ensure_pair_loaded: unloading duplicate draft {} found={:?}", draft_key, draft_instances);
+        for (_, iid) in &draft_instances[1..] {
+            let _ = client
+                .post(format!("{}/api/v1/models/unload", base_url))
+                .json(&serde_json::json!({ "instance_id": iid }))
+                .send()
+                .await;
+        }
+    }
+
+    // Poll until both are resident.
+    let start = std::time::Instant::now();
+    loop {
+        let raw = client
+            .get(format!("{}/api/v1/models", base_url))
+            .send()
+            .await;
+        let raw_json = match raw {
+            Ok(r) => r.text().await.unwrap_or_default(),
+            Err(_) => String::new(),
+        };
+        let loaded = list_loaded_instances(client, base_url).await?;
+        let primary_inst = loaded.iter().find(|(k, _)| *k == primary_key).map(|(_, iid)| iid.clone());
+        let draft_inst = loaded.iter().find(|(k, _)| *k == draft_key).map(|(_, iid)| iid.clone());
+
+        tracing::warn!(
+            target: "pair_poll",
+            "ensure_pair_loaded poll primary={} draft={} found={:?} raw_prefix={}",
+            primary_key, draft_key, loaded, raw_json.chars().take(180).collect::<String>()
+        );
+
+        if let (Some(pi), Some(di)) = (primary_inst.clone(), draft_inst.clone()) {
+            return Ok((pi, di));
+        }
+        if start.elapsed().as_secs() >= max_wait_secs {
+            return Err(AppError::Executor(format!(
+                "Speculative pair did not become resident within {}s: primary={} draft={} (found {:?})",
+                max_wait_secs, primary_key, draft_key, loaded
+            )));
+        }
+        tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    }
+}
+
 /// Clean-room step 2: load ONLY the target model, then poll until LM Studio
 /// reports it resident (state == "loaded"). Never assume readiness — verify.
 ///
