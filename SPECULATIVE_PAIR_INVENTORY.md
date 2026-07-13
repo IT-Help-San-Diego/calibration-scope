@@ -14,12 +14,15 @@
 - Qwen load-time draft binding: engine protocol mismatch
 - MTP path: Step Fun MTP files not loadable as standalone models
 
-## LM Studio Backup
-- Path: `~/Downloads/lmstudio-backup-20260713/`
+## Experimental State
+- LM Studio Backup: `~/Downloads/lmstudio-backup-20260713/`
 - Contains: draft-model-compatibility-cache.json, settings.json, user-concrete-model-default-config/
 
 ## Notes
 - LM Studio supports multiple simultaneous loaded instances on this host.
-- Unload API returns 200 but instance lists can remain stale; use inference canary for verification.
+- **LM Studio unload API is unreliable.** Use `lms unload -a` as the authoritative cleanup path, then verify with `lms ps`.
 - Exhaustive same-family GGUF pair sweep completed on downloaded inventory.
-- Step Fun models consistently hit LM Studio memory guardrails on this host despite successful standalone load of `unsloth/step-3.7-flash` in clean state.
+- Step Fun is only confirmed loadable in truly empty LM Studio state; guardrail behavior is settings/instance-dependent.
+
+## Tested At
+2026-07-13
