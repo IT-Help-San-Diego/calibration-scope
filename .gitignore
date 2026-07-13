@@ -21,3 +21,6 @@ zig-backend/main
 zig-backend/bind_wrapper.o
 zig-backend/file_wrapper.o
 zig-backend/signal_wrapper.o
+
+# Local ingestion dumps — user drops research artifacts here for later processing
+ingest/
