@@ -94,7 +94,7 @@ This repo includes a launchd-managed backend on macOS. Use these commands instea
 Name: `ai.hermes.archetype-mesh-dashboard`
 Binary: `~/Documents/GitHub/archetype-mesh-benchmark/target/release/archetype-mesh-dashboard`
 Port: `8768` on `127.0.0.1`
-Database: `postgres://careybalboa:<redacted>@localhost:5432/archetype_mesh`
+Database: `postgres://<dbuser>:<dbpass>@localhost:5432/archetype_mesh`
 Logs: `/tmp/archetype-mesh-dashboard.out`, `/tmp/archetype-mesh-dashboard.err`
 
 ### Start / stop / restart
