@@ -9,7 +9,8 @@
 ## Confirmed Blockers / Not Verified
 - `hermes-4.3-36b` + `harmonic-hermes-9b@q8_0` — insufficient system resources guardrail (~52.93 GB estimate)
 - `ibm/granite-3.3-8b-instruct` + `ibm/granite-3.2-8b` — model_not_found in LM Studio registry
-- Step Fun pair binding: memory guardrail blocks load (~104 GB estimate)
+- Step Fun pair binding: memory guardrail blocks load (~104 GB estimate for 3.7 Flash)
+- Step Fun standalone Bartoski `stepfun-ai_step-3.5-flash`: memory guardrail blocks load (~92.49 GB estimate)
 - Qwen load-time draft binding: engine protocol mismatch
 - MTP path: Step Fun MTP files not loadable as standalone models
 
@@ -21,3 +22,4 @@
 - LM Studio supports multiple simultaneous loaded instances on this host.
 - Unload API returns 200 but instance lists can remain stale; use inference canary for verification.
 - Exhaustive same-family GGUF pair sweep completed on downloaded inventory.
+- Step Fun models consistently hit LM Studio memory guardrails on this host despite successful standalone load of `unsloth/step-3.7-flash` in clean state.
