@@ -285,6 +285,8 @@ struct RunDetailHeader {
     sha3_provenance: Option<String>,
     created_at: Option<chrono::NaiveDateTime>,
     finished_at: Option<chrono::NaiveDateTime>,
+    load_mode: Option<String>,
+    draft_model_key: Option<String>,
 }
 
 pub async fn get_run_detail(
@@ -293,7 +295,7 @@ pub async fn get_run_detail(
 ) -> AppResult<Json<serde_json::Value>> {
     let header: Option<RunDetailHeader> = sqlx::query_as(
         r#"SELECT r.id, m.key, r.axis, r.status, r.pass_count, r.total_count,
-                  r.sha3_provenance, r.created_at, r.finished_at
+                  r.sha3_provenance, r.created_at, r.finished_at, r.load_mode, r.draft_model_key
            FROM test_runs r JOIN models m ON m.id = r.model_id
            WHERE r.id = $1"#,
     )
@@ -320,6 +322,8 @@ pub async fn get_run_detail(
         "status": header.status,
         "pass_count": header.pass_count,
         "total_count": header.total_count,
+        "load_mode": header.load_mode,
+        "draft_model_key": header.draft_model_key,
         "sha3_provenance": header.sha3_provenance,
         "created_at": header.created_at.map(|c| c.to_string()),
         "finished_at": header.finished_at.map(|c| c.to_string()),
