@@ -868,20 +868,21 @@
   .nav-arrow { user-select: none; }
 
   /* ═══ Brain topology regions ═══
-     Idle: barely-there outlines. Firing: axis-colored glow, decaying over
-     ~1.8s (CSS transition handles decay; JS only sets the peak). Verdict
-     paints the region solid green/red/amber for 3s. */
+     Idle: barely-there outlines. Firing: axis-colored glow, SUSTAINED
+     for the entire trial duration. trial_start lights it up; trial_result
+     updates the color (green=pass, red=fail). The class is NOT auto-removed
+     by a timeout — it stays lit until the next trial_start or run_complete. */
   .brain-region {
     fill: rgba(255,255,255,0.02);
     stroke: var(--border);
     stroke-width: 1;
-    transition: fill 1.8s ease-out, stroke 1.8s ease-out, filter 1.8s ease-out;
+    transition: fill 0.4s ease-out, stroke 0.4s ease-out, filter 0.4s ease-out;
   }
   .brain-region.firing {
     fill: var(--region-color, rgba(212,168,83,0.55));
     stroke: var(--region-color, rgba(212,168,83,0.9));
-    stroke-width: 1.5;
-    filter: url(#region-glow);
+    stroke-width: 2;
+    filter: url(#region-glow) drop-shadow(0 0 12px var(--region-color, rgba(212,168,83,0.8)));
     transition: fill 80ms ease-in, stroke 80ms ease-in, filter 80ms ease-in;
   }
   .brain-leg { color: var(--text-muted); transition: color 0.4s; }
@@ -2006,9 +2007,12 @@ evtSource.onmessage = (e) => {
     brainRunStarted(data);
   } else if (data.type === 'phase') {
     log('phase', `[${data.phase}] ${data.message || ''}`);
+  } else if (data.type === 'trial_start') {
+    log('info', `Trial ${data.trial_num} starting: ${data.test_name || data.test || ''}`);
+    brainTrialStart(data);
   } else if (data.type === 'trial_result') {
     log('trial', `Trial ${data.trial_num}: ${data.passed ? 'PASS' : 'FAIL'} — ${data.detail || ''} (${data.latency_ms}ms)`);
-    if (data.axis) brainFire(data.axis, data.passed);
+    if (data.axis) brainTrialResult(data);
   } else if (data.type === 'verdict') {
     log('verdict', `VERDICT: ${data.overall} — ${data.pass_count}/${data.total_count} trials passed`);
   } else if (data.type === 'run_complete') {
@@ -2518,17 +2522,55 @@ function brainFire(axis, passed) {
   // Verdict tint: pass = axis color, fail = red-shifted.
   const color = passed === false ? '248,81,73' : rgb;
   el.style.setProperty('--region-color', `rgba(${color},${passed === false ? 0.7 : 0.55})`);
-  // Retrigger: strip the class, force reflow, re-add — so rapid trials
-  // each produce a visible pulse instead of one long saturated hold.
   el.classList.remove('firing');
   void el.getBoundingClientRect();
   el.classList.add('firing');
-  setTimeout(() => el.classList.remove('firing'), 220);
   const leg = document.querySelector(`.brain-leg[data-axis="${axis}"]`);
   if (leg) {
     leg.style.setProperty('--dot-color', `rgb(${rgb})`);
     leg.classList.add('lit');
   }
+}
+// Sustained brain firing: when a trial STARTS, the region lights up
+// and stays glowing for the entire trial duration (could be 20+ seconds).
+// When the trial COMPLETES, the color updates (green=pass, red=fail)
+// and the glow continues briefly before fading.
+function brainTrialStart(d) {
+  const axis = d.axis;
+  if (!axis) return;
+  const el = document.getElementById('br-' + axis);
+  if (!el) return;
+  const rgb = BRAIN_AXIS_COLORS[axis] || '212,168,83';
+  // Start sustained glow — region stays lit for entire trial duration
+  el.style.setProperty('--region-color', `rgba(${rgb},0.5)`);
+  el.classList.add('firing');
+  // Update caption with what's being tested + formal spec if available
+  const spec = d.formal_spec ? ` — ${d.formal_spec}` : '';
+  brainCaption(`${d.test_name || d.test || axis}: trial ${d.trial_num} in progress${spec}`);
+  // Light the legend dot
+  const leg = document.querySelector(`.brain-leg[data-axis="${axis}"]`);
+  if (leg) {
+    leg.style.setProperty('--dot-color', `rgb(${rgb})`);
+    leg.classList.add('lit');
+  }
+}
+function brainTrialResult(d) {
+  const axis = d.axis;
+  if (!axis) return;
+  const el = document.getElementById('br-' + axis);
+  if (!el) return;
+  const rgb = BRAIN_AXIS_COLORS[axis] || '212,168,83';
+  // Verdict color: pass = axis color, fail = red
+  const verdictColor = d.passed === false ? '248,81,73' : rgb;
+  el.style.setProperty('--region-color', `rgba(${verdictColor},${d.passed === false ? 0.7 : 0.55})`);
+  // Retrigger the firing animation with the verdict color
+  el.classList.remove('firing');
+  void el.getBoundingClientRect();
+  el.classList.add('firing');
+  // Caption update with result
+  const verdict = d.passed ? 'PASS ✓' : 'FAIL ✗';
+  const spec = d.formal_spec ? ` — ${d.formal_spec}` : '';
+  brainCaption(`${d.test_name || d.test || axis}: ${verdict}${spec}`);
 }
 function brainRunComplete(d) {
   _brainActiveRuns.delete(d.run_id);
@@ -2536,6 +2578,7 @@ function brainRunComplete(d) {
     // Back to teaching mode: clear run heat, keep the map.
     setTimeout(() => {
       if (_brainActiveRuns.size > 0) return; // a new run started meanwhile
+      document.querySelectorAll('.brain-region.firing').forEach(el => el.classList.remove('firing'));
       document.querySelectorAll('.brain-leg.lit').forEach(l => l.classList.remove('lit'));
       brainCaption(BRAIN_IDLE_CAPTION);
     }, 4000);

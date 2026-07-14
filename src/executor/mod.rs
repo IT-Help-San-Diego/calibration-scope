@@ -610,6 +610,17 @@ async fn check_memory_safety(
             if cancel_token.is_cancelled() {
                 return Err(AppError::Aborted);
             }
+            // Emit trial_start so the brain visualization lights up the
+            // corresponding region for the ENTIRE trial duration — not just
+            // a blip at the end. The dashboard uses this to start a
+            // sustained glow that stays lit until trial_result arrives.
+            emit(tx, serde_json::json!({
+                "type": "trial_start", "run_id": run_id, "test": test.name,
+                "axis": test.axis, "trial_num": trial_num,
+                "formal_spec": test.formal_spec,
+                "test_name": test.name,
+                "at": now_iso()
+            }));
             let outcome = match location {
                 "local" => {
                     cancellable!(lmstudio::chat(
