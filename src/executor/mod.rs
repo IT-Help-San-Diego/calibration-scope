@@ -158,6 +158,12 @@ fn build_messages(
 /// `trial_results`. This is used when the inner run fails after partial
 /// trials have already been written, so the audit ledger can still seal
 /// exactly what happened instead of leaving `sha3_provenance = NULL`.
+/// Regenerate SHA3 provenance for a completed/failed run from persisted
+/// `trial_results`. This is used when the inner run fails after partial
+/// completion — the error handler recomputes provenance from whatever
+/// trials did complete so partial evidence is still sealed.
+/// Currently unused — kept for future partial-run recovery scenarios.
+#[allow(dead_code)]
 async fn recompute_run_sha3(db: &PgPool, run_id: i32, model_key: &str, axis: &str) -> Option<String> {
     let rows = sqlx::query_as::<_, (String,)>(
         r#"SELECT COALESCE(reasoning_content, '') || ' ' || COALESCE(raw_response, '')

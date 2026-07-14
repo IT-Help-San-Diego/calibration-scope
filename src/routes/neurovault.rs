@@ -1,3 +1,10 @@
+//! NeuroVault integration — brain visualization data from neurovault.org.
+//! Pre-wired for the brain visualization project. Not yet connected to the
+//! router; will be activated when the brain topology dashboard is built.
+//! Temporarily allowing dead_code — will be wired up next.
+
+#![allow(dead_code)]
+
 use axum::{extract::Path, response::Json};
 use serde::{Deserialize, Serialize};
 
