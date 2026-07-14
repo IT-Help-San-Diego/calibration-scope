@@ -14,4 +14,6 @@ pub struct TestDef {
     pub expected_result: Option<String>,
     pub scoring_method: String,
     pub trials_per_run: Option<i32>,
+    pub formal_spec: Option<String>,
+    pub fallacy_tag: Option<String>,
 }

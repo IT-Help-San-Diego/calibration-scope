@@ -70,7 +70,7 @@ fn now_iso() -> String {
 pub async fn tests_for_axis(db: &PgPool, axis: &str) -> AppResult<Vec<TestDef>> {
     let rows = sqlx::query_as::<_, TestDef>(
         r#"SELECT id, name, axis, prompt_text, attachment_path, attachment_sha3,
-                  expected_result, scoring_method, trials_per_run
+                  expected_result, scoring_method, trials_per_run, formal_spec, fallacy_tag
            FROM tests WHERE active = true AND axis = $1 ORDER BY id"#,
     )
     .bind(axis)
@@ -87,7 +87,35 @@ pub async fn tests_for_axis(db: &PgPool, axis: &str) -> AppResult<Vec<TestDef>> 
 fn build_messages(
     test: &TestDef,
     project_root: &std::path::Path,
+    scaffold_supplement: Option<&str>,
 ) -> AppResult<Vec<serde_json::Value>> {
+    let mut messages: Vec<serde_json::Value> = Vec::new();
+
+    // Scaffold system prompt: gives the model the formal structure (Lean formula)
+    // without revealing the answer. This is guidance, not a hint — the model
+    // still has to reason through the argument and determine VALID/INVALID.
+    if let Some(scaffold) = scaffold_supplement {
+        if !scaffold.is_empty() {
+            // Build a scaffold that includes the formal spec if available
+            let mut system_content = scaffold.to_string();
+            if let Some(ref spec) = test.formal_spec {
+                if !spec.is_empty() {
+                    system_content.push_str(&format!(
+                        "\n\nFormal specification of this argument type:\n{}\n\
+                         Use this formal structure to guide your analysis. \
+                         Pay careful attention to the direction of implication \
+                         and the difference between universal and existential quantifiers.",
+                        spec
+                    ));
+                }
+            }
+            messages.push(serde_json::json!({
+                "role": "system",
+                "content": system_content
+            }));
+        }
+    }
+
     match &test.attachment_path {
         Some(rel_path) => {
             let full = project_root.join(rel_path);
@@ -107,18 +135,22 @@ fn build_messages(
             }
 
             let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
-            Ok(vec![serde_json::json!({
+            messages.push(serde_json::json!({
                 "role": "user",
                 "content": [
                     {"type": "text", "text": test.prompt_text},
                     {"type": "image_url", "image_url": {"url": format!("data:image/png;base64,{}", b64)}}
                 ]
-            })])
+            }));
+            Ok(messages)
         }
-        None => Ok(vec![serde_json::json!({
-            "role": "user",
-            "content": test.prompt_text
-        })]),
+        None => {
+            messages.push(serde_json::json!({
+                "role": "user",
+                "content": test.prompt_text
+            }));
+            Ok(messages)
+        }
     }
 }
 
@@ -175,6 +207,7 @@ pub async fn execute_run(
     axis: String,
     load_mode: crate::routes::runs::LoadMode,
     draft_model_key: Option<String>,
+    scaffold_supplement: Option<String>,
 ) {
     let cancel_token = cancellations.register(run_id).await;
 
@@ -182,7 +215,7 @@ pub async fn execute_run(
         std::time::Duration::from_secs(RUN_BUDGET_SECS),
         execute_run_inner(
             &db, &config, &tx, &cancel_token, run_id, model_id, &model_key, &location, &provider,
-            &axis, load_mode, draft_model_key,
+            &axis, load_mode, draft_model_key, scaffold_supplement,
         ),
     )
     .await
@@ -277,6 +310,7 @@ async fn execute_run_inner(
     axis: &str,
     load_mode: crate::routes::runs::LoadMode,
     draft_model_key: Option<String>,
+    scaffold_supplement: Option<String>,
 ) -> AppResult<()> {
     let client = reqwest::Client::new();
 
@@ -430,7 +464,7 @@ async fn check_memory_safety(
     // ── Local-model prep ────────────────────────────────────────────────
     if location == "local" {
         match load_mode {
-            crate::routes::runs::LoadMode::CleanRoom => {
+            crate::routes::runs::LoadMode::CleanRoom | crate::routes::runs::LoadMode::Scaffolded => {
                 emit(tx, serde_json::json!({
                     "type": "phase", "run_id": run_id, "phase": "ejecting",
                     "message": "Clean room: ejecting all loaded models from LM Studio", "at": now_iso()
@@ -561,7 +595,7 @@ async fn check_memory_safety(
             "message": format!("Test '{}' — {} trial(s)", test.name, n_trials), "at": now_iso()
         }));
 
-        let messages = build_messages(test, &config.project_root)?;
+        let messages = build_messages(test, &config.project_root, scaffold_supplement.as_deref())?;
 
         for trial_num in 1..=n_trials {
             // Also checked here (not just inside cancellable! around the

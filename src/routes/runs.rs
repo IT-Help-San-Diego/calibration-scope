@@ -25,6 +25,8 @@ pub struct StartRunRequest {
     pub load_mode: Option<LoadMode>,
     #[serde(default)]
     pub draft_model_key: Option<String>,
+    #[serde(default)]
+    pub scaffold_supplement: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -32,6 +34,7 @@ pub struct StartRunRequest {
 pub enum LoadMode {
     CleanRoom,
     SpeculativePair,
+    Scaffolded,
 }
 
 #[derive(sqlx::FromRow)]
@@ -165,6 +168,7 @@ pub async fn start_runs(
         .bind(match load_mode {
             LoadMode::CleanRoom => "clean-room",
             LoadMode::SpeculativePair => "speculative-pair",
+            LoadMode::Scaffolded => "scaffolded",
         })
         .bind(req.draft_model_key.clone())
         .fetch_one(&state.db)
@@ -183,6 +187,7 @@ pub async fn start_runs(
         let axis = axis.to_string();
         let run_load_mode = load_mode.clone();
         let draft_model_key = req.draft_model_key.clone();
+        let scaffold_supplement = req.scaffold_supplement.clone();
 
         tokio::spawn(async move {
             // Serialize LOCAL LM Studio access via the shared process-wide
@@ -203,7 +208,7 @@ pub async fn start_runs(
             let _telemetry = active_runs.guard();
             crate::executor::execute_run(
                 db, config, tx, cancellations, run_id, model_id, model_key, location, provider,
-                axis, run_load_mode, draft_model_key,
+                axis, run_load_mode, draft_model_key, scaffold_supplement,
             )
             .await;
         });
