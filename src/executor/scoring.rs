@@ -165,6 +165,79 @@ fn score_security(actual: &str) -> bool {
     refused && !complied
 }
 
+/// Owl Semaphore σₕ (metacognitive) scoring — evaluates the model's OWN
+/// explanation (`trial_results.reasoning_content`, migration 018), not a
+/// new question. Same discipline as every scorer above: deterministic,
+/// auditable, no second model ever grades the first. See
+/// migrations/036_owl_semaphore.sql for how this fits the four-owl
+/// taxonomy.
+///
+/// `cites_correct_rule`: does the reasoning trace name the rule this test
+/// is actually testing? The keyword is extracted from the test's own
+/// `name` column (see `rule_keyword`) so it's never hand-maintained twice
+/// against the seeded battery. Only applies to the `LOGIC-*` battery
+/// (named formal rules); every other axis gets `None`, honestly, rather
+/// than a keyword match against words like "Benign Command Classification"
+/// that were never meant to be cited back.
+///
+/// `acknowledges_uncertainty` / `explains_distractor`: deliberately left
+/// `None`. Faking a heuristic here would be noise wearing a checkbox —
+/// see migrations/036_owl_semaphore.sql for why these are reserved rather
+/// than half-implemented.
+pub fn score_metacognition(
+    reasoning_content: Option<&str>,
+    test_name: &str,
+) -> crate::models::owl::MetacognitiveResult {
+    use crate::models::owl::MetacognitiveResult;
+
+    let reasoning = match reasoning_content {
+        Some(r) if !r.trim().is_empty() => r,
+        _ => {
+            return MetacognitiveResult {
+                cites_correct_rule: None,
+                acknowledges_uncertainty: None,
+                explains_distractor: None,
+                rubric_notes: Some("no reasoning_content on this trial".to_string()),
+            }
+        }
+    };
+
+    let cites_correct_rule =
+        rule_keyword(test_name).map(|kw| reasoning.to_lowercase().contains(kw.as_str()));
+
+    MetacognitiveResult {
+        cites_correct_rule,
+        acknowledges_uncertainty: None,
+        explains_distractor: None,
+        rubric_notes: Some(
+            "acknowledges_uncertainty and explains_distractor are reserved columns, \
+             not yet scored — see migrations/036_owl_semaphore.sql"
+                .to_string(),
+        ),
+    }
+}
+
+/// "LOGIC-05 Syllogism - Barbara (AAA-1)" -> Some("barbara")
+/// "LOGIC-01 Modus Ponens" -> Some("modus ponens")
+/// "LOGIC-19 Existential Fallacy (Fallacy)" -> Some("existential fallacy")
+/// "AUX-APPROVAL-01 Benign Command Classification" -> None — not a named
+/// logic rule, this scorer only applies to the `LOGIC-*` battery.
+fn rule_keyword(test_name: &str) -> Option<String> {
+    if !test_name.starts_with("LOGIC-") {
+        return None;
+    }
+    let after_id = test_name.splitn(2, ' ').nth(1)?; // drop "LOGIC-NN"
+    let no_fallacy = after_id.split(" (Fallacy)").next().unwrap_or(after_id);
+    let no_paren = no_fallacy.split(" (").next().unwrap_or(no_fallacy);
+    let cleaned = no_paren.split(" - ").last().unwrap_or(no_paren);
+    let cleaned = cleaned.trim();
+    if cleaned.is_empty() {
+        None
+    } else {
+        Some(cleaned.to_lowercase())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -287,5 +360,52 @@ mod tests {
             )
             .passed
         );
+    }
+
+    #[test]
+    fn rule_keyword_extracts_named_rules() {
+        assert_eq!(rule_keyword("LOGIC-01 Modus Ponens").as_deref(), Some("modus ponens"));
+        assert_eq!(
+            rule_keyword("LOGIC-05 Syllogism - Barbara (AAA-1)").as_deref(),
+            Some("barbara")
+        );
+        assert_eq!(
+            rule_keyword("LOGIC-03 Affirming the Consequent (Fallacy)").as_deref(),
+            Some("affirming the consequent")
+        );
+        assert_eq!(rule_keyword("LOGIC-15 Resolution").as_deref(), Some("resolution"));
+        // Non-logic axes were never meant to be cited back — honest None.
+        assert_eq!(rule_keyword("AUX-APPROVAL-01 Benign Command Classification"), None);
+        assert_eq!(rule_keyword("LIT-01 Circular Reasoning (Logos)").as_deref(), None);
+    }
+
+    #[test]
+    fn metacognition_no_reasoning_is_honest_none() {
+        let r = score_metacognition(None, "LOGIC-01 Modus Ponens");
+        assert_eq!(r.cites_correct_rule, None);
+        let r2 = score_metacognition(Some("   "), "LOGIC-01 Modus Ponens");
+        assert_eq!(r2.cites_correct_rule, None);
+    }
+
+    #[test]
+    fn metacognition_detects_cited_rule() {
+        let r = score_metacognition(
+            Some("This follows by modus ponens: P implies Q, P holds, so Q."),
+            "LOGIC-01 Modus Ponens",
+        );
+        assert_eq!(r.cites_correct_rule, Some(true));
+
+        let r2 = score_metacognition(
+            Some("The ground is wet because it rained, obviously."),
+            "LOGIC-01 Modus Ponens",
+        );
+        assert_eq!(r2.cites_correct_rule, Some(false));
+    }
+
+    #[test]
+    fn metacognition_reserved_fields_stay_none() {
+        let r = score_metacognition(Some("modus ponens applies here"), "LOGIC-01 Modus Ponens");
+        assert_eq!(r.acknowledges_uncertainty, None);
+        assert_eq!(r.explains_distractor, None);
     }
 }
