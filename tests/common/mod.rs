@@ -43,6 +43,7 @@ pub async fn test_app() -> Router {
         db,
         config,
         events_tx,
+        registry_snapshot: std::sync::Arc::new(tokio::sync::RwLock::new(None)),
         cancellations: archetype_mesh_dashboard::lm_guard::CancellationRegistry::new(),
         active_runs: archetype_mesh_dashboard::gpu_telemetry::ActiveRuns::new(),
     };

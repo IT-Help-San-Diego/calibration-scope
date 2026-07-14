@@ -1,6 +1,8 @@
 use sqlx::PgPool;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::broadcast;
+use tokio::sync::RwLock;
 
 use crate::config::Config;
 use crate::error::AppError;
@@ -11,7 +13,20 @@ use crate::lm_guard::CancellationRegistry;
 /// Capacity of the run-event broadcast channel. Slow SSE subscribers that lag
 /// more than this many events behind simply skip ahead (documented tokio behavior);
 /// grid state is self-healing because periodic `refresh` snapshots follow.
-const EVENT_CHANNEL_CAPACITY: usize = 256;
+/// Raised 256 -> 1024 (2026-07-14): trial_start + trial_result are BOTH emitted
+/// per trial now, so a 90-test x 3-trial run bursts ~1080 events; 1024 gives a
+/// lagging browser tab a full run of headroom before it has to re-sync.
+const EVENT_CHANNEL_CAPACITY: usize = 1024;
+
+/// Shared, pre-serialized registry snapshot. ONE background task refreshes this
+/// on a timer (see spawn_registry_refresher); every SSE connection reads the
+/// cached string instead of each running its own full DB scan +
+/// per-cloud-model credential check every 5s. This is the difference between
+/// O(connections x heavy-query) load and O(1): before this, 5 open dashboard
+/// tabs meant 5 LATERAL-join model scans + 5 credential sweeps every 5 seconds,
+/// forever. The snapshot holds the `{"type":"refresh",...}` envelope ready to
+/// yield verbatim.
+pub type RegistrySnapshot = Arc<RwLock<Option<String>>>;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -21,6 +36,10 @@ pub struct AppState {
     /// (run_started / phase / trial_result / verdict / run_complete / error),
     /// every open SSE connection receives it. See routes::events.
     pub events_tx: broadcast::Sender<String>,
+    /// Pre-serialized model-registry snapshot, refreshed by a single background
+    /// task. SSE connections read this cache; they never run the heavy registry
+    /// query themselves. See spawn_registry_refresher + routes::events.
+    pub registry_snapshot: RegistrySnapshot,
     /// Per-run cancellation handles — lets POST /api/runs/:id/abort signal a
     /// specific in-flight run's executor task to stop. See lm_guard.rs for
     /// the full rationale (verified live: dropping the LM Studio connection
@@ -47,6 +66,7 @@ impl AppState {
             db,
             config,
             events_tx,
+            registry_snapshot: Arc::new(RwLock::new(None)),
             cancellations: CancellationRegistry::new(),
             active_runs: ActiveRuns::new(),
         })

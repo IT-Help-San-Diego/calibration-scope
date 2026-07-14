@@ -61,6 +61,13 @@ async fn main() {
     // fully dormant when idle. See gpu_telemetry.rs for the measured cost.
     tokio::spawn(gpu_telemetry::sampler_loop(state.clone()));
 
+    // Registry snapshot refresher: ONE background task owns the heavy model
+    // registry query. Every SSE connection reads its cached output instead of
+    // running the LATERAL-join scan + per-cloud-model credential check itself.
+    // Turns O(open-tabs x heavy-query per 5s) into O(1 query per 5s). See
+    // routes::events::spawn_registry_refresher.
+    routes::events::spawn_registry_refresher(state.clone());
+
     let app = Router::new()
         .route("/", get(routes::index::index_handler))
         .route("/api/status", get(routes::status::status_handler))
