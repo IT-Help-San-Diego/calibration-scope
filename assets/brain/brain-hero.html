@@ -1,0 +1,38 @@
+<!-- ═══ HERO BRAIN COMPONENT — two-layer design ═══
+     Layer 1: photorealistic anatomical brain (hero-brain-realistic.png), always
+              visible, instantly recognizable, glowing gyri/sulci on black.
+     Layer 2: six invisible SVG region overlays positioned on the actual lobes.
+              When a trial fires (SSE trial_start), the mapped region glows and
+              stays lit for the entire trial; trial_result tints it pass/fail.
+     Region centers were measured against the 1024x576 hero image:
+       reasoning  frontal      ~28%,40%
+       tools      motor strip  ~42%,22%
+       vision     occipital    ~73%,50%
+       literary   temporal     ~47%,65%
+       security   ant.temporal ~34%,62%
+       auxiliary  cerebellum   ~67%,73%
+     The overlay SVG uses viewBox 0 0 1024 576 so coordinates map 1:1 to pixels. -->
+<div id="brain-hero-wrap" style="position:relative;width:100%;max-width:560px;aspect-ratio:1024/576;flex-shrink:0;">
+  <img src="/assets/brain/hero-brain-realistic.png" alt="Human brain — lateral view, functional anatomy"
+       style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;"/>
+  <svg id="brain-svg" viewBox="0 0 1024 576" preserveAspectRatio="xMidYMid meet"
+       style="position:absolute;inset:0;width:100%;height:100%;"
+       role="img" aria-label="Brain functional regions — six benchmark axes mapped onto their cortical origin">
+    <defs>
+      <filter id="region-glow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="14" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <!-- ellipses hug each lobe; idle = invisible, firing = colored glow -->
+    <ellipse id="br-reasoning" class="brain-region" data-axis="reasoning" cx="288" cy="230" rx="118" ry="95"/>
+    <ellipse id="br-tools"     class="brain-region" data-axis="tools"     cx="440" cy="140" rx="70"  ry="60"/>
+    <ellipse id="br-vision"    class="brain-region" data-axis="vision"    cx="748" cy="288" rx="105" ry="98"/>
+    <ellipse id="br-literary"  class="brain-region" data-axis="literary"  cx="486" cy="375" rx="105" ry="72"/>
+    <ellipse id="br-security"  class="brain-region" data-axis="security"  cx="350" cy="358" rx="70"  ry="60"/>
+    <ellipse id="br-auxiliary" class="brain-region" data-axis="auxiliary" cx="686" cy="420" rx="82"  ry="66"/>
+  </svg>
+</div>
