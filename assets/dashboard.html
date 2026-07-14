@@ -894,6 +894,50 @@
     0%, 100% { opacity: 0.75; }
     50% { opacity: 1; }
   }
+
+  /* ═══ EMERGENCY ABORT BAR (2026-07-14) ═══
+     Fixed, top-layer, impossible to miss. Appears the instant any run goes
+     live and stays pinned to the viewport until every live run ends — so if
+     a load starts eating RAM the STOP is always one glance and one click
+     away, never buried in a scrolled-off panel. This is a real abort: it
+     signals the backend, which cancels LM Studio/provider work mid-flight. */
+  #abort-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+    display: none; align-items: center; justify-content: center; gap: 16px;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, #2a0a0a, #4a0f0f, #2a0a0a);
+    border-bottom: 2px solid var(--unsafe, #f87171);
+    box-shadow: 0 4px 24px rgba(248,113,113,0.4);
+    font-family: var(--font-mono);
+    animation: abort-bar-pulse 2s ease-in-out infinite;
+  }
+  #abort-bar.armed { display: flex; }
+  /* Push the whole app down while the bar is armed so it never covers the nav. */
+  body.abort-armed { padding-top: 52px; }
+  @keyframes abort-bar-pulse {
+    0%, 100% { box-shadow: 0 4px 24px rgba(248,113,113,0.35); }
+    50% { box-shadow: 0 4px 32px rgba(248,113,113,0.65); }
+  }
+  #abort-bar .abort-status {
+    color: #ffd9d9; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #abort-bar .abort-live-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--unsafe, #f87171);
+    animation: abort-dot-blink 1s steps(2) infinite;
+  }
+  @keyframes abort-dot-blink { 50% { opacity: 0.2; } }
+  #abort-bar .abort-btn {
+    background: var(--unsafe, #f87171); color: #fff; border: none;
+    padding: 8px 22px; border-radius: 6px; cursor: pointer;
+    font-size: 14px; font-weight: 800; letter-spacing: 0.06em;
+    font-family: var(--font-mono); text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.1s, background 0.15s;
+  }
+  #abort-bar .abort-btn:hover { background: #ff5555; transform: scale(1.04); }
+  #abort-bar .abort-btn:active { transform: scale(0.97); }
+  #abort-bar .abort-btn:disabled { opacity: 0.5; cursor: wait; }
   .brain-leg { color: var(--text-muted); transition: color 0.4s; }
   .brain-leg.lit { color: var(--text-primary); }
   /* Formula stream animation: formulas slide in from the right as they appear */
@@ -1127,6 +1171,19 @@ setTimeout(loadScienceLayer, 0);
 <script defer src="/assets/vendor/katex/contrib/auto-render.min.js"></script>
 </head>
 <body>
+
+<!-- ═══ EMERGENCY ABORT BAR — armed automatically while any run is live ═══
+     Fixed to the top of the viewport, above everything. The live RAM figure
+     beside it is the same wired-memory telemetry LM Studio shows, streamed at
+     1Hz — so the user watches memory climb and has a real STOP one click away. -->
+<div id="abort-bar" role="alert" aria-live="assertive">
+  <span class="abort-status">
+    <span class="abort-live-dot"></span>
+    <span id="abort-run-label">RUN LIVE</span>
+    <span id="abort-mem" style="color:#ffb0b0;margin-left:4px;"></span>
+  </span>
+  <button class="abort-btn" id="abort-bar-btn" onclick="abortAllLiveRuns()">⛔ STOP ALL RUNS</button>
+</div>
 
 <!-- Top Nav -->
 <div class="top-nav">
@@ -1865,6 +1922,13 @@ let runs = {};
 let activeRunId = null;
 let logEntries = [];
 let selectedModel = null;
+// Persistent multi-select: survives refresh, filtering, sorting, and sync.
+// Hydrated from localStorage at load; re-applied after every renderGrid().
+let selectedKeys = new Set();
+try {
+  const saved = JSON.parse(localStorage.getItem('amb-selected-keys') || '[]');
+  if (Array.isArray(saved)) selectedKeys = new Set(saved);
+} catch(e) {}
 let specDecodeLoaded = false;
 
 function escHtml(s) {
@@ -1949,6 +2013,7 @@ evtSource.onmessage = (e) => {
   } else if (data.type === 'run_started') {
     log('info', `Run ${data.run_id} started: ${data.model_key} — ${data.axis}${data.axes ? ' + ' + data.axes.join(',') : ''}`);
     brainRunStarted(data);
+    armAbortBar(data.run_id);
   } else if (data.type === 'phase') {
     log('phase', `[${data.phase}] ${data.message || ''}`);
   } else if (data.type === 'trial_start') {
@@ -1962,6 +2027,7 @@ evtSource.onmessage = (e) => {
   } else if (data.type === 'run_complete') {
     log('verdict', `Run ${data.run_id} complete. Overall: ${data.overall}`);
     brainRunComplete(data);
+    disarmAbortRun(data.run_id);
     // Update the focus banner with the finished verdict, so the user who
     // followed the run down sees the result in the same place they landed.
     const banner = document.getElementById('run-theatre');
@@ -2205,6 +2271,7 @@ function renderGrid() {
     </div>`;
   }).join('');
   console.log('[renderGrid] rendered rows:', rows.length);
+  restoreSelection(); // re-apply persisted multi-select after every render
   } catch (e) {
     console.error('[renderGrid] failed:', e);
   }
@@ -2398,6 +2465,55 @@ function updateGpuStrip(s) {
     mem != null ? (mem / 1073741824).toFixed(1) + ' GB wired' : 'unmeasured';
   clearTimeout(_gpuHideTimer);
   _gpuHideTimer = setTimeout(() => { strip.style.display = 'none'; }, 5000);
+  // Feed the same wired-memory figure into the emergency abort bar.
+  if (mem != null) {
+    const memEl = document.getElementById('abort-mem');
+    if (memEl) memEl.textContent = '· ' + (mem / 1073741824).toFixed(1) + ' GB wired' + (pct != null ? ' · GPU ' + pct + '%' : '');
+  }
+}
+
+// ═══ EMERGENCY ABORT BAR ENGINE ═══════════════════════════════════════════
+// Tracks every live run id (armed on run_started, disarmed on run_complete /
+// abort). The bar is visible whenever the set is non-empty — pinned to the
+// top of the viewport, so a STOP is always one glance and one click away.
+let _liveRunIds = new Set();
+function armAbortBar(runId) {
+  if (runId != null) _liveRunIds.add(runId);
+  refreshAbortBar();
+}
+function disarmAbortRun(runId) {
+  if (runId != null) _liveRunIds.delete(runId);
+  refreshAbortBar();
+}
+function refreshAbortBar() {
+  const bar = document.getElementById('abort-bar');
+  const label = document.getElementById('abort-run-label');
+  if (!bar) return;
+  const n = _liveRunIds.size;
+  bar.classList.toggle('armed', n > 0);
+  document.body.classList.toggle('abort-armed', n > 0);
+  if (label) label.textContent = n === 0 ? 'RUN LIVE'
+    : n === 1 ? `RUN #${[..._liveRunIds][0]} LIVE`
+    : `${n} RUNS LIVE`;
+  if (n === 0) { const m = document.getElementById('abort-mem'); if (m) m.textContent = ''; }
+}
+async function abortAllLiveRuns() {
+  const ids = [..._liveRunIds];
+  if (ids.length === 0) return;
+  if (!confirm(`STOP ${ids.length} live run${ids.length === 1 ? '' : 's'} now? This cancels LM Studio / provider work immediately.`)) return;
+  const btn = document.getElementById('abort-bar-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⛔ STOPPING…'; }
+  const results = await Promise.allSettled(
+    ids.map(id => apiFetch('/api/runs/' + id + '/abort', { method: 'POST' }))
+  );
+  let stopped = 0;
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled' && r.value.ok) { stopped++; _liveRunIds.delete(ids[i]); }
+  });
+  log('warn', `Emergency abort: signalled ${stopped}/${ids.length} run(s).`);
+  if (btn) { btn.disabled = false; btn.textContent = '⛔ STOP ALL RUNS'; }
+  refreshAbortBar();
+  if (typeof loadRunsPage === 'function') { runDetailCache = {}; loadRunsPage(); }
 }
 
 // ═══ Brain topology engine ═══════════════════════════════════════════════
@@ -2740,9 +2856,25 @@ updateProviderOptions();
 
 // ============ Model selection ============
 function selectModel(key) {
-  selectedModel = key;
+  const card = document.querySelector(`.model-card[data-key="${cssEscape(key)}"]`);
+  const nowSelected = card ? !card.classList.contains('selected') : true;
+  if (card) card.classList.toggle('selected', nowSelected);
+  // Persist the full selected set so a refresh or re-render never loses it.
+  if (nowSelected) selectedKeys.add(key); else selectedKeys.delete(key);
+  selectedModel = key; // keep last-touched for single-model helpers (prompt length, etc.)
+  persistSelection();
+}
+// CSS.escape isn't safe for arbitrary keys in every engine path we hit; this
+// covers the model-key charset (slashes, dots, colons, @, hyphens).
+function cssEscape(s) { return String(s).replace(/["\\]/g, '\\$&'); }
+function persistSelection() {
+  try { localStorage.setItem('amb-selected-keys', JSON.stringify([...selectedKeys])); } catch(e) {}
+}
+// Re-apply the persisted selection to whatever cards are currently in the DOM.
+// Called after every renderGrid() so filtering/sorting/sync never drops it.
+function restoreSelection() {
   document.querySelectorAll('.model-card').forEach(c => {
-    c.classList.toggle('selected', c.dataset.key === key);
+    c.classList.toggle('selected', selectedKeys.has(c.dataset.key));
   });
 }
 // ============ Tab navigation — makes the top-nav tabs actually work ============
@@ -4363,7 +4495,23 @@ whenReady(function() {
   setTimeout(checkLandingReality, 500);
   loadModels();
   loadSpecDecodePairs();
+  hydrateLiveRuns();
 });
+
+// If the page loads (or reloads) while a run is already live, arm the abort
+// bar immediately — don't wait for the next SSE run_started, which may never
+// come for an already-running run. Belt-and-suspenders with the SSE events.
+async function hydrateLiveRuns() {
+  try {
+    const r = await apiFetch('/api/runs?limit=25');
+    if (!r.ok) return;
+    const runs = Array.isArray(r.data) ? r.data : (r.data.runs || r.data.data || []);
+    runs.forEach(run => {
+      if (['queued','running','loading'].includes(run.status)) _liveRunIds.add(run.id);
+    });
+    refreshAbortBar();
+  } catch(e) {}
+}
 
 // Subtle console easter egg
 console.log('%cAMB-VISIBLE-PROBE', 'color:#d4a853;font-size:20px;font-weight:bold');
