@@ -911,6 +911,53 @@
   .nav-arrow { color: var(--text-muted); font-size: 11px; padding: 0 3px; user-select: none; align-self: center; }
   .top-nav img.logo { height: 32px; cursor: pointer; }
   body:has(#page-benchmark:not([style*="display: none"])) .top-nav img.logo { visibility: hidden; }
+
+  /* ═══ IMMERSIVE WORKSPACE (2026-07-14) ═══
+     Single-viewport cockpit: Run bar + model rail LEFT, brain pinned CENTER,
+     formula/log stream RIGHT. Applies only ≥1200px — below that the page
+     keeps classic stacked flow (zero mobile risk). The brain NEVER leaves
+     the viewport; science + protocol scroll in their own center well. */
+  @media (min-width: 1200px) {
+    #workspace {
+      display: grid;
+      grid-template-columns: 360px minmax(0,1fr) 400px;
+      height: calc(100vh - 37px);
+      overflow: hidden;
+    }
+    #ws-rail, #ws-stream {
+      display: flex; flex-direction: column;
+      min-height: 0; overflow: hidden;
+    }
+    #ws-rail { border-right: 1px solid var(--border); }
+    #ws-stream { border-left: 1px solid var(--border); }
+    #ws-center { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+    #center-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+
+    /* rail: action bar first, always visible */
+    #action-bar { justify-content: flex-start !important; padding: 10px 12px; margin-bottom: 0 !important; border-bottom: 1px solid var(--border); }
+    #action-bar #scaffold-supplement { width: 100% !important; order: 9; }
+    #ws-rail .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 10px 12px; margin: 0; }
+    #ws-rail .stat-value { font-size: 17px; }
+    #ws-rail .filters { padding: 8px 12px; gap: 6px; }
+    #ws-rail .filters select, #ws-rail .filters input { font-size: 11px; max-width: 100%; }
+    #ws-rail #filter-search { width: 100%; }
+    #ws-rail .model-grid { flex: 1; min-height: 0; overflow-y: auto; grid-template-columns: 1fr; gap: 10px; padding: 12px; }
+
+    /* center: brain big, hero slimmed to a header strip */
+    #ws-center .landing-hero { padding: 10px 16px 8px; margin: 0; border-radius: 0; }
+    #ws-center .landing-hero img[src*='owl-semaphore-logo.png'] { height: 42px !important; margin-bottom: 4px !important; }
+    #ws-center .landing-hero-title { font-size: 16px; margin-bottom: 2px; }
+    #ws-center .landing-hero-sub { font-size: 11px; max-width: 720px; margin: 0 auto 6px; }
+    #ws-center .landing-actions { gap: 8px; }
+    #ws-center .landing-btn { padding: 5px 14px; font-size: 11px; }
+    #ws-center #brain-viz { flex-shrink: 0; }
+    #ws-center #brain-hero-wrap { max-width: min(720px, 100%); margin: 0 auto; }
+
+    /* right rail: the stream */
+    #ws-stream #formula-stream-container { flex: 0 0 auto !important; max-width: none !important; max-height: 34vh !important; margin: 10px 12px 0; }
+    #ws-stream .live-log { flex: 1; min-height: 120px; max-height: none; border-top: 1px solid var(--border); margin-top: 10px; }
+    #ws-stream #nous-exp-panel, #ws-stream #spec-decode-panel { flex-shrink: 0; }
+  }
 </style>
 <script>
 window.__ambSelfHeal = {
@@ -1103,24 +1150,14 @@ setTimeout(loadScienceLayer, 0);
 
 <!-- ============ PAGE: Benchmark ============ -->
 <div class="page" id="page-benchmark">
+<div id="workspace">
 
-  <div class="landing-hero" id="landing-hero">
-    <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:96px;margin-bottom:var(--fib-4);position:relative;filter:drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15));animation:owlPulse 4s ease-in-out infinite" onerror="this.style.display='none'">
-    <div class="landing-hero-title">Archetype Mesh Benchmark</div>
-    <div class="landing-hero-sub">Scientific LLM capability verification — test what your models can actually do, on your hardware, with evidence you can audit. Blind testing, clean-room execution, SHA-3 provenance.</div>
-    <div class="landing-actions">
-      <button class="landing-btn primary" onclick="showPage('benchmark'); document.getElementById('model-grid').scrollIntoView({behavior:'smooth'})">Let's Benchmark</button>
-      <button class="landing-btn" onclick="showPage('setup')">Setup & Reality Check</button>
-      <button class="landing-btn" onclick="document.getElementById('protocol-panel').scrollIntoView({behavior:'smooth'})">The Science</button>
-    </div>
-    <div style="margin-top:var(--fib-3);position:relative">
-      <span class="reality-badge" id="landing-reality-badge">Checking your hardware...</span>
-    </div>
-  </div>
+<!-- ═══ LEFT RAIL — command & selection: Run is always one glance away ═══ -->
+<aside id="ws-rail">
 
 
 <!-- Action bar -->
-<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:var(--fib-2);align-items:center;flex-wrap:wrap;">
+<div id="action-bar" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:var(--fib-2);align-items:center;flex-wrap:wrap;">
   <span id="conn-status" style="display:none;font-size:12px;font-weight:600;color:var(--flaky);background:rgba(0,0,0,0.25);padding:4px 10px;border-radius:6px;border:1px solid var(--flaky);"></span>
   <input id="scaffold-supplement" type="text" placeholder="Scaffold supplement: warnings or reminders to watch for (optional)" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:13px;font-family:var(--font-sans);width:320px;" />
   <button class="btn btn-secondary" onclick="openTestBuilder()">+ New Test</button>
@@ -1214,43 +1251,31 @@ setTimeout(loadScienceLayer, 0);
   <input type="text" id="filter-search" placeholder="Search model…" oninput="applyFilters()"
          style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:13px;font-family:var(--font-sans);width:180px;">
 </div>
-
-<!-- Scientific Protocol — procedures & controls for consistent, honest results -->
-<div class="protocol" id="protocol-panel">
-  <div class="protocol-head" onclick="toggleProtocol()">
-    <span class="protocol-title">🔬 TEST PROTOCOL — read before running</span>
-    <span class="protocol-chevron" id="protocol-chevron">▾</span>
-  </div>
-  <div class="protocol-body" id="protocol-body">
-    <div class="protocol-col">
-      <div class="protocol-h">Environment controls</div>
-      <ul>
-        <li>Open <b>LM Studio → Developer (local server) tab</b> and watch models load and eject in real time. Observe — don't touch. Loading or ejecting models by hand mid-run invalidates the measurement.</li>
-        <li>Close heavyweight apps before a run. Every GB another app holds is a GB the model under test can't use, and background CPU spikes contaminate latency numbers.</li>
-        <li>Testing your working setup instead? That's a valid experiment — just keep the <i>same</i> apps open across every model so runs stay comparable. Consistency is the control.</li>
-      </ul>
-    </div>
-    <div class="protocol-col">
-      <div class="protocol-h">How the measurement works</div>
-      <ul>
-        <li><b>Clean room:</b> before each local run, every loaded model is ejected, only the target is loaded, and residency in RAM is verified by polling — never assumed.</li>
-        <li><b>No answer leakage:</b> the expected answer lives only in the database. The model is never shown the ground truth it's scored against.</li>
-        <li><b>Objective scoring:</b> verdicts come from comparing the model's actual output to ground truth (exact text, spatial relations, tool-call shape) — never from asking a model its opinion.</li>
-        <li><b>N=3 trials per test:</b> one pass can be luck. Capability axes (Vision / Tools / Reasoning) score <b>PASS / FAIL / INTERMITTENT</b> — can it do the job? Security scores <b>SAFE / UNSAFE / INTERMITTENT</b> — did it resist? Different questions, different words.</li>
-        <li><b>Speed is a measurement, not a footnote:</b> every axis shows average response time. A model that's right but takes 30 seconds is a different answer than one that's right in 2 — that's the ChatGPT-feel gap, measured honestly.</li>
-        <li><b>Evidence, not claims:</b> every trial stores the exact prompt, raw response, and latency, sealed with a SHA-3 hash. You can audit every verdict.</li>
-      </ul>
-    </div>
-    <div class="protocol-col">
-      <div class="protocol-h">Why this exists</div>
-      <ul>
-        <li>Standardized benchmarks (MMLU &amp; friends) are public — models have seen them, so cheating is possible. We still watch those numbers, but we don't trust them alone.</li>
-        <li>The cross-check is <b>your own human test</b>: build one in the Test Builder with your own image and question the model has never seen. A good test has one objective, verifiable answer that isn't contained in the question.</li>
-        <li>Local AI on your own hardware is real. The people saying it can't be done are missing method, not hardware. This page <i>is</i> the method — every number on it is one you can reproduce yourself.</li>
-      </ul>
-    </div>
+<!-- Model Grid -->
+<div class="model-grid" id="model-grid">
+  <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
+    <div style="font-size:13px;margin-bottom:6px;">Loading model registry via SSE…</div>
+    <div style="font-size:11px;font-family:var(--font-mono);">Waiting for /api/events</div>
   </div>
 </div>
+</aside>
+
+<!-- ═══ CENTER — the brain, pinned; teaching layers scroll beneath ═══ -->
+<main id="ws-center">
+
+  <div class="landing-hero" id="landing-hero">
+    <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:96px;margin-bottom:var(--fib-4);position:relative;filter:drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15));animation:owlPulse 4s ease-in-out infinite" onerror="this.style.display='none'">
+    <div class="landing-hero-title">Archetype Mesh Benchmark</div>
+    <div class="landing-hero-sub">Scientific LLM capability verification — test what your models can actually do, on your hardware, with evidence you can audit. Blind testing, clean-room execution, SHA-3 provenance.</div>
+    <div class="landing-actions">
+      <button class="landing-btn primary" onclick="showPage('benchmark'); document.getElementById('model-grid').scrollIntoView({behavior:'smooth'})">Let's Benchmark</button>
+      <button class="landing-btn" onclick="showPage('setup')">Setup & Reality Check</button>
+      <button class="landing-btn" onclick="document.getElementById('protocol-panel').scrollIntoView({behavior:'smooth'})">The Science</button>
+    </div>
+    <div style="margin-top:var(--fib-3);position:relative">
+      <span class="reality-badge" id="landing-reality-badge">Checking your hardware...</span>
+    </div>
+  </div>
 
 <!-- ═══ Run theatre banner — the user's anchor when a run starts. Hidden
      until Run is clicked; then names what's under test and (via JS) scrolls
@@ -1322,15 +1347,20 @@ setTimeout(loadScienceLayer, 0);
       </div>
       <div id="brain-caption" style="margin-top:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);min-height:30px;line-height:1.5;"></div>
     </div>
-    <!-- Formula stream: Lean formulas fly by as tests execute.
-         Each trial_start event pushes the formal_spec into this stream.
-         This is the mathematical foundation visible in real time. -->
-    <div id="formula-stream-container" style="flex:1;min-width:280px;max-width:400px;max-height:310px;overflow:hidden;position:relative;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,0.3);padding:12px;">
-      <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Lean Formula Stream</div>
-      <div id="formula-stream" style="font-family:var(--font-mono);font-size:13px;line-height:1.8;color:var(--accent-gold);max-height:250px;overflow:hidden;"></div>
-    </div>
   </div>
 </div>
+
+<!-- Live GPU telemetry strip — appears only while runs execute (server samples
+     ioreg at 1Hz and streams gpu_sample SSE events; idle = zero samples). -->
+<div id="gpu-strip" style="display:none;background:var(--bg-secondary);border-top:1px solid var(--border);padding:8px 24px;font-family:var(--font-mono);font-size:11px;">
+  <span style="color:var(--text-muted);">GPU</span>
+  <span style="display:inline-block;width:180px;height:8px;background:var(--bg-card);border-radius:4px;margin:0 8px;vertical-align:middle;overflow:hidden;"><span id="gpu-util-bar" style="display:block;height:100%;width:0%;background:linear-gradient(90deg,#3fb950,#d4a853);transition:width 900ms linear;"></span></span>
+  <span id="gpu-util-txt" style="color:var(--text-primary);">—%</span>
+  <span style="color:var(--text-muted);margin-left:16px;">GPU memory</span>
+  <span id="gpu-mem-txt" style="color:var(--text-primary);margin-left:6px;">—</span>
+  <span id="gpu-src" style="color:var(--text-muted);margin-left:16px;" title="ioreg -r -d 1 -c IOAccelerator → PerformanceStatistics — the same counters Activity Monitor reads">source: IOAccelerator</span>
+</div>
+<div id="center-scroll">
 
 <!-- ═══ Science Layer — NeuroVault reproducible functional maps ═══
      ALWAYS VISIBLE below the brain hero. Shows the neurologist's
@@ -1347,16 +1377,54 @@ setTimeout(loadScienceLayer, 0);
   <div id="science-provenance" style="margin-top:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);"></div>
 </div>
 
-<!-- Live GPU telemetry strip — appears only while runs execute (server samples
-     ioreg at 1Hz and streams gpu_sample SSE events; idle = zero samples). -->
-<div id="gpu-strip" style="display:none;background:var(--bg-secondary);border-top:1px solid var(--border);padding:8px 24px;font-family:var(--font-mono);font-size:11px;">
-  <span style="color:var(--text-muted);">GPU</span>
-  <span style="display:inline-block;width:180px;height:8px;background:var(--bg-card);border-radius:4px;margin:0 8px;vertical-align:middle;overflow:hidden;"><span id="gpu-util-bar" style="display:block;height:100%;width:0%;background:linear-gradient(90deg,#3fb950,#d4a853);transition:width 900ms linear;"></span></span>
-  <span id="gpu-util-txt" style="color:var(--text-primary);">—%</span>
-  <span style="color:var(--text-muted);margin-left:16px;">GPU memory</span>
-  <span id="gpu-mem-txt" style="color:var(--text-primary);margin-left:6px;">—</span>
-  <span id="gpu-src" style="color:var(--text-muted);margin-left:16px;" title="ioreg -r -d 1 -c IOAccelerator → PerformanceStatistics — the same counters Activity Monitor reads">source: IOAccelerator</span>
+<!-- Scientific Protocol — procedures & controls for consistent, honest results -->
+<div class="protocol" id="protocol-panel">
+  <div class="protocol-head" onclick="toggleProtocol()">
+    <span class="protocol-title">🔬 TEST PROTOCOL — read before running</span>
+    <span class="protocol-chevron" id="protocol-chevron">▾</span>
+  </div>
+  <div class="protocol-body" id="protocol-body">
+    <div class="protocol-col">
+      <div class="protocol-h">Environment controls</div>
+      <ul>
+        <li>Open <b>LM Studio → Developer (local server) tab</b> and watch models load and eject in real time. Observe — don't touch. Loading or ejecting models by hand mid-run invalidates the measurement.</li>
+        <li>Close heavyweight apps before a run. Every GB another app holds is a GB the model under test can't use, and background CPU spikes contaminate latency numbers.</li>
+        <li>Testing your working setup instead? That's a valid experiment — just keep the <i>same</i> apps open across every model so runs stay comparable. Consistency is the control.</li>
+      </ul>
+    </div>
+    <div class="protocol-col">
+      <div class="protocol-h">How the measurement works</div>
+      <ul>
+        <li><b>Clean room:</b> before each local run, every loaded model is ejected, only the target is loaded, and residency in RAM is verified by polling — never assumed.</li>
+        <li><b>No answer leakage:</b> the expected answer lives only in the database. The model is never shown the ground truth it's scored against.</li>
+        <li><b>Objective scoring:</b> verdicts come from comparing the model's actual output to ground truth (exact text, spatial relations, tool-call shape) — never from asking a model its opinion.</li>
+        <li><b>N=3 trials per test:</b> one pass can be luck. Capability axes (Vision / Tools / Reasoning) score <b>PASS / FAIL / INTERMITTENT</b> — can it do the job? Security scores <b>SAFE / UNSAFE / INTERMITTENT</b> — did it resist? Different questions, different words.</li>
+        <li><b>Speed is a measurement, not a footnote:</b> every axis shows average response time. A model that's right but takes 30 seconds is a different answer than one that's right in 2 — that's the ChatGPT-feel gap, measured honestly.</li>
+        <li><b>Evidence, not claims:</b> every trial stores the exact prompt, raw response, and latency, sealed with a SHA-3 hash. You can audit every verdict.</li>
+      </ul>
+    </div>
+    <div class="protocol-col">
+      <div class="protocol-h">Why this exists</div>
+      <ul>
+        <li>Standardized benchmarks (MMLU &amp; friends) are public — models have seen them, so cheating is possible. We still watch those numbers, but we don't trust them alone.</li>
+        <li>The cross-check is <b>your own human test</b>: build one in the Test Builder with your own image and question the model has never seen. A good test has one objective, verifiable answer that isn't contained in the question.</li>
+        <li>Local AI on your own hardware is real. The people saying it can't be done are missing method, not hardware. This page <i>is</i> the method — every number on it is one you can reproduce yourself.</li>
+      </ul>
+    </div>
+  </div>
 </div>
+</div>
+</main>
+
+<!-- ═══ RIGHT RAIL — the stream: formulas fly, log rolls, panels report ═══ -->
+<aside id="ws-stream">
+    <!-- Formula stream: Lean formulas fly by as tests execute.
+         Each trial_start event pushes the formal_spec into this stream.
+         This is the mathematical foundation visible in real time. -->
+    <div id="formula-stream-container" style="flex:1;min-width:280px;max-width:400px;max-height:310px;overflow:hidden;position:relative;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,0.3);padding:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Lean Formula Stream</div>
+      <div id="formula-stream" style="font-family:var(--font-mono);font-size:13px;line-height:1.8;color:var(--accent-gold);max-height:250px;overflow:hidden;"></div>
+    </div>
 
 <!-- Live Log -->
 <div class="live-log" id="live-log">
@@ -1393,13 +1461,9 @@ setTimeout(loadScienceLayer, 0);
   <div id="sd-pairs" style="display:grid;gap:8px;"></div>
   <div id="sd-result" style="margin-top:12px;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border);font-family:var(--font-mono);font-size:12px;display:none;"></div>
 </div>
-<!-- Model Grid -->
-<div class="model-grid" id="model-grid">
-  <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
-    <div style="font-size:13px;margin-bottom:6px;">Loading model registry via SSE…</div>
-    <div style="font-size:11px;font-family:var(--font-mono);">Waiting for /api/events</div>
-  </div>
-</div>
+</aside>
+
+</div><!-- /workspace -->
 
 </div>
 <!-- ============ /PAGE: Benchmark ============ -->
