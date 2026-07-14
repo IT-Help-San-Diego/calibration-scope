@@ -2312,7 +2312,7 @@ function renderGrid() {
       ? `<button class="btn-mini" onclick="event.stopPropagation(); startFountain('${m.key.replace(/'/g, "\\'")}', '${m.provider}')" title="Fire 20 requests at 1/s and measure what the provider ACTUALLY sustains — verdicts: FOUNTAIN (all pass), TRICKLE (slow), THROTTLED (429s/drops), MIRAGE (advertised but unusable)">⛲ Probe</button>`
       : '';
 
-    return `<div class="${cardClasses}" data-key="${m.key}" data-unresolved="${unresolved}" onclick="selectModel('${escHtml(m.key)}')">
+    return `<div class="${cardClasses}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}" onclick="selectModel('${escHtml(m.key)}')">
       <div class="model-card-header">
         ${locBadge}
         <span class="model-name">${m.display_name}</span>
@@ -2367,7 +2367,7 @@ function renderGrid() {
         : notRunnable
         ? `<button class="btn-mini" disabled title="${esc(m.runnable_reason || 'No working credential path')}">🚫</button>`
         : `<button class="btn-mini" onclick="event.stopPropagation(); runSingle('${kq}')" title="Run this model now">▶</button>`;
-      return `<div class="${rowClasses.join(' ')}" data-key="${m.key}" data-unresolved="${unresolved}" onclick="selectModel('${escHtml(m.key)}')">
+      return `<div class="${rowClasses.join(' ')}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}" onclick="selectModel('${escHtml(m.key)}')">
         <span class="row-check">✓</span>
         <span class="row-loc" title="${m.location === 'local' ? 'Local — your silicon' : 'Cloud — ' + m.provider}">${m.location === 'local' ? '🖥' : '☁️'}</span>
         <div class="row-main">
@@ -2809,11 +2809,15 @@ function log(tag, msg) {
 let _runClickCount = 0;
 let _runClickTimer = null;
 // Run actions — live against /api/runs
-function runSingle(key) {
+function runSingle(key, provider) {
   // Defense in depth: even though the button is disabled/hidden for
   // unresolved models, refuse here too — covers runSelected() picking up a
   // selected-but-unresolved card, and any direct console/script call.
-  const m = models.find(x => x.key === key);
+  // When provider is given (dual-location twins), match on BOTH so the
+  // right row's capabilities gate the pre-flight, not an arbitrary twin.
+  const m = provider
+    ? models.find(x => x.key === key && x.provider === provider)
+    : models.find(x => x.key === key);
   if (m && m.location === 'local' && !m.context_length) {
     log('err', `Refusing to run ${key} — LM Studio reports no context length (likely an incomplete download). See the model card for details.`);
     return;
@@ -2822,12 +2826,13 @@ function runSingle(key) {
   // to WATCH it. Bring the user to the live telemetry theatre — brain + log —
   // and announce exactly what's under test, so they never have to scroll back
   // up hunting for where their model went.
-  focusRunTheatre(key);
-  log('info', `Queuing test run for ${key}...`);
+  focusRunTheatre(key, provider);
+  const where = m ? (m.location === 'local' ? 'local' : 'cloud') : '?';
+  log('info', `Queuing test run for ${key} (${where})...`);
   apiFetch('/api/runs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model_key: key, axes: ['vision','tools','reasoning','security'] })
+    body: JSON.stringify({ model_key: key, provider: provider || (m && m.provider) || undefined, axes: ['vision','tools','reasoning','security'] })
   }).then(r => {
     if (r.ok && r.data && r.data.run_id) {
       const ids = (r.data.run_ids || [r.data.run_id]).join(', ');
@@ -2851,15 +2856,18 @@ function runSingle(key) {
 // A sticky banner that names what's being tested and scrolls the brain +
 // live log into view. This is the user's anchor — "you clicked Run, HERE is
 // what's happening, right now." Cleared when the run completes.
-function focusRunTheatre(key) {
-  const m = models.find(x => x.key === key);
+function focusRunTheatre(key, provider) {
+  const m = provider
+    ? models.find(x => x.key === key && x.provider === provider)
+    : models.find(x => x.key === key);
   const banner = document.getElementById('run-theatre');
   if (banner) {
     const visNote = m && !m.supports_vision
       ? ' · <span style="color:var(--flaky,#d4a853)">vision axis will be skipped (text-only model)</span>'
       : '';
+    const whereNote = m ? (m.location === 'local' ? '🖥 local · LM Studio' : '☁️ cloud · ' + m.provider) : '';
     banner.innerHTML = `<span style="color:var(--accent-gold,#d4a853);font-weight:600;">▶ Now testing: ${m ? m.display_name : key}</span>` +
-      `<span style="color:var(--text-muted);margin-left:8px;">${m ? m.provider : ''} · watch the brain + live log below${visNote}</span>`;
+      `<span style="color:var(--text-muted);margin-left:8px;">${whereNote} · watch the brain + live log below${visNote}</span>`;
     banner.style.display = '';
   }
   // Bring the theatre (brain viz) into view — that's where the action shows.
@@ -2901,10 +2909,12 @@ function runSelected() {
   if (cards.length === 0) {
     alert('Select at least one model first, then run it twice to confirm.'); return;
   }
-  const keys = cards.map(c => c.dataset.key);
   const axes = Array.from(document.querySelectorAll('.axis-check:checked')).map(cb => cb.value);
-  const models = keys.map(k => ({ key: k, provider: k.includes('/') ? k.split('/')[0] : 'lmstudio' }));
-  confirmRun(() => { models.forEach(m => runSingle(m.key)); }, models, axes);
+  // Build from the REAL card attributes — provider+location come straight
+  // from the clicked row, so a dual-location twin runs (and is labelled)
+  // exactly where the user picked it, never an arbitrary DB row.
+  const models = cards.map(c => ({ key: c.dataset.key, provider: c.dataset.provider, location: c.dataset.location }));
+  confirmRun(() => { models.forEach(m => runSingle(m.key, m.provider)); }, models, axes);
 }
 
 function runBaselineScaffoldSelected() {
@@ -2929,21 +2939,21 @@ function runBaselineScaffoldSelected() {
     alert('Select at least one axis first.'); return;
   }
   const supplement = document.getElementById('scaffold-supplement')?.value?.trim() || '';
-  const models = keys.map(k => ({ key: k, provider: k.includes('/') ? k.split('/')[0] : 'lmstudio' }));
+  const models = cards.map(c => ({ key: c.dataset.key, provider: c.dataset.provider, location: c.dataset.location }));
   confirmRun(() => {
-    models.forEach(key => {
-      focusRunTheatre(key);
-      log('info', `Baseline+Scaffold paired run queued for ${key}${supplement ? ' with scaffold supplement' : ''}`);
+    models.forEach(mm => {
+      focusRunTheatre(mm.key, mm.provider);
+      log('info', `Baseline+Scaffold paired run queued for ${mm.key}${supplement ? ' with scaffold supplement' : ''}`);
       apiFetch('/api/runs/baseline-scaffold', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model_key: key, axes, scaffold_supplement: supplement || null })
+        body: JSON.stringify({ model_key: mm.key, provider: mm.provider, axes, scaffold_supplement: supplement || null })
       }).then(r => {
         if (r.ok && r.data) {
           const all = [].concat(r.data.baseline_run_ids || [], r.data.scaffold_run_ids || []);
-          log('info', `Paired runs queued for ${key}: baseline=${(r.data.baseline_run_ids || []).join(',')} scaffold=${(r.data.scaffold_run_ids || []).join(',')}`);
+          log('info', `Paired runs queued for ${mm.key}: baseline=${(r.data.baseline_run_ids || []).join(',')} scaffold=${(r.data.scaffold_run_ids || []).join(',')}`);
         } else {
-          log('err', `Baseline/Scaffold failed for ${key}: ${r.error || JSON.stringify(r.data)}`);
+          log('err', `Baseline/Scaffold failed for ${mm.key}: ${r.error || JSON.stringify(r.data)}`);
         }
       });
     });
@@ -4672,10 +4682,16 @@ console.log('%cLogic came before the abacus.\nReason came before the transistor.
 // (_runClickCount/_runClickTimer declared once near the run actions block)
 let _runConfirmCallback = null;
 function confirmRun(callback, models, axes) {
-  const sourceType = models.some(m => m.provider === 'lmstudio') ? 'local' : 'cloud';
+  // Source truth comes from each model's real location (from the clicked
+  // card), NOT a key string-split. A dual-location twin now labels honestly.
+  const anyLocal = models.some(m => m.location === 'local');
+  const anyCloud = models.some(m => m.location === 'cloud');
+  const sourceType = anyLocal && anyCloud ? 'mixed' : anyCloud ? 'cloud' : 'local';
   const sourceLabel = sourceType === 'local'
     ? 'LM Studio (local hardware)'
-    : models.map(m => m.provider + ':' + m.key).join(', ');
+    : sourceType === 'cloud'
+    ? models.map(m => (m.provider || 'cloud') + ':' + m.key).join(', ')
+    : 'mixed: ' + models.map(m => (m.location === 'local' ? '🖥 ' : '☁️ ') + m.key).join(', ');
   const targetLabel = 'Benchmark execution engine';
   const axesLabel = axes.length ? axes.join(', ') : 'all axes';
 
@@ -4690,7 +4706,7 @@ function confirmRun(callback, models, axes) {
   const detailHtml = '<div class="confirm-detail"><b>Models:</b> <code>' + models.length + '</code><br><b>Axes:</b> <code>' + axesLabel + '</code><br><b>Source:</b> <code>' + sourceType + '</code></div>';
 
   let warnHtml = '';
-  if (sourceType === 'local') {
+  if (sourceType === 'local' || sourceType === 'mixed') {
     warnHtml += '<div class="confirm-warn">\u26a0\ufe0f LOCAL models will be EJECTED from LM Studio during clean-room execution. Other apps using LM Studio will be interrupted.</div>';
   }
   if (models.length > 3) {

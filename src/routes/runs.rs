@@ -27,6 +27,13 @@ pub struct StartRunRequest {
     pub draft_model_key: Option<String>,
     #[serde(default)]
     pub scaffold_supplement: Option<String>,
+    /// Optional disambiguator for the 8 model keys that exist as BOTH a
+    /// local (lmstudio) and a cloud (nous) row. Without it, `WHERE key = $1`
+    /// picks an arbitrary twin — so a local pick could silently run in the
+    /// cloud (and vice-versa), and the confirm dialog's Source label lies.
+    /// The frontend now sends the exact provider of the card the user clicked.
+    #[serde(default)]
+    pub provider: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -67,12 +74,24 @@ pub async fn start_runs(
         }
     }
 
-    let model = sqlx::query_as::<_, ModelRow>(
-        "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND active = true",
-    )
-    .bind(&req.model_key)
-    .fetch_optional(&state.db)
-    .await?
+    // Disambiguate dual-location keys (local+cloud twins). When the caller
+    // names a provider, match it exactly; otherwise fall back to key-only
+    // (preserves old behaviour for the ~297 unique keys).
+    let model = match req.provider.as_deref().filter(|p| !p.trim().is_empty()) {
+        Some(prov) => sqlx::query_as::<_, ModelRow>(
+            "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND provider = $2 AND active = true",
+        )
+        .bind(&req.model_key)
+        .bind(prov)
+        .fetch_optional(&state.db)
+        .await?,
+        None => sqlx::query_as::<_, ModelRow>(
+            "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND active = true",
+        )
+        .bind(&req.model_key)
+        .fetch_optional(&state.db)
+        .await?,
+    }
     .ok_or_else(|| AppError::Executor(format!("Unknown model key: {}", req.model_key)))?;
 
     // Capability pre-flight, at the API boundary — the cheapest possible
