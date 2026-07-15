@@ -1480,12 +1480,15 @@ function clearScienceHighlight() {
          style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:13px;font-family:var(--font-sans);width:180px;">
 </div>
 <!-- Model Grid -->
-<div class="model-grid" id="model-grid">
+<div style="display:flex;gap:8px;align-items:flex-start;">
+  <select id="model-pick" multiple size="24" style="width:320px;font-family:var(--font-mono);font-size:12px;background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;"></select>
+  <div class="model-grid" id="model-grid">
   <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
     <div style="font-size:13px;margin-bottom:6px;">Loading model registry via SSE…</div>
     <div style="font-size:11px;font-family:var(--font-mono);">Waiting for /api/events</div>
   </div>
 </div>
+<div id="selector-counter" style="grid-column:1/-1;text-align:center;padding:4px;font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">last=— clicked=0 handled=0 selected=0</div>
 </aside>
 
 <!-- ═══ CENTER — the brain, pinned; teaching layers scroll beneath ═══ -->
@@ -3147,23 +3150,14 @@ updateProviderOptions();
 // Delegated selection — reads `data-key` directly from the clicked row
 // so we never depend on inline JS string escaping of model keys.
 function gridClickHandler(e) {
-  _selectorClicks++;
+  _selClicks++;
   const row = e.target.closest('[data-key]');
   if (!row || !row.dataset.key) return;
-  // Ignore clicks on action buttons inside the row.
   if (e.target.closest('button')) return;
-  _selectorHandled++;
-  _lastSelectedKey = row.dataset.key;
+  _selHandled++;
   selectModel(row.dataset.key);
-  updateSelectorCounter();
+  updateSelectorCounter(row.dataset.key, document.querySelectorAll('.model-card.selected, .model-row.selected').length);
 }
-function updateSelectorCounter() {
-  const key = document.getElementById('selector-counter-key');
-  const count = document.getElementById('selector-counter-count');
-  if (key) key.textContent = _lastSelectedKey || '—';
-  if (count) count.textContent = 'clicked=' + _selectorClicks + ' handled=' + _selectorHandled + ' selected=' + document.querySelectorAll('.model-card.selected, .model-row.selected').length;
-}
-
 function selectModel(key) {
   const card = document.querySelector(`.model-card[data-key="${cssEscape(key)}"], .model-row[data-key="${cssEscape(key)}"]`);
   const nowSelected = card ? !card.classList.contains('selected') : true;
