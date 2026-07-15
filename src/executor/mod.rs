@@ -684,9 +684,9 @@ async fn check_memory_safety(
                 infra_error_count += 1;
             }
 
-            sqlx::query(
+            let (trial_result_id,): (i32,) = sqlx::query_as(
                 r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id, prompt_tokens, completion_tokens, speculative_draft_model, total_draft_tokens_count, accepted_draft_tokens_count, rejected_draft_tokens_count)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"#,
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id"#,
             )
             .bind(run_id)
             .bind(trial_num)
@@ -703,6 +703,25 @@ async fn check_memory_safety(
             .bind(spec_decode.as_ref().and_then(|s| s.total_draft_tokens_count))
             .bind(spec_decode.as_ref().and_then(|s| s.accepted_draft_tokens_count))
             .bind(spec_decode.as_ref().and_then(|s| s.rejected_draft_tokens_count))
+            .fetch_one(db)
+            .await?;
+
+            // Owl Semaphore σₕ (metacognitive) pass — score the explanation
+            // the model ALREADY gave on this trial and persist it beside the
+            // trial row. Deterministic keyword check, never a second model
+            // grading the first (migration 036). One row per trial; rows
+            // where nothing could be checked carry honest NULLs + notes.
+            let meta = scoring::score_metacognition(reasoning.as_deref(), &test.name);
+            sqlx::query(
+                r#"INSERT INTO metacognitive_scores (trial_result_id, cites_correct_rule, acknowledges_uncertainty, explains_distractor, rubric_notes)
+                   VALUES ($1, $2, $3, $4, $5)
+                   ON CONFLICT (trial_result_id) DO NOTHING"#,
+            )
+            .bind(trial_result_id)
+            .bind(meta.cites_correct_rule)
+            .bind(meta.acknowledges_uncertainty)
+            .bind(meta.explains_distractor)
+            .bind(&meta.rubric_notes)
             .execute(db)
             .await?;
 

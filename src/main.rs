@@ -76,6 +76,7 @@ async fn main() {
         .route("/api/models/{key}/dossier", get(routes::dossier::model_dossier))
         .route("/api/events", get(routes::events::sse_handler))
         .route("/api/runs", get(routes::runs::list_runs).post(routes::runs::start_runs))
+        .route("/api/runs/baseline-scaffold", post(routes::runs::start_baseline_scaffold))
         .route("/api/runs/{id}", get(routes::runs::get_run_detail))
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
         .route("/api/runs/{id}/export", get(routes::runs::export_run))

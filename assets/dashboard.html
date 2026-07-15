@@ -2455,8 +2455,11 @@ function renderGrid() {
       if (m.size_gb) facts.push(m.size_gb + 'GB');
       const ctx = fmtCtx(m.context_length);
       if (ctx) facts.push(ctx);
+      // costTier returns {label, cls, note} — push the LABEL, not the object.
+      // Pushing the object rendered "[object Object]" on every priced cloud
+      // row (found live 2026-07-14 via browser snapshot of the roster).
       const tier = costTier(m);
-      if (tier) facts.push(tier);
+      if (tier) facts.push(tier.label);
       const rowClasses = ['model-row'];
       if (unresolved) rowClasses.push('model-card-unresolved');
       const kq = m.key.replace(/'/g, "\\'");

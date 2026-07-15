@@ -194,43 +194,15 @@ pub async fn start_runs(
         .await?;
         run_ids.push(run_id);
 
-        let db = state.db.clone();
-        let config = state.config.clone();
-        let tx = state.events_tx.clone();
-        let cancellations = state.cancellations.clone();
-        let active_runs = state.active_runs.clone();
-        let model_id = model.id;
-        let model_key = model.key.clone();
-        let location = model.location.clone();
-        let provider = model.provider.clone();
-        let axis = axis.to_string();
-        let run_load_mode = load_mode.clone();
-        let draft_model_key = req.draft_model_key.clone();
-        let scaffold_supplement = req.scaffold_supplement.clone();
-
-        tokio::spawn(async move {
-            // Serialize LOCAL LM Studio access via the shared process-wide
-            // gate (lm_guard::acquire) — NOT a route-local mutex. Prior to
-            // 2026-07-08 this used a private LOCAL_RUN_LOCK that only
-            // benchmark runs took; POST /api/prompt-check and the Prompt
-            // Builder called LM Studio directly with zero serialization —
-            // the actual self-harm gap an audit found (unbounded concurrent
-            // local model loads on a daily-driver machine). Every LM
-            // Studio-touching route now goes through the same gate.
-            let _permit = if location == "local" {
-                Some(crate::lm_guard::acquire().await)
-            } else {
-                None
-            };
-            // RAII: while this guard lives, the 1Hz GPU telemetry sampler
-            // (gpu_telemetry.rs) is active and streaming gpu_sample events.
-            let _telemetry = active_runs.guard();
-            crate::executor::execute_run(
-                db, config, tx, cancellations, run_id, model_id, model_key, location, provider,
-                axis, run_load_mode, draft_model_key, scaffold_supplement,
-            )
-            .await;
-        });
+        spawn_run_task(
+            &state,
+            run_id,
+            &model,
+            axis.to_string(),
+            load_mode.clone(),
+            req.draft_model_key.clone(),
+            req.scaffold_supplement.clone(),
+        );
     }
 
     Ok(Json(serde_json::json!({
@@ -238,6 +210,220 @@ pub async fn start_runs(
         "run_ids": run_ids,
         "model_key": req.model_key,
         "axes": axes,
+        "skipped_axes": skipped_axes.iter().map(|(a, reason)| serde_json::json!({"axis": a, "reason": reason})).collect::<Vec<_>>(),
+    })))
+}
+
+/// Spawn the background task that executes ONE queued run. Shared by
+/// `start_runs` and `start_baseline_scaffold` so the LM Studio serialization
+/// gate and GPU-telemetry RAII guard are impossible to fork out of sync.
+fn spawn_run_task(
+    state: &AppState,
+    run_id: i32,
+    model: &ModelRow,
+    axis: String,
+    load_mode: LoadMode,
+    draft_model_key: Option<String>,
+    scaffold_supplement: Option<String>,
+) {
+    let db = state.db.clone();
+    let config = state.config.clone();
+    let tx = state.events_tx.clone();
+    let cancellations = state.cancellations.clone();
+    let active_runs = state.active_runs.clone();
+    let model_id = model.id;
+    let model_key = model.key.clone();
+    let location = model.location.clone();
+    let provider = model.provider.clone();
+
+    tokio::spawn(async move {
+        // Serialize LOCAL LM Studio access via the shared process-wide
+        // gate (lm_guard::acquire) — NOT a route-local mutex. Prior to
+        // 2026-07-08 this used a private LOCAL_RUN_LOCK that only
+        // benchmark runs took; POST /api/prompt-check and the Prompt
+        // Builder called LM Studio directly with zero serialization —
+        // the actual self-harm gap an audit found (unbounded concurrent
+        // local model loads on a daily-driver machine). Every LM
+        // Studio-touching route now goes through the same gate.
+        let _permit = if location == "local" {
+            Some(crate::lm_guard::acquire().await)
+        } else {
+            None
+        };
+        // RAII: while this guard lives, the 1Hz GPU telemetry sampler
+        // (gpu_telemetry.rs) is active and streaming gpu_sample events.
+        let _telemetry = active_runs.guard();
+        crate::executor::execute_run(
+            db, config, tx, cancellations, run_id, model_id, model_key, location, provider,
+            axis, load_mode, draft_model_key, scaffold_supplement,
+        )
+        .await;
+    });
+}
+
+/// POST /api/runs/baseline-scaffold — queue a PAIRED experiment: one
+/// clean-room baseline run and one scaffolded run per axis, same model,
+/// same battery, atomically. This is the controlled-comparison primitive
+/// the scaffold experiments (2026-07-13/14) ran by hand: baseline first,
+/// scaffold second, so the pair lands adjacent in run history and the
+/// scaffold_delta is computable from two sealed runs.
+///
+/// The frontend has called this endpoint since the scaffold work landed;
+/// the route itself was never written (404, then 405 after the {id} route
+/// grew a POST sibling). Found live 2026-07-14.
+#[derive(Debug, Deserialize)]
+pub struct BaselineScaffoldRequest {
+    pub model_key: String,
+    pub axes: Vec<String>,
+    #[serde(default)]
+    pub scaffold_supplement: Option<String>,
+    #[serde(default)]
+    pub provider: Option<String>,
+}
+
+pub async fn start_baseline_scaffold(
+    State(state): State<AppState>,
+    Json(req): Json<BaselineScaffoldRequest>,
+) -> AppResult<Json<serde_json::Value>> {
+    if req.axes.is_empty() {
+        return Err(AppError::Executor("axes must be non-empty".into()));
+    }
+    let supplement = req
+        .scaffold_supplement
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(str::to_string);
+    let Some(supplement) = supplement else {
+        return Err(AppError::Executor(
+            "scaffold_supplement is required for a baseline-vs-scaffold pair — without it the two runs would be identical".into(),
+        ));
+    };
+
+    // Same axis validation/dedup discipline as start_runs.
+    let mut axes: Vec<&str> = Vec::new();
+    for axis in &req.axes {
+        if !VALID_AXES.contains(&axis.as_str()) {
+            return Err(AppError::Executor(format!("Invalid axis: {}", axis)));
+        }
+        if !axes.contains(&axis.as_str()) {
+            axes.push(axis.as_str());
+        }
+    }
+
+    let model = match req.provider.as_deref().filter(|p| !p.trim().is_empty()) {
+        Some(prov) => sqlx::query_as::<_, ModelRow>(
+            "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND provider = $2 AND active = true",
+        )
+        .bind(&req.model_key)
+        .bind(prov)
+        .fetch_optional(&state.db)
+        .await?,
+        None => sqlx::query_as::<_, ModelRow>(
+            "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND active = true",
+        )
+        .bind(&req.model_key)
+        .fetch_optional(&state.db)
+        .await?,
+    }
+    .ok_or_else(|| AppError::Executor(format!("Unknown model key: {}", req.model_key)))?;
+
+    // Vision capability pre-flight — same skip-not-reject contract as start_runs.
+    let mut skipped_axes: Vec<(&str, String)> = Vec::new();
+    axes.retain(|axis| {
+        if *axis == "vision" && !model.supports_vision {
+            skipped_axes.push((
+                axis,
+                format!("{} has no vision support (LM Studio capabilities metadata)", model.key),
+            ));
+            false
+        } else {
+            true
+        }
+    });
+    if axes.is_empty() {
+        return Err(AppError::Executor(format!(
+            "Every requested axis was skipped as incompatible with {}",
+            model.key
+        )));
+    }
+
+    // In-flight duplicate guard, one check per axis (covers both halves of
+    // the pair: if EITHER a baseline or scaffold run is queued/running for
+    // this (model, axis), refuse the whole pair rather than interleave).
+    for axis in &axes {
+        let (in_flight,): (i64,) = sqlx::query_as(
+            r#"SELECT COUNT(*) FROM test_runs
+               WHERE model_id = $1 AND axis = $2 AND status NOT IN ('done', 'error', 'aborted')"#,
+        )
+        .bind(model.id)
+        .bind(axis)
+        .fetch_one(&state.db)
+        .await?;
+        if in_flight > 0 {
+            return Err(AppError::Executor(format!(
+                "A '{}' run for {} is already queued or running — the baseline/scaffold pair must start on an idle model",
+                axis, model.key
+            )));
+        }
+    }
+
+    let mut baseline_run_ids = Vec::new();
+    let mut scaffold_run_ids = Vec::new();
+    for axis in &axes {
+        let (test_count,): (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM tests WHERE active = true AND axis = $1")
+                .bind(axis)
+                .fetch_one(&state.db)
+                .await?;
+        if test_count == 0 {
+            return Err(AppError::Executor(format!("No active tests for axis '{}'", axis)));
+        }
+
+        // Baseline half: clean-room, NO supplement.
+        let (baseline_id,): (i32,) = sqlx::query_as(
+            r#"INSERT INTO test_runs (model_id, test_id, axis, status, load_mode)
+               VALUES ($1, NULL, $2, 'queued', 'clean-room') RETURNING id"#,
+        )
+        .bind(model.id)
+        .bind(axis)
+        .fetch_one(&state.db)
+        .await?;
+        baseline_run_ids.push(baseline_id);
+
+        // Scaffold half: scaffolded, WITH supplement (persisted on the row
+        // so the run detail view shows exactly what the model was given).
+        let (scaffold_id,): (i32,) = sqlx::query_as(
+            r#"INSERT INTO test_runs (model_id, test_id, axis, status, load_mode, scaffold_supplement)
+               VALUES ($1, NULL, $2, 'queued', 'scaffolded', $3) RETURNING id"#,
+        )
+        .bind(model.id)
+        .bind(axis)
+        .bind(&supplement)
+        .fetch_one(&state.db)
+        .await?;
+        scaffold_run_ids.push(scaffold_id);
+
+        // Queue both halves. The lm_guard gate inside spawn_run_task
+        // serializes local execution, so baseline runs to completion before
+        // the scaffold half loads — adjacent, ordered, comparable.
+        spawn_run_task(&state, baseline_id, &model, axis.to_string(), LoadMode::CleanRoom, None, None);
+        spawn_run_task(
+            &state,
+            scaffold_id,
+            &model,
+            axis.to_string(),
+            LoadMode::Scaffolded,
+            None,
+            Some(supplement.clone()),
+        );
+    }
+
+    Ok(Json(serde_json::json!({
+        "model_key": req.model_key,
+        "axes": axes,
+        "baseline_run_ids": baseline_run_ids,
+        "scaffold_run_ids": scaffold_run_ids,
         "skipped_axes": skipped_axes.iter().map(|(a, reason)| serde_json::json!({"axis": a, "reason": reason})).collect::<Vec<_>>(),
     })))
 }
