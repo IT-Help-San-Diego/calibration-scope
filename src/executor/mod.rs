@@ -754,7 +754,8 @@ async fn check_memory_safety(
                 "type": "trial_result", "run_id": run_id, "test": test.name,
                 "axis": test.axis,
                 "trial_num": trial_num, "passed": passed, "latency_ms": latency_ms,
-                "detail": detail, "reasoning_content": reasoning, "at": now_iso()
+                "detail": detail, "reasoning_content": reasoning,
+                "owl_cites_rule": meta.cites_correct_rule, "at": now_iso()
             }));
         }
     }

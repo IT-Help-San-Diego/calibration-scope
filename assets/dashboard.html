@@ -383,15 +383,21 @@
   .model-row.model-card-unresolved { opacity: 0.55; border-style: dashed; }
   /* Real, obvious checkbox — 20px, clear empty box, gold-filled + ✓ when selected. */
   .row-check {
-    flex: 0 0 20px; width: 20px; height: 20px;
+    flex: 0 0 24px; width: 24px; height: 24px;
     border: 2px solid var(--text-muted); border-radius: 5px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800; color: transparent;
+    font-size: 14px; font-weight: 800;
+    /* Always-show rule: checked = gold + dark checkmark; unchecked = visible gray box */
+    color: transparent;
     background: var(--bg-primary);
     transition: background 100ms, border-color 100ms, color 100ms;
   }
   .model-row:hover .row-check { border-color: var(--accent-gold); }
   .model-row.selected .row-check { background: var(--accent-gold); border-color: var(--accent-gold); color: #0d1117; }
+  /* Unchecked: always a visible, unobtrusive gray box so the picker
+     communicates state even when nothing is selected yet (found live: the
+     old transparent-on-transparent looked like nothing was interactable). */
+  .model-row:not(.selected) .row-check { background: var(--bg-primary); border-color: var(--text-muted); }
   .row-loc { flex: 0 0 auto; font-size: 16px; line-height: 1; }
   .row-main { flex: 1 1 auto; min-width: 0; overflow: hidden; }
   /* Name: big, bold, bright, its OWN line — the thing the eye needs. */
@@ -438,6 +444,7 @@
   .roster-head .rh-main { flex: 1 1 auto; }
   .roster-head .rh-verdict { flex: 0 0 auto; }
   .roster-head .rh-act { flex: 0 0 auto; }
+  .roster-head .rh-act button { font-size: 10px; padding: 2px 8px; cursor: pointer; }
   .model-card-unresolved {
     opacity: 0.65;
     border-style: dashed;
@@ -798,6 +805,16 @@
   .log-line .phase-trial { color: var(--text-primary); }
   .log-line .phase-verdict { color: var(--accent-amber); font-weight: 600; }
   .log-line .err { color: var(--accent-red); }
+
+  /* Trial verdict colors — green=pass, red=fail, amber=intermittent */
+  .log-line.pass  { color: var(--safe); }    /* #3fb950 */
+  .log-line.fail  { color: var(--accent-red); }
+  .log-line.verdict.pass { font-weight: 700; }
+  .log-line.verdict.fail { font-weight: 700; }
+  /* Owl Semaphore σₕ indicator — cyan tick means the model cited the
+     correct rule in its own reasoning (Score 1 of 4). Shown on the line
+     below the test name in the live log. */
+  .log-line .owl-tick { color: var(--accent-cyan); margin-left: 6px; font-weight: 700; }
 
   /* Nous-necessity experiment panel */
   .nous-exp {
@@ -2178,10 +2195,13 @@ evtSource.onmessage = (e) => {
     log('info', `Trial ${data.trial_num} starting: ${data.test_name || data.test || ''}`);
     brainTrialStart(data);
   } else if (data.type === 'trial_result') {
-    log('trial', `Trial ${data.trial_num}: ${data.passed ? 'PASS' : 'FAIL'} — ${data.detail || ''} (${data.latency_ms}ms)`);
+    const trialLevel = data.passed ? 'pass' : 'fail';
+    const owlTick = data.owl_cites_rule ? '<span class="owl-tick" title="Owl σₕ: model cited the correct rule">🦉✓</span>' : '';
+    log(trialLevel, `Trial ${data.trial_num}: ${data.passed ? 'PASS' : 'FAIL'} ${owlTick}— ${data.detail || ''} (${data.latency_ms}ms)`);
     if (data.axis) brainTrialResult(data);
   } else if (data.type === 'verdict') {
-    log('verdict', `VERDICT: ${data.overall} — ${data.pass_count}/${data.total_count} trials passed`);
+    const verdictLevel = (data.overall === 'PASS' || data.overall === 'SAFE') ? 'pass' : (data.overall === 'FAIL' || data.overall === 'UNSAFE') ? 'fail' : 'verdict';
+    log(verdictLevel, `VERDICT: ${data.overall} — ${data.pass_count}/${data.total_count} trials passed`);
   } else if (data.type === 'run_complete') {
     log('verdict', `Run ${data.run_id} complete. Overall: ${data.overall}`);
     brainRunComplete(data);
@@ -2502,7 +2522,9 @@ function renderGrid() {
     }).join('');
     // Sticky header labels the two things a picker row shows: the model, and
     // its 4-axis verdict dots. Prepended once, stays visible during scroll.
-    grid.insertAdjacentHTML('afterbegin',
+    const selectAllBtn = `<button id="select-all-btn" style="font-size:10px;padding:3px 8px;cursor:pointer;" title="Select every currently visible model">Select All</button>`;
+  const deselectAllBtn = `<button id="deselect-all-btn" style="font-size:10px;padding:3px 8px;cursor:pointer;margin-left:4px;" title="Clear every selection">Deselect All</button>`;
+  grid.insertAdjacentHTML('afterbegin',
       '<div class="roster-head"><span class="rh-spacer"></span><span class="rh-spacer"></span>' +
       '<span class="rh-main">Model name · publisher</span>' +
       '<span class="rh-act">ⓘ &nbsp; ▶</span></div>');
@@ -3124,6 +3146,18 @@ function restoreSelection() {
     c.classList.toggle('selected', selectedKeys.has(c.dataset.key));
   });
 }
+// Select-all / deselect-all wired once after every renderGrid.
+document.getElementById('select-all-btn')?.addEventListener('click', () => {
+  document.querySelectorAll('.model-card, .model-row').forEach(c => {
+    selectedKeys.add(c.dataset.key); c.classList.add('selected');
+  });
+  persistSelection();
+});
+document.getElementById('deselect-all-btn')?.addEventListener('click', () => {
+  selectedKeys.clear();
+  document.querySelectorAll('.model-card, .model-row').forEach(c => c.classList.remove('selected'));
+  persistSelection();
+});
 // ============ Tab navigation — makes the top-nav tabs actually work ============
 const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio'];
 function showPage(name) {
