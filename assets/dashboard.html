@@ -1165,6 +1165,44 @@
     #ws-stream .live-log { flex: 1; min-height: 120px; max-height: none; border-top: 1px solid var(--border); margin-top: 10px; }
     #ws-stream #nous-exp-panel, #ws-stream #spec-decode-panel { flex-shrink: 0; }
   }
+
+  .native-selector-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(3px); z-index: 10001;
+    display: none; align-items: center; justify-content: center;
+  }
+  .native-selector-overlay.open { display: flex; }
+  .native-selector-modal {
+    background: var(--bg-primary, #0d1117);
+    border: 1px solid var(--border, #30363d);
+    border-radius: 10px;
+    width: 520px; max-width: 94vw;
+    display: flex; flex-direction: column;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+  }
+  .native-selector-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border, #30363d);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .native-selector-title { font-size: 15px; font-weight: 700; color: var(--text-primary, #e6edf3); }
+  .native-selector-close {
+    background: transparent; border: 1px solid var(--border, #30363d);
+    color: var(--text-muted, #8b949e); border-radius: actions 6px;
+    width: 30px; height: 30px; cursor: pointer; font-size: 15px;
+  }
+  .native-selector-close:hover { background: var(--bg-card, #161b22); color: var(--text-primary, #e6edf3); }
+  .native-selector-body { padding: 14px 16px; }
+  .native-selector-body select {
+    width: 100%; height: 320px;
+    background: var(--bg-card, #161b22); color: var(--text-primary, #e6edf3);
+    border: 1px solid var(--border, #30363d); border-radius: 6px;
+    font-family: var(--font-mono); font-size: 13px; padding: 6px;
+  }
+  .native-selector-footer {
+    padding: 12px 16px; border-top: 1px solid var(--border, #30363d);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .native-selector-count { color: var(--text-muted, #8b949e); font-size: 13px; }
 </style>
 <script>
 window.__ambSelfHeal = {
@@ -1384,7 +1422,7 @@ function clearScienceHighlight() {
 <div id="action-bar" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:var(--fib-2);align-items:center;flex-wrap:wrap;">
   <span id="conn-status" style="display:none;font-size:12px;font-weight:600;color:var(--flaky);background:rgba(0,0,0,0.25);padding:4px 10px;border-radius:6px;border:1px solid var(--flaky);"></span>
   <input id="scaffold-supplement" type="text" placeholder="Scaffold supplement: warnings or reminders to watch for (optional)" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:13px;font-family:var(--font-sans);width:320px;" />
-  <button class="view-toggle-btn" id="view-toggle" onclick="toggleViewMode()" title="Switch between the dense roster picker and full detail cards">☰ Roster</button>
+  <button class="view-toggle-btn" id="view-toggle" onclick="openNativeSelector()" title="Select models to test">🧪 Select Models…</button>
   <button class="btn btn-secondary" onclick="openTestBuilder()">+ New Test</button>
   <button class="btn btn-primary" onclick="runSelected()">Run Selected</button>
 <button class="btn btn-secondary" onclick="runBaselineScaffoldSelected()">Baseline vs Scaffold</button>
@@ -2096,6 +2134,48 @@ let selectedModel = null;
 // Roster view mode: 'compact' (default — dense Star-Trek picker rows) or
 // 'cards' (the original full cards). Persisted across refreshes.
 let viewMode = localStorage.getItem('amb-view-mode') || 'compact';
+
+function openNativeSelector() {
+  const overlay = document.getElementById('native-selector-overlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  overlay.style.display = 'flex';
+  const sel = document.getElementById('native-model-pick');
+  if (!sel) return;
+  sel.innerHTML = '';
+  models.slice(0, 400).forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.key;
+    opt.textContent = m.display_name || m.key;
+    if (selectedKeys.has(m.key)) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  updateNativeCount();
+}
+function closeNativeSelector() {
+  const overlay = document.getElementById('native-selector-overlay');
+  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
+}
+function clearNativeSelection() {
+  const sel = document.getElementById('native-model-pick');
+  if (sel) sel.selectedIndex = -1;
+  updateNativeCount();
+}
+function useNativeSelection() {
+  const sel = document.getElementById('native-model-pick');
+  if (!sel) { closeNativeSelector(); return; }
+  selectedKeys.clear();
+  Array.from(sel.selectedOptions).forEach(o => selectedKeys.add(o.value));
+  persistSelection();
+  closeNativeSelector();
+}
+function updateNativeCount() {
+  const sel = document.getElementById('native-model-pick');
+  const count = sel ? sel.selectedOptions.length : 0;
+  const badge = document.getElementById('native-selector-count');
+  if (badge) badge.textContent = count + ' selected';
+}
+
 function toggleViewMode() {
   viewMode = viewMode === 'compact' ? 'cards' : 'compact';
   localStorage.setItem('amb-view-mode', viewMode);
@@ -5008,6 +5088,25 @@ function confirmRunExecute() {
   </div>
 </footer>
 
+
+<div id="native-selector-overlay" class="native-selector-overlay">
+  <div class="native-selector-modal">
+    <div class="native-selector-header">
+      <div class="native-selector-title">🧪 Select Models to Test</div>
+      <button class="native-selector-close" onclick="closeNativeSelector()">✕</button>
+    </div>
+    <div class="native-selector-body">
+      <select id="native-model-pick" multiple></select>
+    </div>
+    <div class="native-selector-footer">
+      <div class="native-selector-count" id="native-selector-count">0 selected</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary" onclick="clearNativeSelection()">Clear</button>
+        <button class="btn btn-primary" onclick="useNativeSelection()">Use Selected</button>
+      </div>
+    </div>
+  </div>
+</div>
 <button class="hack-audio-btn" onclick="playHackThePlanet()" title="... --- .- -.-. -.- / - .... . / .--. .-.. .- -. . -" style="display:none" id="hack-audio-btn">.</button>
 </body>
 </html>
