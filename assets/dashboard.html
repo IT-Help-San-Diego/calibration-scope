@@ -396,7 +396,14 @@
   .row-name {
     font-size: 12.5px; font-weight: 600; color: var(--text-primary);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    display: flex; align-items: baseline; gap: 6px;
   }
+  /* Model name leads at full weight and is allowed to consume the row; the
+     publisher rides after it, small + muted, and is the FIRST thing to
+     truncate when space is tight (min-width:0 + flex-shrink). The eye lands
+     on the distinctive token immediately. */
+  .row-model { font-weight: 700; color: var(--text-primary); flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row-pub { font-size: 10px; font-weight: 500; color: var(--text-muted); flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .row-facts {
     font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
@@ -2455,13 +2462,29 @@ function renderGrid() {
         : notRunnable
         ? `<button class="btn-mini" disabled title="${esc(m.runnable_reason || 'No working credential path')}">🚫</button>`
         : `<button class="btn-mini" onclick="event.stopPropagation(); runSingle('${kq}', '${m.provider}')" title="Run this model now">▶</button>`;
-      // Dots ride INSIDE the facts line (line 2) so they never form a
-      // separate column that competes for the row's horizontal budget.
+      // Name legibility is the picker's ONE job. Split "publisher/model" so
+      // the DISTINCTIVE part (the model name) leads in full weight, and the
+      // publisher rides small+muted after it — instead of every row wasting
+      // its first inches on "google/ ... google/ ... google/". Full key is
+      // still in the hover title and the facts line.
+      const rawName = m.display_name || m.key;
+      let modelName = rawName, publisher = '';
+      if (rawName.includes('/')) {
+        const parts = rawName.split('/');
+        modelName = parts.pop();
+        publisher = parts.join('/');
+      } else if (rawName.includes(': ')) {
+        // Cloud display style "Google: Gemma 4 31b" — lead with the model.
+        const idx = rawName.indexOf(': ');
+        publisher = rawName.slice(0, idx);
+        modelName = rawName.slice(idx + 2);
+      }
+      const pubTag = publisher ? `<span class="row-pub">${escHtml(publisher)}</span>` : '';
       return `<div class="${rowClasses.join(' ')}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}" onclick="selectModel('${escHtml(m.key)}')">
         <span class="row-check">✓</span>
         <span class="row-loc" title="${m.location === 'local' ? 'Local — your silicon' : 'Cloud — ' + m.provider}">${m.location === 'local' ? '🖥' : '☁️'}</span>
         <div class="row-main">
-          <div class="row-name" title="${escHtml(m.key)}">${m.display_name}</div>
+          <div class="row-name" title="${escHtml(m.key)}"><span class="row-model">${escHtml(modelName)}</span>${pubTag}</div>
           <div class="row-facts"><span class="row-dots">${dots}</span>${facts.join(' · ')}</div>
         </div>
         <div class="row-actions">
@@ -2474,7 +2497,7 @@ function renderGrid() {
     // its 4-axis verdict dots. Prepended once, stays visible during scroll.
     grid.insertAdjacentHTML('afterbegin',
       '<div class="roster-head"><span class="rh-spacer"></span><span class="rh-spacer"></span>' +
-      '<span class="rh-main">Model · 👁vision/size/ctx/cost · verdict dots</span>' +
+      '<span class="rh-main">Model name · publisher</span>' +
       '<span class="rh-act">ⓘ &nbsp; ▶</span></div>');
   }
   console.log('[renderGrid] rendered rows:', rows.length);
