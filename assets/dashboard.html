@@ -2173,7 +2173,7 @@ let selectedModel = null;
 // 'cards' (the original full cards). Persisted across refreshes.
 let viewMode = localStorage.getItem('amb-view-mode') || 'compact';
 
-function openNativeSelector() {
+function openNativeSelector() { try { console.log('[openNativeSelector]'); } catch(e) {} 
   const overlay = document.getElementById('native-selector-overlay');
   if (!overlay) return;
   overlay.classList.add('open');
@@ -2199,12 +2199,13 @@ function clearNativeSelection() {
   if (sel) sel.selectedIndex = -1;
   updateNativeCount();
 }
-function useNativeSelection() {
+function useNativeSelection() { try { console.log('[useNativeSelection] start'); } catch(e) {} 
   const sel = document.getElementById('native-model-pick');
   if (!sel) { closeNativeSelector(); return; }
   selectedKeys.clear();
   Array.from(sel.selectedOptions).forEach(o => selectedKeys.add(o.value));
   persistSelection();
+  try { console.log('[useNativeSelection] selected=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
   closeNativeSelector();
 }
 function updateNativeCount() {
@@ -2215,7 +2216,7 @@ function updateNativeCount() {
 }
 
 
-function openNativeSelector() {
+function openNativeSelector() { try { console.log('[openNativeSelector]'); } catch(e) {} 
   const overlay = document.getElementById('native-selector-overlay');
   if (!overlay) return;
   overlay.classList.add('open');
@@ -2241,12 +2242,13 @@ function clearNativeSelection() {
   if (sel) sel.selectedIndex = -1;
   updateNativeCount();
 }
-function useNativeSelection() {
+function useNativeSelection() { try { console.log('[useNativeSelection] start'); } catch(e) {} 
   const sel = document.getElementById('native-model-pick');
   if (!sel) { closeNativeSelector(); return; }
   selectedKeys.clear();
   Array.from(sel.selectedOptions).forEach(o => selectedKeys.add(o.value));
   persistSelection();
+  try { console.log('[useNativeSelection] selected=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
   closeNativeSelector();
 }
 function updateNativeCount() {
@@ -2461,8 +2463,12 @@ function axisLabel(axis) {
 }
 
 // Render bird's-eye grid
+
+(function(){try{const keys=selectedKeys?[...selectedKeys]:[];console.log('[selector-state] init selectedKeys='+JSON.stringify(keys)+' size='+(selectedKeys?selectedKeys.size:'null'));}catch(e){console.log('[selector-state] init error',e);}})();
+
 function renderGrid() {
   const grid = document.getElementById('model-grid');
+  try { console.log('[renderGrid] start selectedKeys=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
   console.log('[renderGrid] grid element:', !!grid, 'models count:', models.length);
   if (!grid) return;
   try {
@@ -3315,13 +3321,15 @@ function gridClickHandler(e) {
   selectModel(row.dataset.key);
   updateSelectorCounter(row.dataset.key, document.querySelectorAll('.model-card.selected, .model-row.selected').length);
 }
-function selectModel(key) {
+function selectModel(key) { try { console.log('[selector-debug] selectModel', key); } catch(e) {} try { console.log('[selectModel] key=' + key + ' selectedKeysBefore=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {} 
   const card = document.querySelector(`.model-card[data-key="${cssEscape(key)}"], .model-row[data-key="${cssEscape(key)}"]`);
   const nowSelected = card ? !card.classList.contains('selected') : true;
   if (card) card.classList.toggle('selected', nowSelected);
   // Persist the full selected set so a refresh or re-render never loses it.
   if (nowSelected) selectedKeys.add(key); else selectedKeys.delete(key);
   selectedModel = key; // keep last-touched for single-model helpers (prompt length, etc.)
+  try { console.log('[selector-debug] selectedKeys=' + JSON.stringify([...selectedKeys])); } catch(e) {}
+  try { console.log('[selectModel] after toggle selectedKeys=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
   persistSelection();
 }
 // CSS.escape isn't safe for arbitrary keys in every engine path we hit; this
@@ -3330,21 +3338,23 @@ function cssEscape(s) { return String(s).replace(/["\\]/g, '\\$&'); }
 function persistSelection() {
   try { localStorage.setItem('amb-selected-keys', JSON.stringify([...selectedKeys])); } catch(e) {}
 }
+try { console.log('[renderGrid] before restore selectedKeys=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
 // Re-apply the persisted selection to whatever cards are currently in the DOM.
+try { console.log('[renderGrid] after restore selectedKeys=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
 // Called after every renderGrid() so filtering/sorting/sync never drops it.
-function restoreSelection() {
+function restoreSelection() { try { console.log('[selector-debug] restoreSelection', JSON.stringify([...selectedKeys])); } catch(e) {}
   document.querySelectorAll('.model-card, .model-row').forEach(c => {
     c.classList.toggle('selected', selectedKeys.has(c.dataset.key));
   });
 }
 // Select-all / deselect-all wired once after every renderGrid.
-document.getElementById('select-all-btn')?.addEventListener('click', () => {
+document.getElementById('select-all-btn')?.addEventListener('click', () => { try { console.log('[selector-debug] select-all'); } catch(e) {}
   document.querySelectorAll('.model-card, .model-row').forEach(c => {
     selectedKeys.add(c.dataset.key); c.classList.add('selected');
   });
   persistSelection();
 });
-document.getElementById('deselect-all-btn')?.addEventListener('click', () => {
+document.getElementById('deselect-all-btn')?.addEventListener('click', () => { try { console.log('[selector-debug] deselect-all'); } catch(e) {}
   selectedKeys.clear();
   document.querySelectorAll('.model-card, .model-row').forEach(c => c.classList.remove('selected'));
   persistSelection();
