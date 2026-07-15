@@ -2511,7 +2511,7 @@ function renderGrid() {
         modelName = rawName.slice(idx + 2);
       }
       // publisher now renders on its own line inside .row-main (see below)
-      return `<div class="${rowClasses.join(' ')}" data-key="${escHtml(m.key)}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}">
+      return `<div class="${rowClasses.join(' ')}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}">
         <span class="row-check">✓</span>
         <span class="row-loc" title="${m.location === 'local' ? 'Local — your silicon' : 'Cloud — ' + m.provider}">${m.location === 'local' ? '🖥' : '☁️'}</span>
         <div class="row-main">
