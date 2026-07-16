@@ -1328,6 +1328,21 @@
   picker.addEventListener('change', update);
   update();
 })();
+
+document.getElementById('view-toggle')?.addEventListener('click', openNativeSelector);
+document.getElementById('view-toggle-multi')?.addEventListener('click', openNativeSelector);
+document.getElementById('baseline-scaffold-btn')?.addEventListener('click', runBaselineScaffoldSelected);
+(function(){
+  const picker = document.getElementById('baseline-axis-picker');
+  if (!picker) return;
+  const countEl = document.getElementById('baseline-axis-count');
+  const update = () => {
+    const n = picker.querySelectorAll('.axis-check:checked').length;
+    if (countEl) countEl.textContent = n + ' selected';
+  };
+  picker.addEventListener('change', update);
+  update();
+})();
 window.__ambSelfHeal = {
   revision: 'a97549b-selfheal-20260711160608',
   lastEvent: Date.now(),
@@ -1547,10 +1562,18 @@ function clearScienceHighlight() {
   <input id="scaffold-supplement" type="text" placeholder="Scaffold supplement: warnings or reminders to watch for (optional)" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-size:13px;font-family:var(--font-sans);width:320px;" />
   <button class="view-toggle-btn" id="view-toggle" title="Select models to test">🧪 Select Models…</button>
           <span id="selected-count-badge" style="margin-left:10px;font-size:11px;color:var(--text-muted);">0 selected</span>
-          <button class="view-toggle-btn" id="view-toggle-multi" onclick="openNativeSelector()" style="margin-left:6px;" title="Open full selection panel">Manage…</button>
+          <button class="view-toggle-btn" id="view-toggle-multi" style="margin-left:6px;" title="Open full selection panel">Manage…</button>
   <button class="btn btn-secondary" onclick="openTestBuilder()">+ New Test</button>
   <button class="btn btn-primary" onclick="runSelected()">Run Selected</button>
-<button class="btn btn-secondary" onclick="runBaselineScaffoldSelected()">Baseline vs Scaffold</button>
+<button class="btn btn-secondary" id="baseline-scaffold-btn">Baseline vs Scaffold</button>
+          <div class="axis-picker" id="baseline-axis-picker" style="margin-left:6px;">
+            <span style="color:var(--text-muted);font-size:11px;">Axes:</span>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="vision" checked> Vision</label>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="tools" checked> Tools</label>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="reasoning" checked> Reasoning</label>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="security" checked> Security</label>
+            <span class="axis-chip" id="baseline-axis-count">4 selected</span>
+          </div>
           <div class="axis-picker" id="baseline-axis-picker" style="margin-left:6px;">
             <span style="color:var(--text-muted);font-size:11px;">Axes:</span>
             <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="vision" checked> Vision</label>
