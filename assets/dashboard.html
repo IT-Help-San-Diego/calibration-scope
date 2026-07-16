@@ -1551,6 +1551,14 @@ function clearScienceHighlight() {
   <button class="btn btn-secondary" onclick="openTestBuilder()">+ New Test</button>
   <button class="btn btn-primary" onclick="runSelected()">Run Selected</button>
 <button class="btn btn-secondary" onclick="runBaselineScaffoldSelected()">Baseline vs Scaffold</button>
+          <div class="axis-picker" id="baseline-axis-picker" style="margin-left:6px;">
+            <span style="color:var(--text-muted);font-size:11px;">Axes:</span>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="vision" checked> Vision</label>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="tools" checked> Tools</label>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="reasoning" checked> Reasoning</label>
+            <label style="font-size:12px;cursor:pointer;"><input class="axis-check" type="checkbox" value="security" checked> Security</label>
+            <span class="axis-chip" id="baseline-axis-count">4 selected</span>
+          </div>
   <span id="selected-readout" style="font-size:12px;color:var(--text-muted);font-family:var(--font-mono);margin-left:8px;">0 selected</span>
 </div>
 
@@ -4180,8 +4188,17 @@ async function loadRunsPage() {
   const d = r.data;
   if (!d.runs || !d.runs.length) {
     el.innerHTML = '<div style="color:var(--text-muted)">No runs yet. Go to Benchmark and click ▶ Run on a model.</div>';
+    _liveRunIds.clear();
+    refreshAbortBar();
     return;
   }
+  const liveStatuses = new Set(['queued','running','loading']);
+  const liveIds = new Set(d.runs.filter(x => liveStatuses.has((x.status || '').toLowerCase())).map(x => x.id));
+  let changed = false;
+  if (liveIds.size !== _liveRunIds.size) changed = true;
+  else { for (const id of liveIds) { if (!_liveRunIds.has(id)) { changed = true; break; } } }
+  _liveRunIds = liveIds;
+  if (changed) refreshAbortBar();
   el.innerHTML = d.runs.map(x => {
     const statusColor = x.status === 'done' ? (x.pass_count === x.total_count ? 'var(--safe)' : (x.pass_count === 0 ? 'var(--unsafe)' : 'var(--flaky)')) : 'var(--accent-blue)';
     const isLive = x.status === 'queued' || x.status === 'running' || x.status === 'loading';
@@ -4257,6 +4274,7 @@ async function abortRun(runId) {
     return;
   }
   log('warn', `Run #${runId} abort requested: ${JSON.stringify(r.data)}`);
+  disarmAbortRun(runId);
   runDetailCache[runId] = null;
   refreshAbortBar();
   loadRunsPage();
