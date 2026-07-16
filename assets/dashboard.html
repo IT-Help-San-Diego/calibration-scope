@@ -1316,6 +1316,18 @@
   setInterval(window.__updateSelectorDebug, 500);
   setTimeout(window.__updateSelectorDebug, 0);
 })();
+
+(function(){
+  const picker = document.getElementById('baseline-axis-picker');
+  if (!picker) return;
+  const countEl = document.getElementById('baseline-axis-count');
+  const update = () => {
+    const n = picker.querySelectorAll('.axis-check:checked').length;
+    if (countEl) countEl.textContent = n + ' selected';
+  };
+  picker.addEventListener('change', update);
+  update();
+})();
 window.__ambSelfHeal = {
   revision: 'a97549b-selfheal-20260711160608',
   lastEvent: Date.now(),
