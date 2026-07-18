@@ -382,7 +382,26 @@
     transition: background 100ms, border-color 150ms;
   }
   .model-row:hover { background: var(--bg-card-hover); border-left-color: var(--accent-gold); }
-  .model-row.selected { border-color: var(--accent-gold); border-left-color: var(--accent-gold); background: rgba(212,168,83,0.22); box-shadow: inset 0 0 0 1px rgba(212,168,83,0.45); }
+  .model-row.selected {
+    border: 2px solid var(--accent-gold);
+    border-left: 5px solid var(--accent-gold);
+    background: rgba(212,168,83,0.30);
+    box-shadow: 0 0 0 1px rgba(212,168,83,0.7), 0 4px 14px rgba(212,168,83,0.18);
+    transform: scale(1.012);
+  }
+  /* Loaded-in-RAM state (silicon presence) — distinct from user selection. */
+  .model-row.loaded {
+    border: 2px solid var(--accent-cyan);
+    border-left: 5px solid var(--accent-cyan);
+    background: rgba(56,189,248,0.14);
+    box-shadow: 0 0 0 1px rgba(56,189,248,0.5);
+  }
+  .model-row.selected.loaded {
+    border: 2px solid var(--accent-gold);
+    border-left: 5px solid var(--accent-gold);
+    background: linear-gradient(90deg, rgba(212,168,83,0.34), rgba(56,189,248,0.10));
+    box-shadow: 0 0 0 1px rgba(212,168,83,0.7), 0 0 0 2px rgba(56,189,248,0.4);
+  }
   /* Visual feedback so a click always has a visible consequence */
   .model-row.flash { transition: background 0ms; background: rgba(212,168,83,0.35); }
   .model-row.model-card-unresolved { opacity: 0.55; border-style: dashed; }
@@ -423,6 +442,13 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
     display: flex; align-items: center; gap: 8px; margin-top: 3px;
   }
+  .row-status {
+    display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.4px;
+    margin-top: 4px; padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono);
+  }
+  .row-status.selected { color: #0d1117; background: var(--accent-gold); }
+  .row-status.loaded { color: #06121a; background: var(--accent-cyan); }
+  .row-status.selected.loaded { color: #0d1117; background: linear-gradient(90deg, var(--accent-gold) 0%, var(--accent-cyan) 100%); }
   .row-dots { display: inline-flex; gap: 3px; align-items: center; flex: 0 0 auto; }
   .row-dots .judge-dot { width: 10px; height: 10px; border-radius: 50%; }
   .row-actions { flex: 0 0 auto; display: flex; gap: 3px; align-items: center; }
@@ -1675,11 +1701,6 @@ function clearScienceHighlight() {
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:96px;margin-bottom:var(--fib-4);position:relative;filter:drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15));animation:owlPulse 4s ease-in-out infinite" onerror="this.style.display='none'">
     <div class="landing-hero-title">Archetype Mesh Benchmark</div>
     <div class="landing-hero-sub">Scientific LLM capability verification — test what your models can actually do, on your hardware, with evidence you can audit. Blind testing, clean-room execution, SHA-3 provenance.</div>
-    <div class="landing-actions">
-      <button class="landing-btn primary" onclick="showPage('benchmark'); document.getElementById('model-grid').scrollIntoView({behavior:'smooth'})">Let's Benchmark</button>
-      <button class="landing-btn" onclick="showPage('setup')">Setup & Reality Check</button>
-      <button class="landing-btn" onclick="document.getElementById('protocol-panel').scrollIntoView({behavior:'smooth'})">The Science</button>
-    </div>
     <div style="margin-top:var(--fib-3);position:relative">
       <span class="reality-badge" id="landing-reality-badge">Checking your hardware...</span>
     </div>
@@ -2843,6 +2864,7 @@ function renderGrid() {
           <div class="row-name" title="${escHtml(m.key)}"><span class="row-model">${escHtml(modelName)}</span></div>
           ${publisher ? `<span class="row-pub">${escHtml(publisher)}</span>` : ''}
           <div class="row-facts"><span class="row-dots">${dots}</span>${facts.join(' · ')}</div>
+          <span class="row-status" id="status-${cssEscapeId(m.key)}"></span>
         </div>
         <div class="row-actions">
           <button class="btn-mini" onclick="event.stopPropagation(); openDossier('${kq}')" title="Full dossier — everything we know about this model">ⓘ</button>
@@ -3229,12 +3251,33 @@ function updateResidentRoster(d) {
     }
   }
   const entries = Object.entries(window._residentModels);
-  if (!entries.length) { list.innerHTML = '<span style="color:var(--text-faint);">—</span>'; return; }
+  if (!entries.length) { list.innerHTML = '<span style="color:var(--text-faint);">—</span>'; markLoadedRows(); return; }
   list.innerHTML = entries.map(([k, role]) => {
     const tag = role === 'draft' ? ' <span style="color:var(--accent-cyan);">(draft)</span>'
               : role === 'pair' ? ' <span style="color:var(--accent-blue);">(pair)</span>' : '';
     return `<span style="color:var(--text-primary);font-weight:600;">${escHtml(k)}</span>${tag}`;
   }).join(' <span style="color:var(--text-faint);">·</span> ');
+  markLoadedRows();
+}
+// Reflect RAM residency onto the model picker rows: gold = selected by user,
+// cyan = loaded in RAM (silicon presence). Both = this is the one that's in.
+function markLoadedRows() {
+  const resident = window._residentModels || {};
+  document.querySelectorAll('.model-row').forEach(row => {
+    const key = row.getAttribute('data-key');
+    const loaded = key && resident[key];
+    if (loaded) row.classList.add('loaded');
+    else row.classList.remove('loaded');
+    const status = row.querySelector('.row-status');
+    if (status) {
+      const selected = row.classList.contains('selected');
+      if (selected && loaded) status.textContent = '✓ SELECTED · ● LOADED IN RAM';
+      else if (selected) status.textContent = '✓ SELECTED';
+      else if (loaded) status.textContent = '● LOADED IN RAM';
+      else status.textContent = '';
+      status.className = 'row-status' + (loaded ? ' loaded' : '') + (selected ? ' selected' : '');
+    }
+  });
 }
 function brainFire(axis, passed) {
   const el = document.getElementById('br-' + axis);
@@ -3584,6 +3627,7 @@ function restoreSelection() { try { console.log('[selector-debug] restoreSelecti
   document.querySelectorAll('.model-card, .model-row').forEach(c => {
     c.classList.toggle('selected', selectedKeys.has(c.dataset.key));
   });
+  markLoadedRows();
 }
 // Select-all / deselect-all wired once after every renderGrid.
 document.getElementById('select-all-btn')?.addEventListener('click', () => { try { console.log('[selector-debug] select-all'); } catch(e) {}
@@ -3604,6 +3648,7 @@ document.getElementById('model-grid').addEventListener('click', function(e) {
   if (!card || !card.dataset.key) return;
   const count = document.querySelectorAll('.model-card.selected, .model-row.selected').length;
   selectModel(card.dataset.key);
+  markLoadedRows();
   const badge = document.getElementById('selected-count-badge');
   if (badge) badge.textContent = (count + (document.querySelector('.model-card.selected, .model-row.selected') ? 1 : 0)) + ' selected';
 });
