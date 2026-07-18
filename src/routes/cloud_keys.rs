@@ -75,7 +75,7 @@ fn write_keys(store: &KeyStore) -> AppResult<()> {
 }
 
 /// Supported cloud providers for the benchmark.
-pub const SUPPORTED_PROVIDERS: &[&str] = &["nous", "openrouter", "openai"];
+pub const SUPPORTED_PROVIDERS: &[&str] = &["nous", "openrouter", "openai", "gemini"];
 
 #[derive(Deserialize)]
 pub struct SetKeyRequest {
@@ -150,6 +150,7 @@ pub async fn set_key(
         "nous" => "NOUS_API_KEY",
         "openrouter" => "OPENROUTER_API_KEY",
         "openai" => "OPENAI_API_KEY",
+        "gemini" => "GEMINI_API_KEY",
         _ => unreachable!(),
     };
     std::env::set_var(env_var, &req.key);
@@ -179,6 +180,7 @@ pub async fn delete_key(
         "nous" => "NOUS_API_KEY",
         "openrouter" => "OPENROUTER_API_KEY",
         "openai" => "OPENAI_API_KEY",
+        "gemini" => "GEMINI_API_KEY",
         _ => &provider,
     };
     std::env::remove_var(env_var);
@@ -199,6 +201,7 @@ pub fn load_keys_to_env() {
                 "nous" => "NOUS_API_KEY",
                 "openrouter" => "OPENROUTER_API_KEY",
                 "openai" => "OPENAI_API_KEY",
+                "gemini" => "GEMINI_API_KEY",
                 _ => continue,
             };
             std::env::set_var(env_var, key);

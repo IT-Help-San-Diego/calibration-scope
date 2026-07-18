@@ -13,6 +13,10 @@ pub fn endpoint_for(provider: &str) -> AppResult<&'static str> {
         "openrouter" => Ok("https://openrouter.ai/api/v1/chat/completions"),
         "nous" => Ok("https://inference-api.nousresearch.com/v1/chat/completions"),
         "openai" => Ok("https://api.openai.com/v1/chat/completions"),
+        // Gemini is NOT OpenAI-compatible: it uses the generativelanguage
+        // v1beta generateContent shape (contents[].parts[]). The model id is
+        // appended as a path segment + key query param (see chat() below).
+        "gemini" => Ok("https://generativelanguage.googleapis.com/v1beta/models"),
         other => Err(AppError::Executor(format!("Unknown provider: {}", other))),
     }
 }
@@ -49,8 +53,16 @@ pub fn resolve_api_key(provider: &str, config_key: &Option<String>) -> AppResult
             "auth.json has no providers.nous.agent_key — run `hermes setup --portal`".into(),
         ));
     }
+    if provider == "gemini" {
+        // Gemini key is supplied by the deployer via GEMINI_API_KEY env (the
+        // Config.gemini_api_key field). It must be present — there is no
+        // secondary resolution path, by design (no shared/rotating token).
+        return Err(AppError::Executor(
+            "No GEMINI_API_KEY env set — supply your own Google AI Studio key (free tier, no prepay).".into(),
+        ));
+    }
     Err(AppError::Executor(format!(
-        "No API key configured for provider '{}' (set NOUS_API_KEY / OPENROUTER_API_KEY / OPENAI_API_KEY)",
+        "No API key configured for provider '{}' (set NOUS_API_KEY / OPENROUTER_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY)",
         provider
     )))
 }
@@ -189,3 +201,136 @@ pub async fn chat(
         speculative_decode: None,
     })
 }
+
+/// Gemini-native chat completion.
+///
+/// Gemini's REST API is NOT OpenAI-compatible: it expects `contents[]` with
+/// `parts[]` where each part is either `{text}` or `{inline_data:{mime_type,
+/// data(base64)}}`. The benchmark builds OpenAI-shaped `messages`
+/// (role + content[text | image_url]), so we translate here. Vision tests
+/// embed the image as `image_url` with a `data:image/png;base64,...` URL —
+/// we decode the base64 and forward it as `inline_data`. Returns the same
+/// `ChatOutcome` as the OpenAI path so the executor is provider-agnostic.
+pub async fn gemini_chat(
+    client: &Client,
+    api_key: &str,
+    model: &str,
+    messages: &[serde_json::Value],
+    max_tokens: u32,
+) -> AppResult<super::ChatOutcome> {
+    // Translate OpenAI messages -> Gemini contents (role: user|model).
+    let mut contents: Vec<serde_json::Value> = Vec::new();
+    for msg in messages {
+        let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("user");
+        let gemini_role = if role == "assistant" { "model" } else { "user" };
+        let mut parts: Vec<serde_json::Value> = Vec::new();
+        match msg.get("content") {
+            // Multimodal: content is an array of {type:text|image_url}
+            Some(serde_json::Value::Array(arr)) => {
+                for part in arr {
+                    if let Some(t) = part.get("text").and_then(|v| v.as_str()) {
+                        parts.push(serde_json::json!({"text": t}));
+                    } else if let Some(obj) = part.get("image_url") {
+                        if let Some(url) = obj.get("url").and_then(|v| v.as_str()) {
+                            // url form: "data:image/png;base64,<DATA>"
+                            if let Some(b64) = url.split("base64,").nth(1) {
+                                parts.push(serde_json::json!({
+                                    "inline_data": {"mime_type": "image/png", "data": b64}
+                                }));
+                            }
+                        }
+                    }
+                }
+            }
+            // Plain string content
+            Some(serde_json::Value::String(s)) => {
+                parts.push(serde_json::json!({"text": s}));
+            }
+            _ => {}
+        }
+        if !parts.is_empty() {
+            contents.push(serde_json::json!({"role": gemini_role, "parts": parts}));
+        }
+    }
+
+    let url = format!(
+        "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
+        model, api_key
+    );
+    let body = serde_json::json!({
+        "contents": contents,
+        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.0}
+    });
+
+    let start = Instant::now();
+    let resp = client
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .json(&body)
+        .timeout(Duration::from_secs(120))
+        .send()
+        .await?;
+    let elapsed = start.elapsed().as_millis() as u64;
+
+    let status = resp.status();
+    let json: serde_json::Value = resp.json().await?;
+
+    if !status.is_success() {
+        return Err(AppError::Executor(format!(
+            "gemini returned HTTP {}: {}",
+            status,
+            &json.to_string().chars().take(400).collect::<String>()
+        )));
+    }
+
+    // Gemini: candidates[0].content.parts[].text (may be multiple parts).
+    let text = json
+        .pointer("/candidates/0/content/parts")
+        .and_then(|p| p.as_array())
+        .map(|parts| {
+            parts
+                .iter()
+                .filter_map(|p| p.get("text").and_then(|t| t.as_str()))
+                .collect::<Vec<_>>()
+                .join("")
+        })
+        .filter(|s: &String| !s.is_empty());
+
+    let content = match text {
+        Some(c) => c,
+        None => {
+            // Surface the raw error detail if present (e.g. safety / quota).
+            let detail = json
+                .pointer("/error/message")
+                .and_then(|v| v.as_str())
+                .unwrap_or("no content and no error message");
+            return Err(AppError::Executor(format!(
+                "gemini returned no text content (raw: {})",
+                &detail.chars().take(300).collect::<String>()
+            )));
+        }
+    };
+
+    // Token accounting: Gemini reports usageMetadata.promptTokenCount /
+    // candidatesTokenCount. Map to the same ChatOutcome fields (i64).
+    let (prompt_tokens, completion_tokens) = (
+        json.pointer("/usageMetadata/promptTokenCount")
+            .and_then(|v| v.as_u64())
+            .or_else(|| json.pointer("/usageMetadata/prompt_tokens").and_then(|v| v.as_u64()))
+            .map(|v| v as i64),
+        json.pointer("/usageMetadata/candidatesTokenCount")
+            .and_then(|v| v.as_u64())
+            .or_else(|| json.pointer("/usageMetadata/candidates_tokens").and_then(|v| v.as_u64()))
+            .map(|v| v as i64),
+    );
+
+    Ok(super::ChatOutcome {
+        content,
+        reasoning_content: None,
+        latency_ms: elapsed,
+        prompt_tokens,
+        completion_tokens,
+        speculative_decode: None,
+    })
+}
+

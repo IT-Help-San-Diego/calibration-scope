@@ -14,6 +14,11 @@ pub struct Config {
     pub nous_api_key: Option<String>,
     pub openrouter_api_key: Option<String>,
     pub openai_api_key: Option<String>,
+    /// Gemini (Google AI Studio) API key — read from env, never persisted.
+    /// Used for the permanent-free multimodal tier (gemini-3.5-flash), which
+    /// needs no credit card / prepay. Each deployer supplies their own key via
+    /// the GEMINI_API_KEY env var; nothing is baked into source.
+    pub gemini_api_key: Option<String>,
 }
 
 impl Config {
@@ -49,6 +54,7 @@ impl Config {
             nous_api_key: std::env::var("NOUS_API_KEY").ok().filter(|s| !s.is_empty()),
             openrouter_api_key: std::env::var("OPENROUTER_API_KEY").ok().filter(|s| !s.is_empty()),
             openai_api_key: std::env::var("OPENAI_API_KEY").ok().filter(|s| !s.is_empty()),
+            gemini_api_key: std::env::var("GEMINI_API_KEY").ok().filter(|s| !s.is_empty()),
         }
     }
 

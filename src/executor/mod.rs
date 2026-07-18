@@ -637,6 +637,7 @@ async fn check_memory_safety(
                         "nous" => &config.nous_api_key,
                         "openrouter" => &config.openrouter_api_key,
                         "openai" => &config.openai_api_key,
+                        "gemini" => &config.gemini_api_key,
                         other => {
                             return Err(AppError::Executor(format!("Unknown provider: {}", other)))
                         }
@@ -644,7 +645,11 @@ async fn check_memory_safety(
                     // Resolved per run (not at process start): Nous OAuth agent
                     // keys rotate on the order of hours.
                     let key = cloud::resolve_api_key(provider, config_key)?;
-                    cancellable!(cloud::chat(&client, provider, &key, model_key, &messages, 1024))
+                    if provider == "gemini" {
+                        cancellable!(cloud::gemini_chat(&client, &key, model_key, &messages, 1024))
+                    } else {
+                        cancellable!(cloud::chat(&client, provider, &key, model_key, &messages, 1024))
+                    }
                 }
             };
 

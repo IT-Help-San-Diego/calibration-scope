@@ -104,11 +104,12 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
     let client = Client::new();
     let mut providers = Vec::new();
 
-    for provider in ["nous", "openrouter", "openai"] {
+    for provider in ["nous", "openrouter", "openai", "gemini"] {
         let config_key = match provider {
             "nous" => &state.config.nous_api_key,
             "openrouter" => &state.config.openrouter_api_key,
             "openai" => &state.config.openai_api_key,
+            "gemini" => &state.config.gemini_api_key,
             _ => unreachable!(),
         };
 
@@ -127,6 +128,161 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
                 continue;
             }
         };
+
+        // Gemini's list API differs from the OpenAI-compatible providers:
+        // key is a query param (not Bearer), the list is under `models[]`
+        // (not `data[]`), fields are `displayName` / `generationMethods` /
+        // `inputTokenLimit`, and there is no per-model pricing in the catalog.
+        // Parse it into the same (id, display, ctx, vision, prices) shape the
+        // upsert expects. We keep only generateContent-capable chat models; we
+        // cannot infer vision from the catalog reliably, so we flag vision
+        // from the model id's known multimodal family (gemini-* with vision).
+        if provider == "gemini" {
+            let key = match cloud::resolve_api_key(provider, config_key) {
+                Ok(k) => k,
+                Err(e) => {
+                    providers.push(ProviderSync {
+                        provider: provider.to_string(),
+                        reachable: false,
+                        models_seen: 0,
+                        models_added: 0,
+                        models_updated: 0,
+                        skipped_reason: Some(format!("no key: {}", e)),
+                    });
+                    continue;
+                }
+            };
+            let list_url = format!(
+                "https://generativelanguage.googleapis.com/v1beta/models?key={}",
+                key
+            );
+            let resp = client
+                .get(&list_url)
+                .timeout(std::time::Duration::from_secs(20))
+                .send()
+                .await;
+            let json: serde_json::Value = match resp {
+                Ok(r) if r.status().is_success() => match r.json().await {
+                    Ok(j) => j,
+                    Err(e) => {
+                        providers.push(ProviderSync {
+                            provider: provider.to_string(),
+                            reachable: false,
+                            models_seen: 0,
+                            models_added: 0,
+                            models_updated: 0,
+                            skipped_reason: Some(format!("parse error: {}", e)),
+                        });
+                        continue;
+                    }
+                },
+                Ok(r) => {
+                    providers.push(ProviderSync {
+                        provider: provider.to_string(),
+                        reachable: false,
+                        models_seen: 0,
+                        models_added: 0,
+                        models_updated: 0,
+                        skipped_reason: Some(format!("HTTP {}", r.status())),
+                    });
+                    continue;
+                }
+                Err(e) => {
+                    providers.push(ProviderSync {
+                        provider: provider.to_string(),
+                        reachable: false,
+                        models_seen: 0,
+                        models_added: 0,
+                        models_updated: 0,
+                        skipped_reason: Some(format!("request failed: {}", e)),
+                    });
+                    continue;
+                }
+            };
+            let entries: Vec<serde_json::Value> = json
+                .get("models")
+                .and_then(|v| v.as_array())
+                .cloned()
+                .unwrap_or_default();
+            let mut seen = 0i64;
+            let mut added = 0i64;
+            let mut updated = 0i64;
+            for entry in &entries {
+                let id = match entry.get("name").and_then(|v| v.as_str()) {
+                    // Gemini returns "models/gemini-3.5-flash" — strip prefix.
+                    Some(s) if is_chat_model(s.split('/').last().unwrap_or(s)) => {
+                        s.split('/').last().unwrap_or(s).to_string()
+                    }
+                    _ => continue,
+                };
+                seen += 1;
+                let display = entry
+                    .get("displayName")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or(&id)
+                    .to_string();
+                let ctx = entry
+                    .get("inputTokenLimit")
+                    .and_then(|v| v.as_i64())
+                    .unwrap_or(0) as i32;
+                // Vision: Gemini catalog does not expose input_modalities; we
+                // flag from the known multimodal family. gemini-* with vision
+                // capability per Google docs; we mark the flash/pro/ultra 3.x
+                // lines as vision-capable (they accept images).
+                let vision = id.contains("gemini") && !id.contains("embedding");
+                let price_prompt: Option<f64> = None;
+                let price_completion: Option<f64> = None;
+                let result = sqlx::query(
+                    r#"
+                    INSERT INTO models (key, display_name, provider, location, context_length,
+                                        supports_vision, price_prompt, price_completion,
+                                        pricing_updated_at, tags, active)
+                    VALUES ($1, $2, $3, 'cloud', $4, $5, $6, $7,
+                            CASE WHEN $6::numeric IS NULL AND $7::numeric IS NULL THEN NULL ELSE NOW() END,
+                            ARRAY['cloud', $3], true)
+                    ON CONFLICT (key, provider) DO UPDATE SET
+                        context_length = EXCLUDED.context_length,
+                        supports_vision = EXCLUDED.supports_vision,
+                        price_prompt = EXCLUDED.price_prompt,
+                        price_completion = EXCLUDED.price_completion,
+                        pricing_updated_at = EXCLUDED.pricing_updated_at,
+                        updated_at = CURRENT_TIMESTAMP
+                    RETURNING (xmax = 0) AS inserted
+                    "#,
+                )
+                .bind(&id)
+                .bind(&display)
+                .bind(provider)
+                .bind(ctx)
+                .bind(vision)
+                .bind(price_prompt)
+                .bind(price_completion)
+                .fetch_one(&state.db)
+                .await;
+                match result {
+                    Ok(row) => {
+                        use sqlx::Row;
+                        if row.try_get::<bool, _>("inserted").unwrap_or(false) {
+                            added += 1;
+                        } else {
+                            updated += 1;
+                        }
+                    }
+                    Err(e) => {
+                        tracing::warn!("cloud_sync upsert failed for {}/{}: {}", provider, id, e);
+                    }
+                }
+            }
+            providers.push(ProviderSync {
+                provider: provider.to_string(),
+                reachable: true,
+                models_seen: seen,
+                models_added: added,
+                models_updated: updated,
+                skipped_reason: None,
+            });
+            continue;
+        }
 
         let resp = client
             .get(models_endpoint(provider))
