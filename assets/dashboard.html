@@ -2481,6 +2481,10 @@ function applyModelSnapshot(list) {
     loadSpecDecodePairs();
   } catch (e) {
     console.error('[amb] applyModelSnapshot failed:', e);
+    // Surface, don't swallow: a broken render must be visible, not a silent
+    // "Loading…" that traps the user into thinking they need a hard refresh.
+    const grid = document.getElementById('model-grid');
+    if (grid) grid.innerHTML = '<div style="padding:20px;color:#f87171;font-family:var(--font-mono);font-size:13px;">Render error: ' + escHtml(String(e && e.message || e)) + '<br><small style="color:var(--text-muted)">See console for stack. Not a cache issue — report this.</small></div>';
   }
 }
 
@@ -2864,7 +2868,7 @@ function renderGrid() {
           <div class="row-name" title="${escHtml(m.key)}"><span class="row-model">${escHtml(modelName)}</span></div>
           ${publisher ? `<span class="row-pub">${escHtml(publisher)}</span>` : ''}
           <div class="row-facts"><span class="row-dots">${dots}</span>${facts.join(' · ')}</div>
-          <span class="row-status" id="status-${cssEscapeId(m.key)}"></span>
+          <span class="row-status"></span>
         </div>
         <div class="row-actions">
           <button class="btn-mini" onclick="event.stopPropagation(); openDossier('${kq}')" title="Full dossier — everything we know about this model">ⓘ</button>
