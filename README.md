@@ -2,9 +2,13 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-**Test your local AI models like a scientist — on your own hardware, with evidence you can audit.**
+**Test your AI models like a scientist — local or cloud, on your own hardware, with evidence you can audit. Then measure yourself.**
 
-A local-first benchmarking dashboard for [LM Studio](https://lmstudio.ai) and cloud LLMs that measures what models can *actually* do — vision, tool use, reasoning, prompt-injection resistance — using ground-truth tests, N=3 trials, SHA3-sealed evidence, and zero trust in anyone's marketing numbers. Built in Rust (Axum + Tokio + SQLx + PostgreSQL) with a single-file live dashboard driven by Server-Sent Events.
+A benchmarking dashboard for [LM Studio](https://lmstudio.ai) and cloud LLMs (Nous, OpenRouter, OpenAI, Gemini) that measures what models can *actually* do — vision, tool use, reasoning, prompt-injection resistance — using ground-truth tests, N=3 trials, SHA3-sealed evidence, and zero trust in anyone's marketing numbers. Built in Rust (Axum + Tokio + SQLx + PostgreSQL) with a single-file live dashboard driven by Server-Sent Events.
+
+The defining feature: **the same battery, the same seals, run against local and cloud models — then matched back and forth.** Run a 30B model on your own GPU, run the same 90-test battery on a cloud endpoint, and cross-reference the verdicts on identical stimulus. The methodology is the constant; only the silicon changes. That is how you answer *"what am I dealing with today — and is it better than last week, or just bigger?"*
+
+And the loop closes on the human. The same fallacy taxonomy, the same N=3 discipline, the same sealed evidence can be pointed at **you** — take a calibrated logic/reasoning test, track your own weaknesses over time, and watch your profile move. Silicon and carbon under one instrument. That is the point: a tool to honestly measure intelligence wherever it shows up.
 
 Made by [IT Help San Diego Inc.](https://www.it-help.tech/) · A project of the [Intellectual Resistance](https://intellectualresistance.com/)
 
@@ -25,6 +29,9 @@ Standardized benchmarks (MMLU and friends) are public — models have trained on
 - *Which of my models can actually read text in a screenshot — and which one **fabricates plausible-sounding text** when it can't?*
 - *Which model should sit in each job slot (vision, tool routing, command approval) based on **my measured evidence**, not parameter-count intuition?*
 - *Is a "failure" a real capability gap, or my infrastructure lying to me?*
+- *And the same questions, pointed at **me**: where are my own logical blind spots, and are they moving?*
+
+The local/cloud split is the feature, not a limitation. Run the identical battery against a model on your GPU and against a cloud endpoint; the cross-reference tells you whether the cloud model is genuinely better or just more expensive. And the human-calibration path turns the same instrument on its operator — because the goal was never "rank the bots." It was: *honestly measure intelligence, silicon or carbon, wherever it shows up.*
 
 This tool answers those questions with the discipline of a lab notebook:
 
@@ -49,7 +56,9 @@ The commit history is deliberately forensic — most fixes cite the live inciden
 
 ## Features
 
-- **🏁 Benchmark grid** — every model in your LM Studio library plus configured cloud models (Nous, OpenRouter), per-axis verdicts with latency, live SSE telemetry (`ejecting → loading → resident → trial → verdict`), real timestamps, no spinners anywhere.
+- **🏁 Benchmark grid** — every model in your LM Studio library plus configured cloud models (Nous, OpenRouter, OpenAI, Gemini), per-axis verdicts with latency, live SSE telemetry (`ejecting → loading → resident → trial → verdict`), real timestamps, no spinners anywhere.
+- **🔁 Local ↔ cloud matching** — the same battery and the same SHA3 seals run against local and cloud models, so you can cross-reference verdicts on identical stimulus and see whether a cloud model is genuinely better or just more expensive.
+- **🧠 Human calibration (in progress)** — the same fallacy taxonomy, N=3 discipline, and sealed evidence aimed at *you*: take a calibrated logic/reasoning test, track your own weaknesses over time, and watch your profile move. Silicon and carbon under one instrument.
 - **🏆 Loot page** — leaderboard + "recommended squad" (best verified model per job slot), and a **capability router** that assigns primary/fallback models per axis from lifetime evidence, with stated reasons and evidence links (`/api/router/plan`).
 - **🧪 Prompt Builder** — side-by-side workbench: compose (text + image) on the left, results on the right. Reasoning traces shown separately from committed answers. Persistent run history — every test you run is kept, queryable, revisitable. Prompt-length checker with instant heuristic + optional exact token count.
 - **📋 Test Registry** — blind by default (ground truth requires an explicit audit view), custom test builder with anti-leakage validation, viewable SHA3-pinned image attachments.
