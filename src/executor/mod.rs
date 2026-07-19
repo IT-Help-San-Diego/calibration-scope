@@ -419,12 +419,20 @@ async fn execute_run_inner(
         model_id: i32,
         model_key: &str,
     ) -> AppResult<()> {
-        // Get the model's size from the DB (size_gb, optional — some models lack it)
+        // Get the model's size from the DB (size_gb, optional — some models lack it).
+        // size_gb is NULL for models we synced from LM Studio (which does not
+        // report size) or synced before a download captured it. sqlx decodes a
+        // NULL scalar as the inner type, so we must declare the column nullable
+        // (Option<f64>) and flatten the double-Option. Without this, every model
+        // with size_gb IS NULL crashes the run at the memory check with
+        // "decoding column 0: unexpected null" — a silent benchmark break for
+        // most locally-synced models.
         let model_size_gb: Option<f64> =
-            sqlx::query_scalar("SELECT size_gb FROM models WHERE id = $1")
+            sqlx::query_scalar::<_, Option<f64>>("SELECT size_gb FROM models WHERE id = $1")
                 .bind(model_id)
                 .fetch_optional(db)
-                .await?;
+                .await?
+                .flatten();
 
         // Read available memory from macOS vm_stat.
         // free + inactive + purgeable pages are reclaimable; we need the model
