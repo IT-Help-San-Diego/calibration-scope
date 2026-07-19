@@ -1,61 +1,56 @@
 # RENAMING — the renameability contract
 
-The product name ("Archetype Mesh" / `archetype-mesh`) is treated as a
-**renameable constant**, not a baked-in identity. This document is the contract
-that keeps it that way, so the product can be rebranded when the final
-name/domain is chosen — without touching business logic.
+The product name is **Carrier Scope** (ratified 2026-07-19, replacing the
+working name "Archetype Mesh"). It is derived from the instrument's ACT:
+scoping **signal from carrier** (Carrier Color theory) across BOTH substrates
+(silicon models + carbon humans) under the Owl Semaphore V4 taxonomy
+(I/N/C/M), with the Verification Principle as discipline (SHA-3 sealed, no
+answer-leakage) and Intellectual Resistance as the program roof. Carrier Scope
+is NOT a fourth framework — it is the instrument that puts the other three
+(Owl Semaphore, Carrier Color, Verification Principle) to work.
 
-## Why this matters
+**Domain (TBD, budget pending):** likely `carrierscope.com`. Local-access
+subdomain would be `local.carrierscope.com A 127.0.0.1` (see
+`docs/local-access-strategy.md`).
 
-The user requires the entire product to stay **renameable and modular** so it
-can be rebranded cleanly. A rename must be a mechanical string-swap in a few
-anchored locations — never an architecture change.
+**Human calibration first (core priority):** silicon and carbon are measured
+under one battery, but the HUMAN is the prior term — a person takes the battery
+and gets their own pass/fail vector BEFORE the machine mirror is trusted. Mode 1
+("thinks like them") and Mode 2 ("fills the gaps") both presuppose human
+calibration first. Measure yourself before you trust the reflection.
 
 ## Where the name lives (the anchor points)
 
-Verified 2026-07-19 by grep (~39 references total, but only ~4 are code
-anchors; the rest are doc prose):
+Verified 2026-07-19 by grep (~39 references total for the old name; only ~4 are
+code anchors). On rename, update:
 
 | File | Role | What to change |
 |------|------|----------------|
-| `Cargo.toml` | package name `archetype-mesh-benchmark`, binary `archetype-mesh-dashboard` | package + binary name |
-| `src/main.rs` | process name; `ARCHETYPE_MESH_*` env prefix (e.g. `ARCHETYPE_MESH_DATABASE_URL`) | process name + env prefix |
+| `Cargo.toml` | package name `archetype-mesh-benchmark`, binary `archetype-mesh-dashboard` | → `carrier-scope` / `carrier-scope-dashboard` |
+| `src/main.rs` | process name; `ARCHETYPE_MESH_*` env prefix (e.g. `ARCHETYPE_MESH_DATABASE_URL`) | → `CARRIER_SCOPE_*` prefix |
 | `assets/dashboard.html` | title string + visible labels | titled literals |
 | `README.md` | 11 doc references | prose |
 
 ## Rename procedure (mechanical)
 
 1. `Cargo.toml` → update `package.name` and `[[bin]] name`.
-2. `src/main.rs` → update process name string + `ARCHETYPE_MESH_` env prefix
+2. `src/main.rs` → update process name string + `CARRIER_SCOPE_` env prefix
    (rename the prefix consistently; it is the config-key namespace).
-3. `assets/dashboard.html` → global replace the visible product name in the
-   title and labels.
+3. `assets/dashboard.html` → global replace the visible product name.
 4. `README.md` + other docs → global replace prose references.
-5. `git grep` the old name → confirm zero code-logic references remain
-   (doc references are fine if intentional).
+5. `git grep` the old name → confirm zero code-logic references remain.
 
 Expected effort: ~15 minutes. No logic depends on the name as a magic string.
 
 ## Hard rule (enforced in review)
 
-> Never hardcode the product name as a magic string inside business logic
-> (e.g. `if config.name == "Archetype Mesh"`). The name belongs in:
-> `Cargo.toml` (package/binary), `main.rs` (env prefix + process name), and
-> titled string literals only.
-
-If a code path ever needs the product name at runtime, it must read it from a
-single configured constant (Cargo package metadata or a `main.rs` const), not
-an inline literal scattered across modules.
-
-## Domain note
-
-Intended final domain: `archetypemesh.com` (NO "test" — earlier
-`arctypemeshtest.com` was a throwaway example). The local-access subdomain
-would be `local.archetypemesh.com A 127.0.0.1` (see
-`docs/local-access-strategy.md`). Not yet registered (budget).
+> Never hardcode the product name as a magic string inside business logic.
+> The name belongs in: `Cargo.toml` (package/binary), `main.rs` (env prefix +
+> process name), and titled string literals only. If code needs the name at
+> runtime, read it from a single configured constant, not an inline literal.
 
 ## Status
 
-- Repo is already modular enough to rename (name anchored in ≤4 code files).
-- No rename pending — this doc exists so the contract is preserved before the
-  final name lands.
+- Name ratified: **Carrier Scope**. Repo still carries the old "Archetype
+  Mesh" code anchors pending the mechanical rename (deferred to domain
+  registration / a deliberate rename commit). This doc preserves the contract.
