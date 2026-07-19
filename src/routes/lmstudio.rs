@@ -318,6 +318,7 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
                        quantization = $6,
                        arch = $7,
                        lmstudio_key = $8,
+                       size_gb = NULL,
                        last_seen_in_lmstudio = NOW(),
                        updated_at = NOW()
                    WHERE id = $1"#,
@@ -337,8 +338,8 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
             }
         } else {
             sqlx::query(
-                r#"INSERT INTO models (key, display_name, provider, location, context_length, supports_vision, publisher, quantization, arch, lmstudio_key, last_seen_in_lmstudio, active)
-                   VALUES ($1, $2, 'lmstudio', 'local', $3, $4, $5, $6, $7, $8, NOW(), true)
+                r#"INSERT INTO models (key, display_name, provider, location, context_length, supports_vision, publisher, quantization, arch, lmstudio_key, size_gb, last_seen_in_lmstudio, active)
+                   VALUES ($1, $2, 'lmstudio', 'local', $3, $4, $5, $6, $7, $8, NULL, NOW(), true)
                    ON CONFLICT (key, provider) DO UPDATE SET
                        display_name = EXCLUDED.display_name,
                        context_length = EXCLUDED.context_length,

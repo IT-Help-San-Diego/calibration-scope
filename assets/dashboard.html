@@ -2954,7 +2954,7 @@ function renderGrid() {
       const notRunnable = m.runnable === false;
       const facts = [];
       facts.push(m.supports_vision ? '👁' : 'txt');
-      if (m.size_gb) facts.push(m.size_gb + 'GB');
+      if (m.size_gb > 0) facts.push(m.size_gb + 'GB');
       const ctx = fmtCtx(m.context_length);
       if (ctx) facts.push(ctx);
       // costTier returns {label, cls, note} — push the LABEL, not the object.
@@ -3035,7 +3035,7 @@ function factsLine(m) {
   // muted "text-only" = blind. Sourced from provider modality metadata.
   if (m.supports_vision) facts.push('<span style="color:var(--accent-gold,#d4a853);" title="Vision-capable — image input supported (provider modality metadata)">👁 vision</span>');
   else facts.push('<span style="color:var(--text-muted);" title="Text-only — no image input. A vision-axis run against this model is skipped, not failed.">text-only</span>');
-  if (m.size_gb) facts.push(m.size_gb + ' GB');
+  if (m.size_gb > 0) facts.push(m.size_gb + ' GB');
   const ctx = fmtCtx(m.context_length);
   if (ctx) facts.push(ctx + ' ctx');
   if (m.quantization) facts.push(m.quantization);
@@ -4249,7 +4249,7 @@ function renderSquad() {
     const sizeGb = pick.size_gb != null ? pick.size_gb : reg.size_gb;
     const speedColor = pick.best_ms < 2000 ? 'var(--safe)' : pick.best_ms < 10000 ? 'var(--flaky)' : 'var(--unsafe)';
     const locLabel = location === 'local' ? '💻 LM Studio' : '☁️ ' + (provider || 'cloud');
-    const sizeLabel = sizeGb != null ? (typeof sizeGb === 'number' ? sizeGb.toFixed(1) : sizeGb) + ' GB' : 'size unknown';
+    const sizeLabel = sizeGb != null && sizeGb > 0 ? (typeof sizeGb === 'number' ? sizeGb.toFixed(1) : sizeGb) + ' GB' : '—';
     return `<div class="squad-card">
       <div class="squad-card-title">${AXIS_ICON[axis]} ${axis.toUpperCase()} — CHAMPION</div>
       <div class="squad-card-model">${pick.display_name}</div>
@@ -4745,7 +4745,7 @@ async function loadLmStudioPage() {
     </div>
     <div class="setup-card">
       <div class="setup-card-title">Registered local models</div>
-      ${localModels.map(m => `<div class="list-row"><span class="lr-name">${m.display_name}</span><span class="lr-meta">${m.key} · ${m.context_length} ctx · ${m.size_gb} GB</span></div>`).join('')}
+      ${localModels.map(m => `<div class="list-row"><span class="lr-name">${m.display_name}</span><span class="lr-meta">${m.key} · ${m.context_length} ctx · ${m.size_gb > 0 ? m.size_gb + ' GB' : '—'}</span></div>`).join('')}
     </div>
   `;
 }
@@ -5144,7 +5144,7 @@ async function openInsights(key) {
 
   modal.innerHTML = '<button class="dossier-close" onclick="this.closest(\'.dossier-overlay\').remove()">\u2715</button>' +
     '<div class="dossier-title">' + esc(m.display_name) + ' \u2014 Insights</div>' +
-    '<div class="dossier-sub">' + esc(m.provider) + ' \u00b7 ' + esc(m.key) + ' \u00b7 ' + (m.size_gb ? m.size_gb.toFixed(1) + ' GB' : 'unknown') + ' \u00b7 ' + (m.supports_vision ? 'vision' : 'no vision') + ' \u00b7 ' + (m.context_length ? m.context_length.toLocaleString() + ' ctx' : '') + '</div>' +
+    '<div class="dossier-sub">' + esc(m.provider) + ' · ' + esc(m.key) + ' · ' + (m.size_gb > 0 ? m.size_gb.toFixed(1) + ' GB' : '—') + ' · ' + (m.supports_vision ? 'vision' : 'no vision') + ' · ' + (m.context_length ? m.context_length.toLocaleString() + ' ctx' : '') + '</div>' +
     dialsRow +
     '<div class="dossier-section"><div class="dossier-section-title">Assessment \u2014 what this means for you</div>' + assessmentHtml + '</div>' +
     '<div class="dossier-section"><div class="dossier-section-title">Fallacy map \u2014 the universal reasoning blind spot</div>' + fallacyHtml + '<div class="dossier-src" style="margin-top:8px">These tests expose whether the model can distinguish valid from invalid arguments. Failing them means it will confidently give wrong answers.</div></div>' +

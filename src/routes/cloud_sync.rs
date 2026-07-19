@@ -240,9 +240,10 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
                     r#"
                     INSERT INTO models (key, display_name, provider, location, context_length,
                                         supports_vision, price_prompt, price_completion,
-                                        pricing_updated_at, tags, active)
+                                        pricing_updated_at, size_gb, tags, active)
                     VALUES ($1, $2, $3, 'cloud', $4, $5, $6, $7,
                             CASE WHEN $6::numeric IS NULL AND $7::numeric IS NULL THEN NULL ELSE NOW() END,
+                            NULL,
                             ARRAY['cloud', $3], true)
                     ON CONFLICT (key, provider) DO UPDATE SET
                         context_length = EXCLUDED.context_length,
@@ -250,6 +251,7 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
                         price_prompt = EXCLUDED.price_prompt,
                         price_completion = EXCLUDED.price_completion,
                         pricing_updated_at = EXCLUDED.pricing_updated_at,
+                        size_gb = NULL,
                         updated_at = CURRENT_TIMESTAMP
                     RETURNING (xmax = 0) AS inserted
                     "#,
