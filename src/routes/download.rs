@@ -179,19 +179,31 @@ fn derive_key(model: &str) -> String {
 }
 
 /// Normalize a model key for fuzzy matching across LM Studio's key format and
-/// the HF identifier we send. LM Studio lowercases and strips the org prefix
-/// and "-GGUF" suffix (e.g. "Qwen/Qwen2.5-0.5B-Instruct-GGUF" →
-/// "qwen2.5-0.5b-instruct"). We normalize by: lowercase, drop the org prefix
-/// (text before first '/'), strip a trailing "-gguf", and collapse internal
-/// separators to a single canonical form so both sides compare equal.
+/// the HF identifier we send. LM Studio rewrites the key on registration:
+/// lowercases, drops the org prefix, may prepend a type tag (e.g.
+/// "text-embedding-"), and strips "-GGUF". Examples:
+///   "Qwen/Qwen2.5-0.5B-Instruct-GGUF" → "qwen2.5-0.5b-instruct"
+///   "Qwen/Qwen3-Embedding-0.6B-GGUF" → "text-embedding-qwen3-embedding-0.6b"
+///     (LM Studio prepends "text-embedding-") → normalized "qwen3-embedding-0.6b"
+/// We normalize both sides so they compare equal regardless of these rewrites.
 fn normalize_key(key: &str) -> String {
-    let k = key.to_lowercase();
+    let mut k = key.to_lowercase();
     // Drop org prefix: "qwen/foo" → "foo".
-    let k = k.split('/').last().unwrap_or(&k);
-    // Strip "-gguf" suffix and any quantization token (Q4_K_M, q4_k_m, etc.).
-    let k = k.trim_end_matches("-gguf");
-    let k = regex_free_strip_quant(k);
-    k.to_string()
+    if let Some(idx) = k.rfind('/') {
+        k = k[idx + 1..].to_string();
+    }
+    // Strip known LM Studio type-tag prefixes it may prepend on registration.
+    for p in ["text-embedding-", "vlm-", "embedding-", "llm-", "mlx-"] {
+        if let Some(stripped) = k.strip_prefix(p) {
+            k = stripped.to_string();
+        }
+    }
+    // Strip "-gguf" suffix and any trailing quantization token.
+    if let Some(stripped) = k.strip_suffix("-gguf") {
+        k = stripped.to_string();
+    }
+    k = regex_free_strip_quant(&k).to_string();
+    k
 }
 
 /// Strip a trailing quantization token like "q4_k_m" or "Q8_0" so
@@ -287,10 +299,21 @@ pub fn spawn_download_poller(state: AppState) {
                         .fetch_all(&state.db)
                         .await
                         .unwrap_or_default();
+                        // Primary: exact normalized match. Fallback: containment,
+                        // in case LM Studio prepends/appends something we didn't
+                        // anticipate (e.g. an unhandled type tag). Contains is
+                        // safe here — model names are distinctive enough that a
+                        // substring collision across different models is unlikely.
                         let matched = keys
-                            .into_iter()
-                            .map(|(k,)| k)
-                            .find(|k| normalize_key(k) == want);
+                            .iter()
+                            .map(|(k,)| k.clone())
+                            .find(|k| normalize_key(k) == want)
+                            .or_else(|| {
+                                keys.iter().map(|(k,)| k.clone()).find(|k| {
+                                    let nk = normalize_key(k);
+                                    nk.contains(&want) || want.contains(&nk)
+                                })
+                            });
                         if let Some(k) = matched {
                             let rows = sqlx::query(
                                 "UPDATE models SET size_gb = $1 WHERE key = $2 AND provider = 'lmstudio'",
