@@ -129,6 +129,27 @@ pub async fn create_test(
     if let Some(msg) = validate(axis, scoring) {
         return Ok(Json(serde_json::json!({ "error": msg })));
     }
+    // Owl Semaphore epistemic role (V4 operationalization). Defaults to 'I'
+    // (ground truth). Non-identity forms MUST cite their root + transform.
+    let owl_type = req.get("owl_type").and_then(|v| v.as_str()).filter(|s| {
+        matches!(*s, "I" | "N" | "C" | "M")
+    }).unwrap_or("I").to_string();
+    let owl_root_id = req.get("owl_root_id").and_then(|v| v.as_i64()).map(|v| v as i32);
+    let owl_transform = req.get("owl_transform").and_then(|v| v.as_str()).map(|s| s.to_string());
+    let owl_flaw = req.get("owl_flaw").and_then(|v| v.as_str()).map(|s| s.to_string());
+    let formal_spec = req.get("formal_spec").and_then(|v| v.as_str()).map(|s| s.to_string());
+    // Constraint parity with migration 036 (owl_type_check / owl_root_consistency /
+    // owl_n_completeness / owl_c_completeness) — enforced server-side so the
+    // authoring API can't silently produce an invalid owl row.
+    if owl_type != "I" && owl_root_id.is_none() {
+        return Ok(Json(serde_json::json!({ "error": "Non-Identity owl (N/C/M) requires owl_root_id pointing at its ground-truth Identity test." })));
+    }
+    if owl_type == "N" && owl_transform.is_none() {
+        return Ok(Json(serde_json::json!({ "error": "owl_type 'N' requires owl_transform (what changed at the surface)." })));
+    }
+    if owl_type == "C" && (owl_transform.is_none() || owl_flaw.is_none()) {
+        return Ok(Json(serde_json::json!({ "error": "owl_type 'C' requires BOTH owl_transform and owl_flaw (the named trap)." })));
+    }
     // Guard against ground truth leaking into the prompt itself (answer leakage).
     if prompt_text.to_lowercase().contains(&expected.to_lowercase()) && expected.len() > 3 {
         return Ok(Json(serde_json::json!({
@@ -138,8 +159,8 @@ pub async fn create_test(
     let trials = req.get("trials_per_run").and_then(|v| v.as_i64()).unwrap_or(3).clamp(1, 10) as i32;
 
     let (id,): (i32,) = sqlx::query_as(
-        r#"INSERT INTO tests (name, axis, prompt_text, expected_result, scoring_method, trials_per_run, active)
-           VALUES ($1, $2, $3, $4, $5, $6, true) RETURNING id"#,
+        r#"INSERT INTO tests (name, axis, prompt_text, expected_result, scoring_method, trials_per_run, active, owl_type, owl_root_id, owl_transform, owl_flaw, formal_spec)
+           VALUES ($1, $2, $3, $4, $5, $6, true, $7, $8, $9, $10, $11) RETURNING id"#,
     )
     .bind(name)
     .bind(axis)
@@ -147,11 +168,16 @@ pub async fn create_test(
     .bind(expected)
     .bind(scoring)
     .bind(trials)
+    .bind(owl_type.clone())
+    .bind(owl_root_id)
+    .bind(owl_transform)
+    .bind(owl_flaw)
+    .bind(formal_spec)
     .fetch_one(&state.db)
     .await?;
 
-    tracing::info!("Test created: id={} name={} axis={}", id, name, axis);
-    Ok(Json(serde_json::json!({ "id": id, "name": name, "axis": axis, "created": true })))
+    tracing::info!("Test created: id={} name={} axis={} owl_type={}", id, name, axis, owl_type);
+    Ok(Json(serde_json::json!({ "id": id, "name": name, "axis": axis, "created": true, "owl_type": owl_type })))
 }
 
 pub async fn update_test(
