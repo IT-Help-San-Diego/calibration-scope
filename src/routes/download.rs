@@ -178,6 +178,38 @@ fn derive_key(model: &str) -> String {
     model.to_string()
 }
 
+/// Normalize a model key for fuzzy matching across LM Studio's key format and
+/// the HF identifier we send. LM Studio lowercases and strips the org prefix
+/// and "-GGUF" suffix (e.g. "Qwen/Qwen2.5-0.5B-Instruct-GGUF" →
+/// "qwen2.5-0.5b-instruct"). We normalize by: lowercase, drop the org prefix
+/// (text before first '/'), strip a trailing "-gguf", and collapse internal
+/// separators to a single canonical form so both sides compare equal.
+fn normalize_key(key: &str) -> String {
+    let k = key.to_lowercase();
+    // Drop org prefix: "qwen/foo" → "foo".
+    let k = k.split('/').last().unwrap_or(&k);
+    // Strip "-gguf" suffix and any quantization token (Q4_K_M, q4_k_m, etc.).
+    let k = k.trim_end_matches("-gguf");
+    let k = regex_free_strip_quant(k);
+    k.to_string()
+}
+
+/// Strip a trailing quantization token like "q4_k_m" or "Q8_0" so
+/// "qwen2.5-0.5b-instruct-q4_k_m" → "qwen2.5-0.5b-instruct".
+fn regex_free_strip_quant(k: &str) -> &str {
+    // Quant tokens are alphanumeric + underscore, preceded by '-'.
+    if let Some(pos) = k.rfind('-') {
+        let suffix = &k[pos + 1..];
+        if !suffix.is_empty() && suffix.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+            // Heuristic: a quant suffix contains a digit (e.g. 4, 8, 0).
+            if suffix.chars().any(|c| c.is_ascii_digit()) {
+                return &k[..pos];
+            }
+        }
+    }
+    k
+}
+
 /// Single background poller. Spawned ONCE at startup. Every 3s: if the active
 /// map is empty, do nothing (zero network cost). Otherwise poll each job's
 /// `download/status`, update progress via SSE, and on terminal state write
@@ -244,18 +276,39 @@ pub fn spawn_download_poller(state: AppState) {
                     let _ = crate::routes::lmstudio::lmstudio_sync(State(state.clone())).await;
                     if let Some(t) = total {
                         let gb = (t as f64 / 1_073_741_824.0 * 10.0).round() / 10.0;
-                        // Match by our derived key first; fall back to the raw
-                        // LM Studio identifier (last path segment) if keys differ.
-                        let rows = sqlx::query(
-                            "UPDATE models SET size_gb = $1 WHERE (key = $2 OR key = $3) AND provider = 'lmstudio'",
+                        // LM Studio stores the model under its OWN key format
+                        // (lowercased, no org prefix, no "-GGUF"), which differs
+                        // from the HF identifier we sent. Normalize both sides
+                        // in Rust and match the lmstudio row we just synced.
+                        let want = normalize_key(&job.model_key);
+                        let keys: Vec<(String,)> = sqlx::query_as(
+                            "SELECT key FROM models WHERE provider = 'lmstudio'",
                         )
-                        .bind(gb)
-                        .bind(&job.model_key)
-                        .bind(job.model_identifier.rsplit('/').next().unwrap_or(&job.model_key))
-                        .execute(&state.db)
-                        .await;
-                        if let Err(e) = rows {
-                            tracing::warn!("size_gb write failed for {}: {}", job.model_key, e);
+                        .fetch_all(&state.db)
+                        .await
+                        .unwrap_or_default();
+                        let matched = keys
+                            .into_iter()
+                            .map(|(k,)| k)
+                            .find(|k| normalize_key(k) == want);
+                        if let Some(k) = matched {
+                            let rows = sqlx::query(
+                                "UPDATE models SET size_gb = $1 WHERE key = $2 AND provider = 'lmstudio'",
+                            )
+                            .bind(gb)
+                            .bind(&k)
+                            .execute(&state.db)
+                            .await;
+                            if let Err(e) = rows {
+                                tracing::warn!("size_gb write failed for {}: {}", k, e);
+                            } else {
+                                tracing::info!("size_gb written: {} = {} GB", k, gb);
+                            }
+                        } else {
+                            tracing::warn!(
+                                "size_gb: no lmstudio row matched normalized key '{}' for {}",
+                                want, job.model_key
+                            );
                         }
                     }
                     state.active_downloads.lock().await.remove(&job.job_id);
