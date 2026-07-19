@@ -11,7 +11,7 @@ pub async fn models_handler(
             Json(annotated)
         }
         Err(e) => {
-            tracing::error!("Failed to fetch registry models: {}", e);
+            tracing::error!("Failed to fetch registry models: {:?}", e);
             Json(Vec::new())
         }
     }

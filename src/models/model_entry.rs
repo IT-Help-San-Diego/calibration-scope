@@ -8,7 +8,7 @@ pub struct ModelEntry {
     pub provider: String,
     pub location: String,
     pub context_length: i32,
-    pub size_gb: f64,
+    pub size_gb: Option<f64>,
     pub notes: Option<String>,
     pub tags: Option<Vec<String>>,
     pub active: bool,

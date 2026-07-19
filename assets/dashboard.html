@@ -2448,24 +2448,24 @@ let downloadProgress = {};
 // See docs/demo-bots.md. Manifest is data, not a catalog scrape.
 const DEMO_BOTS = [
   {
-    key: 'Qwen/Qwen2.5-1.5B-Instruct-GGUF',
-    quantization: 'Q4_K_M',
+    key: 'llama-3.2-1b-instruct',
+    quantization: null,
     title: 'Bot A · The Floor',
-    story: 'Smallest local model we ship. Pulls in seconds. Likely scores low on reasoning — that is the point: shows the instrument works end-to-end and where the floor is.',
+    story: '1B. Smallest we have tested: 53% across the battery. Proves the floor — below this, local models stop being usable. The instrument works end-to-end here.',
     axis: 'reasoning'
   },
   {
     key: 'ibm/granite-3.2-8b',
     quantization: null,
     title: 'Bot B · Scaffold Heals',
-    story: '8B. Fails raw logic (45/90) but passes when given the generalized scaffold (63/90). Demonstrates the core science: a model that heals with structure, no answer leakage.',
+    story: '8B. 64% overall, but fails raw logic (45/90) and heals to 63/90 with the generalized scaffold. Demonstrates the core science: structure repairs reasoning, no answer leakage.',
     axis: 'reasoning'
   },
   {
-    key: 'qwen/qwen3-vl-8b',
+    key: 'google/gemma-4-e2b',
     quantization: null,
-    title: 'Bot C · Vision',
-    story: '8B, vision 12/12 verified. Smallest local bot that actually sees. Pairs with the reasoning bots to show the full axis spread.',
+    title: 'Bot C · Goldilocks',
+    story: '2B, vision ✓, 82% — the smallest model that actually sees AND passes. This is the zone: tiny, local, usable. Scale up from here.',
     axis: 'vision'
   }
 ];
