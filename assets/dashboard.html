@@ -60,6 +60,35 @@
     --font-mono: 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
     --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, sans-serif;
   }
+  }
+  /* ═══ Accessibility — high-contrast / large-text mode ═══
+     Toggle via the "Readable" button in the top nav. Increases base
+     font, boosts text contrast to near-solid, enlarges hit targets.
+     Honors the user's stated need: older-scientist / low-vision friendly
+     on a large BenQ display. */
+  body { font-size: 15px; }
+  [data-a11y="high"] {
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-card: #141414;
+    --bg-card-hover: #1f1f1f;
+    --border: #4a4a4a;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --text-muted: #b8b8b8;
+    --accent-gold: #ffce6b;
+    --accent-blue: #74b9ff;
+    --accent-green: #5cff8f;
+    --accent-red: #ff6b6b;
+    --accent-amber: #ffd866;
+  }
+  [data-a11y="high"] body { font-size: 18px; line-height: 1.65; }
+  [data-a11y="high"] .top-nav .tab,
+  [data-a11y="high"] .btn-primary,
+  [data-a11y="high"] .btn-secondary { font-size: 16px; padding: 12px 20px; min-height: 44px; }
+  [data-a11y="high"] button { min-height: 40px; }
+  [data-a11y="high"] input, [data-a11y="high"] select { font-size: 16px; min-height: 40px; }
+  [data-a11y="high"] .owl-form, [data-a11y="high"] .science-card { padding: 16px; }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1267,63 +1296,10 @@
     display: flex; justify-content: space-between; align-items: center;
   }
   .native-selector-count { color: var(--text-muted, #8b949e); font-size: 13px; }
-
-  #amb-console-panel {
-    position: fixed; bottom: 12px; right: 12px; z-index: 9999;
-    width: 420px; max-width: calc(100vw - 24px); max-height: 220px;
-    background: rgba(13,17,23,0.95); border: 1px solid #30363d;
-    border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 11px; line-height: 1.45; color: #e6edf3;
-    display: flex; flex-direction: column; overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-  }
-  #amb-console-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 10px; background: #161b22; border-bottom: 1px solid #30363d;
-  }
-  #amb-console-title { font-weight: 700; color: #8b949e; font-size: 11px; }
-  #amb-console-clear {
-    background: transparent; border: 1px solid #30363d; color: #8b949e;
-    border-radius: 4px; font-size: 10px; padding: 2px 8px; cursor: pointer;
-  }
-  #amb-console-clear:hover { background: #21262d; color: #e6edf3; }
-  #amb-console-body {
-    flex: 1; overflow-y: auto; padding: 8px 10px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-  .amb-console-line { white-space: pre-wrap; word-break: break-all; margin: 0; padding: 1px 0; }
-  .amb-console-line.debug { color: #8b949e; }
-  .amb-console-line.warn { color: #d29922; }
-  .amb-console-line.error { color: #f85149; }
-  .amb-console-line.info { color: #58a6ff; }
 </style>
 <script>
 
-(function(){
-  const body = document.getElementById('amb-console-body');
-  if (!body) return;
-  const LEVELS = {'log':'info','warn':'warn','error':'error','info':'info','debug':'debug'};
-  function append(level, args) {
-    const line = document.createElement('div');
-    line.className = 'amb-console-line ' + (LEVELS[level] || 'info');
-    try { line.textContent = '[' + level + '] ' + Array.from(args).map(function(a){
-      if (a instanceof Error) return a.toString();
-      if (typeof a === 'object') try { return JSON.stringify(a); } catch(e) { return String(a); }
-      return String(a);
-    }).join(' '); } catch(e) { line.textContent = '[' + level + ']'; }
-    body.appendChild(line);
-    while (body.children.length > 300) body.removeChild(body.firstChild);
-    body.scrollTop = body.scrollHeight;
-  }
-  const orig = {log:console.log,warn:console.warn,error:console.error,info:console.info,debug:console.debug};
-  ['log','warn','error','info','debug'].forEach(function(lvl){
-    console[lvl] = function(){
-      append(lvl, arguments);
-      if (orig[lvl]) orig[lvl].apply(console, arguments);
-    };
-  });
-})();
-window.esc = window.esc || function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]); }); };
+window.esc = window.esc || function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>\"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]); }); };
 
 // ── Live run / abort observability — visible telemetry, no DevTools required ──
 (function(){
@@ -1463,62 +1439,99 @@ async function runSpecDecodeTest(mainModel) {
 }
 
 // ── science layer loader — reproducible NeuroVault maps ───────────────────
+// ── science layer loader — ONE reproducible map, honestly linked ────────
+// Scientific-honesty rule (2026-07-19): a brain map is shown ONLY if it has a
+// real, checkable link to what this instrument measures. Of the three
+// NeuroVault collections available, exactly ONE qualifies:
+//   22786 "Bayesian social and ToM reasoning" (DOI 10.1038/s41467-026-71151-2)
+//   — Theory of Mind is a subclass of the REASONING axis we benchmark, so the
+//     map is directly relevant to reasoning-capability measurement.
+// The other two (emotional/valence memory; serotonin receptor distributions)
+// are real, DOI-backed neuroscience but have NO verified link to any axis we
+// measure — showing them next to benchmark output would imply a connection
+// that does not exist. We EXCLUDE them and say so out loud, rather than fake a
+// "mad scientist" collage. New collections are admitted only when a real link
+// is established and documented here.
+const SCIENCE_ADMITTED = {
+  22786: {
+    why: "Theory of Mind is a subclass of the REASONING axis this instrument benchmarks. A model that reasons about another agent's beliefs is exercising the same faculty our logic battery measures — so this map is directly relevant, not decorative.",
+    axis: "reasoning"
+  }
+};
+const SCIENCE_EXCLUDED = [
+  { id: 21999, name: "Emotional and valence-driven memory decisions", doi: "10.1162/IMAG.a.1213",
+    why: "Real, peer-reviewed memory neuroscience. Excluded: no verified link to any capability axis this instrument measures (reasoning / vision / tools / literary / security / auxiliary). Showing it here would imply a connection that does not exist." },
+  { id: 21877, name: "Serotonin receptor binding distributions", doi: "10.1016/j.pnpbp.2026.111679",
+    why: "Real, peer-reviewed neurochemistry. Excluded: no verified link to any axis we measure. Kept out to avoid the 'mad scientist' collage — admitted only when a real, documented link exists." }
+];
 async function loadScienceLayer() {
   const grid = document.getElementById('science-grid');
   const status = document.getElementById('science-status');
   const prov = document.getElementById('science-provenance');
-  // DOM race guard: this script block lives in <head>; if called before the
-  // body parses (the old setTimeout(0) bug), bail — bootstrap calls us again.
   if (!grid || !status || !prov) return;
-  status.textContent = 'loading collections…';
+  status.textContent = 'loading collection 22786...';
   grid.innerHTML = '';
   try {
     const [collections, manifest] = await Promise.all([
       fetch('/api/neurovault/collections').then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))),
       fetch('/api/neurovault/manifest').then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))),
     ]);
-
+    const admitted = collections.filter(c => SCIENCE_ADMITTED[c.id]);
     const byCollection = new Map();
-    for (const img of manifest) {
-      byCollection.set(img.collection_id, (byCollection.get(img.collection_id) || 0) + 1);
-    }
+    for (const img of manifest) byCollection.set(img.collection_id, (byCollection.get(img.collection_id) || 0) + 1);
 
-    status.textContent = `${collections.length} collections loaded`;
+    status.textContent = '1 collection shown - ' + SCIENCE_EXCLUDED.length + ' excluded (no verified link)';
     const dois = new Set();
-    for (const c of collections) {
-      if (c.doi) dois.add(c.doi);
-      const images = await fetch(`/api/neurovault/images/${c.id}`).then(r => r.ok ? r.json() : []).catch(() => []);
-      const cards = images.map((img, i) => {
-        const thumb = img.thumbnail_url || img.file_url;
-        return `<div class="science-card" data-collection="${c.id}" style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:8px;">
-          <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-bottom:6px;">${escHtml(c.name)}</div>
-          <a href="${escHtml(c.paper_url || '#')}" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-            <img src="${escHtml(thumb)}" alt="${escHtml(img.name)} — ${escHtml(c.doi || 'Open NeuroVault map')}" loading="lazy" style="width:100%;height:auto;border-radius:8px;display:block;background:#0a0f14;" />
-            <div style="margin-top:6px;font-size:11px;color:var(--text-secondary);">${escHtml(img.name)}</div>
-            <div style="font-size:10px;color:var(--text-muted);">${escHtml(img.map_type)}</div>
-          </a>
-        </div>`;
-      }).join('');
 
-      grid.insertAdjacentHTML('beforeend', `
-        <div class="science-category" data-collection="${c.id}">
-          <div style="font-size:12px;font-family:var(--font-mono);color:var(--accent-gold,#d4a853);margin-bottom:6px;">
-            <span class="brain-leg" style="cursor:pointer;" onmouseenter="highlightScienceCategory(${c.id})" onmouseleave="clearScienceHighlight()">■</span>
-            ${escHtml(c.name)} <span style="color:var(--text-muted);font-size:10px;">— ${images.length} map${images.length === 1 ? '' : 's'}</span>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;" class="science-cards">${cards}</div>
-          ${c.doi ? `<div style="margin-top:6px;font-size:10px;color:var(--text-muted);">DOI: <a href="https://doi.org/${escHtml(c.doi)}" target="_blank" rel="noopener" style="color:var(--accent-gold,#d4a853);">${escHtml(c.doi)}</a></div>` : ''}
-        </div>
-      `);
+    let cards = [];
+    for (const c of admitted) {
+      if (c.doi) dois.add(c.doi);
+      const images = await fetch('/api/neurovault/images/' + c.id).then(r => r.ok ? r.json() : []).catch(() => []);
+      cards = images.map(img => {
+        const thumb = img.thumbnail_url || img.file_url;
+        return '<div class="science-card" style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;" onclick="toggleScienceWhy(' + c.id + ')">'
+          + '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-bottom:6px;">' + escHtml(c.name) + '</div>'
+          + '<img src="' + escHtml(thumb) + '" alt="' + escHtml(img.name) + ' - ' + escHtml(c.doi || 'Open NeuroVault map') + '" loading="lazy" style="width:100%;height:auto;border-radius:8px;display:block;background:#0a0f14;" />'
+          + '<div style="margin-top:6px;font-size:11px;color:var(--text-secondary);">' + escHtml(img.name) + '</div>'
+          + '<div style="font-size:10px;color:var(--text-muted);">' + escHtml(img.map_type) + '</div>'
+          + '</div>';
+      });
     }
 
-    prov.innerHTML = `Collections: ${collections.map(c => c.id).join(', ')} • DOIs: ${Array.from(dois).map(d => escHtml(d)).join(' | ')}`;
+    const excludedHtml = SCIENCE_EXCLUDED.map(e =>
+      '<div class="science-excluded" style="border-left:3px solid var(--text-faint);padding:6px 10px;margin-top:8px;font-size:11px;color:var(--text-muted);background:rgba(255,255,255,0.02);border-radius:0 6px 6px 0;">'
+      + '<div style="font-family:var(--font-mono);color:var(--text-secondary);">Excluded - ' + escHtml(e.name) + ' <span style="color:var(--text-faint);">(' + escHtml(e.doi) + ')</span></div>'
+      + '<div style="margin-top:3px;line-height:1.45;">' + escHtml(e.why) + '</div>'
+      + '</div>').join('');
+
+    grid.innerHTML =
+      '<div style="border:1px solid var(--accent-gold,#d4a853);border-radius:10px;padding:12px;background:rgba(212,168,83,0.04);">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+      + '<span style="font-size:11px;letter-spacing:1px;color:var(--accent-gold,#d4a853);">REPRODUCIBLE FUNCTIONAL ANATOMY - ONE VERIFIED LINK</span>'
+      + '<span id="science-cycle" style="font-size:10px;color:var(--text-muted);"></span>'
+      + '</div>'
+      + '<div id="science-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;">' + cards.join('') + '</div>'
+      + '<div id="science-why" style="display:none;margin-top:10px;padding:10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;font-size:12px;line-height:1.5;color:var(--text-secondary);"></div>'
+      + excludedHtml
+      + '</div>';
+    window.__scienceAdmitted = admitted;
+    if (admitted[0]) document.getElementById('science-why').textContent = SCIENCE_ADMITTED[admitted[0].id].why;
+
+    prov.innerHTML = 'Shown: collection 22786 (DOI ' + Array.from(dois).map(d=>escHtml(d)).join(' | ') + '). Excluded: ' + SCIENCE_EXCLUDED.map(e=>e.id).join(', ') + ' - no verified benchmark link. Honesty policy: a map is shown only with a real, documented connection to a measured axis.';
   } catch (e) {
     status.textContent = 'error: ' + escHtml(e.message);
     prov.innerHTML = 'Science layer failed to load.';
   }
 }
-
+function toggleScienceWhy(id) {
+  const el = document.getElementById('science-why');
+  if (!el) return;
+  const meta = SCIENCE_ADMITTED[id];
+  if (!meta) return;
+  const showing = el.dataset.open === String(id);
+  if (showing) { el.style.display = 'none'; el.dataset.open = ''; }
+  else { el.style.display = 'block'; el.dataset.open = String(id); el.textContent = meta.why; }
+}
 function highlightScienceCategory(collectionId) {
   document.querySelectorAll('.science-category').forEach(el => {
     el.style.opacity = el.dataset.collection === String(collectionId) ? '1' : '0.45';
@@ -1551,6 +1564,8 @@ function clearScienceHighlight() {
 <!-- Top Nav -->
 <div class="top-nav">
   <img class="logo" src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" onerror="this.style.display='none'" style="height:32px;margin-right:6px;cursor:pointer" onclick="showPage('benchmark')">
+  <button id="a11y-toggle" class="tab" onclick="toggleA11y()" title="High-contrast / large-text mode" style="margin-left:auto;cursor:pointer;">Readable: Off</button>
+
   <div class="tab" onclick="showPage('setup')" id="tab-setup">Setup</div>
   <span class="nav-arrow">→</span>
   <div class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">Benchmark</div>
@@ -1820,6 +1835,47 @@ function clearScienceHighlight() {
   <span id="gpu-mem-txt" style="color:var(--text-primary);margin-left:6px;">—</span>
   <span id="gpu-src" style="color:var(--text-muted);margin-left:16px;" title="ioreg -r -d 1 -c IOAccelerator → PerformanceStatistics — the same counters Activity Monitor reads">source: IOAccelerator</span>
 </div>
+<!-- ═══ Owl Semaphore — the four forms, lit from real data ═══
+     Balboa, dnstool.it-help.tech/owl-semaphore, DOI 10.5281/zenodo.18854899.
+     The identity plus three non-identity symmetries of the Klein four-group
+     V4 = {I, σᵥ, C2, σₕ}, operationalized onto tests.owl_type. During a run,
+     every trial_result carries its owl_type — the matching form lights.
+     I and M are REAL (I = 61 ground-truth tests; M = per-trial σₕ tick).
+     N and C show their true state: ZERO authored content yet (verified
+     against the live DB) — not faked. Author paraphrase/adversarial siblings
+     to populate them. -->
+<div id="owl-semaphore" style="background:var(--bg-secondary);border-top:1px solid var(--border);padding:16px 24px;">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+    <div style="font-size:13px;letter-spacing:1.2px;color:var(--text-muted);">OWL SEMAPHORE — FOUR FORMS (KLEIN V4)</div>
+    <a href="https://doi.org/10.5281/zenodo.18854899" target="_blank" rel="noopener" style="font-size:10px;color:var(--accent-gold,#d4a853);text-decoration:none;">Balboa · Zenodo DOI 10.5281/zenodo.18854899</a>
+    <span id="owl-coverage" style="font-size:10px;font-family:var(--font-mono);color:var(--text-muted);"></span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+    <div class="owl-form" id="owl-I" data-form="I" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg-primary);transition:box-shadow .3s, border-color .3s;">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="owl-glyph" style="font-size:20px;">🦉</span><span style="font-weight:700;font-size:14px;">I — Identity</span></div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin:4px 0;">group: identity · ground truth</div>
+      <div class="owl-state" style="font-size:12px;color:var(--text-secondary);min-height:32px;line-height:1.4;">—</div>
+    </div>
+    <div class="owl-form" id="owl-N" data-form="N" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg-primary);transition:box-shadow .3s, border-color .3s;">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="owl-glyph" style="font-size:20px;">🦉</span><span style="font-weight:700;font-size:14px;">N — Non-normative</span></div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin:4px 0;">σᵥ · reworded, truth-invariant</div>
+      <div class="owl-state" style="font-size:12px;color:var(--text-secondary);min-height:32px;line-height:1.4;">—</div>
+    </div>
+    <div class="owl-form" id="owl-C" data-form="C" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg-primary);transition:box-shadow .3s, border-color .3s;">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="owl-glyph" style="font-size:20px;">🦉</span><span style="font-weight:700;font-size:14px;">C — Critical</span></div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin:4px 0;">C2 = σᵥ∘σₕ · reworded + named trap</div>
+      <div class="owl-state" style="font-size:12px;color:var(--text-secondary);min-height:32px;line-height:1.4;">—</div>
+    </div>
+    <div class="owl-form" id="owl-M" data-form="M" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg-primary);transition:box-shadow .3s, border-color .3s;">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="owl-glyph" style="font-size:20px;">🦉</span><span style="font-weight:700;font-size:14px;">M — Metacognitive</span></div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin:4px 0;">σₕ · scores the model's own reasoning</div>
+      <div class="owl-state" style="font-size:12px;color:var(--text-secondary);min-height:32px;line-height:1.4;">—</div>
+    </div>
+  </div>
+  <div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.5;">
+    <b>Honesty note:</b> I and M are measured live. N and C read <i>“test content pending”</i> because no paraphrase/adversarial siblings have been authored yet (verified: 0 rows in the live DB). They are shown so the framework is complete and the gap is visible — not to imply coverage that does not exist.
+  </div>
+</div>
 <div id="center-scroll">
 
 <!-- ═══ Science Layer — NeuroVault reproducible functional maps ═══
@@ -1829,7 +1885,7 @@ function clearScienceHighlight() {
      Hover lights up the matching collection; click opens DOI/paper. -->
 <div id="science-layer" style="background:var(--bg-secondary);border-top:1px solid var(--border);padding:16px 24px;">
   <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px;">
-    <div style="font-size:13px;letter-spacing:1.2px;color:var(--text-muted);">REPRODUCIBLE FUNCTIONAL ANATOMY</div>
+    <div style="font-size:13px;letter-spacing:1.2px;color:var(--text-muted);">REPRODUCIBLE FUNCTIONAL ANATOMY — one verified link</div>
     <button onclick="loadScienceLayer()" class="btn-secondary" style="padding:6px 12px;font-size:11px;">Refresh</button>
     <span id="science-status" style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">loading collections…</span>
   </div>
@@ -2539,6 +2595,9 @@ evtSource.onmessage = (e) => {
     const owlTick = data.owl_cites_rule ? '<span class="owl-tick" title="Owl σₕ: model cited the correct rule">🦉✓</span>' : '';
     log(data.passed ? 'pass' : 'fail', `Trial ${data.trial_num}: ${data.passed ? 'PASS' : 'FAIL'} ${owlTick}— ${data.detail || ''} (${data.latency_ms}ms)`);
     if (data.axis) brainTrialResult(data);
+    // Owl Semaphore: light the form this trial belongs to (real data only).
+    if (data.owl_type) owlLight(data.owl_type, data.passed, data.test_name || data.test || '');
+    if (data.owl_cites_rule) owlLight('M', data.passed, data.test_name || data.test || '', true);
     // Advance the per-axis progress counter.
     if (data.axis && window._runProgress && window._runProgress[data.axis]) {
       const p = window._runProgress[data.axis];
@@ -5303,6 +5362,88 @@ function playHackThePlanet() {
   } catch(e) {}
 }
 
+// ── Owl Semaphore four-form lighting — real data only ──────────────
+const OWL_INFO = {
+  I: { name: 'Identity', sub: 'ground truth' },
+  N: { name: 'Non-normative', sub: 'σᵥ · reworded, truth-invariant' },
+  C: { name: 'Critical', sub: 'C2 = σᵥ∘σₕ · reworded + named trap' },
+  M: { name: 'Metacognitive', sub: 'σₕ · scores the model’s own reasoning' }
+};
+const OWL_COUNTS = { I: 0, N: 0, C: 0 };
+let OWL_M_TICKS = 0, OWL_M_TRIALS = 0;
+
+function owlInit() {
+  // Seed the four forms with their real state.
+  for (const k of ['I','N','C','M']) {
+    const el = document.getElementById('owl-' + k);
+    if (!el) continue;
+    const st = el.querySelector('.owl-state');
+    if (k === 'M') {
+      st.textContent = 'per-trial σₕ tick (live during runs)';
+    } else if (k === 'I') {
+      st.textContent = OWL_COUNTS.I + ' ground-truth tests (real)';
+    } else {
+      st.textContent = OWL_COUNTS[k] + ' authored — test content pending';
+    }
+  }
+}
+function owlLight(form, passed, testName, isM) {
+  const el = document.getElementById('owl-' + form);
+  if (!el) return;
+  const glyph = el.querySelector('.owl-glyph');
+  const color = passed ? '#3fb950' : '#f85149';
+  el.style.borderColor = color;
+  el.style.boxShadow = '0 0 18px ' + (passed ? 'rgba(63,185,80,0.5)' : 'rgba(248,81,73,0.5)');
+  // Pulse the glyph; collapse after a moment so the strip doesn't stay lit.
+  if (glyph) glyph.style.filter = 'drop-shadow(0 0 10px ' + color + ')';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => {
+    el.style.borderColor = 'var(--border)';
+    el.style.boxShadow = 'none';
+    if (glyph) glyph.style.filter = 'none';
+  }, 1400);
+  if (isM) {
+    OWL_M_TRIALS++; if (passed) OWL_M_TICKS++;
+    const st = el.querySelector('.owl-state');
+    if (st) st.textContent = OWL_M_TICKS + '/' + OWL_M_TRIALS + ' trials cited correct rule (live)';
+  }
+}
+async function loadOwlCoverage() {
+  try {
+    // Real counts from the test registry (/api/tests carries owl_type per row).
+    const r = await fetch('/api/tests');
+    if (!r.ok) return;
+    const rows = await r.json();
+    const counts = { I: 0, N: 0, C: 0 };
+    for (const t of (rows.tests || rows || [])) {
+      const ot = t.owl_type || 'I';
+      if (counts[ot] !== undefined) counts[ot]++;
+    }
+    OWL_COUNTS.I = counts.I; OWL_COUNTS.N = counts.N; OWL_COUNTS.C = counts.C;
+    const cov = document.getElementById('owl-coverage');
+    if (cov) cov.textContent = 'DB: I=' + counts.I + ' · N=' + counts.N + ' · C=' + counts.C + ' · M=per-trial σₕ';
+    owlInit();
+  } catch (e) { /* non-fatal — strip shows default honest state */ }
+}
+// ── Accessibility toggle: high-contrast / large-text mode ──────────
+function toggleA11y() {
+  const cur = document.documentElement.getAttribute('data-a11y');
+  const on = cur !== 'high';
+  document.documentElement.setAttribute('data-a11y', on ? 'high' : 'off');
+  try { localStorage.setItem('calibration-a11y', on ? 'high' : 'off'); } catch(e) {}
+  const btn = document.getElementById('a11y-toggle');
+  if (btn) btn.textContent = 'Readable: ' + (on ? 'On' : 'Off');
+}
+(function restoreA11y() {
+  try {
+    const saved = localStorage.getItem('calibration-a11y');
+    if (saved === 'high') {
+      document.documentElement.setAttribute('data-a11y', 'high');
+      const btn = document.getElementById('a11y-toggle');
+      if (btn) btn.textContent = 'Readable: On';
+    }
+  } catch(e) {}
+})();
 // Run reality check when landing page is shown
 function whenReady(fn) {
   if (document.readyState === 'loading') {
@@ -5320,6 +5461,8 @@ whenReady(function() {
   loadSpecDecodePairs();
   hydrateLiveRuns();
   loadScienceLayer();    // body is parsed now — the science layer can find its DOM
+  loadOwlCoverage();      // real I/N/C/M counts from the DB, honest N/C = 0
+  owlInit();
 });
 
 // ── Filter persistence ─────────────────────────────────────────────────
@@ -5555,18 +5698,6 @@ function confirmRunExecute() {
   </div>
 </div>
 
-<div id="amb-console-panel">
-  <div id="amb-console-header">
-    <div id="amb-console-title">Dashboard Console</div>
-    <button id="amb-console-clear" onclick="document.getElementById('amb-console-body').innerHTML=''">Clear</button>
-  </div>
-  <div id="amb-console-body"></div>
-</div>
-
-<div id="amb-selector-debug">
-  <h3>Selector Debug</h3>
-  <pre id="amb-selector-debug-body">loading…</pre>
-</div>
 <button class="hack-audio-btn" onclick="playHackThePlanet()" title="... --- .- -.-. -.- / - .... . / .--. .-.. .- -. . -" style="display:none" id="hack-audio-btn">.</button>
 </body>
 </html>

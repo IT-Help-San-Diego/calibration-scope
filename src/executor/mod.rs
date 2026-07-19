@@ -70,7 +70,7 @@ fn now_iso() -> String {
 pub async fn tests_for_axis(db: &PgPool, axis: &str) -> AppResult<Vec<TestDef>> {
     let rows = sqlx::query_as::<_, TestDef>(
         r#"SELECT id, name, axis, prompt_text, attachment_path, attachment_sha3,
-                  expected_result, scoring_method, trials_per_run, formal_spec, fallacy_tag
+                  expected_result, scoring_method, trials_per_run, formal_spec, fallacy_tag, owl_type
            FROM tests WHERE active = true AND axis = $1 ORDER BY id"#,
     )
     .bind(axis)
@@ -787,6 +787,7 @@ async fn check_memory_safety(
                 "trial_num": trial_num, "passed": passed, "latency_ms": latency_ms,
                 "detail": detail, "reasoning_content": reasoning,
                 "owl_cites_rule": meta.cites_correct_rule, "at": now_iso(),
+                "owl_type": test.owl_type,
                 "completed_trials": completed_trials
             }));
         }

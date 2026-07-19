@@ -32,6 +32,7 @@ pub struct TestRow {
     pub formal_spec: Option<String>,
     pub user_action: Option<String>,
     pub fallacy_tag: Option<String>,
+    pub owl_type: String,
     pub created_at: Option<chrono::NaiveDateTime>,
     pub updated_at: Option<chrono::NaiveDateTime>,
 }
@@ -51,7 +52,7 @@ pub async fn list_tests(
     let rows = sqlx::query_as::<_, TestRow>(
         r#"SELECT id, name, axis, prompt_text, attachment_path, attachment_sha3,
                   expected_result, scoring_method, trials_per_run, active,
-                  formal_spec, user_action, fallacy_tag, created_at, updated_at
+                  formal_spec, user_action, fallacy_tag, owl_type, created_at, updated_at
            FROM tests WHERE active = true
            ORDER BY axis, id"#,
     )
@@ -70,6 +71,7 @@ pub async fn list_tests(
                 "has_attachment": t.attachment_path.is_some(),
                 "user_action": t.user_action,
                 "fallacy_tag": t.fallacy_tag,
+                "owl_type": t.owl_type,
                 "created_at": t.created_at.map(|d| d.to_string()),
             });
             if q.full {
