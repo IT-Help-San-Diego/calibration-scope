@@ -46,6 +46,10 @@ pub struct AppState {
     /// genuinely halts GPU work, so cancellation here is a real abort, not
     /// a cosmetic one).
     pub cancellations: CancellationRegistry,
+    /// Live LM Studio downloads we initiated (keyed by LM Studio job_id). The
+    /// download poller tracks these and writes real size_gb on completion.
+    /// Empty when idle → zero cost. See docs/lm-studio-api-notes.md.
+    pub active_downloads: crate::routes::download::ActiveDownloads,
     /// Live count of executing runs — gates the GPU telemetry sampler
     /// (gpu_telemetry.rs): 1Hz samples while > 0, dormant at 0.
     pub active_runs: ActiveRuns,
@@ -68,6 +72,7 @@ impl AppState {
             events_tx,
             registry_snapshot: Arc::new(RwLock::new(None)),
             cancellations: CancellationRegistry::new(),
+            active_downloads: Arc::new(tokio::sync::Mutex::new(std::collections::HashMap::new())),
             active_runs: ActiveRuns::new(),
         })
     }

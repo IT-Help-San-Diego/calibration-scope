@@ -1,6 +1,7 @@
 pub mod cloud_keys;
 pub mod cloud_sync;
 pub mod dossier;
+pub mod download;
 pub mod events;
 pub mod fountain;
 pub mod hermes_check;

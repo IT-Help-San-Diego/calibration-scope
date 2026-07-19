@@ -79,6 +79,9 @@ async fn main() {
     // Turns O(open-tabs x heavy-query per 5s) into O(1 query per 5s). See
     // routes::events::spawn_registry_refresher.
     routes::events::spawn_registry_refresher(state.clone());
+    // Download poller: tracks LM Studio downloads we initiate, writes real
+    // size_gb on completion. Idle = zero cost (see routes::download).
+    routes::download::spawn_download_poller(state.clone());
 
     let app = Router::new()
         .route("/", get(routes::index::index_handler))
@@ -121,6 +124,8 @@ async fn main() {
             get(routes::lmstudio::lmstudio_status),
         )
         .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
+        .route("/api/lmstudio/download", post(routes::download::lmstudio_download))
+        .route("/api/lmstudio/downloads", get(routes::download::list_downloads))
         .route(
             "/api/spec-decode/pairs",
             get(routes::spec_decode::spec_decode_pairs),
