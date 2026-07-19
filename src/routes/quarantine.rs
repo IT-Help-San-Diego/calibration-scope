@@ -89,7 +89,9 @@ pub async fn list_quarantined(
         builder.push(" AND tr.axis = ").push_bind(axis);
     }
     if let Some(ref reason) = params.reason {
-        builder.push(" AND tr.quarantine_reason = ").push_bind(reason);
+        builder
+            .push(" AND tr.quarantine_reason = ")
+            .push_bind(reason);
     }
 
     builder.push(" ORDER BY tr.created_at DESC");
@@ -119,11 +121,12 @@ pub async fn release_quarantined(
     Path(id): Path<i32>,
     Json(req): Json<ReleaseRequest>,
 ) -> AppResult<ResponseJson<serde_json::Value>> {
-    let existing: Option<(bool, Option<String>, Option<String>)> =
-        sqlx::query_as("SELECT quarantined, quarantine_reason, quarantine_notes FROM test_runs WHERE id = $1")
-            .bind(id)
-            .fetch_optional(&state.db)
-            .await?;
+    let existing: Option<(bool, Option<String>, Option<String>)> = sqlx::query_as(
+        "SELECT quarantined, quarantine_reason, quarantine_notes FROM test_runs WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await?;
 
     let (was_quarantined, _old_reason, old_notes) = existing.unwrap_or((false, None, None));
 

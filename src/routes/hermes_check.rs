@@ -91,7 +91,12 @@ pub async fn hermes_reality() -> AppResult<Json<serde_json::Value>> {
             let provider = yaml_str(root, &["auxiliary", task, "provider"]);
             let model = yaml_str(root, &["auxiliary", task, "model"]).filter(|m| !m.is_empty());
             let is_auto = provider.as_deref().map(|p| p == "auto").unwrap_or(true);
-            AuxSlot { task: task.to_string(), provider, model, is_auto }
+            AuxSlot {
+                task: task.to_string(),
+                provider,
+                model,
+                is_auto,
+            }
         })
         .collect();
 
@@ -101,12 +106,15 @@ pub async fn hermes_reality() -> AppResult<Json<serde_json::Value>> {
         .chain(main_model.iter())
         .chain(approvals_mode.iter())
         .map(String::as_str)
-        .chain(aux.iter().flat_map(|s| {
-            s.provider.iter().chain(s.model.iter()).map(String::as_str)
-        }))
+        .chain(
+            aux.iter()
+                .flat_map(|s| s.provider.iter().chain(s.model.iter()).map(String::as_str)),
+        )
         .collect();
     if all_values.iter().any(|v| looks_like_credential(v)) {
-        tracing::error!("hermes_reality: extracted value tripped the credential heuristic — refusing to serve");
+        tracing::error!(
+            "hermes_reality: extracted value tripped the credential heuristic — refusing to serve"
+        );
         return Err(crate::error::AppError::Executor(
             "config check refused: an extracted field looked like a credential".into(),
         ));
@@ -126,5 +134,7 @@ pub async fn hermes_reality() -> AppResult<Json<serde_json::Value>> {
 }
 
 fn dirs_home() -> std::path::PathBuf {
-    std::env::var_os("HOME").map(std::path::PathBuf::from).unwrap_or_else(|| "/".into())
+    std::env::var_os("HOME")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| "/".into())
 }

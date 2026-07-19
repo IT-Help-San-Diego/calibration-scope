@@ -206,7 +206,9 @@ pub async fn host_reality(State(state): State<AppState>) -> AppResult<Json<serde
                     "source": "GET /api/v0/models (LM Studio REST)",
                 })
             }
-            Err(_) => serde_json::json!({ "reachable": false, "base_url": state.config.lmstudio_base_url, "note": "responded but body was not parseable" }),
+            Err(_) => {
+                serde_json::json!({ "reachable": false, "base_url": state.config.lmstudio_base_url, "note": "responded but body was not parseable" })
+            }
         },
         _ => serde_json::json!({ "reachable": false, "base_url": state.config.lmstudio_base_url }),
     };

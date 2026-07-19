@@ -79,10 +79,17 @@ impl AppState {
                 Ok(pool) => return Ok(pool),
                 Err(e) => {
                     if elapsed >= max_seconds {
-                        tracing::error!("Failed to connect to database after {}s: {}", max_seconds, e);
+                        tracing::error!(
+                            "Failed to connect to database after {}s: {}",
+                            max_seconds,
+                            e
+                        );
                         return Err(AppError::Database(e));
                     }
-                    tracing::warn!("Database not ready ({}s elapsed), retrying in 2s...", elapsed);
+                    tracing::warn!(
+                        "Database not ready ({}s elapsed), retrying in 2s...",
+                        elapsed
+                    );
                     tokio::time::sleep(Duration::from_secs(2)).await;
                     elapsed += 2;
                 }

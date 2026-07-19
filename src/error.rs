@@ -40,28 +40,39 @@ impl axum::response::IntoResponse for AppError {
                 let msg = format!("Migration error: {}", e);
                 (axum::http::StatusCode::INTERNAL_SERVER_ERROR, msg)
             }
-            AppError::FileNotFound(_path) => {
-                (axum::http::StatusCode::NOT_FOUND, "File not found".to_string())
-            }
+            AppError::FileNotFound(_path) => (
+                axum::http::StatusCode::NOT_FOUND,
+                "File not found".to_string(),
+            ),
             AppError::Io(e) => {
                 tracing::error!("IO error: {}", e);
-                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "IO error".to_string())
+                (
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    "IO error".to_string(),
+                )
             }
             AppError::Json(e) => {
                 tracing::error!("JSON error: {}", e);
-                (axum::http::StatusCode::INTERNAL_SERVER_ERROR, "JSON error".to_string())
+                (
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    "JSON error".to_string(),
+                )
             }
             AppError::Http(e) => {
                 tracing::error!("HTTP client error: {}", e);
-                (axum::http::StatusCode::BAD_GATEWAY, "Upstream HTTP error".to_string())
+                (
+                    axum::http::StatusCode::BAD_GATEWAY,
+                    "Upstream HTTP error".to_string(),
+                )
             }
             AppError::Executor(msg) => {
                 tracing::error!("Executor error: {}", msg);
                 return (axum::http::StatusCode::BAD_REQUEST, msg.clone()).into_response();
             }
-            AppError::Aborted => {
-                (axum::http::StatusCode::OK, "Run aborted by operator request".to_string())
-            }
+            AppError::Aborted => (
+                axum::http::StatusCode::OK,
+                "Run aborted by operator request".to_string(),
+            ),
         };
 
         (status, message).into_response()

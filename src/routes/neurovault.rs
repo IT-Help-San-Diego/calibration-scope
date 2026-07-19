@@ -41,7 +41,9 @@ fn collections_data() -> Vec<NeuroCollection> {
         NeuroCollection {
             id: 22786,
             name: "Bayesian social and ToM reasoning".into(),
-            description: Some("Whole-brain contrasts for theory-of-mind and social Bayesian reasoning".into()),
+            description: Some(
+                "Whole-brain contrasts for theory-of-mind and social Bayesian reasoning".into(),
+            ),
             doi: Some("10.1038/s41467-026-71151-2".into()),
             paper_url: Some("https://www.nature.com/articles/s41467-026-71151-2".into()),
             image_count: 2,
@@ -49,7 +51,9 @@ fn collections_data() -> Vec<NeuroCollection> {
         NeuroCollection {
             id: 21999,
             name: "Emotional and valence-driven memory decisions".into(),
-            description: Some("Decision-making memory contrasts: negative and positive valence".into()),
+            description: Some(
+                "Decision-making memory contrasts: negative and positive valence".into(),
+            ),
             doi: Some("10.1162/IMAG.a.1213".into()),
             paper_url: Some("https://doi.org/10.1162/IMAG.a.1213".into()),
             image_count: 3,
@@ -67,68 +71,93 @@ fn collections_data() -> Vec<NeuroCollection> {
 
 fn images_data() -> std::collections::HashMap<i64, Vec<NeuroImage>> {
     let mut map = std::collections::HashMap::new();
-    map.insert(22786, vec![
-        NeuroImage {
-            id: 1023939,
-            name: "Social ToM Bayes".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/22786/glass_brain_1023939.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/22786/1023939_1.nii.gz".into()),
-        },
-        NeuroImage {
-            id: 1023941,
-            name: "Social ToM Text Bayes".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/22786/glass_brain_1023941.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/22786/1023941_1.nii.gz".into()),
-        },
-    ]);
-    map.insert(21999, vec![
-        NeuroImage {
-            id: 1011028,
-            name: "Emotional DM".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/21999/glass_brain_1011028.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/21999/1011028_1.nii.gz".into()),
-        },
-        NeuroImage {
-            id: 1011031,
-            name: "Negative DM".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/21999/glass_brain_1011031.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/21999/1011031_1.nii.gz".into()),
-        },
-        NeuroImage {
-            id: 1011032,
-            name: "Positive DM".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/21999/glass_brain_1011032.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/21999/1011032_1.nii.gz".into()),
-        },
-    ]);
-    map.insert(21877, vec![
-        NeuroImage {
-            id: 1010060,
-            name: "5HT1b".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/21877/glass_brain_1010060.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/21877/1010060_1.nii.gz".into()),
-        },
-        NeuroImage {
-            id: 1010509,
-            name: "5HT2a".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/21877/glass_brain_1010509.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/21877/1010509_1.nii.gz".into()),
-        },
-        NeuroImage {
-            id: 1010511,
-            name: "5HT4".into(),
-            map_type: "statistical map".into(),
-            thumbnail_url: Some("https://neurovault.org/media/images/21877/glass_brain_1010511.jpg".into()),
-            file_url: Some("https://neurovault.org/media/images/21877/1010511_1.nii.gz".into()),
-        },
-    ]);
+    map.insert(
+        22786,
+        vec![
+            NeuroImage {
+                id: 1023939,
+                name: "Social ToM Bayes".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/22786/glass_brain_1023939.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/22786/1023939_1.nii.gz".into()),
+            },
+            NeuroImage {
+                id: 1023941,
+                name: "Social ToM Text Bayes".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/22786/glass_brain_1023941.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/22786/1023941_1.nii.gz".into()),
+            },
+        ],
+    );
+    map.insert(
+        21999,
+        vec![
+            NeuroImage {
+                id: 1011028,
+                name: "Emotional DM".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/21999/glass_brain_1011028.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/21999/1011028_1.nii.gz".into()),
+            },
+            NeuroImage {
+                id: 1011031,
+                name: "Negative DM".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/21999/glass_brain_1011031.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/21999/1011031_1.nii.gz".into()),
+            },
+            NeuroImage {
+                id: 1011032,
+                name: "Positive DM".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/21999/glass_brain_1011032.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/21999/1011032_1.nii.gz".into()),
+            },
+        ],
+    );
+    map.insert(
+        21877,
+        vec![
+            NeuroImage {
+                id: 1010060,
+                name: "5HT1b".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/21877/glass_brain_1010060.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/21877/1010060_1.nii.gz".into()),
+            },
+            NeuroImage {
+                id: 1010509,
+                name: "5HT2a".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/21877/glass_brain_1010509.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/21877/1010509_1.nii.gz".into()),
+            },
+            NeuroImage {
+                id: 1010511,
+                name: "5HT4".into(),
+                map_type: "statistical map".into(),
+                thumbnail_url: Some(
+                    "https://neurovault.org/media/images/21877/glass_brain_1010511.jpg".into(),
+                ),
+                file_url: Some("https://neurovault.org/media/images/21877/1010511_1.nii.gz".into()),
+            },
+        ],
+    );
     map
 }
 
@@ -137,7 +166,10 @@ pub async fn neurovault_collections() -> Json<Vec<NeuroCollection>> {
 }
 
 pub async fn neurovault_images(Path(collection_id): Path<i64>) -> Json<Vec<NeuroImage>> {
-    let images = images_data().get(&collection_id).cloned().unwrap_or_default();
+    let images = images_data()
+        .get(&collection_id)
+        .cloned()
+        .unwrap_or_default();
     Json(images)
 }
 
@@ -158,6 +190,10 @@ pub async fn neurovault_manifest() -> Json<Vec<ManifestEntry>> {
             }
         }
     }
-    out.sort_by(|a, b| a.collection_id.cmp(&b.collection_id).then(a.image_id.cmp(&b.image_id)));
+    out.sort_by(|a, b| {
+        a.collection_id
+            .cmp(&b.collection_id)
+            .then(a.image_id.cmp(&b.image_id))
+    });
     Json(out)
 }

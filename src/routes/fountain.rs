@@ -74,12 +74,19 @@ pub async fn start_probe(
     State(state): State<AppState>,
     Json(req): Json<FountainReq>,
 ) -> AppResult<Json<serde_json::Value>> {
-    let n = req.requests.unwrap_or(DEFAULT_REQUESTS).clamp(1, MAX_REQUESTS);
-    let interval = req.interval_ms.unwrap_or(DEFAULT_INTERVAL_MS).max(MIN_INTERVAL_MS);
+    let n = req
+        .requests
+        .unwrap_or(DEFAULT_REQUESTS)
+        .clamp(1, MAX_REQUESTS);
+    let interval = req
+        .interval_ms
+        .unwrap_or(DEFAULT_INTERVAL_MS)
+        .max(MIN_INTERVAL_MS);
 
     if req.provider == "lmstudio" {
         return Err(AppError::Executor(
-            "Fountain probes target cloud rate limits; local models have no rate poster to test".into(),
+            "Fountain probes target cloud rate limits; local models have no rate poster to test"
+                .into(),
         ));
     }
 
@@ -109,8 +116,16 @@ pub async fn start_probe(
     let model_key = req.model_key.clone();
     let provider = req.provider.clone();
     tokio::spawn(async move {
-        if let Err(e) =
-            run_probe(&task_state, probe_id, &model_key, &provider, &key, n, interval).await
+        if let Err(e) = run_probe(
+            &task_state,
+            probe_id,
+            &model_key,
+            &provider,
+            &key,
+            n,
+            interval,
+        )
+        .await
         {
             tracing::error!("fountain probe {} failed: {}", probe_id, e);
             let _ = sqlx::query("UPDATE fountain_probes SET status = 'error' WHERE id = $1")
@@ -157,9 +172,12 @@ async fn run_probe(
     let (mut tok_in, mut tok_out) = (0i64, 0i64);
     let mut evidence = Vec::with_capacity(n as usize);
 
-    emit(state, serde_json::json!({
+    emit(
+        state,
+        serde_json::json!({
         "type":"fountain_started","probe_id":probe_id,"model_key":model_key,
-        "provider":provider,"requests_planned":n,"interval_ms":interval_ms}));
+        "provider":provider,"requests_planned":n,"interval_ms":interval_ms}),
+    );
 
     for i in 1..=n {
         let t0 = std::time::Instant::now();
@@ -228,10 +246,13 @@ async fn run_probe(
             i, status_code, ok, latency, p_tok, c_tok, retry_after
         ));
 
-        emit(state, serde_json::json!({
+        emit(
+            state,
+            serde_json::json!({
             "type":"fountain_request","probe_id":probe_id,"request_num":i,"of":n,
             "http_status":status_code,"ok":ok,"latency_ms":latency,
-            "retry_after":retry_after}));
+            "retry_after":retry_after}),
+        );
 
         if i < n {
             tokio::time::sleep(std::time::Duration::from_millis(interval_ms)).await;
@@ -244,7 +265,12 @@ async fn run_probe(
     // Seal the full per-request evidence — same provenance discipline as runs.
     let record = format!(
         "fountain_probe id={} model={} provider={} planned={} interval_ms={}\n{}",
-        probe_id, model_key, provider, n, interval_ms, evidence.join("\n")
+        probe_id,
+        model_key,
+        provider,
+        n,
+        interval_ms,
+        evidence.join("\n")
     );
     let sha3 = provenance::sha3_hex(&record);
 
@@ -270,11 +296,14 @@ async fn run_probe(
     .execute(&state.db)
     .await?;
 
-    emit(state, serde_json::json!({
+    emit(
+        state,
+        serde_json::json!({
         "type":"fountain_verdict","probe_id":probe_id,"verdict":verdict,
         "ok":ok_n,"rate_limited":limited_n,"errored":err_n,"sent":sent,
         "first_429_at_request":first_429,"duration_ms":duration,
-        "sha3": sha3}));
+        "sha3": sha3}),
+    );
 
     Ok(())
 }
@@ -298,12 +327,11 @@ pub async fn probe_detail(
     State(state): State<AppState>,
     Path(id): Path<i32>,
 ) -> AppResult<Json<serde_json::Value>> {
-    let probe: Option<serde_json::Value> = sqlx::query_scalar(
-        "SELECT to_jsonb(p) FROM fountain_probes p WHERE id = $1",
-    )
-    .bind(id)
-    .fetch_optional(&state.db)
-    .await?;
+    let probe: Option<serde_json::Value> =
+        sqlx::query_scalar("SELECT to_jsonb(p) FROM fountain_probes p WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&state.db)
+            .await?;
     let probe = probe.ok_or_else(|| AppError::Executor(format!("No probe with id {}", id)))?;
 
     let requests: Vec<serde_json::Value> = sqlx::query_scalar(
@@ -317,7 +345,9 @@ pub async fn probe_detail(
     .fetch_all(&state.db)
     .await?;
 
-    Ok(Json(serde_json::json!({ "probe": probe, "requests": requests })))
+    Ok(Json(
+        serde_json::json!({ "probe": probe, "requests": requests }),
+    ))
 }
 
 #[cfg(test)]

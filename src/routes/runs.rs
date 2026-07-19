@@ -15,7 +15,14 @@ use crate::state::AppState;
 // non-frontier / local models are reliable enough for Hermes' auxiliary
 // tasks (approval classification, MCP sampling relay) — see migration 009.
 // Deliberately kept separate from the core 4-axis capability grid.
-const VALID_AXES: [&str; 6] = ["vision", "tools", "reasoning", "security", "literary", "auxiliary"];
+const VALID_AXES: [&str; 6] = [
+    "vision",
+    "tools",
+    "reasoning",
+    "security",
+    "literary",
+    "auxiliary",
+];
 
 #[derive(Debug, Deserialize)]
 pub struct StartRunRequest {
@@ -125,24 +132,31 @@ pub async fn start_runs(
     // validation entirely (the executor's per-test vision gate still applies).
     let mut skipped_axes: Vec<(&str, String)> = Vec::new();
     if req.test_ids.is_none() {
-    axes.retain(|axis| {
-        if *axis == "vision" && !model.supports_vision {
-            skipped_axes.push((
-                axis,
-                format!("{} has no vision support (LM Studio capabilities metadata)", model.key),
-            ));
-            false
-        } else {
-            true
+        axes.retain(|axis| {
+            if *axis == "vision" && !model.supports_vision {
+                skipped_axes.push((
+                    axis,
+                    format!(
+                        "{} has no vision support (LM Studio capabilities metadata)",
+                        model.key
+                    ),
+                ));
+                false
+            } else {
+                true
+            }
+        });
+        if axes.is_empty() {
+            return Err(AppError::Executor(format!(
+                "Every requested axis was skipped as incompatible with {}: {}",
+                model.key,
+                skipped_axes
+                    .iter()
+                    .map(|(_, r)| r.as_str())
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            )));
         }
-    });
-    if axes.is_empty() {
-        return Err(AppError::Executor(format!(
-            "Every requested axis was skipped as incompatible with {}: {}",
-            model.key,
-            skipped_axes.iter().map(|(_, r)| r.as_str()).collect::<Vec<_>>().join("; ")
-        )));
-    }
     }
 
     // Refuse to stack a duplicate battery behind an identical one already
@@ -173,11 +187,16 @@ pub async fn start_runs(
 
     let load_mode = req.load_mode.unwrap_or(LoadMode::CleanRoom);
     if matches!(load_mode, LoadMode::SpeculativePair)
-        && req.draft_model_key.as_ref().map(|s| s.trim().is_empty()).unwrap_or(false) {
-            return Err(AppError::Executor(
-                "draft_model_key is required when load_mode is 'speculative-pair'".into(),
-            ));
-        }
+        && req
+            .draft_model_key
+            .as_ref()
+            .map(|s| s.trim().is_empty())
+            .unwrap_or(false)
+    {
+        return Err(AppError::Executor(
+            "draft_model_key is required when load_mode is 'speculative-pair'".into(),
+        ));
+    }
 
     let mut run_ids = Vec::new();
     // MODULAR SEGMENTS: an explicit test_ids set runs ONLY those tests
@@ -191,12 +210,10 @@ pub async fn start_runs(
         // "objective verdict, no silent failure" discipline as the axis path.
         let mut valid: Vec<i32> = Vec::new();
         for &id in ids {
-            let active: Option<bool> = sqlx::query_scalar(
-                "SELECT active FROM tests WHERE id = $1",
-            )
-            .bind(id)
-            .fetch_optional(&state.db)
-            .await?;
+            let active: Option<bool> = sqlx::query_scalar("SELECT active FROM tests WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&state.db)
+                .await?;
             match active {
                 Some(true) => valid.push(id),
                 _ => return Err(AppError::Executor(format!(
@@ -243,15 +260,17 @@ pub async fn start_runs(
     // battery. (Previously this inserted one run per test while the executor
     // still ran the full battery per run: N² executions. Fixed 2026-07-07.)
     for axis in &axes {
-        let (test_count,): (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM tests WHERE active = true AND axis = $1",
-        )
-        .bind(axis)
-        .fetch_one(&state.db)
-        .await?;
+        let (test_count,): (i64,) =
+            sqlx::query_as("SELECT COUNT(*) FROM tests WHERE active = true AND axis = $1")
+                .bind(axis)
+                .fetch_one(&state.db)
+                .await?;
 
         if test_count == 0 {
-            return Err(AppError::Executor(format!("No active tests for axis '{}'", axis)));
+            return Err(AppError::Executor(format!(
+                "No active tests for axis '{}'",
+                axis
+            )));
         }
 
         let (run_id,): (i32,) = sqlx::query_as(
@@ -339,8 +358,20 @@ fn spawn_run_task(
         // (gpu_telemetry.rs) is active and streaming gpu_sample events.
         let _telemetry = active_runs.guard();
         crate::executor::execute_run(
-            db, config, tx, cancellations, run_id, model_id, model_key, location, provider,
-            axis, load_mode, draft_model_key, scaffold_supplement, test_ids,
+            db,
+            config,
+            tx,
+            cancellations,
+            run_id,
+            model_id,
+            model_key,
+            location,
+            provider,
+            axis,
+            load_mode,
+            draft_model_key,
+            scaffold_supplement,
+            test_ids,
         )
         .await;
     });
@@ -419,7 +450,10 @@ pub async fn start_baseline_scaffold(
         if *axis == "vision" && !model.supports_vision {
             skipped_axes.push((
                 axis,
-                format!("{} has no vision support (LM Studio capabilities metadata)", model.key),
+                format!(
+                    "{} has no vision support (LM Studio capabilities metadata)",
+                    model.key
+                ),
             ));
             false
         } else {
@@ -462,7 +496,10 @@ pub async fn start_baseline_scaffold(
                 .fetch_one(&state.db)
                 .await?;
         if test_count == 0 {
-            return Err(AppError::Executor(format!("No active tests for axis '{}'", axis)));
+            return Err(AppError::Executor(format!(
+                "No active tests for axis '{}'",
+                axis
+            )));
         }
 
         // Baseline half: clean-room, NO supplement.
@@ -492,7 +529,16 @@ pub async fn start_baseline_scaffold(
         // Queue both halves. The lm_guard gate inside spawn_run_task
         // serializes local execution, so baseline runs to completion before
         // the scaffold half loads — adjacent, ordered, comparable.
-        spawn_run_task(&state, baseline_id, &model, axis.to_string(), LoadMode::CleanRoom, None, None, None);
+        spawn_run_task(
+            &state,
+            baseline_id,
+            &model,
+            axis.to_string(),
+            LoadMode::CleanRoom,
+            None,
+            None,
+            None,
+        );
         spawn_run_task(
             &state,
             scaffold_id,
@@ -657,7 +703,9 @@ pub async fn abort_run(
     axum::extract::Path(run_id): axum::extract::Path<i32>,
 ) -> AppResult<Json<serde_json::Value>> {
     let signaled = state.cancellations.cancel(run_id).await;
-    Ok(Json(serde_json::json!({ "run_id": run_id, "aborted": signaled })))
+    Ok(Json(
+        serde_json::json!({ "run_id": run_id, "aborted": signaled }),
+    ))
 }
 
 /// GET /api/runs/:id/export — the evidence bundle.
@@ -753,8 +801,14 @@ pub async fn export_run(
         .map_err(|e| AppError::Executor(format!("serialize export: {}", e)))?;
     Ok((
         [
-            (axum::http::header::CONTENT_TYPE, "application/json; charset=utf-8".to_string()),
-            (axum::http::header::CONTENT_DISPOSITION, format!("attachment; filename=\"{}\"", filename)),
+            (
+                axum::http::header::CONTENT_TYPE,
+                "application/json; charset=utf-8".to_string(),
+            ),
+            (
+                axum::http::header::CONTENT_DISPOSITION,
+                format!("attachment; filename=\"{}\"", filename),
+            ),
         ],
         body,
     )

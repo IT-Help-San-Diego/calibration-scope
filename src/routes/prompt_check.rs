@@ -63,7 +63,8 @@ pub async fn prompt_check(
             Ok((t, l, f, n)) => (t, l, f, n, true),
             Err(e) => {
                 // Overflow errors ARE the answer — surface as a normal (not 500) result.
-                let (t, l, f, n) = executor::validate_prompt_length(&q.prompt, model.context_length as i64);
+                let (t, l, f, n) =
+                    executor::validate_prompt_length(&q.prompt, model.context_length as i64);
                 return Ok(Json(serde_json::json!({
                     "model_key": q.model_key, "tokens": t, "context_limit": l, "fits": f,
                     "percent_used": if l > 0 { (t as f64 / l as f64 * 1000.0).round() / 10.0 } else { 0.0 },
@@ -77,7 +78,11 @@ pub async fn prompt_check(
         (t, l, f, n, false)
     };
 
-    let pct = if limit > 0 { (tokens as f64 / limit as f64 * 1000.0).round() / 10.0 } else { 0.0 };
+    let pct = if limit > 0 {
+        (tokens as f64 / limit as f64 * 1000.0).round() / 10.0
+    } else {
+        0.0
+    };
 
     Ok(Json(serde_json::json!({
         "model_key": q.model_key,
@@ -125,7 +130,10 @@ pub async fn prompt_check_post(
 
     // Optional image (data URL from the Prompt Builder) — build OpenAI-style
     // multimodal content so vision models receive the actual pixels.
-    let image = req.get("image").and_then(|v| v.as_str()).filter(|s| !s.is_empty());
+    let image = req
+        .get("image")
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.is_empty());
     let user_content = match image {
         Some(data_url) => {
             if !data_url.starts_with("data:image/") {
@@ -206,9 +214,17 @@ pub async fn prompt_check_post(
     // finish_reason=length with the whole budget spent on reasoning tokens.
     let no_final_answer = content.trim().is_empty();
 
-    let prompt_tokens = json.get("usage").and_then(|u| u.get("prompt_tokens")).and_then(|t| t.as_u64());
-    let completion_tokens = json.get("usage").and_then(|u| u.get("completion_tokens")).and_then(|t| t.as_u64());
-    let reasoning_tokens = json.pointer("/usage/completion_tokens_details/reasoning_tokens").and_then(|t| t.as_u64());
+    let prompt_tokens = json
+        .get("usage")
+        .and_then(|u| u.get("prompt_tokens"))
+        .and_then(|t| t.as_u64());
+    let completion_tokens = json
+        .get("usage")
+        .and_then(|u| u.get("completion_tokens"))
+        .and_then(|t| t.as_u64());
+    let reasoning_tokens = json
+        .pointer("/usage/completion_tokens_details/reasoning_tokens")
+        .and_then(|t| t.as_u64());
     let latency_ms = started.elapsed().as_millis() as i64;
 
     // Persist to history — every run is evidence (user request 2026-07-08:
@@ -273,7 +289,8 @@ pub async fn prompt_history(
     .bind(limit)
     .fetch_all(&state.db)
     .await?;
-    Ok(Json(serde_json::json!({ "history": rows.iter().map(|r| serde_json::json!({
+    Ok(Json(
+        serde_json::json!({ "history": rows.iter().map(|r| serde_json::json!({
         "id": r.id,
         "model_key": r.model_key,
         "prompt": r.prompt,
@@ -287,7 +304,8 @@ pub async fn prompt_history(
         "reasoning_tokens": r.reasoning_tokens,
         "latency_ms": r.latency_ms,
         "created_at": r.created_at.to_string(),
-    })).collect::<Vec<_>>() })))
+    })).collect::<Vec<_>>() }),
+    ))
 }
 
 #[derive(Debug, Deserialize)]

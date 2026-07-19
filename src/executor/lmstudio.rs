@@ -82,7 +82,10 @@ pub async fn eject_all(client: &Client, base_url: &str) -> AppResult<Vec<String>
 /// Inspect current loaded instances and return (model_key, instance_id)
 /// pairs for every resident instance. Used by speculative-pair mode to
 /// verify both primary and draft models are loaded simultaneously.
-pub async fn list_loaded_instances(client: &Client, base_url: &str) -> AppResult<Vec<(String, String)>> {
+pub async fn list_loaded_instances(
+    client: &Client,
+    base_url: &str,
+) -> AppResult<Vec<(String, String)>> {
     let resp = client
         .get(format!("{}/api/v1/models", base_url))
         .send()
@@ -93,7 +96,11 @@ pub async fn list_loaded_instances(client: &Client, base_url: &str) -> AppResult
     let mut out = Vec::new();
     if let Some(models) = v.get("models").and_then(|m| m.as_array()) {
         for m in models {
-            let key = m.get("key").and_then(|i| i.as_str()).or_else(|| m.get("id").and_then(|i| i.as_str())).unwrap_or("");
+            let key = m
+                .get("key")
+                .and_then(|i| i.as_str())
+                .or_else(|| m.get("id").and_then(|i| i.as_str()))
+                .unwrap_or("");
             if let Some(instances) = m.get("loaded_instances").and_then(|i| i.as_array()) {
                 for inst in instances {
                     if let Some(iid) = inst.get("id").and_then(|i| i.as_str()) {
@@ -121,7 +128,11 @@ pub async fn fetch_instance_config(
     let v: serde_json::Value = resp.json().await?;
     if let Some(models) = v.get("models").and_then(|m| m.as_array()) {
         for m in models {
-            let key = m.get("key").and_then(|i| i.as_str()).or_else(|| m.get("id").and_then(|i| i.as_str())).unwrap_or("");
+            let key = m
+                .get("key")
+                .and_then(|i| i.as_str())
+                .or_else(|| m.get("id").and_then(|i| i.as_str()))
+                .unwrap_or("");
             if key != model_key {
                 continue;
             }
@@ -150,12 +161,17 @@ pub async fn ensure_pair_loaded(
     // Prevent duplicate-instance bloat from repeated runs. Only one
     // resident instance per model key is needed for a clean pair.
     for target in [primary_key, draft_key] {
-        let instances = list_loaded_instances(client, base_url).await?
+        let instances = list_loaded_instances(client, base_url)
+            .await?
             .into_iter()
             .filter(|(k, _)| k == target)
             .collect::<Vec<_>>();
         if instances.len() > 1 {
-            tracing::warn!("ensure_pair_loaded: unloading duplicates for {} found={:?}", target, instances);
+            tracing::warn!(
+                "ensure_pair_loaded: unloading duplicates for {} found={:?}",
+                target,
+                instances
+            );
             for (_, iid) in &instances[1..] {
                 let _ = client
                     .post(format!("{}/api/v1/models/unload", base_url))
@@ -174,7 +190,11 @@ pub async fn ensure_pair_loaded(
         .filter(|(k, _)| k == primary_key)
         .collect::<Vec<_>>();
     if primary_instances.is_empty() {
-        tracing::warn!("ensure_pair_loaded: loading primary {} with draft={}", primary_key, draft_key);
+        tracing::warn!(
+            "ensure_pair_loaded: loading primary {} with draft={}",
+            primary_key,
+            draft_key
+        );
         let mut payload = serde_json::json!({
             "model": primary_key,
             "context_length": 131072,
@@ -185,10 +205,10 @@ pub async fn ensure_pair_loaded(
             "offload_kv_cache_to_gpu": true,
         });
         if !draft_key.is_empty() {
-            payload
-                .as_object_mut()
-                .unwrap()
-                .insert("speculative_draft_model".into(), serde_json::json!(draft_key));
+            payload.as_object_mut().unwrap().insert(
+                "speculative_draft_model".into(),
+                serde_json::json!(draft_key),
+            );
             payload
                 .as_object_mut()
                 .unwrap()
@@ -201,10 +221,10 @@ pub async fn ensure_pair_loaded(
                 .as_object_mut()
                 .unwrap()
                 .insert("speculative_draft_min_tokens".into(), serde_json::json!(0));
-            payload
-                .as_object_mut()
-                .unwrap()
-                .insert("speculative_draft_min_continue_probability".into(), serde_json::json!(0.75));
+            payload.as_object_mut().unwrap().insert(
+                "speculative_draft_min_continue_probability".into(),
+                serde_json::json!(0.75),
+            );
         }
         let resp = client
             .post(format!("{}/api/v1/models/load", base_url))
@@ -221,7 +241,11 @@ pub async fn ensure_pair_loaded(
             )));
         }
     } else if primary_instances.len() > 1 {
-        tracing::warn!("ensure_pair_loaded: unloading duplicate primary {} found={:?}", primary_key, primary_instances);
+        tracing::warn!(
+            "ensure_pair_loaded: unloading duplicate primary {} found={:?}",
+            primary_key,
+            primary_instances
+        );
         for (_, iid) in &primary_instances[1..] {
             let _ = client
                 .post(format!("{}/api/v1/models/unload", base_url))
@@ -246,7 +270,11 @@ pub async fn ensure_pair_loaded(
             .send()
             .await;
     } else if draft_instances.len() > 1 {
-        tracing::warn!("ensure_pair_loaded: unloading duplicate draft {} found={:?}", draft_key, draft_instances);
+        tracing::warn!(
+            "ensure_pair_loaded: unloading duplicate draft {} found={:?}",
+            draft_key,
+            draft_instances
+        );
         for (_, iid) in &draft_instances[1..] {
             let _ = client
                 .post(format!("{}/api/v1/models/unload", base_url))
@@ -268,8 +296,14 @@ pub async fn ensure_pair_loaded(
             Err(_) => String::new(),
         };
         let loaded = list_loaded_instances(client, base_url).await?;
-        let primary_inst = loaded.iter().find(|(k, _)| *k == primary_key).map(|(_, iid)| iid.clone());
-        let draft_inst = loaded.iter().find(|(k, _)| *k == draft_key).map(|(_, iid)| iid.clone());
+        let primary_inst = loaded
+            .iter()
+            .find(|(k, _)| *k == primary_key)
+            .map(|(_, iid)| iid.clone());
+        let draft_inst = loaded
+            .iter()
+            .find(|(k, _)| *k == draft_key)
+            .map(|(_, iid)| iid.clone());
 
         tracing::warn!(
             target: "pair_poll",
@@ -347,7 +381,10 @@ pub async fn ensure_loaded(
     let explicit_load_ok = matches!(&load_resp, Ok(r) if r.status().is_success());
     if !explicit_load_ok {
         // Fallback: a 1-token chat probe triggers LM Studio's JIT loader.
-        tracing::warn!("Explicit load failed for {}; falling back to JIT probe", model_key);
+        tracing::warn!(
+            "Explicit load failed for {}; falling back to JIT probe",
+            model_key
+        );
         let probe = client
             .post(format!("{}/api/v0/chat/completions", base_url))
             .json(&serde_json::json!({

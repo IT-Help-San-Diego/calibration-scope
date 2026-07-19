@@ -33,7 +33,9 @@ const REFRESH_INTERVAL: Duration = Duration::from_secs(5);
 /// fetch so the two paths can never disagree.
 /// Local models are always runnable here — LM Studio residency is checked at
 /// run time, not sync time; that's a different, cheaper class of "can run."
-pub fn annotate_runnable(models: Vec<crate::models::model_entry::ModelEntry>) -> Vec<serde_json::Value> {
+pub fn annotate_runnable(
+    models: Vec<crate::models::model_entry::ModelEntry>,
+) -> Vec<serde_json::Value> {
     models
         .into_iter()
         .map(|m| {

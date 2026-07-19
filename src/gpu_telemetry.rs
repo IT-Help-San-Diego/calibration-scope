@@ -80,9 +80,7 @@ pub async fn sample() -> Option<GpuSample> {
         return None;
     }
     let raw = String::from_utf8_lossy(&out.stdout);
-    let perf = raw
-        .lines()
-        .find(|l| l.contains("PerformanceStatistics"))?;
+    let perf = raw.lines().find(|l| l.contains("PerformanceStatistics"))?;
     Some(GpuSample {
         device_util_pct: stat(perf, "Device Utilization %"),
         renderer_util_pct: stat(perf, "Renderer Utilization %"),

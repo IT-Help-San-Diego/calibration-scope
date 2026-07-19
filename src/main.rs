@@ -1,17 +1,17 @@
 mod config;
-mod error;
-mod state;
-mod models;
 mod db;
-mod routes;
+mod error;
 mod executor;
 mod gpu_telemetry;
 mod lm_guard;
+mod models;
+mod routes;
+mod state;
 
-use config::Config;
-use state::AppState;
 use axum::routing::{get, post};
 use axum::Router;
+use config::Config;
+use state::AppState;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
 
@@ -34,7 +34,11 @@ async fn main() {
     routes::cloud_keys::load_keys_to_env();
 
     let config = Config::from_env();
-    tracing::info!("Starting Calibration Scope Dashboard on {}:{}", config.listen_addr, config.listen_port);
+    tracing::info!(
+        "Starting Calibration Scope Dashboard on {}:{}",
+        config.listen_addr,
+        config.listen_port
+    );
 
     let state = AppState::new(config.clone())
         .await
@@ -53,7 +57,10 @@ async fn main() {
     .await
     {
         Ok(r) if r.rows_affected() > 0 => {
-            tracing::warn!("Reaped {} orphaned run(s) from a previous process", r.rows_affected())
+            tracing::warn!(
+                "Reaped {} orphaned run(s) from a previous process",
+                r.rows_affected()
+            )
         }
         Ok(_) => {}
         Err(e) => tracing::error!("Orphan-run reaper failed: {}", e),
@@ -77,38 +84,101 @@ async fn main() {
         .route("/api/status", get(routes::status::status_handler))
         .route("/api/summary", get(routes::summary::summary_handler))
         .route("/api/models", get(routes::models::models_handler))
-        .route("/api/models/{key}/dossier", get(routes::dossier::model_dossier))
+        .route(
+            "/api/models/{key}/dossier",
+            get(routes::dossier::model_dossier),
+        )
         .route("/api/events", get(routes::events::sse_handler))
-        .route("/api/runs", get(routes::runs::list_runs).post(routes::runs::start_runs))
-        .route("/api/runs/baseline-scaffold", post(routes::runs::start_baseline_scaffold))
+        .route(
+            "/api/runs",
+            get(routes::runs::list_runs).post(routes::runs::start_runs),
+        )
+        .route(
+            "/api/runs/baseline-scaffold",
+            post(routes::runs::start_baseline_scaffold),
+        )
         .route("/api/runs/{id}", get(routes::runs::get_run_detail))
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
         .route("/api/runs/{id}/export", get(routes::runs::export_run))
-        .route("/api/prompt-check", get(routes::prompt_check::prompt_check).post(routes::prompt_check::prompt_check_post))
-        .route("/api/prompt-history", get(routes::prompt_check::prompt_history))
+        .route(
+            "/api/prompt-check",
+            get(routes::prompt_check::prompt_check).post(routes::prompt_check::prompt_check_post),
+        )
+        .route(
+            "/api/prompt-history",
+            get(routes::prompt_check::prompt_history),
+        )
         .route("/api/loot", get(routes::loot::loot_handler))
         .route("/api/router/plan", get(routes::router::router_plan))
         .route("/api/host/reality", get(routes::host::host_reality))
-        .route("/api/hermes/reality", get(routes::hermes_check::hermes_reality))
-        .route("/api/lmstudio/status", get(routes::lmstudio::lmstudio_status))
+        .route(
+            "/api/hermes/reality",
+            get(routes::hermes_check::hermes_reality),
+        )
+        .route(
+            "/api/lmstudio/status",
+            get(routes::lmstudio::lmstudio_status),
+        )
         .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
-        .route("/api/spec-decode/pairs", get(routes::spec_decode::spec_decode_pairs))
-        .route("/api/spec-decode/test", post(routes::spec_decode::spec_decode_test))
-        .route("/api/tests", get(routes::tests::list_tests).post(routes::tests::create_test))
-        .route("/api/tests/{id}", axum::routing::put(routes::tests::update_test))
-        .route("/api/model-insights/{key}", get(routes::insights::model_insights))
+        .route(
+            "/api/spec-decode/pairs",
+            get(routes::spec_decode::spec_decode_pairs),
+        )
+        .route(
+            "/api/spec-decode/test",
+            post(routes::spec_decode::spec_decode_test),
+        )
+        .route(
+            "/api/tests",
+            get(routes::tests::list_tests).post(routes::tests::create_test),
+        )
+        .route(
+            "/api/tests/{id}",
+            axum::routing::put(routes::tests::update_test),
+        )
+        .route(
+            "/api/model-insights/{key}",
+            get(routes::insights::model_insights),
+        )
         .route("/api/cloud-keys", get(routes::cloud_keys::list_keys))
-        .route("/api/cloud/sync", axum::routing::post(routes::cloud_sync::cloud_sync))
-        .route("/api/cloud-keys/{provider}", post(routes::cloud_keys::set_key).delete(routes::cloud_keys::delete_key))
-        .route("/api/tests/{id}/duplicate", post(routes::tests::duplicate_test))
-        .route("/api/fountain", get(routes::fountain::list_probes).post(routes::fountain::start_probe))
+        .route(
+            "/api/cloud/sync",
+            axum::routing::post(routes::cloud_sync::cloud_sync),
+        )
+        .route(
+            "/api/cloud-keys/{provider}",
+            post(routes::cloud_keys::set_key).delete(routes::cloud_keys::delete_key),
+        )
+        .route(
+            "/api/tests/{id}/duplicate",
+            post(routes::tests::duplicate_test),
+        )
+        .route(
+            "/api/fountain",
+            get(routes::fountain::list_probes).post(routes::fountain::start_probe),
+        )
         .route("/api/fountain/{id}", get(routes::fountain::probe_detail))
         .route("/api/quarantine", get(routes::quarantine::list_quarantined))
-        .route("/api/quarantine/{id}/release", post(routes::quarantine::release_quarantined))
-        .route("/api/quarantine/{id}/notes", post(routes::quarantine::append_notes))
-        .route("/api/neurovault/collections", get(routes::neurovault::neurovault_collections))
-        .route("/api/neurovault/images/{collection_id}", get(routes::neurovault::neurovault_images))
-        .route("/api/neurovault/manifest", get(routes::neurovault::neurovault_manifest))
+        .route(
+            "/api/quarantine/{id}/release",
+            post(routes::quarantine::release_quarantined),
+        )
+        .route(
+            "/api/quarantine/{id}/notes",
+            post(routes::quarantine::append_notes),
+        )
+        .route(
+            "/api/neurovault/collections",
+            get(routes::neurovault::neurovault_collections),
+        )
+        .route(
+            "/api/neurovault/images/{collection_id}",
+            get(routes::neurovault::neurovault_images),
+        )
+        .route(
+            "/api/neurovault/manifest",
+            get(routes::neurovault::neurovault_manifest),
+        )
         .nest_service("/assets", static_files)
         // 16MB body cap: a 10MB image (Prompt Builder max) is ~13.7MB as base64.
         .layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024))
@@ -119,7 +189,10 @@ async fn main() {
         .await
         .expect("Failed to bind listener");
 
-    tracing::info!("Listening on {}", listener.local_addr().expect("listener has a local addr"));
+    tracing::info!(
+        "Listening on {}",
+        listener.local_addr().expect("listener has a local addr")
+    );
     // Graceful shutdown: launchd sends SIGTERM on unload/kickstart. Draining
     // in-flight HTTP (incl. open SSE streams) instead of dropping mid-write;
     // the startup reaper covers any executor tasks cut off by the exit.

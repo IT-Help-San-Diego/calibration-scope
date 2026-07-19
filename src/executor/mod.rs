@@ -7,8 +7,8 @@
 //! verdict → SHA3-512 provenance → persist.
 pub mod cloud;
 pub mod lmstudio;
-pub mod scoring;
 pub mod provenance;
+pub mod scoring;
 
 use base64::Engine;
 use sqlx::PgPool;
@@ -194,7 +194,12 @@ fn build_messages(
 /// trials did complete so partial evidence is still sealed.
 /// Currently unused — kept for future partial-run recovery scenarios.
 #[allow(dead_code)]
-async fn recompute_run_sha3(db: &PgPool, run_id: i32, model_key: &str, axis: &str) -> Option<String> {
+async fn recompute_run_sha3(
+    db: &PgPool,
+    run_id: i32,
+    model_key: &str,
+    axis: &str,
+) -> Option<String> {
     let rows = sqlx::query_as::<_, (String,)>(
         r#"SELECT COALESCE(reasoning_content, '') || ' ' || COALESCE(raw_response, '')
            FROM trial_results
@@ -222,7 +227,12 @@ async fn recompute_run_sha3(db: &PgPool, run_id: i32, model_key: &str, axis: &st
     let real_total_count = total_count;
     let evidence_record = format!(
         "run_id={} model={} axis={} pass={}/{}\n{}",
-        run_id, model_key, axis, pass_count, real_total_count, evidence_lines.join("\n")
+        run_id,
+        model_key,
+        axis,
+        pass_count,
+        real_total_count,
+        evidence_lines.join("\n")
     );
     Some(provenance::sha3_hex(&evidence_record))
 }
@@ -251,8 +261,20 @@ pub async fn execute_run(
     let result = tokio::time::timeout(
         std::time::Duration::from_secs(RUN_BUDGET_SECS),
         execute_run_inner(
-            &db, &config, &tx, &cancel_token, run_id, model_id, &model_key, &location, &provider,
-            &axis, load_mode, draft_model_key, scaffold_supplement, test_ids,
+            &db,
+            &config,
+            &tx,
+            &cancel_token,
+            run_id,
+            model_id,
+            &model_key,
+            &location,
+            &provider,
+            &axis,
+            load_mode,
+            draft_model_key,
+            scaffold_supplement,
+            test_ids,
         ),
     )
     .await
@@ -360,10 +382,13 @@ async fn execute_run_inner(
         .bind(run_id)
         .execute(db)
         .await?;
-    emit(tx, serde_json::json!({
-        "type": "run_started", "run_id": run_id, "model_key": model_key,
-        "axis": axis, "location": location, "at": now_iso()
-    }));
+    emit(
+        tx,
+        serde_json::json!({
+            "type": "run_started", "run_id": run_id, "model_key": model_key,
+            "axis": axis, "location": location, "at": now_iso()
+        }),
+    );
 
     // ── Trials ─────────────────────────────────────────────────────────────
     // ejection, model load, each chat call) races against cancel_token so an
@@ -380,122 +405,139 @@ async fn execute_run_inner(
         };
     }
 
-/// Estimate the RAM cost of loading a model. For models with a speculative-
-/// decoding draft model configured, BOTH the main and draft model must fit —
-/// loading them together is what caused the 2026-07-09 kernel watchdog panic
-/// (gemma-4-31b ~22GB + gemma-4-12b-qat draft ~6GB + background downloads +
-/// Docker → 94-second hang → forced reboot). This guard ensures the benchmark
-/// never crashes someone's machine, which is core to the mission: this tool
-/// is designed to help people on constrained hardware.
-async fn check_memory_safety(
-    db: &PgPool,
-    tx: &broadcast::Sender<String>,
-    run_id: i32,
-    model_id: i32,
-    model_key: &str,
-) -> AppResult<()> {
-    // Get the model's size from the DB (size_gb, optional — some models lack it)
-    let model_size_gb: Option<f64> =
-        sqlx::query_scalar("SELECT size_gb FROM models WHERE id = $1")
-            .bind(model_id)
-            .fetch_optional(db)
-            .await?;
+    /// Estimate the RAM cost of loading a model. For models with a speculative-
+    /// decoding draft model configured, BOTH the main and draft model must fit —
+    /// loading them together is what caused the 2026-07-09 kernel watchdog panic
+    /// (gemma-4-31b ~22GB + gemma-4-12b-qat draft ~6GB + background downloads +
+    /// Docker → 94-second hang → forced reboot). This guard ensures the benchmark
+    /// never crashes someone's machine, which is core to the mission: this tool
+    /// is designed to help people on constrained hardware.
+    async fn check_memory_safety(
+        db: &PgPool,
+        tx: &broadcast::Sender<String>,
+        run_id: i32,
+        model_id: i32,
+        model_key: &str,
+    ) -> AppResult<()> {
+        // Get the model's size from the DB (size_gb, optional — some models lack it)
+        let model_size_gb: Option<f64> =
+            sqlx::query_scalar("SELECT size_gb FROM models WHERE id = $1")
+                .bind(model_id)
+                .fetch_optional(db)
+                .await?;
 
-    // Read available memory from macOS vm_stat.
-    // free + inactive + purgeable pages are reclaimable; we need the model
-    // to fit with a safety margin so the system doesn't thrash.
-    let page_size = 16384usize; // macOS arm64 default
-    let vm_stat = std::process::Command::new("vm_stat")
-        .output()
-        .map_err(|e| AppError::Executor(format!("Cannot read vm_stat: {}", e)))?;
-    let vm_text = String::from_utf8_lossy(&vm_stat.stdout);
+        // Read available memory from macOS vm_stat.
+        // free + inactive + purgeable pages are reclaimable; we need the model
+        // to fit with a safety margin so the system doesn't thrash.
+        let page_size = 16384usize; // macOS arm64 default
+        let vm_stat = std::process::Command::new("vm_stat")
+            .output()
+            .map_err(|e| AppError::Executor(format!("Cannot read vm_stat: {}", e)))?;
+        let vm_text = String::from_utf8_lossy(&vm_stat.stdout);
 
-    let mut free_pages: u64 = 0;
-    let mut inactive_pages: u64 = 0;
-    let mut purgeable_pages: u64 = 0;
-    for line in vm_text.lines() {
-        if let Some(rest) = line.strip_prefix("Pages free:") {
-            free_pages = rest.trim().trim_end_matches('.').parse().unwrap_or(0);
-        } else if let Some(rest) = line.strip_prefix("Pages inactive:") {
-            inactive_pages = rest.trim().trim_end_matches('.').parse().unwrap_or(0);
-        } else if let Some(rest) = line.strip_prefix("Pages purgeable:") {
-            purgeable_pages = rest.trim().trim_end_matches('.').parse().unwrap_or(0);
+        let mut free_pages: u64 = 0;
+        let mut inactive_pages: u64 = 0;
+        let mut purgeable_pages: u64 = 0;
+        for line in vm_text.lines() {
+            if let Some(rest) = line.strip_prefix("Pages free:") {
+                free_pages = rest.trim().trim_end_matches('.').parse().unwrap_or(0);
+            } else if let Some(rest) = line.strip_prefix("Pages inactive:") {
+                inactive_pages = rest.trim().trim_end_matches('.').parse().unwrap_or(0);
+            } else if let Some(rest) = line.strip_prefix("Pages purgeable:") {
+                purgeable_pages = rest.trim().trim_end_matches('.').parse().unwrap_or(0);
+            }
         }
-    }
 
-    let available_bytes = (free_pages + inactive_pages + purgeable_pages) as usize * page_size;
-    let available_gb = available_bytes as f64 / 1_073_741_824.0;
+        let available_bytes = (free_pages + inactive_pages + purgeable_pages) as usize * page_size;
+        let available_gb = available_bytes as f64 / 1_073_741_824.0;
 
-    // If we know the model size from LM Studio sync, use it.
-    // Otherwise estimate from the model's total bytes on disk if available.
-    // As a fallback, refuse if free memory is very low regardless.
-    if let Some(model_gb) = model_size_gb {
-        // Speculative-decoding models load a draft model too — estimate 25%
-        // overhead for the draft (conservative; the actual draft is usually
-        // much smaller, but we'd rather over-provision than panic).
-        let estimated_gb = model_gb * 1.25;
-        let safety_margin_gb = 8.0; // leave headroom for OS + apps + inference
-        let needed_gb = estimated_gb + safety_margin_gb;
+        // If we know the model size from LM Studio sync, use it.
+        // Otherwise estimate from the model's total bytes on disk if available.
+        // As a fallback, refuse if free memory is very low regardless.
+        if let Some(model_gb) = model_size_gb {
+            // Speculative-decoding models load a draft model too — estimate 25%
+            // overhead for the draft (conservative; the actual draft is usually
+            // much smaller, but we'd rather over-provision than panic).
+            let estimated_gb = model_gb * 1.25;
+            let safety_margin_gb = 8.0; // leave headroom for OS + apps + inference
+            let needed_gb = estimated_gb + safety_margin_gb;
 
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "memory_check",
-            "message": format!(
-                "Memory check: {} needs ~{:.1} GB (model {:.1} + 25% spec-decode overhead + 8 GB safety), available: {:.1} GB",
-                model_key, needed_gb, model_gb, available_gb
-            ),
-            "at": now_iso()
-        }));
+            emit(
+                tx,
+                serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "memory_check",
+                    "message": format!(
+                        "Memory check: {} needs ~{:.1} GB (model {:.1} + 25% spec-decode overhead + 8 GB safety), available: {:.1} GB",
+                        model_key, needed_gb, model_gb, available_gb
+                    ),
+                    "at": now_iso()
+                }),
+            );
 
-        if available_gb < needed_gb {
-            return Err(AppError::Executor(format!(
+            if available_gb < needed_gb {
+                return Err(AppError::Executor(format!(
                 "MEMORY GUARD: Refusing to load {} — estimated {:.1} GB needed (model {:.1} GB + draft overhead + 8 GB safety) \
                  but only {:.1} GB available. Loading this model now could destabilize the system. \
                  Close background applications, pause model downloads, or use a smaller quant.",
                 model_key, needed_gb, model_gb, available_gb
             )));
-        }
-    } else {
-        // No size data — still refuse if the system is critically low on memory.
-        if available_gb < 12.0 {
-            return Err(AppError::Executor(format!(
+            }
+        } else {
+            // No size data — still refuse if the system is critically low on memory.
+            if available_gb < 12.0 {
+                return Err(AppError::Executor(format!(
                 "MEMORY GUARD: Only {:.1} GB available — refusing to load {} without sufficient free memory. \
                  Close background applications and try again.",
                 available_gb, model_key
             )));
+            }
+            emit(
+                tx,
+                serde_json::json!({
+                    "type": "phase", "run_id": run_id, "phase": "memory_check",
+                    "message": format!("Memory check: {:.1} GB available (model size unknown, using minimum guard)", available_gb),
+                    "at": now_iso()
+                }),
+            );
         }
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "memory_check",
-            "message": format!("Memory check: {:.1} GB available (model size unknown, using minimum guard)", available_gb),
-            "at": now_iso()
-        }));
-    }
 
-    Ok(())
-}
+        Ok(())
+    }
 
     // ── Local-model prep ────────────────────────────────────────────────
     if location == "local" {
         match load_mode {
-            crate::routes::runs::LoadMode::CleanRoom | crate::routes::runs::LoadMode::Scaffolded => {
-                emit(tx, serde_json::json!({
-                    "type": "phase", "run_id": run_id, "phase": "ejecting",
-                    "model_key": model_key,
-                    "message": "Clean room: ejecting all loaded models from LM Studio", "at": now_iso()
-                }));
-                let ejected = cancellable!(lmstudio::eject_all(&client, &config.lmstudio_base_url))?;
-                emit(tx, serde_json::json!({
-                    "type": "phase", "run_id": run_id, "phase": "ejected",
-                    "model_key": model_key,
-                    "message": format!("Ejected {} instance(s): {:?}", ejected.len(), ejected), "at": now_iso()
-                }));
+            crate::routes::runs::LoadMode::CleanRoom
+            | crate::routes::runs::LoadMode::Scaffolded => {
+                emit(
+                    tx,
+                    serde_json::json!({
+                        "type": "phase", "run_id": run_id, "phase": "ejecting",
+                        "model_key": model_key,
+                        "message": "Clean room: ejecting all loaded models from LM Studio", "at": now_iso()
+                    }),
+                );
+                let ejected =
+                    cancellable!(lmstudio::eject_all(&client, &config.lmstudio_base_url))?;
+                emit(
+                    tx,
+                    serde_json::json!({
+                        "type": "phase", "run_id": run_id, "phase": "ejected",
+                        "model_key": model_key,
+                        "message": format!("Ejected {} instance(s): {:?}", ejected.len(), ejected), "at": now_iso()
+                    }),
+                );
 
                 check_memory_safety(db, tx, run_id, model_id, model_key).await?;
 
-                emit(tx, serde_json::json!({
-                    "type": "phase", "run_id": run_id, "phase": "loading",
-                    "model_key": model_key,
-                    "message": format!("Loading {} — watch LM Studio's server tab", model_key), "at": now_iso()
-                }));
+                emit(
+                    tx,
+                    serde_json::json!({
+                        "type": "phase", "run_id": run_id, "phase": "loading",
+                        "model_key": model_key,
+                        "message": format!("Loading {} — watch LM Studio's server tab", model_key), "at": now_iso()
+                    }),
+                );
                 let load_start = std::time::Instant::now();
                 let resident = cancellable!(lmstudio::ensure_loaded(
                     &client,
@@ -509,32 +551,40 @@ async fn check_memory_safety(
                         model_key
                     )));
                 }
-                emit(tx, serde_json::json!({
-                    "type": "phase", "run_id": run_id, "phase": "resident",
-                    "model_key": model_key,
-                    "message": format!("{} verified resident in RAM ({}s load)", model_key, load_start.elapsed().as_secs()),
-                    "at": now_iso()
-                }));
+                emit(
+                    tx,
+                    serde_json::json!({
+                        "type": "phase", "run_id": run_id, "phase": "resident",
+                        "model_key": model_key,
+                        "message": format!("{} verified resident in RAM ({}s load)", model_key, load_start.elapsed().as_secs()),
+                        "at": now_iso()
+                    }),
+                );
             }
             crate::routes::runs::LoadMode::SpeculativePair => {
                 let draft_key = draft_model_key.as_ref().ok_or_else(|| {
                     AppError::Executor("speculative-pair mode requires draft_model_key".into())
                 })?;
 
-                emit(tx, serde_json::json!({
-                    "type": "phase", "run_id": run_id, "phase": "pair_loading",
-                    "model_key": model_key,
-                    "draft_key": draft_key,
-                    "message": format!("Speculative pair: loading {} + {}", model_key, draft_key), "at": now_iso()
-                }));
+                emit(
+                    tx,
+                    serde_json::json!({
+                        "type": "phase", "run_id": run_id, "phase": "pair_loading",
+                        "model_key": model_key,
+                        "draft_key": draft_key,
+                        "message": format!("Speculative pair: loading {} + {}", model_key, draft_key), "at": now_iso()
+                    }),
+                );
 
                 let draft_model_id = sqlx::query_scalar::<_, Option<i32>>(
-                    "SELECT id FROM models WHERE key = $1 AND active = true"
+                    "SELECT id FROM models WHERE key = $1 AND active = true",
                 )
                 .bind(draft_key)
                 .fetch_optional(db)
                 .await?
-                .ok_or_else(|| AppError::Executor(format!("Unknown draft model key: {}", draft_key)))?;
+                .ok_or_else(|| {
+                    AppError::Executor(format!("Unknown draft model key: {}", draft_key))
+                })?;
 
                 check_memory_safety(db, tx, run_id, model_id, model_key).await?;
                 if let Some(draft_id) = draft_model_id {
@@ -552,15 +602,12 @@ async fn check_memory_safety(
                 ))?;
                 progress(run_id, "pair_load_done");
 
-                let lmstudio_config_json = lmstudio::fetch_instance_config(
-                    &client,
-                    &config.lmstudio_base_url,
-                    model_key,
-                )
-                .await
-                .ok()
-                .flatten()
-                .and_then(|v| serde_json::to_string(&v).ok());
+                let lmstudio_config_json =
+                    lmstudio::fetch_instance_config(&client, &config.lmstudio_base_url, model_key)
+                        .await
+                        .ok()
+                        .flatten()
+                        .and_then(|v| serde_json::to_string(&v).ok());
 
                 let _ = sqlx::query(
                     "UPDATE test_runs SET draft_model_key = $1, lmstudio_runtime_config = COALESCE($2, lmstudio_runtime_config) WHERE id = $3"
@@ -571,12 +618,15 @@ async fn check_memory_safety(
                 .execute(db)
                 .await;
 
-                emit(tx, serde_json::json!({
-                    "type": "phase", "run_id": run_id, "phase": "pair_resident",
-                    "message": format!("Pair verified resident in RAM ({}s load): {} + {}",
-                        pair_load_start.elapsed().as_secs(), model_key, draft_key),
-                    "at": now_iso()
-                }));
+                emit(
+                    tx,
+                    serde_json::json!({
+                        "type": "phase", "run_id": run_id, "phase": "pair_resident",
+                        "message": format!("Pair verified resident in RAM ({}s load): {} + {}",
+                            pair_load_start.elapsed().as_secs(), model_key, draft_key),
+                        "at": now_iso()
+                    }),
+                );
                 progress(run_id, "pair_resident_emitted");
             }
         }
@@ -584,8 +634,17 @@ async fn check_memory_safety(
 
     // ── Progress log helper ──────────────────────────────────────────────
     fn progress(run_id: i32, msg: &str) {
-        let line = format!("{} run={} {}\n", chrono::Utc::now().to_rfc3339(), run_id, msg);
-        let _ = std::fs::OpenOptions::new().create(true).append(true).open("/tmp/progress.log").and_then(|mut f| std::io::Write::write_all(&mut f, line.as_bytes()));
+        let line = format!(
+            "{} run={} {}\n",
+            chrono::Utc::now().to_rfc3339(),
+            run_id,
+            msg
+        );
+        let _ = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("/tmp/progress.log")
+            .and_then(|mut f| std::io::Write::write_all(&mut f, line.as_bytes()));
     }
 
     // ── Trials ─────────────────────────────────────────────────────────────
@@ -640,11 +699,14 @@ async fn check_memory_safety(
         .iter()
         .map(|t| t.trials_per_run.unwrap_or(3).max(1))
         .sum();
-    emit(tx, serde_json::json!({
-        "type": "run_plan", "run_id": run_id, "axis": axis,
-        "total_tests": tests.len() as i32,
-        "total_trials": total_trials, "at": now_iso()
-    }));
+    emit(
+        tx,
+        serde_json::json!({
+            "type": "run_plan", "run_id": run_id, "axis": axis,
+            "total_tests": tests.len() as i32,
+            "total_trials": total_trials, "at": now_iso()
+        }),
+    );
 
     sqlx::query("UPDATE test_runs SET status = 'running' WHERE id = $1")
         .bind(run_id)
@@ -660,10 +722,13 @@ async fn check_memory_safety(
 
     for test in &tests {
         let n_trials = test.trials_per_run.unwrap_or(3).max(1);
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "trial",
-            "message": format!("Test '{}' — {} trial(s)", test.name, n_trials), "at": now_iso()
-        }));
+        emit(
+            tx,
+            serde_json::json!({
+                "type": "phase", "run_id": run_id, "phase": "trial",
+                "message": format!("Test '{}' — {} trial(s)", test.name, n_trials), "at": now_iso()
+            }),
+        );
 
         let messages = build_messages(test, &config.project_root, scaffold_supplement.as_deref())?;
 
@@ -678,13 +743,16 @@ async fn check_memory_safety(
             // corresponding region for the ENTIRE trial duration — not just
             // a blip at the end. The dashboard uses this to start a
             // sustained glow that stays lit until trial_result arrives.
-            emit(tx, serde_json::json!({
-                "type": "trial_start", "run_id": run_id, "test": test.name,
-                "axis": test.axis, "trial_num": trial_num,
-                "formal_spec": test.formal_spec,
-                "test_name": test.name,
-                "at": now_iso()
-            }));
+            emit(
+                tx,
+                serde_json::json!({
+                    "type": "trial_start", "run_id": run_id, "test": test.name,
+                    "axis": test.axis, "trial_num": trial_num,
+                    "formal_spec": test.formal_spec,
+                    "test_name": test.name,
+                    "at": now_iso()
+                }),
+            );
             let outcome = match location {
                 "local" => {
                     cancellable!(lmstudio::chat(
@@ -710,15 +778,29 @@ async fn check_memory_safety(
                     // keys rotate on the order of hours.
                     let key = cloud::resolve_api_key(provider, config_key)?;
                     if provider == "gemini" {
-                        cancellable!(cloud::gemini_chat(&client, &key, model_key, &messages, 1024))
+                        cancellable!(cloud::gemini_chat(
+                            &client, &key, model_key, &messages, 1024
+                        ))
                     } else {
-                        cancellable!(cloud::chat(&client, provider, &key, model_key, &messages, 1024))
+                        cancellable!(cloud::chat(
+                            &client, provider, &key, model_key, &messages, 1024
+                        ))
                     }
                 }
             };
 
             total_count += 1;
-            let (passed, latency_ms, raw, reasoning, mut detail, is_infra_error, ptok, ctok, spec_decode) = match outcome {
+            let (
+                passed,
+                latency_ms,
+                raw,
+                reasoning,
+                mut detail,
+                is_infra_error,
+                ptok,
+                ctok,
+                spec_decode,
+            ) = match outcome {
                 Ok(o) => {
                     let expected = test.expected_result.as_deref().unwrap_or("");
                     let score = scoring::score_response(&o.content, expected, &test.scoring_method);
@@ -734,7 +816,17 @@ async fn check_memory_safety(
                         o.speculative_decode,
                     )
                 }
-                Err(e) => (false, -1, String::new(), None, format!("execution error: {}", e), true, None, None, None),
+                Err(e) => (
+                    false,
+                    -1,
+                    String::new(),
+                    None,
+                    format!("execution error: {}", e),
+                    true,
+                    None,
+                    None,
+                    None,
+                ),
             };
             let mut is_infra_error = is_infra_error;
             if !is_infra_error && raw.trim().is_empty() {
@@ -820,15 +912,18 @@ async fn check_memory_safety(
             });
 
             completed_trials += 1;
-            emit(tx, serde_json::json!({
-                "type": "trial_result", "run_id": run_id, "test": test.name,
-                "axis": test.axis,
-                "trial_num": trial_num, "passed": passed, "latency_ms": latency_ms,
-                "detail": detail, "reasoning_content": reasoning,
-                "owl_cites_rule": meta.cites_correct_rule, "at": now_iso(),
-                "owl_type": test.owl_type,
-                "completed_trials": completed_trials
-            }));
+            emit(
+                tx,
+                serde_json::json!({
+                    "type": "trial_result", "run_id": run_id, "test": test.name,
+                    "axis": test.axis,
+                    "trial_num": trial_num, "passed": passed, "latency_ms": latency_ms,
+                    "detail": detail, "reasoning_content": reasoning,
+                    "owl_cites_rule": meta.cites_correct_rule, "at": now_iso(),
+                    "owl_type": test.owl_type,
+                    "completed_trials": completed_trials
+                }),
+            );
         }
     }
 
@@ -862,25 +957,34 @@ async fn check_memory_safety(
         )));
     }
     if infra_error_count > 0 {
-        emit(tx, serde_json::json!({
-            "type": "phase", "run_id": run_id, "phase": "scoring",
-            "message": format!(
-                "{} of {} trials were infrastructure errors (excluded from the capability score, not counted as failures)",
-                infra_error_count, total_count
-            ),
-            "at": now_iso()
-        }));
+        emit(
+            tx,
+            serde_json::json!({
+                "type": "phase", "run_id": run_id, "phase": "scoring",
+                "message": format!(
+                    "{} of {} trials were infrastructure errors (excluded from the capability score, not counted as failures)",
+                    infra_error_count, total_count
+                ),
+                "at": now_iso()
+            }),
+        );
     }
     // Shadow total_count with the corrected (infra-excluded) denominator —
     // everything downstream (verdict, pass_rate stored on test_runs,
     // evidence record) must agree on what was actually tested.
     let total_count = real_total_count;
 
-    progress(run_id, &format!("scoring_start pass={} total={}", pass_count, total_count));
-    emit(tx, serde_json::json!({
-        "type": "phase", "run_id": run_id, "phase": "scoring",
-        "message": format!("Scoring: {}/{} trials passed", pass_count, total_count), "at": now_iso()
-    }));
+    progress(
+        run_id,
+        &format!("scoring_start pass={} total={}", pass_count, total_count),
+    );
+    emit(
+        tx,
+        serde_json::json!({
+            "type": "phase", "run_id": run_id, "phase": "scoring",
+            "message": format!("Scoring: {}/{} trials passed", pass_count, total_count), "at": now_iso()
+        }),
+    );
     progress(run_id, "scoring_emitted");
 
     // Verdict vocabulary lives in ONE place: models::verdict. Partial passes
@@ -890,7 +994,11 @@ async fn check_memory_safety(
 
     let evidence_record = format!(
         "run_id={} model={} axis={} pass={}/{}\n{}",
-        run_id, model_key, axis, pass_count, total_count,
+        run_id,
+        model_key,
+        axis,
+        pass_count,
+        total_count,
         evidence_lines.join("\n")
     );
     let sha3 = provenance::sha3_hex(&evidence_record);
@@ -929,14 +1037,20 @@ async fn check_memory_safety(
     .execute(db)
     .await?;
 
-    emit(tx, serde_json::json!({
-        "type": "verdict", "run_id": run_id, "overall": verdict,
-        "pass_count": pass_count, "total_count": total_count, "at": now_iso()
-    }));
-    emit(tx, serde_json::json!({
-        "type": "run_complete", "run_id": run_id, "overall": verdict,
-        "sha3": sha3, "at": now_iso()
-    }));
+    emit(
+        tx,
+        serde_json::json!({
+            "type": "verdict", "run_id": run_id, "overall": verdict,
+            "pass_count": pass_count, "total_count": total_count, "at": now_iso()
+        }),
+    );
+    emit(
+        tx,
+        serde_json::json!({
+            "type": "run_complete", "run_id": run_id, "overall": verdict,
+            "sha3": sha3, "at": now_iso()
+        }),
+    );
 
     Ok(())
 }
@@ -1004,13 +1118,22 @@ pub async fn verify_prompt_length_live(
         .get("usage")
         .and_then(|u| u.get("prompt_tokens"))
         .and_then(|t| t.as_i64())
-        .ok_or_else(|| AppError::Executor("LM Studio response had no usage.prompt_tokens".to_string()))?;
+        .ok_or_else(|| {
+            AppError::Executor("LM Studio response had no usage.prompt_tokens".to_string())
+        })?;
 
     let fits = exact <= context_limit;
-    let pct = if context_limit > 0 { (exact as f64 / context_limit as f64 * 100.0).round() as i64 } else { 0 };
+    let pct = if context_limit > 0 {
+        (exact as f64 / context_limit as f64 * 100.0).round() as i64
+    } else {
+        0
+    };
     let note = format!(
         "{} tokens EXACT (live LM Studio count) / {} ctx window ({}%) — {}",
-        exact, context_limit, pct, if fits { "FITS" } else { "OVERFLOW" }
+        exact,
+        context_limit,
+        pct,
+        if fits { "FITS" } else { "OVERFLOW" }
     );
     Ok((exact, context_limit, fits, note))
 }

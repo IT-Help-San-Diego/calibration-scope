@@ -82,7 +82,11 @@ fn context_from_entry(entry: &serde_json::Value) -> i64 {
     entry
         .get("context_length")
         .and_then(|v| v.as_i64())
-        .or_else(|| entry.pointer("/top_provider/context_length").and_then(|v| v.as_i64()))
+        .or_else(|| {
+            entry
+                .pointer("/top_provider/context_length")
+                .and_then(|v| v.as_i64())
+        })
         .unwrap_or(0)
 }
 
@@ -420,7 +424,10 @@ pub async fn cloud_sync(State(state): State<AppState>) -> AppResult<Json<CloudSy
     // Registry mutated — push a fresh snapshot to every open SSE connection
     // immediately (same contract as lmstudio_sync; grid updates with zero
     // frontend fetch-back).
-    if providers.iter().any(|p| p.models_added + p.models_updated > 0) {
+    if providers
+        .iter()
+        .any(|p| p.models_added + p.models_updated > 0)
+    {
         if let Some(json) = crate::routes::events::registry_envelope(&state, "refresh").await {
             let _ = state.events_tx.send(json); // Err = no subscribers; fine.
         }

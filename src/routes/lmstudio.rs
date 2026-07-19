@@ -93,19 +93,22 @@ async fn fetch_lmstudio_models(client: &Client, base_url: &str) -> AppResult<Vec
             tracing::error!("LM Studio request failed: {:?}", e);
             AppError::Executor(format!("Request failed: {}", e))
         })?;
-    
+
     let status = resp.status();
     if !status.is_success() {
         let body = resp.text().await.unwrap_or_default();
         tracing::error!("LM Studio returned HTTP {}: {}", status, body);
-        return Err(AppError::Executor(format!("LM Studio HTTP {}: {}", status, body)));
+        return Err(AppError::Executor(format!(
+            "LM Studio HTTP {}: {}",
+            status, body
+        )));
     }
-    
+
     let json: LsModelsResponse = resp.json().await.map_err(|e| {
         tracing::error!("Failed to parse LM Studio response: {:?}", e);
         AppError::Executor(format!("Parse error: {}", e))
     })?;
-    
+
     tracing::info!("LM Studio returned {} models", json.data.len());
     Ok(json.data)
 }
@@ -179,7 +182,11 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
     let lm_models = match fetch_lmstudio_models(&client, base_url).await {
         Ok(m) => m,
         Err(e) => {
-            tracing::error!("Failed to fetch LM Studio models from {}: {:?}", base_url, e);
+            tracing::error!(
+                "Failed to fetch LM Studio models from {}: {:?}",
+                base_url,
+                e
+            );
             return Err(AppError::Executor(format!("Upstream HTTP error: {}", e)));
         }
     };
@@ -195,9 +202,8 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
     // same underlying filename `Step-3.7-Flash-UD-Q3_K_M-00001-of-00003.gguf`.
     // If we insert both, they become duplicate local cards/rows. Normalize by
     // filename so sync is idempotent and newest-bots shows one entry per GGUF.
-    let gguf_filename_for = |id: &str| -> String {
-      id.rsplit('/').next().unwrap_or(id).to_string()
-    };
+    let gguf_filename_for =
+        |id: &str| -> String { id.rsplit('/').next().unwrap_or(id).to_string() };
 
     // Existing active registry rows by lmstudio_key.
     let existing_by_key: HashMap<String, i32> = sqlx::query_as::<_, (String, i32)>(
@@ -237,7 +243,8 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
         let supports_vision = lm.model_type.as_deref() == Some("vlm");
 
         // Prefer existing row by exact key, then by GGUF filename.
-        let existing_id = existing_by_key.get(key)
+        let existing_id = existing_by_key
+            .get(key)
             .or_else(|| existing_by_file.get(&file))
             .copied();
 
@@ -247,14 +254,28 @@ pub async fn lmstudio_sync(State(state): State<AppState>) -> AppResult<Json<Sync
             .as_ref()
             .map(|(k, _, _, _, _, _, _)| {
                 let ck = gguf_filename_for(k);
-                if ck.contains('/') { k.clone() } else { key.clone() }
+                if ck.contains('/') {
+                    k.clone()
+                } else {
+                    key.clone()
+                }
             })
             .unwrap_or_else(|| key.clone());
 
-        let final_key = if canonical_key.contains('/') { canonical_key } else { key.clone() };
+        let final_key = if canonical_key.contains('/') {
+            canonical_key
+        } else {
+            key.clone()
+        };
         let final_context = canonical
             .as_ref()
-            .and_then(|(_, ctx, _, _, _, _, _)| if ctx > &0 { Some(*ctx as i64) } else { lm.max_context_length })
+            .and_then(|(_, ctx, _, _, _, _, _)| {
+                if ctx > &0 {
+                    Some(*ctx as i64)
+                } else {
+                    lm.max_context_length
+                }
+            })
             .or(lm.max_context_length)
             .and_then(|v| if v > 0 { Some(v) } else { None })
             .map(i32::try_from)

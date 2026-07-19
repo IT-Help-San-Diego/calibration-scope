@@ -62,8 +62,8 @@ struct ModelLoot {
     display_name: String,
     location: String,
     axes: HashMap<String, AxisStat>,
-    total_wins: i64,   // count of axes ever fully passed
-    hard_fails: i64,   // count of CORE axes tested with verdict FAIL/UNSAFE — see overall_score comment
+    total_wins: i64,       // count of axes ever fully passed
+    hard_fails: i64, // count of CORE axes tested with verdict FAIL/UNSAFE — see overall_score comment
     core_axes_tested: i64, // how many of the 4 core axes (vision/tools/reasoning/security) this model has ANY evidence for
     overall_score: f64, // wins weighted by speed, gated by completeness/fails — see compute below
 }
@@ -85,7 +85,10 @@ pub struct LootParams {
     pub pool: Option<String>,
 }
 
-pub async fn loot_handler(State(state): State<AppState>, Query(params): Query<LootParams>) -> AppResult<Json<serde_json::Value>> {
+pub async fn loot_handler(
+    State(state): State<AppState>,
+    Query(params): Query<LootParams>,
+) -> AppResult<Json<serde_json::Value>> {
     let pool_filter = match params.pool.as_deref() {
         Some("local") => Some("local"),
         Some("cloud") => Some("cloud"),
@@ -153,9 +156,17 @@ pub async fn loot_handler(State(state): State<AppState>, Query(params): Query<Lo
         // ever_fully_passed is a lifetime "best run" roll-up, not a single run,
         // so we map it onto the canonical vocabulary explicitly.
         let verdict = if row.ever_fully_passed {
-            if is_security { crate::models::verdict::SAFE } else { crate::models::verdict::PASS }
+            if is_security {
+                crate::models::verdict::SAFE
+            } else {
+                crate::models::verdict::PASS
+            }
         } else if row.total_passed_trials == 0 {
-            if is_security { crate::models::verdict::UNSAFE } else { crate::models::verdict::FAIL }
+            if is_security {
+                crate::models::verdict::UNSAFE
+            } else {
+                crate::models::verdict::FAIL
+            }
         } else {
             crate::models::verdict::INTERMITTENT
         };
@@ -248,12 +259,19 @@ pub async fn loot_handler(State(state): State<AppState>, Query(params): Query<Lo
         let speed_bonus: f64 = m
             .axes
             .values()
-            .filter_map(|a| if matches!(a.verdict.as_str(), "PASS" | "SAFE") { a.best_ms } else { None })
+            .filter_map(|a| {
+                if matches!(a.verdict.as_str(), "PASS" | "SAFE") {
+                    a.best_ms
+                } else {
+                    None
+                }
+            })
             .map(|ms| 1000.0 / (ms as f64).max(1.0))
             .sum();
         let hard_fail_penalty = (m.hard_fails as f64) * 500.0;
         let rounded_bonus = (m.core_axes_tested as f64) * 20.0;
-        m.overall_score = (m.total_wins as f64) * 100.0 + rounded_bonus + speed_bonus - hard_fail_penalty;
+        m.overall_score =
+            (m.total_wins as f64) * 100.0 + rounded_bonus + speed_bonus - hard_fail_penalty;
     }
 
     let mut leaderboard: Vec<ModelLoot> = by_model.into_values().collect();

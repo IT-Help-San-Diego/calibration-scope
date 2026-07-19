@@ -9,10 +9,7 @@
 //! semantics). Speculative decoding requires BOTH models resident. This
 //! module bypasses the executor and talks directly to LM Studio's own
 //! /v1/chat/completions endpoint, then restores config afterward.
-use axum::{
-    extract::State,
-    response::Json,
-};
+use axum::{extract::State, response::Json};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::Duration;
@@ -78,8 +75,7 @@ pub struct TimingRun {
 
 // config scanning
 
-const LMSTUDIO_CONFIG_DIR: &str =
-    ".lmstudio/.internal/user-concrete-model-default-config";
+const LMSTUDIO_CONFIG_DIR: &str = ".lmstudio/.internal/user-concrete-model-default-config";
 
 fn scan_draft_pairs() -> Vec<SpecPair> {
     let home = PathBuf::from(std::env::var("HOME").unwrap_or_default());
@@ -98,7 +94,12 @@ fn scan_draft_pairs() -> Vec<SpecPair> {
         if path.extension().and_then(|s| s.to_str()) != Some("json") {
             continue;
         }
-        if path.file_name().and_then(|s| s.to_str()).map(|n| n.ends_with(".json.bak")) == Some(true) {
+        if path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .map(|n| n.ends_with(".json.bak"))
+            == Some(true)
+        {
             continue;
         }
 
@@ -123,7 +124,11 @@ fn scan_draft_pairs() -> Vec<SpecPair> {
                                     == Some("llm.load.llama.speculativeDecoding.draftMtp")
                                     && f2.get("value") == Some(&serde_json::json!(true))
                             });
-                            draft_source = if mtp { DraftSource::Mtp } else { DraftSource::Simple };
+                            draft_source = if mtp {
+                                DraftSource::Mtp
+                            } else {
+                                DraftSource::Simple
+                            };
                         }
                     }
                 }
@@ -158,9 +163,7 @@ fn normalize_for_match(s: &str) -> String {
     let no_pub = lower.split('/').next_back().unwrap_or(&lower);
     let no_ext = no_pub.strip_suffix(".gguf").unwrap_or(no_pub);
     let no_ext = no_ext.strip_suffix(".gguf.bak").unwrap_or(no_ext);
-    no_ext
-        .replace("@", "-")
-        .replace(".", "-")
+    no_ext.replace("@", "-").replace(".", "-")
 }
 
 async fn fetch_ls_models(base_url: &str) -> AppResult<Vec<serde_json::Value>> {
@@ -181,7 +184,11 @@ async fn fetch_ls_models(base_url: &str) -> AppResult<Vec<serde_json::Value>> {
     }
 
     let json: serde_json::Value = resp.json().await?;
-    Ok(json.get("data").and_then(|d| d.as_array()).cloned().unwrap_or_default())
+    Ok(json
+        .get("data")
+        .and_then(|d| d.as_array())
+        .cloned()
+        .unwrap_or_default())
 }
 
 // endpoints
@@ -202,8 +209,12 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
             for pair in &mut pairs {
                 let main_norm = normalize_for_match(&pair.main_model);
                 let draft_norm = normalize_for_match(&pair.draft_model);
-                let main_loaded = loaded_ids.iter().any(|id| normalize_for_match(id) == main_norm);
-                let draft_loaded = loaded_ids.iter().any(|id| normalize_for_match(id) == draft_norm);
+                let main_loaded = loaded_ids
+                    .iter()
+                    .any(|id| normalize_for_match(id) == main_norm);
+                let draft_loaded = loaded_ids
+                    .iter()
+                    .any(|id| normalize_for_match(id) == draft_norm);
 
                 pair.main_loaded = main_loaded;
                 pair.draft_loaded = draft_loaded;
@@ -211,7 +222,10 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
                 pair.reason = if main_loaded && draft_loaded {
                     None
                 } else if !main_loaded {
-                    Some(format!("Main model not loaded (LM Studio has: {})", loaded_ids.join(", ")))
+                    Some(format!(
+                        "Main model not loaded (LM Studio has: {})",
+                        loaded_ids.join(", ")
+                    ))
                 } else {
                     Some("Draft model not loaded".to_string())
                 };
@@ -292,7 +306,12 @@ pub async fn spec_decode_test(
     }))
 }
 
-async fn run_timing(base_url: &str, model: &str, prompt: &str, max_tokens: u32) -> AppResult<TimingRun> {
+async fn run_timing(
+    base_url: &str,
+    model: &str,
+    prompt: &str,
+    max_tokens: u32,
+) -> AppResult<TimingRun> {
     let payload = serde_json::json!({
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
@@ -321,9 +340,19 @@ async fn run_timing(base_url: &str, model: &str, prompt: &str, max_tokens: u32) 
     let result: serde_json::Value = resp.json().await?;
     let usage = result.get("usage").cloned().unwrap_or_default();
 
-    let completion_tokens = usage.get("completion_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
-    let total_tokens = usage.get("total_tokens").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
-    let tokens_per_sec = if elapsed > 0.0 { completion_tokens as f64 / elapsed } else { 0.0 };
+    let completion_tokens = usage
+        .get("completion_tokens")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0) as u32;
+    let total_tokens = usage
+        .get("total_tokens")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0) as u32;
+    let tokens_per_sec = if elapsed > 0.0 {
+        completion_tokens as f64 / elapsed
+    } else {
+        0.0
+    };
 
     Ok(TimingRun {
         elapsed_secs: elapsed,
@@ -340,15 +369,19 @@ async fn run_without_draft(
     max_tokens: u32,
 ) -> AppResult<TimingRun> {
     let home = PathBuf::from(std::env::var("HOME").unwrap_or_default());
-    let config_path = home.join(LMSTUDIO_CONFIG_DIR).join(format!("{}.json", model));
+    let config_path = home
+        .join(LMSTUDIO_CONFIG_DIR)
+        .join(format!("{}.json", model));
 
     let original_config = std::fs::read_to_string(&config_path).map_err(|e| {
-        AppError::Executor(format!("Failed to read LM Studio config for {}: {}", model, e))
+        AppError::Executor(format!(
+            "Failed to read LM Studio config for {}: {}",
+            model, e
+        ))
     })?;
 
-    let mut cfg: serde_json::Value = serde_json::from_str(&original_config).map_err(|e| {
-        AppError::Executor(format!("Failed to parse config: {}", e))
-    })?;
+    let mut cfg: serde_json::Value = serde_json::from_str(&original_config)
+        .map_err(|e| AppError::Executor(format!("Failed to parse config: {}", e)))?;
 
     if let Some(load) = cfg.get_mut("load") {
         if let Some(fields) = load.get_mut("fields").and_then(|f| f.as_array_mut()) {
@@ -359,13 +392,11 @@ async fn run_without_draft(
         }
     }
 
-    let temp_config = serde_json::to_string_pretty(&cfg).map_err(|e| {
-        AppError::Executor(format!("Failed to serialize temp config: {}", e))
-    })?;
+    let temp_config = serde_json::to_string_pretty(&cfg)
+        .map_err(|e| AppError::Executor(format!("Failed to serialize temp config: {}", e)))?;
 
-    std::fs::write(&config_path, &temp_config).map_err(|e| {
-        AppError::Executor(format!("Failed to write temp config: {}", e))
-    })?;
+    std::fs::write(&config_path, &temp_config)
+        .map_err(|e| AppError::Executor(format!("Failed to write temp config: {}", e)))?;
 
     let result = run_timing(base_url, model, prompt, max_tokens).await;
 
@@ -373,4 +404,3 @@ async fn run_without_draft(
 
     result
 }
-

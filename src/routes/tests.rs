@@ -85,11 +85,27 @@ pub async fn list_tests(
         })
         .collect();
 
-    Ok(Json(serde_json::json!({ "tests": tests, "count": tests.len() })))
+    Ok(Json(
+        serde_json::json!({ "tests": tests, "count": tests.len() }),
+    ))
 }
 
-const VALID_AXES: [&str; 6] = ["vision", "tools", "reasoning", "security", "literary", "auxiliary"];
-const VALID_SCORING: [&str; 6] = ["exact", "substring", "spatial", "nested_tool", "security", "regex"];
+const VALID_AXES: [&str; 6] = [
+    "vision",
+    "tools",
+    "reasoning",
+    "security",
+    "literary",
+    "auxiliary",
+];
+const VALID_SCORING: [&str; 6] = [
+    "exact",
+    "substring",
+    "spatial",
+    "nested_tool",
+    "security",
+    "regex",
+];
 
 fn validate(axis: &str, scoring: &str) -> Option<String> {
     if !VALID_AXES.contains(&axis) {
@@ -113,50 +129,96 @@ pub async fn create_test(
     State(state): State<AppState>,
     axum::extract::Json(req): axum::extract::Json<serde_json::Value>,
 ) -> AppResult<Json<serde_json::Value>> {
-    let Some(name) = req.get("name").and_then(|v| v.as_str()).filter(|s| !s.trim().is_empty()) else {
+    let Some(name) = req
+        .get("name")
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.trim().is_empty())
+    else {
         return Ok(Json(serde_json::json!({ "error": "Missing name" })));
     };
     let Some(axis) = req.get("axis").and_then(|v| v.as_str()) else {
         return Ok(Json(serde_json::json!({ "error": "Missing axis" })));
     };
-    let Some(prompt_text) = req.get("prompt_text").and_then(|v| v.as_str()).filter(|s| !s.trim().is_empty()) else {
+    let Some(prompt_text) = req
+        .get("prompt_text")
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.trim().is_empty())
+    else {
         return Ok(Json(serde_json::json!({ "error": "Missing prompt_text" })));
     };
-    let Some(expected) = req.get("expected_result").and_then(|v| v.as_str()).filter(|s| !s.trim().is_empty()) else {
-        return Ok(Json(serde_json::json!({ "error": "Missing expected_result — a test without ground truth can't be scored objectively" })));
+    let Some(expected) = req
+        .get("expected_result")
+        .and_then(|v| v.as_str())
+        .filter(|s| !s.trim().is_empty())
+    else {
+        return Ok(Json(
+            serde_json::json!({ "error": "Missing expected_result — a test without ground truth can't be scored objectively" }),
+        ));
     };
-    let scoring = req.get("scoring_method").and_then(|v| v.as_str()).unwrap_or("exact");
+    let scoring = req
+        .get("scoring_method")
+        .and_then(|v| v.as_str())
+        .unwrap_or("exact");
     if let Some(msg) = validate(axis, scoring) {
         return Ok(Json(serde_json::json!({ "error": msg })));
     }
     // Owl Semaphore epistemic role (V4 operationalization). Defaults to 'I'
     // (ground truth). Non-identity forms MUST cite their root + transform.
-    let owl_type = req.get("owl_type").and_then(|v| v.as_str()).filter(|s| {
-        matches!(*s, "I" | "N" | "C" | "M")
-    }).unwrap_or("I").to_string();
-    let owl_root_id = req.get("owl_root_id").and_then(|v| v.as_i64()).map(|v| v as i32);
-    let owl_transform = req.get("owl_transform").and_then(|v| v.as_str()).map(|s| s.to_string());
-    let owl_flaw = req.get("owl_flaw").and_then(|v| v.as_str()).map(|s| s.to_string());
-    let formal_spec = req.get("formal_spec").and_then(|v| v.as_str()).map(|s| s.to_string());
+    let owl_type = req
+        .get("owl_type")
+        .and_then(|v| v.as_str())
+        .filter(|s| matches!(*s, "I" | "N" | "C" | "M"))
+        .unwrap_or("I")
+        .to_string();
+    let owl_root_id = req
+        .get("owl_root_id")
+        .and_then(|v| v.as_i64())
+        .map(|v| v as i32);
+    let owl_transform = req
+        .get("owl_transform")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    let owl_flaw = req
+        .get("owl_flaw")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    let formal_spec = req
+        .get("formal_spec")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
     // Constraint parity with migration 036 (owl_type_check / owl_root_consistency /
     // owl_n_completeness / owl_c_completeness) — enforced server-side so the
     // authoring API can't silently produce an invalid owl row.
     if owl_type != "I" && owl_root_id.is_none() {
-        return Ok(Json(serde_json::json!({ "error": "Non-Identity owl (N/C/M) requires owl_root_id pointing at its ground-truth Identity test." })));
+        return Ok(Json(
+            serde_json::json!({ "error": "Non-Identity owl (N/C/M) requires owl_root_id pointing at its ground-truth Identity test." }),
+        ));
     }
     if owl_type == "N" && owl_transform.is_none() {
-        return Ok(Json(serde_json::json!({ "error": "owl_type 'N' requires owl_transform (what changed at the surface)." })));
+        return Ok(Json(
+            serde_json::json!({ "error": "owl_type 'N' requires owl_transform (what changed at the surface)." }),
+        ));
     }
     if owl_type == "C" && (owl_transform.is_none() || owl_flaw.is_none()) {
-        return Ok(Json(serde_json::json!({ "error": "owl_type 'C' requires BOTH owl_transform and owl_flaw (the named trap)." })));
+        return Ok(Json(
+            serde_json::json!({ "error": "owl_type 'C' requires BOTH owl_transform and owl_flaw (the named trap)." }),
+        ));
     }
     // Guard against ground truth leaking into the prompt itself (answer leakage).
-    if prompt_text.to_lowercase().contains(&expected.to_lowercase()) && expected.len() > 3 {
+    if prompt_text
+        .to_lowercase()
+        .contains(&expected.to_lowercase())
+        && expected.len() > 3
+    {
         return Ok(Json(serde_json::json!({
             "error": "Answer leakage: expected_result appears verbatim inside prompt_text. A valid test never contains its own answer."
         })));
     }
-    let trials = req.get("trials_per_run").and_then(|v| v.as_i64()).unwrap_or(3).clamp(1, 10) as i32;
+    let trials = req
+        .get("trials_per_run")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(3)
+        .clamp(1, 10) as i32;
 
     let (id,): (i32,) = sqlx::query_as(
         r#"INSERT INTO tests (name, axis, prompt_text, expected_result, scoring_method, trials_per_run, active, owl_type, owl_root_id, owl_transform, owl_flaw, formal_spec)
@@ -176,8 +238,16 @@ pub async fn create_test(
     .fetch_one(&state.db)
     .await?;
 
-    tracing::info!("Test created: id={} name={} axis={} owl_type={}", id, name, axis, owl_type);
-    Ok(Json(serde_json::json!({ "id": id, "name": name, "axis": axis, "created": true, "owl_type": owl_type })))
+    tracing::info!(
+        "Test created: id={} name={} axis={} owl_type={}",
+        id,
+        name,
+        axis,
+        owl_type
+    );
+    Ok(Json(
+        serde_json::json!({ "id": id, "name": name, "axis": axis, "created": true, "owl_type": owl_type }),
+    ))
 }
 
 pub async fn update_test(
@@ -190,15 +260,19 @@ pub async fn update_test(
         .fetch_optional(&state.db)
         .await?;
     if exists.is_none() {
-        return Ok(Json(serde_json::json!({ "error": format!("No test with id {}", id) })));
+        return Ok(Json(
+            serde_json::json!({ "error": format!("No test with id {}", id) }),
+        ));
     }
 
     // Deactivation is its own fast path (soft delete — runs keep their FK).
     if req.get("active").and_then(|v| v.as_bool()) == Some(false) {
-        sqlx::query("UPDATE tests SET active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1")
-            .bind(id)
-            .execute(&state.db)
-            .await?;
+        sqlx::query(
+            "UPDATE tests SET active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1",
+        )
+        .bind(id)
+        .execute(&state.db)
+        .await?;
         tracing::info!("Test {} deactivated", id);
         return Ok(Json(serde_json::json!({ "id": id, "deactivated": true })));
     }
@@ -217,46 +291,75 @@ pub async fn update_test(
     let mut updated = Vec::new();
     if let Some(v) = req.get("name").and_then(|v| v.as_str()) {
         sqlx::query("UPDATE tests SET name = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2")
-            .bind(v).bind(id).execute(&state.db).await?;
+            .bind(v)
+            .bind(id)
+            .execute(&state.db)
+            .await?;
         updated.push("name");
     }
     if let Some(v) = req.get("axis").and_then(|v| v.as_str()) {
         if !VALID_AXES.contains(&v) {
-            return Ok(Json(serde_json::json!({ "error": format!("Invalid axis '{}'", v) })));
+            return Ok(Json(
+                serde_json::json!({ "error": format!("Invalid axis '{}'", v) }),
+            ));
         }
         sqlx::query("UPDATE tests SET axis = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2")
-            .bind(v).bind(id).execute(&state.db).await?;
+            .bind(v)
+            .bind(id)
+            .execute(&state.db)
+            .await?;
         updated.push("axis");
     }
     if let Some(v) = req.get("prompt_text").and_then(|v| v.as_str()) {
-        sqlx::query("UPDATE tests SET prompt_text = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2")
-            .bind(v).bind(id).execute(&state.db).await?;
+        sqlx::query(
+            "UPDATE tests SET prompt_text = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        )
+        .bind(v)
+        .bind(id)
+        .execute(&state.db)
+        .await?;
         updated.push("prompt_text");
     }
     if let Some(v) = req.get("expected_result").and_then(|v| v.as_str()) {
-        sqlx::query("UPDATE tests SET expected_result = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2")
-            .bind(v).bind(id).execute(&state.db).await?;
+        sqlx::query(
+            "UPDATE tests SET expected_result = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        )
+        .bind(v)
+        .bind(id)
+        .execute(&state.db)
+        .await?;
         updated.push("expected_result");
     }
     if let Some(v) = req.get("scoring_method").and_then(|v| v.as_str()) {
         if !VALID_SCORING.contains(&v) {
-            return Ok(Json(serde_json::json!({ "error": format!("Invalid scoring_method '{}'", v) })));
+            return Ok(Json(
+                serde_json::json!({ "error": format!("Invalid scoring_method '{}'", v) }),
+            ));
         }
-        sqlx::query("UPDATE tests SET scoring_method = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2")
-            .bind(v).bind(id).execute(&state.db).await?;
+        sqlx::query(
+            "UPDATE tests SET scoring_method = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        )
+        .bind(v)
+        .bind(id)
+        .execute(&state.db)
+        .await?;
         updated.push("scoring_method");
     }
     if let Some(trials) = req.get("trials_per_run").and_then(|v| v.as_i64()) {
-        sqlx::query("UPDATE tests SET trials_per_run = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2")
-            .bind(trials.clamp(1, 10) as i32)
-            .bind(id)
-            .execute(&state.db)
-            .await?;
+        sqlx::query(
+            "UPDATE tests SET trials_per_run = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+        )
+        .bind(trials.clamp(1, 10) as i32)
+        .bind(id)
+        .execute(&state.db)
+        .await?;
         updated.push("trials_per_run");
     }
 
     tracing::info!("Test {} updated: {:?}", id, updated);
-    Ok(Json(serde_json::json!({ "id": id, "updated_fields": updated })))
+    Ok(Json(
+        serde_json::json!({ "id": id, "updated_fields": updated }),
+    ))
 }
 
 /// POST /api/tests/:id/duplicate — copy a test definition so users can

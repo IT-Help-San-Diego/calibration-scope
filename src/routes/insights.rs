@@ -76,10 +76,26 @@ struct ModelRow {
 // 21 models. These are the tests that nearly every local LLM fails.
 const FALLACY_TESTS: &[(&str, &str, &str)] = &[
     // (test_name_substring, formal_name, what_it_tests)
-    ("Affirming the Consequent", "Affirming the Consequent", "Model says VALID for an INVALID argument (if P→Q and Q, therefore P)"),
-    ("Denying the Antecedent", "Denying the Antecedent", "Model says VALID for an INVALID argument (if P→Q and ¬P, therefore ¬Q)"),
-    ("Contradiction Detection", "Principle of Explosion", "Model says INVALID for a VALID argument (from contradiction, anything follows)"),
-    ("Existential Fallacy", "Existential Import", "Model mishandles syllogism with existential assumptions"),
+    (
+        "Affirming the Consequent",
+        "Affirming the Consequent",
+        "Model says VALID for an INVALID argument (if P→Q and Q, therefore P)",
+    ),
+    (
+        "Denying the Antecedent",
+        "Denying the Antecedent",
+        "Model says VALID for an INVALID argument (if P→Q and ¬P, therefore ¬Q)",
+    ),
+    (
+        "Contradiction Detection",
+        "Principle of Explosion",
+        "Model says INVALID for a VALID argument (from contradiction, anything follows)",
+    ),
+    (
+        "Existential Fallacy",
+        "Existential Import",
+        "Model mishandles syllogism with existential assumptions",
+    ),
 ];
 
 pub async fn model_insights(
@@ -169,7 +185,9 @@ pub async fn model_insights(
     let all_tests: Vec<serde_json::Value> = per_test
         .iter()
         .map(|t| {
-            let is_fallacy = FALLACY_TESTS.iter().any(|(s, _, _)| t.test_name.contains(s));
+            let is_fallacy = FALLACY_TESTS
+                .iter()
+                .any(|(s, _, _)| t.test_name.contains(s));
             serde_json::json!({
                 "test_id": t.test_id,
                 "test_name": t.test_name,
@@ -249,27 +267,47 @@ pub async fn model_insights(
         / latency.iter().filter(|l| l.avg_ms.is_some()).count().max(1) as f64;
 
     if avg_latency < 2000.0 {
-        strengths.push(format!("Fast: {:.1}s average response time", avg_latency / 1000.0));
+        strengths.push(format!(
+            "Fast: {:.1}s average response time",
+            avg_latency / 1000.0
+        ));
     } else if avg_latency > 30000.0 {
-        weaknesses.push(format!("Slow: {:.1}s average response time (may feel unresponsive)", avg_latency / 1000.0));
+        weaknesses.push(format!(
+            "Slow: {:.1}s average response time (may feel unresponsive)",
+            avg_latency / 1000.0
+        ));
     } else {
-        tradeoffs.push(format!("Moderate speed: {:.1}s average response time", avg_latency / 1000.0));
+        tradeoffs.push(format!(
+            "Moderate speed: {:.1}s average response time",
+            avg_latency / 1000.0
+        ));
     }
 
     // Size assessment
     if base_gb > 0.0 && base_gb <= 5.0 {
-        strengths.push(format!("Compact: {:.1} GB — fits on most hardware", base_gb));
+        strengths.push(format!(
+            "Compact: {:.1} GB — fits on most hardware",
+            base_gb
+        ));
     } else if base_gb > 25.0 {
         weaknesses.push(format!("Large: {:.1} GB — needs substantial RAM", base_gb));
     }
 
     // Fallacy assessment
-    let fallacy_fails: Vec<_> = fallacy_map.iter().filter(|f| f["failed"].as_bool() == Some(true)).collect();
+    let fallacy_fails: Vec<_> = fallacy_map
+        .iter()
+        .filter(|f| f["failed"].as_bool() == Some(true))
+        .collect();
     if !fallacy_fails.is_empty() {
-        let names: Vec<String> = fallacy_fails.iter()
+        let names: Vec<String> = fallacy_fails
+            .iter()
             .filter_map(|f| f["formal_name"].as_str().map(String::from))
             .collect();
-        weaknesses.push(format!("Fallacy-blind: fails {} known logical fallacy test(s): {}", names.len(), names.join(", ")));
+        weaknesses.push(format!(
+            "Fallacy-blind: fails {} known logical fallacy test(s): {}",
+            names.len(),
+            names.join(", ")
+        ));
     }
 
     // Vision assessment
@@ -287,8 +325,7 @@ pub async fn model_insights(
     // (works). MLX models use llm.prediction.speculativeDecoding.draftModel
     // (broken — "not supported for batched MLX models").
     let spec_decode = if model.location == "local" {
-        let config_dir = dirs_home()
-            .join(".lmstudio/.internal/user-concrete-model-default-config");
+        let config_dir = dirs_home().join(".lmstudio/.internal/user-concrete-model-default-config");
 
         // Try to find this model's config file. The path structure varies:
         // hub-key models: publisher/model.json (e.g. google/gemma-4-31b.json)
@@ -310,11 +347,19 @@ pub async fn model_insights(
                     if let Ok(raw) = std::fs::read_to_string(&path) {
                         if let Ok(data) = serde_json::from_str::<serde_json::Value>(&raw) {
                             // Check load fields (GGUF spec decode)
-                            if let Some(fields) = data.get("load").and_then(|l| l.get("fields")).and_then(|f| f.as_array()) {
+                            if let Some(fields) = data
+                                .get("load")
+                                .and_then(|l| l.get("fields"))
+                                .and_then(|f| f.as_array())
+                            {
                                 for field in fields {
-                                    let key = field.get("key").and_then(|k| k.as_str()).unwrap_or("");
+                                    let key =
+                                        field.get("key").and_then(|k| k.as_str()).unwrap_or("");
                                     if key.contains("speculativeDecoding.draftModel") {
-                                        draft_model = field.get("value").and_then(|v| v.as_str()).map(String::from);
+                                        draft_model = field
+                                            .get("value")
+                                            .and_then(|v| v.as_str())
+                                            .map(String::from);
                                         draft_type = Some("gguf".into());
                                         draft_working = Some(true);
                                     }
@@ -322,11 +367,19 @@ pub async fn model_insights(
                             }
                             // Check operation fields (MLX spec decode — broken)
                             if draft_model.is_none() {
-                                if let Some(fields) = data.get("operation").and_then(|o| o.get("fields")).and_then(|f| f.as_array()) {
+                                if let Some(fields) = data
+                                    .get("operation")
+                                    .and_then(|o| o.get("fields"))
+                                    .and_then(|f| f.as_array())
+                                {
                                     for field in fields {
-                                        let key = field.get("key").and_then(|k| k.as_str()).unwrap_or("");
+                                        let key =
+                                            field.get("key").and_then(|k| k.as_str()).unwrap_or("");
                                         if key.contains("speculativeDecoding.draftModel") {
-                                            draft_model = field.get("value").and_then(|v| v.as_str()).map(String::from);
+                                            draft_model = field
+                                                .get("value")
+                                                .and_then(|v| v.as_str())
+                                                .map(String::from);
                                             draft_type = Some("mlx".into());
                                             draft_working = Some(false);
                                         }
@@ -341,28 +394,58 @@ pub async fn model_insights(
 
         // Also search nested subdirectories
         if draft_model.is_none() {
-            let search_recursive = |dir: &std::path::Path, key: &str| -> Option<(String, String, bool)> {
-                fn search(dir: &std::path::Path, model_key: &str) -> Option<(String, String, bool)> {
-                    if let Ok(entries) = std::fs::read_dir(dir) {
-                        for entry in entries.flatten() {
-                            let path = entry.path();
-                            if path.is_dir() {
-                                if let Some(r) = search(&path, model_key) {
-                                    return Some(r);
-                                }
-                            } else if path.extension().is_some_and(|e| e == "json") {
-                                let basename = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
-                                if basename == model_key || model_key.ends_with(basename) {
-                                    if let Ok(raw) = std::fs::read_to_string(&path) {
-                                        if let Ok(data) = serde_json::from_str::<serde_json::Value>(&raw) {
-                                            for section in ["load", "operation"] {
-                                                if let Some(fields) = data.get(section).and_then(|s| s.get("fields")).and_then(|f| f.as_array()) {
-                                                    for field in fields {
-                                                        let fkey = field.get("key").and_then(|k| k.as_str()).unwrap_or("");
-                                                        if fkey.contains("speculativeDecoding.draftModel") {
-                                                            let dm = field.get("value").and_then(|v| v.as_str()).map(String::from);
-                                                            let is_gguf = section == "load";
-                                                            return dm.map(|m| (m, if is_gguf { "gguf".into() } else { "mlx".into() }, is_gguf));
+            let search_recursive =
+                |dir: &std::path::Path, key: &str| -> Option<(String, String, bool)> {
+                    fn search(
+                        dir: &std::path::Path,
+                        model_key: &str,
+                    ) -> Option<(String, String, bool)> {
+                        if let Ok(entries) = std::fs::read_dir(dir) {
+                            for entry in entries.flatten() {
+                                let path = entry.path();
+                                if path.is_dir() {
+                                    if let Some(r) = search(&path, model_key) {
+                                        return Some(r);
+                                    }
+                                } else if path.extension().is_some_and(|e| e == "json") {
+                                    let basename =
+                                        path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+                                    if basename == model_key || model_key.ends_with(basename) {
+                                        if let Ok(raw) = std::fs::read_to_string(&path) {
+                                            if let Ok(data) =
+                                                serde_json::from_str::<serde_json::Value>(&raw)
+                                            {
+                                                for section in ["load", "operation"] {
+                                                    if let Some(fields) = data
+                                                        .get(section)
+                                                        .and_then(|s| s.get("fields"))
+                                                        .and_then(|f| f.as_array())
+                                                    {
+                                                        for field in fields {
+                                                            let fkey = field
+                                                                .get("key")
+                                                                .and_then(|k| k.as_str())
+                                                                .unwrap_or("");
+                                                            if fkey.contains(
+                                                                "speculativeDecoding.draftModel",
+                                                            ) {
+                                                                let dm = field
+                                                                    .get("value")
+                                                                    .and_then(|v| v.as_str())
+                                                                    .map(String::from);
+                                                                let is_gguf = section == "load";
+                                                                return dm.map(|m| {
+                                                                    (
+                                                                        m,
+                                                                        if is_gguf {
+                                                                            "gguf".into()
+                                                                        } else {
+                                                                            "mlx".into()
+                                                                        },
+                                                                        is_gguf,
+                                                                    )
+                                                                });
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -372,11 +455,10 @@ pub async fn model_insights(
                                 }
                             }
                         }
+                        None
                     }
-                    None
-                }
-                search(dir, key)
-            };
+                    search(dir, key)
+                };
             if let Some((dm, dt, working)) = search_recursive(&config_dir, &model.key) {
                 draft_model = Some(dm);
                 draft_type = Some(dt);
@@ -398,15 +480,18 @@ pub async fn model_insights(
             {
                 Ok(resp) if resp.status().is_success() => {
                     match resp.json::<serde_json::Value>().await {
-                        Ok(json) => {
-                            json.get("models")
-                                .and_then(|m| m.as_array())
-                                .and_then(|arr| arr.iter().find(|m| m.get("key").and_then(|k| k.as_str()) == Some(&model.key)))
-                                .and_then(|m| m.get("format"))
-                                .and_then(|f| f.as_str())
-                                .unwrap_or("unknown")
-                                .to_string()
-                        }
+                        Ok(json) => json
+                            .get("models")
+                            .and_then(|m| m.as_array())
+                            .and_then(|arr| {
+                                arr.iter().find(|m| {
+                                    m.get("key").and_then(|k| k.as_str()) == Some(&model.key)
+                                })
+                            })
+                            .and_then(|m| m.get("format"))
+                            .and_then(|f| f.as_str())
+                            .unwrap_or("unknown")
+                            .to_string(),
                         Err(_) => "unknown".to_string(),
                     }
                 }

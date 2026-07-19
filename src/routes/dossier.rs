@@ -94,30 +94,34 @@ pub async fn model_dossier(
             .send()
             .await
         {
-            Ok(resp) if resp.status().is_success() => match resp.json::<serde_json::Value>().await {
-                Ok(json) => {
-                    let entry = json["data"]
-                        .as_array()
-                        .and_then(|a| a.iter().find(|m| m["id"].as_str() == Some(key.as_str())));
-                    match entry {
-                        Some(m) => serde_json::json!({
-                            "reachable": true, "present": true,
-                            "state": m["state"], "type": m["type"],
-                            "arch": m["arch"], "quantization": m["quantization"],
-                            "compatibility_type": m["compatibility_type"],
-                            "max_context_length": m["max_context_length"],
-                            "loaded_context_length": m["loaded_context_length"],
-                            "source": "GET /api/v0/models (LM Studio, live)",
-                        }),
-                        None => serde_json::json!({
-                            "reachable": true, "present": false,
-                            "note": "LM Studio is up but this key is not in its current library",
-                        }),
+            Ok(resp) if resp.status().is_success() => {
+                match resp.json::<serde_json::Value>().await {
+                    Ok(json) => {
+                        let entry = json["data"].as_array().and_then(|a| {
+                            a.iter().find(|m| m["id"].as_str() == Some(key.as_str()))
+                        });
+                        match entry {
+                            Some(m) => serde_json::json!({
+                                "reachable": true, "present": true,
+                                "state": m["state"], "type": m["type"],
+                                "arch": m["arch"], "quantization": m["quantization"],
+                                "compatibility_type": m["compatibility_type"],
+                                "max_context_length": m["max_context_length"],
+                                "loaded_context_length": m["loaded_context_length"],
+                                "source": "GET /api/v0/models (LM Studio, live)",
+                            }),
+                            None => serde_json::json!({
+                                "reachable": true, "present": false,
+                                "note": "LM Studio is up but this key is not in its current library",
+                            }),
+                        }
                     }
+                    Err(_) => serde_json::json!({ "reachable": false }),
                 }
-                Err(_) => serde_json::json!({ "reachable": false }),
-            },
-            _ => serde_json::json!({ "reachable": false, "note": "LM Studio not reachable right now" }),
+            }
+            _ => {
+                serde_json::json!({ "reachable": false, "note": "LM Studio not reachable right now" })
+            }
         }
     } else {
         serde_json::json!({ "applicable": false, "note": "cloud model — no local live state" })

@@ -43,7 +43,14 @@ use crate::state::AppState;
 
 /// Display / iteration order. Auxiliary is included — routing local models
 /// onto Hermes' auxiliary tasks is the founding use case for this feature.
-const AXIS_ORDER: [&str; 6] = ["vision", "tools", "reasoning", "security", "literary", "auxiliary"];
+const AXIS_ORDER: [&str; 6] = [
+    "vision",
+    "tools",
+    "reasoning",
+    "security",
+    "literary",
+    "auxiliary",
+];
 
 const DEFAULT_MIN_TRIALS: i64 = 3;
 const DEFAULT_FALLBACK_THRESHOLD: f64 = 0.8;
@@ -119,7 +126,9 @@ pub async fn router_plan(
             "min_trials must be between 1 and 1000, got {min_trials}"
         )));
     }
-    let threshold = params.fallback_threshold.unwrap_or(DEFAULT_FALLBACK_THRESHOLD);
+    let threshold = params
+        .fallback_threshold
+        .unwrap_or(DEFAULT_FALLBACK_THRESHOLD);
     if !(threshold > 0.0 && threshold <= 1.0) {
         return Err(AppError::Executor(format!(
             "fallback_threshold must be in (0.0, 1.0], got {threshold}"
@@ -269,8 +278,11 @@ pub async fn router_plan(
     let plans: Vec<AxisPlan> = AXIS_ORDER
         .iter()
         .map(|axis| {
-            let AxisBuckets { mut eligible, mut fallbacks, mut excluded } =
-                per_axis.remove(*axis).unwrap_or_default();
+            let AxisBuckets {
+                mut eligible,
+                mut fallbacks,
+                mut excluded,
+            } = per_axis.remove(*axis).unwrap_or_default();
 
             // Primary ranking: fastest verified wins; more evidence breaks
             // ties; key is the deterministic final tiebreaker (stable plans

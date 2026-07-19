@@ -27,8 +27,9 @@ impl Config {
         // (launchd EnvironmentVariables locally, .env for dev), never in source.
         // Fails loudly and immediately if unset rather than silently using a
         // baked-in credential that would otherwise sit in git history forever.
-        let database_url = std::env::var("DATABASE_URL")
-            .expect("DATABASE_URL must be set (see .env.example) — no default is baked into source");
+        let database_url = std::env::var("DATABASE_URL").expect(
+            "DATABASE_URL must be set (see .env.example) — no default is baked into source",
+        );
 
         let project_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         let assets_dir = project_root.join("assets");
@@ -52,9 +53,15 @@ impl Config {
             listen_port,
             lmstudio_base_url,
             nous_api_key: std::env::var("NOUS_API_KEY").ok().filter(|s| !s.is_empty()),
-            openrouter_api_key: std::env::var("OPENROUTER_API_KEY").ok().filter(|s| !s.is_empty()),
-            openai_api_key: std::env::var("OPENAI_API_KEY").ok().filter(|s| !s.is_empty()),
-            gemini_api_key: std::env::var("GEMINI_API_KEY").ok().filter(|s| !s.is_empty()),
+            openrouter_api_key: std::env::var("OPENROUTER_API_KEY")
+                .ok()
+                .filter(|s| !s.is_empty()),
+            openai_api_key: std::env::var("OPENAI_API_KEY")
+                .ok()
+                .filter(|s| !s.is_empty()),
+            gemini_api_key: std::env::var("GEMINI_API_KEY")
+                .ok()
+                .filter(|s| !s.is_empty()),
         }
     }
 

@@ -160,10 +160,7 @@ pub async fn chat(
     //   - Nous (Claude): "reasoning_content"
     //   - OpenRouter: varies — check both
     let reasoning_content = message
-        .and_then(|m| {
-            m.get("reasoning_content")
-                .or_else(|| m.get("reasoning"))
-        })
+        .and_then(|m| m.get("reasoning_content").or_else(|| m.get("reasoning")))
         .and_then(|v| v.as_str())
         .filter(|s| !s.is_empty())
         .map(|s| s.to_string());
@@ -178,7 +175,8 @@ pub async fn chat(
             // the answer as its final token (VALID/INVALID/TRUE/FALSE/etc.)
             if let Some(ref r) = reasoning_content {
                 let last_token = r
-                    .split(|c: char| !c.is_ascii_alphanumeric()).rfind(|t| !t.is_empty())
+                    .split(|c: char| !c.is_ascii_alphanumeric())
+                    .rfind(|t| !t.is_empty())
                     .unwrap_or("");
                 if !last_token.is_empty() {
                     tracing::warn!(
@@ -334,11 +332,17 @@ pub async fn gemini_chat(
     let (prompt_tokens, completion_tokens) = (
         json.pointer("/usageMetadata/promptTokenCount")
             .and_then(|v| v.as_u64())
-            .or_else(|| json.pointer("/usageMetadata/prompt_tokens").and_then(|v| v.as_u64()))
+            .or_else(|| {
+                json.pointer("/usageMetadata/prompt_tokens")
+                    .and_then(|v| v.as_u64())
+            })
             .map(|v| v as i64),
         json.pointer("/usageMetadata/candidatesTokenCount")
             .and_then(|v| v.as_u64())
-            .or_else(|| json.pointer("/usageMetadata/candidates_tokens").and_then(|v| v.as_u64()))
+            .or_else(|| {
+                json.pointer("/usageMetadata/candidates_tokens")
+                    .and_then(|v| v.as_u64())
+            })
             .map(|v| v as i64),
     );
 
@@ -351,4 +355,3 @@ pub async fn gemini_chat(
         speculative_decode: None,
     })
 }
-

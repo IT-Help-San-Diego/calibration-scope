@@ -66,8 +66,7 @@ fn write_keys(store: &KeyStore) -> AppResult<()> {
     }
     #[cfg(not(unix))]
     {
-        fs::write(&path, json)
-            .map_err(|e| AppError::Executor(format!("Write error: {}", e)))?;
+        fs::write(&path, json).map_err(|e| AppError::Executor(format!("Write error: {}", e)))?;
     }
 
     tracing::info!("Cloud keys updated: {} provider(s)", store.keys.len());
@@ -169,9 +168,7 @@ pub async fn set_key(
     })))
 }
 
-pub async fn delete_key(
-    Path(provider): Path<String>,
-) -> AppResult<Json<serde_json::Value>> {
+pub async fn delete_key(Path(provider): Path<String>) -> AppResult<Json<serde_json::Value>> {
     let mut store = read_keys()?;
     store.keys.remove(&provider);
     write_keys(&store)?;
