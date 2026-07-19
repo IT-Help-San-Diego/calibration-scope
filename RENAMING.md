@@ -88,6 +88,11 @@ Expected effort: ~15 minutes. No logic depends on the name as a magic string.
 
 ## Status
 
-- Name ratified: **Carrier Scope**. Repo still carries the old "Archetype
-  Mesh" code anchors pending the mechanical rename (deferred to domain
-  registration / a deliberate rename commit). This doc preserves the contract.
+- Name ratified: **Calibration Scope** (superseding the earlier "Carrier Scope"
+  and the original "Archetype Mesh" working name). The mechanical rename was
+  **executed** (commit 4a6c6b1, 2026-07-19): all code anchors, secrets dir
+  (`~/.calibration-scope`), Postgres DB (`calibration_scope`), launchd plist
+  (`ai.hermes.calibration-scope-dashboard`), and the local folder
+  (`~/Documents/GitHub/calibration-scope`) now carry the ratified name. No
+  further rename pending. This doc preserves the contract + the gotcha notes
+  for any future rename.

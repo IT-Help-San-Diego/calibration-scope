@@ -40,7 +40,7 @@ supersedes the earlier `archetypemesh.com`/`carrierscope.com` plans), offer:
 | **Raw IP** | `127.0.0.1:8768` (same machine) / LAN IP (shared) | nothing | always-works fallback; no DNS dependency |
 
 A subdomain under a domain we own costs nothing extra and behaves identically
-to a new domain. Prefer `local.archetypemesh.com` over registering a separate
+to a new domain. Prefer `local.calibrationscope.com` over registering a separate
 name.
 
 ## Is publishing a loopback record "evil"? No.
@@ -82,10 +82,10 @@ a default that exposes it to the LAN.
 
 ## Implementation checklist (when the domain exists)
 
-- [ ] Register `archetypemesh.com` (or final name).
-- [ ] Add `local.archetypemesh.com A 127.0.0.1` at the registrar.
+- [ ] Register `calibrationscope.com` (done 2026-07-19).
+- [ ] Add `local.calibrationscope.com A 127.0.0.1` at the registrar.
 - [ ] Document the Google-DNS / rebinding caveats in the user-facing setup
-      guide; instruct fallback to `127.0.0.1:8768` or `arctypemesh.local`.
+      guide; instruct fallback to `127.0.0.1:8768` or `calibrationscope.local`.
 - [ ] Keep loopback bind as the default; gate LAN exposure behind an explicit
       opt-in + warning banner.
 - [ ] (Optional) Add mDNS advertisement for LAN-box deployments.

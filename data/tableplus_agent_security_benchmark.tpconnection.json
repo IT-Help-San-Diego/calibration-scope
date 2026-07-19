@@ -1,9 +1,11 @@
 {
   "ConnectionName": "Calibration Scope",
-  "DatabaseType": "SQLite",
-  "Driver": "SQLite",
-  "DatabasePath": "/Users/careybalboa/Documents/GitHub/calibration-scope/data/calibration_scope.sqlite",
-  "DatabaseName": "agent_security_benchmark",
-  "tLSMode": 0,
+  "DatabaseType": "PostgreSQL",
+  "Driver": "PostgreSQL",
+  "DatabaseHost": "127.0.0.1",
+  "ServerPort": "5432",
+  "DatabaseName": "calibration_scope",
+  "DatabaseUser": "careybalboa",
+  "DatabasePath": "127.0.0.1",
   "Enviroment": "local"
 }

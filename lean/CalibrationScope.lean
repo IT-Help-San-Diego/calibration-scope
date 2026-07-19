@@ -17,11 +17,11 @@ Conventions:
     predicates on `Bool` making every premise true and the conclusion
     false, so the kernel confirms the inference scheme is NOT valid.
 
-`lean lean/ArchetypeMesh.lean` exiting 0 = every claim below is verified.
+`lean lean/CalibrationScope.lean` exiting 0 = every claim below is verified.
 2,400 years of logic; zero trust required.
 -/
 
-namespace ArchetypeMesh
+namespace CalibrationScope
 
 /-- Material implication on `Bool` — the truth-table connective. -/
 def imp (p q : Bool) : Bool := !p || q
@@ -210,4 +210,4 @@ theorem logic26_universal_illicit_commutativity_invalid :
     h (fun _ => False) (fun _ => True)
       (fun _ hf => hf.elim) true trivial
 
-end ArchetypeMesh
+end CalibrationScope
