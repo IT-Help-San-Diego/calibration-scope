@@ -35,7 +35,7 @@
     --bg-card: #21262d;
     --bg-card-hover: #30363d;
     --border: #30363d;
-    --text-primary: rgba(230, 237, 243, 0.9);
+    --text-primary: #e6edf3;
     --text-secondary: #9ca3af;
     --text-muted: #8b949e;
     /* Brand accents — same remapping trick DNS Tool uses: the variable
@@ -638,6 +638,27 @@
   }
   .top-nav .tab#tab-benchmark.active,
   .top-nav .tab.active { background: var(--bg-primary); color: var(--text-primary); border-bottom: 2px solid var(--accent-cyan); }
+
+  /* Accessibility toggle — must be legible on the dark theme in BOTH states.
+     Default (Readable: On) = solid amber pill, black text (high contrast, pops).
+     Off (Deep mode) = dark pill, solid light text (never gray-on-white). */
+  #a11y-toggle {
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    border-radius: 6px;
+    border: 1px solid var(--accent-amber, #ffd866);
+    background: var(--accent-amber, #ffd866);
+    color: #1a1200;
+    padding: 6px 12px;
+    min-height: 32px;
+  }
+  #a11y-toggle:hover { filter: brightness(1.08); }
+  html[data-a11y="off"] #a11y-toggle {
+    background: #2a2f37;
+    color: #f0f3f6;
+    border-color: #4a4f57;
+  }
 
   /* Prompt length checker */
   .length-check {
@@ -5551,8 +5572,12 @@ function toggleA11y() {
 }
 (function restoreA11y() {
   try {
+    // Focused/Readable mode is the DEFAULT. A returning user who explicitly
+    // chose the dense "Deep" mode is the only one we honor with 'off'.
+    // First visit (no saved pref) → readable-on, per product decision:
+    // accessibility is the superior default, not an opt-in afterthought.
     const saved = localStorage.getItem('calibration-a11y');
-    if (saved === 'high') {
+    if (saved !== 'off') {
       document.documentElement.setAttribute('data-a11y', 'high');
       const btn = document.getElementById('a11y-toggle');
       if (btn) btn.textContent = 'Readable: On';
