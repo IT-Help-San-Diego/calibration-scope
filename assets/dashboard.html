@@ -1306,7 +1306,7 @@
 </style>
 <script>
 
-window.esc = window.esc || function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>\"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]); }); };
+window.esc = window.esc || function esc(s) { if (s == null) return ''; return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]); }); };
 
 // ── Live run / abort observability — visible telemetry, no DevTools required ──
 (function(){
