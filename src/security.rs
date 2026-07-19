@@ -28,10 +28,19 @@ fn gen_nonce() -> String {
 }
 
 /// Returns the full CSP value for a given nonce.
+///
+/// `script-src` carries the nonce + 'strict-dynamic' for inline `<script>` and
+/// deferred external scripts we nonce-stamp (KaTeX). `script-src-attr` allows
+/// inline event-handler attributes (`onclick=`, etc.) — these are a separate
+/// CSP bucket from `script-src` and MUST be declared or every handler is
+/// blocked (the 1000-error regression). We scope it to 'self' + 'unsafe-inline'
+/// because handler attributes cannot carry a nonce; this is the documented
+/// CSP pattern for event-handler attributes.
 fn csp(nonce: &str) -> String {
     format!(
         "default-src 'self'; \
          script-src 'self' 'nonce-{nonce}' 'strict-dynamic'; \
+         script-src-attr 'self' 'unsafe-inline'; \
          style-src 'self' 'unsafe-inline'; \
          img-src 'self' data:; \
          font-src 'self'; \
@@ -81,13 +90,22 @@ pub async fn security_headers(req: Request<Body>, next: Next) -> Response<Body> 
     resp
 }
 
-/// Injects the per-request nonce onto every INLINE <script> tag in the
-/// served dashboard HTML. All inline scripts in dashboard.html are
-/// bare `<script>` (no attributes); external scripts are
-/// `<script defer src="...">` and are covered by the 'self' CSP
-/// source, so they must NOT receive the nonce. A plain token
-/// replace is correct and avoids regex look-around (unsupported
+/// Injects the per-request nonce onto every script tag that needs it.
+///
+/// 1. Inline `<script>` → `<script nonce="...">` (covered by `script-src`).
+/// 2. Deferred EXTERNAL scripts (`<script defer src="...">`, e.g. KaTeX) →
+///    also receive the nonce. Under `'strict-dynamic'`, external scripts are
+///    NOT covered by `'self'` alone — they need a nonce or hash, or they are
+///    blocked by `script-src-elem`. Stamping the deferred external scripts with
+///    the same nonce lets them load while keeping the policy strict.
+///
+/// A plain token replace is correct and avoids regex look-around (unsupported
 /// by the default `regex` feature set, which would panic at runtime).
 pub fn stamp_nonce(html: &str, nonce: &str) -> String {
-    html.replace("<script>", &format!("<script nonce=\"{}\">", nonce))
+    html
+        .replace("<script>", &format!("<script nonce=\"{}\">", nonce))
+        .replace(
+            "<script defer src=",
+            &format!("<script defer nonce=\"{}\" src=", nonce),
+        )
 }
