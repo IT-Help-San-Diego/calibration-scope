@@ -340,20 +340,15 @@ pub async fn ensure_loaded(
     client: &Client,
     base_url: &str,
     model_key: &str,
+    preset: &crate::routes::runs::LoadPreset,
+    draft_model: Option<&str>,
     max_wait_secs: u64,
 ) -> AppResult<bool> {
-    // Preferred: explicit load endpoint.
+    // Preferred: explicit load endpoint with the requested preset.
+    let load_body = preset.to_load_json(model_key, draft_model);
     let load_resp = client
         .post(format!("{}/api/v1/models/load", base_url))
-        .json(&serde_json::json!({
-            "model": model_key,
-            "context_length": 131072,
-            "eval_batch_size": 4096,
-            "physical_batch_size": 1024,
-            "parallel": 4,
-            "flash_attention": true,
-            "offload_kv_cache_to_gpu": true,
-        }))
+        .json(&load_body)
         .timeout(std::time::Duration::from_secs(max_wait_secs))
         .send()
         .await;

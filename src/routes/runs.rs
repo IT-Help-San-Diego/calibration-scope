@@ -37,6 +37,18 @@ pub struct StartRunRequest {
     pub draft_model_key: Option<String>,
     #[serde(default)]
     pub scaffold_supplement: Option<String>,
+    /// Engine load preset — controls the LM Studio load configuration the
+    /// benchmark measures under. This is the "user-adjustable places we have
+    /// control over" surface: context length, batch sizes, parallelism,
+    /// flash attention, KV offload, and (optionally) speculative decoding.
+    ///   - "performance" (default): large batches, parallel=4, flash on.
+    ///     The ceiling the hardware can extract from a model.
+    ///   - "lightweight": smaller batches, parallel=1, flash on, KV offload —
+    ///     the memory-constrained profile for constrained hardware.
+    /// Both presets are the SAME model capability tested under different
+    /// engine tuning, so the delta isolates what tuning buys you.
+    #[serde(default)]
+    pub load_preset: Option<String>,
     /// Optional disambiguator for the 8 model keys that exist as BOTH a
     /// local (lmstudio) and a cloud (nous) row. Without it, `WHERE key = $1`
     /// picks an arbitrary twin — so a local pick could silently run in the
@@ -49,6 +61,70 @@ pub struct StartRunRequest {
     /// Validated server-side: every ID must exist and be active.
     #[serde(default)]
     pub test_ids: Option<Vec<i32>>,
+}
+
+/// Engine load presets — the controllable LM Studio load-config surface.
+/// Every field maps to a real, API-accepted `POST /api/v1/models/load`
+/// parameter (verified live 2026-07-19 against LM Studio's load endpoint).
+/// Fields NOT in this struct (GPU offload ratio, CPU thread pool, ROPE base)
+/// are GUI-only / architecture constants in LM Studio's current REST surface
+/// and cannot be set programmatically — documented, not silently dropped.
+#[derive(Debug, Clone)]
+pub struct LoadPreset {
+    pub context_length: u32,
+    pub eval_batch_size: u32,
+    pub physical_batch_size: u32,
+    pub parallel: u32,
+    pub flash_attention: bool,
+    pub offload_kv_cache_to_gpu: bool,
+}
+
+pub fn load_preset_by_name(name: &str) -> LoadPreset {
+    match name {
+        // Memory-constrained profile: smaller batches, single parallel
+        // stream, KV offloaded. For models that must fit alongside the OS
+        // on a 128GB Mac where a 90GB model eats 32GB of usable RAM.
+        "lightweight" => LoadPreset {
+            context_length: 32768,
+            eval_batch_size: 1024,
+            physical_batch_size: 256,
+            parallel: 1,
+            flash_attention: true,
+            offload_kv_cache_to_gpu: true,
+        },
+        // Default ceiling profile.
+        _ => LoadPreset {
+            context_length: 131072,
+            eval_batch_size: 4096,
+            physical_batch_size: 1024,
+            parallel: 4,
+            flash_attention: true,
+            offload_kv_cache_to_gpu: true,
+        },
+    }
+}
+
+impl LoadPreset {
+    /// Render as the JSON body LM Studio's load endpoint accepts.
+    /// Speculative decoding is added separately by the caller when a draft
+    /// model is requested (it's orthogonal to the base preset).
+    pub fn to_load_json(&self, model_key: &str, draft_model: Option<&str>) -> serde_json::Value {
+        let mut body = serde_json::json!({
+            "model": model_key,
+            "context_length": self.context_length,
+            "eval_batch_size": self.eval_batch_size,
+            "physical_batch_size": self.physical_batch_size,
+            "parallel": self.parallel,
+            "flash_attention": self.flash_attention,
+            "offload_kv_cache_to_gpu": self.offload_kv_cache_to_gpu,
+        });
+        if let Some(draft) = draft_model {
+            body["speculative_draft_simple"] = serde_json::json!(true);
+            body["speculative_draft_model"] = serde_json::json!(draft);
+            body["speculative_draft_max_tokens"] = serde_json::json!(8);
+        }
+        body
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -251,6 +327,7 @@ pub async fn start_runs(
             req.draft_model_key.clone(),
             req.scaffold_supplement.clone(),
             req.test_ids.clone(),
+            req.load_preset.clone(),
         );
         run_ids.push(run_id);
     }
@@ -304,6 +381,7 @@ pub async fn start_runs(
             req.draft_model_key.clone(),
             req.scaffold_supplement.clone(),
             req.test_ids.clone(),
+            req.load_preset.clone(),
         );
     }
 
@@ -329,6 +407,7 @@ fn spawn_run_task(
     draft_model_key: Option<String>,
     scaffold_supplement: Option<String>,
     test_ids: Option<Vec<i32>>,
+    load_preset: Option<String>,
 ) {
     let db = state.db.clone();
     let config = state.config.clone();
@@ -372,6 +451,7 @@ fn spawn_run_task(
             draft_model_key,
             scaffold_supplement,
             test_ids,
+            load_preset,
         )
         .await;
     });
@@ -395,6 +475,8 @@ pub struct BaselineScaffoldRequest {
     pub scaffold_supplement: Option<String>,
     #[serde(default)]
     pub provider: Option<String>,
+    #[serde(default)]
+    pub load_preset: Option<String>,
 }
 
 pub async fn start_baseline_scaffold(
@@ -538,6 +620,7 @@ pub async fn start_baseline_scaffold(
             None,
             None,
             None,
+            req.load_preset.clone(),
         );
         spawn_run_task(
             &state,
@@ -548,6 +631,7 @@ pub async fn start_baseline_scaffold(
             None,
             Some(supplement.clone()),
             None,
+            req.load_preset.clone(),
         );
     }
 

@@ -255,6 +255,7 @@ pub async fn execute_run(
     draft_model_key: Option<String>,
     scaffold_supplement: Option<String>,
     test_ids: Option<Vec<i32>>,
+    load_preset: Option<String>,
 ) {
     let cancel_token = cancellations.register(run_id).await;
 
@@ -275,6 +276,7 @@ pub async fn execute_run(
             draft_model_key,
             scaffold_supplement,
             test_ids,
+            load_preset,
         ),
     )
     .await
@@ -375,6 +377,7 @@ async fn execute_run_inner(
     draft_model_key: Option<String>,
     scaffold_supplement: Option<String>,
     test_ids: Option<Vec<i32>>,
+    load_preset: Option<String>,
 ) -> AppResult<()> {
     let client = reqwest::Client::new();
 
@@ -547,10 +550,18 @@ async fn execute_run_inner(
                     }),
                 );
                 let load_start = std::time::Instant::now();
+                // Resolve the engine load preset the run was requested under.
+                // `load_preset` (e.g. "lightweight") selects the LM Studio
+                // load config; a draft model (when provided) enables
+                // speculative decoding on top of that preset.
+                let preset_name = load_preset.clone().unwrap_or_else(|| "performance".into());
+                let preset = crate::routes::runs::load_preset_by_name(&preset_name);
                 let resident = cancellable!(lmstudio::ensure_loaded(
                     &client,
                     &config.lmstudio_base_url,
                     model_key,
+                    &preset,
+                    draft_model_key.as_deref(),
                     300
                 ))?;
                 if !resident {
@@ -568,6 +579,17 @@ async fn execute_run_inner(
                         "at": now_iso()
                     }),
                 );
+                // Persist the exact engine load config this run measured under,
+                // so the result is reproducible + the UI can show what tuning
+                // was applied. This is the "what we have control over" record.
+                let runtime_cfg = preset.to_load_json(model_key, draft_model_key.as_deref());
+                sqlx::query(
+                    "UPDATE test_runs SET lmstudio_runtime_config = $1 WHERE id = $2",
+                )
+                .bind(runtime_cfg)
+                .bind(run_id)
+                .execute(db)
+                .await?;
             }
             crate::routes::runs::LoadMode::SpeculativePair => {
                 let draft_key = draft_model_key.as_ref().ok_or_else(|| {
