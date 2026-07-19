@@ -1,36 +1,41 @@
 # RENAMING — the renameability contract
 
-The product name is **Carrier Scope** (ratified 2026-07-19, replacing the
-working name "Archetype Mesh"). It is derived from the instrument's ACT:
-scoping **signal from carrier** (Carrier Color theory) across BOTH substrates
-(silicon models + carbon humans) under the Owl Semaphore V4 taxonomy
-(I/N/C/M), with the Verification Principle as discipline (SHA-3 sealed, no
-answer-leakage) and Intellectual Resistance as the program roof. Carrier Scope
-is NOT a fourth framework — it is the instrument that puts the other three
-(Owl Semaphore, Carrier Color, Verification Principle) to work.
+The product name is **Calibration Scope** (ratified 2026-07-19, replacing the
+working name "Archetype Mesh", and superseding the earlier "Carrier Scope"
+ratification which was dropped because `carrierscope.com` is a live commercial
+mark). **Domain: `calibrationscope.com`** (registered 2026-07-19, Amazon
+Registrar; processing). Calibration Scope is derived from the instrument's ACT:
+**calibrating any cognitive source** (silicon models + carbon humans) against
+sealed ground truth, *scoping signal from carrier* within that calibration,
+under the Owl Semaphore V4 taxonomy (I/N/C/M), with the Verification Principle
+as discipline (SHA-3 sealed, no answer-leakage) and Intellectual Resistance as
+the program roof. It is NOT a fourth framework — it is the instrument that puts
+the other three (Owl Semaphore, Carrier Color, Verification Principle) to work.
+The Carrier Color *variable* (`carrier_variance` in `owl_signal_carrier`) stays
+detected underneath; it is not the name.
 
-**Domain (TBD, budget pending):** `carrierscope.com` is **already registered
-to a commercial entity** (verified 2026-07-19) — not available. Alternatives to
-evaluate when budget allows: `carrierscope.science` (fits the instrument's
-scientific framing), `carrierscope.dev` / `carrierscope.io` (dev/tech), or a
-prefix form (`getcarrierscope.com`, `trycarrierscope.com`). Local-access
-subdomain would be `local.<domain> A 127.0.0.1` (see
-`docs/local-access-strategy.md`). Decision deferred.
+**Domain (registered):** `calibrationscope.com`. Local-access subdomain would be
+`local.calibrationscope.com A 127.0.0.1` (see `docs/local-access-strategy.md`).
 
 ## Naming rule (locked)
 
-> The product name stays **substrate-neutral**: **Carrier Scope**. It does NOT
-> carry "LM", "AI", or any substrate/era marker. The instrument's act (scoping
-> signal from carrier) applies to silicon AND carbon; tying the name to "AI" or
-> "local models" (the current trend) would (1) narrow it below what it is,
-> (2) date it to a trend that won't hold, and (3) force a rename the moment
-> human calibration ships. Discoverability ("what is this?") is handled by a
-> **concrete tagline**, not by polluting the name:
+> The product name stays **substrate-neutral**: **Calibration Scope**. It does
+> NOT carry "LM", "AI", or any substrate/era marker. The instrument's act
+> (calibrating a cognitive source, scoping signal from carrier within it)
+> applies to silicon AND carbon; tying the name to "AI" or "local models"
+> (the current trend) would (1) narrow it below what it is, (2) date it to a
+> trend that won't hold, and (3) force a rename the moment human calibration
+> ships. Discoverability ("what is this?") is handled by a **concrete tagline**,
+> not by polluting the name:
 >
-> *Carrier Scope — a scientific instrument that scopes signal from carrier in
-> any cognitive source, silicon or carbon, with sealed, auditable evidence.*
+> *Calibration Scope — a scientific instrument that calibrates any cognitive
+> source, silicon or carbon, scoping signal from carrier with sealed, auditable
+> evidence.*
 >
 > Substrate/use-case lives in the tagline where it can change; the name stays.
+>
+> The product NAME and the DOMAIN are the SAME word (Calibration Scope /
+> calibrationscope.com) — do not maintain a separate brand name and domain.
 
 **Human calibration first (core priority):** silicon and carbon are measured
 under one battery, but the HUMAN is the prior term — a person takes the battery

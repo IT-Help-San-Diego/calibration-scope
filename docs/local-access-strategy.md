@@ -30,12 +30,13 @@ the same machine, so `127.0.0.1` is exactly where we want them.
 
 ## Our three-tier local-access model
 
-When we have a domain (`archetypemesh.com` — final name TBD), offer:
+When we have a domain (`calibrationscope.com` — registered 2026-07-19;
+supersedes the earlier `archetypemesh.com`/`carrierscope.com` plans), offer:
 
 | Tier | Address | Needs | Use case |
 |------|---------|-------|----------|
-| **Friendly subdomain** | `local.archetypemesh.com A 127.0.0.1` | a registered domain | Verizon-style friendly name; works from any network |
-| **mDNS / .local** | `arctypemesh.local` (Bonjour/Avahi) | service advertises on LAN | zero-registrar LAN access when dashboard runs on a box others reach |
+| **Friendly subdomain** | `local.calibrationscope.com A 127.0.0.1` | a registered domain | Verizon-style friendly name; works from any network |
+| **mDNS / .local** | `calibrationscope.local` (Bonjour/Avahi) | service advertises on LAN | zero-registrar LAN access when dashboard runs on a box others reach |
 | **Raw IP** | `127.0.0.1:8768` (same machine) / LAN IP (shared) | nothing | always-works fallback; no DNS dependency |
 
 A subdomain under a domain we own costs nothing extra and behaves identically
