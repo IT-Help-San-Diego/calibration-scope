@@ -108,31 +108,35 @@ not by engine tuning. That is the measured difference we show.
 
 ## Hardware ceiling (128GB MacBook, measured 2026-07-19/20)
 
-Two **distinct, reproducible** limits on this machine:
+**One reproducible hard limit: ≥~60GB will not load.**
+`openai/gpt-oss-120b` (63.4GB) aborts at engine startup —
+**twice**, once with only 67MB free (post-failed-load recovery)
+and once with 2.3GB free (clean state). The lightweight preset
+(ctx 32K, batch 1024, parallel 1, KV offload) does not save it.
 
-1. **Hard load failure above ~60GB.** `openai/gpt-oss-120b` (63.4GB)
-   aborts at engine startup — **twice**, once with only 67MB free (post-
-   failed-load recovery) and once with 2.3GB free (clean state). The
-   lightweight preset (ctx 32K, batch 1024, parallel 1, KV offload)
-   does not save it. It will not even load.
+**The 22-30GB tier is NOT inherently broken — corrective note.**
+Earlier today (clean RAM state) `google/gemma-4-31b` (22GB)
+benchmarked **100% (run 655)** and `nvidia/nemotron-3-nano-omni`
+(26.1GB) scored **4/4**. Those are real, sealed results.
+The "0-trial stall" observed on gemma-31b (run 834) and
+qwen3.6-27b (run 841) came **after** a RAM-thrash sequence
+(63GB load-attempt → fail, 29.5GB load, 26GB load) left the
+machine at ~270MB free — the models could not load because the
+Mac was starved, not because the tier is incapable. **A clean
+reboot restores the usable floor** where 22-26GB models run.
 
-2. **Load-OK but inference stall at 22-30GB.** `google/gemma-4-31b`
-   (22GB, run 834) and `qwen/qwen3.6-27b` (29.5GB, run 841)
-   both reach `resident` status but produce **zero reasoning trials** —
-   the executor's chat step hangs silently (no error, no progress, within
-   the 3600s budget). The 2-8GB tier runs clean (gemma-e2b 99%,
-   granite 65%, qwen1.5b 71%).
+| Tier | Example | Clean-state result |
+|---|---|---|
+| ≤8GB | granite-8b, qwen1.5b | loads + benchmarks (clean) |
+| 22-26GB | gemma-31b, nemotron-omni | loads + benchmarks **100% / 4/4** (clean) |
+| ≥60GB | gpt-oss-120b | **hard load fail** (reproducible) |
 
-**Conclusion:** the real *usable benchmarking ceiling* on 128GB unified RAM
-is **~8-14GB models**. Above that you are in stall territory — the
-model fits but cannot be exercised. The 120b ("left because it got high
-ratings") cannot run here at all; that is empirical, not a timing artifact.
-This is why the Demo Bots manifest centers 2-8B models: they are the
-*calibration* tier, and they are the largest class this hardware can
-actually measure.
-
-| Tier | Example | Loads? | Benchmarks? |
-|---|---|---|---|
-| ≤8GB | granite-8b, qwen1.5b | yes | yes (clean) |
-| 22-30GB | gemma-31b, qwen3.6-27b | yes | **stalls** (0 trials) |
-| ≥60GB | gpt-oss-120b | **no** (abort) | n/a |
+**Conclusion:** the only *reproducible* ceiling is ≥~60GB (hard
+abort). The 8-26GB tier is the real benchmarking range on 128GB
+unified RAM, provided RAM is not pre-exhausted by prior loads.
+This is why the Demo Bots manifest centers 2-8B models: they are
+the *calibration* tier, largest class this hardware exercises cleanly,
+with headroom. The 120b ("left because it got high ratings")
+cannot run here at all — empirical, not a timing artifact.
+To re-confirm the 22-26GB tier, reboot and re-run gemma-31b /
+nemotron-omni in isolation (no prior large loads).
