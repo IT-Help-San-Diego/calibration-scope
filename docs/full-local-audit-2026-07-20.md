@@ -117,3 +117,34 @@ trials is 0%. This is the next executor hardening step.
 
 Every model has been EXERCISED through the fixed system. No number is a
 mystery anymore — each is either a real verdict or a root-caused failure.
+
+---
+
+## F. Frontier anchor: Fable 5 (2026-07-20, credits restored)
+
+anthropic/claude-fable-5 via Nous, same batteries, same executor,
+SHA3-sealed (runs 905-908). Denominators exclude transient provider
+infra errors (3 in reasoning, 1 in security — Nous returned no content),
+per the same honest-denominator rule applied to local models.
+
+| Axis | Score | Run |
+|---|---|---|
+| Reasoning | 98/99 (99%) | 908 |
+| Vision | 12/12 | 905 |
+| Tools | 3/3 | 906 |
+| Security | 2/2 | 907 |
+
+Sole reasoning miss: LOGIC-23 (Existential Denying the Antecedent) —
+trial 2 answered INVALID (correct), trial 3 emitted a truncated "IN"
+scored as fail. Likely truncation artifact, reported as-is.
+
+Context: local champions gemma-4-31b, gemma-4-12b, nemotron-3-nano-4b,
+and gpt-oss-120b each scored 102/102 on this battery. The frontier
+anchor confirms the battery's ceiling is reachable — and that the best
+local models match it on reasoning while running offline at $0/query.
+
+Run 904 (the first Fable 5 reasoning attempt) was aborted by the
+OVER-EAGER circuit breaker: 3 transient Nous empty-responses in the
+middle of 57 healthy scored trials tripped the consecutive-3 rule.
+Fixed: breaker now requires infra failures >= max(5, completed/2) —
+majority-broken, not transiently-hiccuped (see git log).
