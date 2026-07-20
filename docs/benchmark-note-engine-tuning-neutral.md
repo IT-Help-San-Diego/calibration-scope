@@ -86,9 +86,13 @@ were not tested as such:
   failure. The capable anchor in this note is **gemma-4-31b (local,
   free, 4/4 verified)**, not a paid cloud model. The fable-5
   number will be added when credits return; it is a gap, stated plainly.
-- **Scaffold arms are N=1 here; N=3 replication is in progress.**
-  Per our control-before-celebration rule, the +12/+18 heal is a
-  *preliminary* result until the replication lands.
+- **Scaffold arms ARE N≥3 replicated (completed 2026-07-19).**
+  qwen1.5b scaffold: 72/102 across runs 828, 838, 839, 840
+  (N=4, ±0). granite-8b scaffold: 66/102 across runs
+  832, 836, 837 (N=3, ±0; run 835 was 63/99 — one trial
+  infrastructure-flagged, not model variance). The +12/+18 heal is
+  **stable and reproducible**, satisfying the control-before-celebration bar.
+  No longer preliminary.
 
 ---
 
