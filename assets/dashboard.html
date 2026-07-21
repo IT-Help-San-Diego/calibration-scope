@@ -653,6 +653,68 @@
   html[data-mode="focused"] .top-nav .nav-arrow { display: none; }
   html[data-mode="focused"] .page:not(#page-benchmark) { display: none !important; }
 
+  /* FOCUSED MODE — a genuinely different ARRANGEMENT of the workspace, not
+     just fewer tabs. Design goal (Hawking-accessibility + "the brain is the
+     centerpiece"): the center brain + action bar fill the viewport; the
+     dense rail (model grid) and the stream collapse into edge flyouts the
+     user opens deliberately. NOTHING is removed — the flyouts contain the
+     exact same full-power controls (select tests, run-all, run-missing,
+     run-just-this). Deep mode keeps the full three-column cockpit. */
+  html[data-mode="focused"] #workspace {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 1fr !important;
+    height: calc(100vh - 37px) !important;
+    position: relative;
+  }
+  html[data-mode="focused"] #ws-rail,
+  html[data-mode="focused"] #ws-stream {
+    position: fixed;
+    top: 37px;
+    bottom: 0;
+    z-index: 40;
+    width: min(400px, 90vw);
+    background: var(--bg-primary);
+    transition: transform 180ms ease, box-shadow 180ms ease;
+    box-shadow: none;
+  }
+  html[data-mode="focused"] #ws-rail {
+    left: 0;
+    transform: translateX(calc(-100% + 46px));
+    border-right: 1px solid var(--border);
+  }
+  html[data-mode="focused"] #ws-stream {
+    right: 0;
+    transform: translateX(calc(100% - 46px));
+    border-left: 1px solid var(--border);
+  }
+  html[data-mode="focused"] #ws-rail:hover,
+  html[data-mode="focused"] #ws-rail:focus-within,
+  html[data-mode="focused"] #ws-rail.open,
+  html[data-mode="focused"] #ws-stream:hover,
+  html[data-mode="focused"] #ws-stream:focus-within,
+  html[data-mode="focused"] #ws-stream.open {
+    transform: translateX(0);
+    box-shadow: 0 8px 32px rgba(0,0,0,.55);
+  }
+  /* The flyout edge handles — visible affordance so users know the rail
+     exists. */
+  html[data-mode="focused"] #ws-rail::after,
+  html[data-mode="focused"] #ws-stream::after {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 46px;
+    background: linear-gradient(90deg, var(--bg-secondary), transparent);
+    cursor: pointer;
+  }
+  html[data-mode="focused"] #ws-rail::after { right: -46px; border-right: 1px solid var(--border); }
+  html[data-mode="focused"] #ws-stream::after { left: -46px; border-left: 1px solid var(--border); }
+  /* Focused: brain hero breathes — bigger max-width, more air. */
+  html[data-mode="focused"] #brain-hero-wrap { max-width: 880px !important; margin: 0 auto; }
+  html[data-mode="focused"] #brain-viz { padding: 32px 48px !important; }
+  html[data-mode="focused"] #ws-center { padding: 0 clamp(16px, 6vw, 96px); }
+
   #a11y-toggle {
     font-weight: 700;
     font-size: 12px;
