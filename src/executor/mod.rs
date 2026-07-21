@@ -991,19 +991,21 @@ async fn execute_run_inner(
                 ),
             });
 
-            // CIRCUIT BREAKER: a model is non-functional only if the
-            // MAJORITY of its completed trials are infrastructure failures
-            // (empty/timeout/load-reject) — e.g. 3 transient Nous API
-            // hiccups in the middle of 60 healthy trials must NOT abort a
-            // run that is 95% fine. Abort when infra errors exceed
-            // half the completed trials OR hit a hard floor of 5. A
-            // genuinely broken model (harmonic-hermes returning "" every
-            // time, glm-4.7-flash returning garbage) will blow past both.
-            let infra_threshold = std::cmp::max(5, completed_trials / 2);
-            if infra_error_count >= infra_threshold && completed_trials >= 3 {
+            // CIRCUIT BREAKER — dead-model detection ONLY. Abort when the
+            // model has answered NOTHING and infra failures have piled up:
+            // that is the harmonic-hermes signature (empty content on every
+            // trial, hours of hang without this guard). A model with ANY
+            // scored trial is alive — individual tests that deterministically
+            // return null (e.g. Fable 5 emitting content=null on one
+            // safety-classification prompt, found live run 910) are already
+            // excluded from the capability denominator as infra errors, and
+            // must NOT kill the rest of the battery. Wall-clock budget still
+            // bounds the worst case.
+            let scored_trials = (completed_trials + 1) - infra_error_count;
+            if infra_error_count >= 5 && scored_trials == 0 {
                 return Err(AppError::Executor(format!(
-                    "Run aborted after {} infrastructure failures out of {} trials for {} — model is non-functional (empty/timeout responses). Not a capability result.",
-                    infra_error_count, completed_trials, model_key
+                    "Run aborted: {} infrastructure failures and zero scored trials for {} — model never answered (dead/empty). Not a capability result.",
+                    infra_error_count, model_key
                 )));
             }
 

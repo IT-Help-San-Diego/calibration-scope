@@ -31,6 +31,9 @@ pub struct ActiveDownload {
     pub model_key: String,
     pub model_identifier: String,
     pub total_size_bytes: Option<i64>,
+    /// Wall-clock start (ISO). Not read by code yet — kept for the planned
+    /// stall detector (downloads with no byte progress since started_at).
+    #[allow(dead_code)]
     pub started_at: String,
 }
 

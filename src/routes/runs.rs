@@ -45,6 +45,7 @@ pub struct StartRunRequest {
     ///     The ceiling the hardware can extract from a model.
     ///   - "lightweight": smaller batches, parallel=1, flash on, KV offload —
     ///     the memory-constrained profile for constrained hardware.
+    ///
     /// Both presets are the SAME model capability tested under different
     /// engine tuning, so the delta isolates what tuning buys you.
     #[serde(default)]
@@ -391,6 +392,138 @@ pub async fn start_runs(
         "model_key": req.model_key,
         "axes": axes,
         "skipped_axes": skipped_axes.iter().map(|(a, reason)| serde_json::json!({"axis": a, "reason": reason})).collect::<Vec<_>>(),
+    })))
+}
+
+/// "Do the rest of the test" — complete a partially-tested model.
+///
+/// Computes the model's coverage gap: every ACTIVE test with ZERO clean
+/// (non-infra-error) trials for this model — i.e. tests it has never
+/// actually answered, whether because an axis was never run, a run was
+/// aborted/errored mid-battery, or every attempt was a provider infra
+/// error. Tests the model answered (pass OR fail) are NOT re-run: a real
+/// verdict stands; this endpoint fills holes, it does not retry failures.
+/// Vision tests are excluded for models without vision support (same gate
+/// as start_runs). `dry_run: true` returns the gap without firing.
+#[derive(Debug, Deserialize)]
+pub struct CompleteRunRequest {
+    pub model_key: String,
+    #[serde(default)]
+    pub provider: Option<String>,
+    #[serde(default)]
+    pub dry_run: bool,
+}
+
+pub async fn complete_run(
+    State(state): State<AppState>,
+    Json(req): Json<CompleteRunRequest>,
+) -> AppResult<Json<serde_json::Value>> {
+    let model = match req.provider.as_deref().filter(|p| !p.trim().is_empty()) {
+        Some(prov) => sqlx::query_as::<_, ModelRow>(
+            "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND provider = $2 AND active = true",
+        )
+        .bind(&req.model_key)
+        .bind(prov)
+        .fetch_optional(&state.db)
+        .await?,
+        None => sqlx::query_as::<_, ModelRow>(
+            "SELECT id, key, provider, location, supports_vision FROM models WHERE key = $1 AND active = true",
+        )
+        .bind(&req.model_key)
+        .fetch_optional(&state.db)
+        .await?,
+    }
+    .ok_or_else(|| AppError::Executor(format!("Unknown model key: {}", req.model_key)))?;
+
+    // The gap: active tests with no clean trial for this model. A trial
+    // that answered (even wrong) is a real verdict — only never-answered
+    // tests qualify. Vision-axis tests drop out for non-vision models.
+    let gap: Vec<(i32, String, String)> = sqlx::query_as(
+        r#"SELECT t.id, t.name, t.axis FROM tests t
+           WHERE t.active = true
+             AND (t.axis <> 'vision' OR $2)
+             AND NOT EXISTS (
+                 SELECT 1 FROM trial_results tr
+                 JOIN test_runs r ON tr.run_id = r.id
+                 WHERE r.model_id = $1
+                   AND tr.test_id = t.id
+                   AND tr.is_infra_error = false
+             )
+           ORDER BY t.axis, t.name"#,
+    )
+    .bind(model.id)
+    .bind(model.supports_vision)
+    .fetch_all(&state.db)
+    .await?;
+
+    let gap_json: Vec<serde_json::Value> = gap
+        .iter()
+        .map(|(id, name, axis)| serde_json::json!({"id": id, "name": name, "axis": axis}))
+        .collect();
+
+    if gap.is_empty() {
+        return Ok(Json(serde_json::json!({
+            "model_key": model.key,
+            "gap_count": 0,
+            "gap_tests": [],
+            "run_id": null,
+            "message": "No coverage gap — every active test this model can take has at least one clean trial."
+        })));
+    }
+    if req.dry_run {
+        return Ok(Json(serde_json::json!({
+            "model_key": model.key,
+            "gap_count": gap.len(),
+            "gap_tests": gap_json,
+            "run_id": null,
+            "dry_run": true
+        })));
+    }
+
+    // Refuse to stack behind an in-flight custom completion for the same
+    // model (same protection class as the per-axis duplicate check).
+    let (in_flight,): (i64,) = sqlx::query_as(
+        r#"SELECT COUNT(*) FROM test_runs
+           WHERE model_id = $1 AND axis = 'custom' AND status NOT IN ('done', 'error', 'aborted')"#,
+    )
+    .bind(model.id)
+    .fetch_one(&state.db)
+    .await?;
+    if in_flight > 0 {
+        return Err(AppError::Executor(format!(
+            "A custom/completion run for {} is already queued or running — wait for it to finish.",
+            model.key
+        )));
+    }
+
+    let ids: Vec<i32> = gap.iter().map(|(id, _, _)| *id).collect();
+    let ids_json = serde_json::to_string(&ids).unwrap_or_else(|_| "[]".to_string());
+    let (run_id,): (i32,) = sqlx::query_as(
+        r#"INSERT INTO test_runs (model_id, test_id, axis, status, load_mode, draft_model_key, scaffold_supplement, test_ids)
+           VALUES ($1, NULL, 'custom', 'queued', 'clean-room', NULL, NULL, $2::jsonb) RETURNING id"#,
+    )
+    .bind(model.id)
+    .bind(ids_json)
+    .fetch_one(&state.db)
+    .await?;
+
+    spawn_run_task(
+        &state,
+        run_id,
+        &model,
+        "custom".to_string(),
+        LoadMode::CleanRoom,
+        None,
+        None,
+        Some(ids.clone()),
+        None,
+    );
+
+    Ok(Json(serde_json::json!({
+        "model_key": model.key,
+        "gap_count": gap.len(),
+        "gap_tests": gap_json,
+        "run_id": run_id
     })))
 }
 

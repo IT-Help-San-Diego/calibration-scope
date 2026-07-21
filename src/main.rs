@@ -101,6 +101,10 @@ async fn main() {
             "/api/runs/baseline-scaffold",
             post(routes::runs::start_baseline_scaffold),
         )
+        .route(
+            "/api/runs/complete",
+            post(routes::runs::complete_run),
+        )
         .route("/api/runs/{id}", get(routes::runs::get_run_detail))
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
         .route("/api/runs/{id}/export", get(routes::runs::export_run))
