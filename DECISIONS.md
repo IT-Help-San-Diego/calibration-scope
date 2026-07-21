@@ -234,6 +234,45 @@ validated too._
   security scan (`dyld3::open`); the same binary runs fine in a foreground shell.
   Recovers after the scan settles / a reboot.
 
+## 10.5 LM Studio download pipeline + Demo Bots panel (Hermes Agent, 2026-07-19/21)
+
+Foundation feature: the dashboard can pull known-good models through LM Studio's
+own download pipeline (we never touch disk; LM Studio writes bytes to its
+content-addressed blob store; we read JSON over localhost:1234). See
+`docs/lm-studio-api-notes.md` (verified v1 contract) and `docs/demo-bots.md`.
+
+- **Backend** (`src/routes/download.rs`): `POST /api/lmstudio/download` (forwards
+  to LM Studio `/api/v1/models/download`, captures `job_id` + `total_size_bytes`
+  immediately), `GET /api/lmstudio/downloads` (active jobs). A single tokio
+  poller sleeps 3s and does **zero network work when idle** — only polls
+  `download/status/:job_id` for jobs WE started. SSE events:
+  `model_download_started/_progress/_complete/_failed`.
+- **size_gb on completion**: poller syncs LM Studio first (the model only enters
+  its registry ON completion, so our `models` row doesn't exist yet), then writes
+  the honest `size_gb` from `total_size_bytes` (real, not derived). Matching uses
+  `normalize_key()` (lowercase, drop org prefix, strip LM Studio type-tag
+  prefixes like `text-embedding-`, strip `-gguf` + quant suffix) + a containment
+  fallback — because LM Studio rewrites the key on registration.
+- **Foundation crack fixed**: `ModelEntry.size_gb` was `f64` (non-Optional) but
+  many rows have NULL size_gb → `query_as` failed → `/api/models` returned 0
+  (grid + panel empty). Fix: `size_gb: Option<f64>`. UI shows `—` for NULL.
+- **Demo Bots panel** (`#demo-bots` above the filter bar): 3 curated cards
+  (Goldilocks starter set from the VERIFIED local leaderboard — Bot A floor
+  `llama-3.2-1b-instruct` 53%, Bot B scaffold-heals `ibm/granite-3.2-8b` 64%,
+  Bot C Goldilocks `google/gemma-4-e2b` 82% vision). Each card checks the LIVE
+  registry: already-installed → "✓ Installed · {size_gb|—}" (no button); absent
+  → Download; downloading → live "⏳ 73% · 4.2/5.7 GB" / "⏸ paused" from SSE.
+  Handles "user may already have some bots".
+- **Pause/cancel**: LM Studio REST has NO cancel/pause endpoint (404/415 on
+  probes). We reflect GUI pause live (`status:paused` in SSE). Card notes
+  "Pause/resume in your LM Studio downloader".
+- **Verified live**: trigger → job_id + total_size_bytes → SSE progress (incl.
+  paused) → completion → sync → normalize-match → `size_gb` written (qwen2.5-
+  1.5b-instruct = 1 GB). Console clean (0 errors) via Firefox MCP preflight gate.
+- **No catalog search**: LM Studio has no catalog-search/browse API; Hugging
+  Face doesn't reliably expose GGUF sizes in model metadata. The manifest is
+  DATA (our leaderboard), not a scrape.
+
 ---
 
 ## 11. Next steps (open — both tools)
