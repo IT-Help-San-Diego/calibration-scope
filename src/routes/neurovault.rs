@@ -197,3 +197,81 @@ pub async fn neurovault_manifest() -> Json<Vec<ManifestEntry>> {
     });
     Json(out)
 }
+
+/// Same-origin image proxy for the admitted NeuroVault glass-brain maps.
+///
+/// WHY: the dashboard CSP is deliberately strict (`img-src 'self' data:`) —
+/// we do not loosen policy to render third-party thumbnails. Instead the
+/// backend fetches the map image ONCE from neurovault.org, caches it on
+/// disk (~/.calibration-scope/cache/neurovault/), and serves it same-origin
+/// forever after. This kills the 2 standing CSP console errors the right
+/// way, keeps the science layer working offline after first fetch, and
+/// pins provenance: only images in the curated whitelist above can be
+/// proxied — this is NOT an open proxy (unknown ids -> 404).
+pub async fn neurovault_image(
+    Path((collection_id, image_id)): Path<(i64, i64)>,
+) -> axum::response::Response {
+    use axum::http::{header, StatusCode};
+    use axum::response::IntoResponse;
+
+    // Whitelist lookup: resolve the remote URL from our curated data only.
+    let remote = images_data()
+        .get(&collection_id)
+        .and_then(|imgs| imgs.iter().find(|i| i.id == image_id).cloned())
+        .and_then(|i| i.thumbnail_url);
+    let Some(remote_url) = remote else {
+        return (StatusCode::NOT_FOUND, "unknown neurovault image").into_response();
+    };
+
+    let cache_dir = std::env::var_os("HOME")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| std::path::PathBuf::from("/tmp"))
+        .join(".calibration-scope/cache/neurovault");
+    let cache_path = cache_dir.join(format!("{}_{}.jpg", collection_id, image_id));
+
+    if let Ok(bytes) = tokio::fs::read(&cache_path).await {
+        return ([(header::CONTENT_TYPE, "image/jpeg")], bytes).into_response();
+    }
+
+    // First fetch: pull from NeuroVault, cache, serve. Failure is reported
+    // honestly (502) — no placeholder bytes, per the no-fake-data rule.
+    let client = reqwest::Client::new();
+    let resp = match client
+        .get(&remote_url)
+        .timeout(std::time::Duration::from_secs(20))
+        .send()
+        .await
+    {
+        Ok(r) if r.status().is_success() => r,
+        Ok(r) => {
+            return (
+                StatusCode::BAD_GATEWAY,
+                format!("neurovault returned {}", r.status()),
+            )
+                .into_response();
+        }
+        Err(e) => {
+            return (
+                StatusCode::BAD_GATEWAY,
+                format!("neurovault fetch failed: {}", e),
+            )
+                .into_response();
+        }
+    };
+    let bytes = match resp.bytes().await {
+        Ok(b) => b,
+        Err(e) => {
+            return (
+                StatusCode::BAD_GATEWAY,
+                format!("neurovault body read failed: {}", e),
+            )
+                .into_response();
+        }
+    };
+    if let Err(e) = tokio::fs::create_dir_all(&cache_dir).await {
+        tracing::warn!("neurovault cache dir create failed: {}", e);
+    } else if let Err(e) = tokio::fs::write(&cache_path, &bytes).await {
+        tracing::warn!("neurovault cache write failed: {}", e);
+    }
+    ([(header::CONTENT_TYPE, "image/jpeg")], bytes.to_vec()).into_response()
+}

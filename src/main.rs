@@ -189,6 +189,10 @@ async fn main() {
             "/api/neurovault/manifest",
             get(routes::neurovault::neurovault_manifest),
         )
+        .route(
+            "/api/neurovault/img/{collection_id}/{image_id}",
+            get(routes::neurovault::neurovault_image),
+        )
         .nest_service("/assets", static_files)
         // 16MB body cap: a 10MB image (Prompt Builder max) is ~13.7MB as base64.
         .layer(axum::extract::DefaultBodyLimit::max(16 * 1024 * 1024))

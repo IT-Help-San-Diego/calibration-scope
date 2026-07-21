@@ -1538,7 +1538,9 @@ async function loadScienceLayer() {
       if (c.doi) dois.add(c.doi);
       const images = await fetch('/api/neurovault/images/' + c.id).then(r => r.ok ? r.json() : []).catch(() => []);
       cards = images.map(img => {
-        const thumb = img.thumbnail_url || img.file_url;
+        // Same-origin proxy (backend fetch-and-cache) — keeps img-src 'self'
+        // CSP intact instead of loosening policy for neurovault.org.
+        const thumb = '/api/neurovault/img/' + c.id + '/' + img.id;
         return '<div class="science-card" style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;" onclick="toggleScienceWhy(' + c.id + ')">'
           + '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-bottom:6px;">' + escHtml(c.name) + '</div>'
           + '<img src="' + escHtml(thumb) + '" alt="' + escHtml(img.name) + ' - ' + escHtml(c.doi || 'Open NeuroVault map') + '" loading="lazy" style="width:100%;height:auto;border-radius:8px;display:block;background:#0a0f14;" />'
