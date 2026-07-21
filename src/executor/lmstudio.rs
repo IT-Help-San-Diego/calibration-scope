@@ -650,7 +650,7 @@ pub async fn chat(
     })
 }
 
-fn extract_speculative_stats(json: &serde_json::Value) -> Option<super::SpeculativeDecodeStats> {
+pub(crate) fn extract_speculative_stats(json: &serde_json::Value) -> Option<super::SpeculativeDecodeStats> {
     let draft_model = json
         .get("draft_model")
         .and_then(|v| v.as_str())
