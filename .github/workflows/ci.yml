@@ -106,8 +106,13 @@ jobs:
       - name: Build
         run: cargo build --release --verbose
 
-      - name: Test
-        run: cargo test --release --verbose
+      # Unit (lib) tests only — these are platform- and data-agnostic (they
+      # cover scoring, the leak-free scaffold, fountain verdicts, etc.). The
+      # integration suite (tests/) asserts macOS host APIs (Metal/sysctl), a
+      # seeded dev database, and a live LM Studio, none of which exist on a
+      # headless Linux runner — it runs locally against the real instrument.
+      - name: Test (unit)
+        run: cargo test --release --lib --verbose
 
   codeql:
     name: CodeQL security scan (Rust)
