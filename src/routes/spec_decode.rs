@@ -136,11 +136,24 @@ fn scan_draft_pairs() -> Vec<SpecPair> {
                 }
 
                 if let Some(draft) = draft_model {
-                    let main_model = path
-                        .file_stem()
-                        .and_then(|s| s.to_str())
-                        .unwrap_or("")
-                        .to_string();
+                    // Reconstruct the NAMESPACED key: configs live under a
+                    // publisher dir (google/gemma-4-31b.json → key
+                    // "google/gemma-4-31b"). Bare file_stem() dropped the
+                    // publisher, putting main_model in a different identifier
+                    // space than draft_model / the roster / LM Studio instance
+                    // keys — the root of the bare-vs-namespaced mismatch class
+                    // (and it defeated ensure_pair_loaded's exact residency
+                    // check, risking duplicate loads from the pairs panel).
+                    let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+                    let main_model = match path
+                        .parent()
+                        .and_then(|p| p.strip_prefix(&config_root).ok())
+                        .and_then(|rel| rel.to_str())
+                        .filter(|rel| !rel.is_empty())
+                    {
+                        Some(publisher) => format!("{}/{}", publisher, stem),
+                        None => stem.to_string(),
+                    };
                     pairs.push(SpecPair {
                         main_model,
                         draft_model: draft,
@@ -199,8 +212,14 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
     let base_url = state.config.lmstudio_base_url.clone();
     let mut pairs = scan_draft_pairs();
 
+    // Reflects the fetch outcome below — previously hardcoded true, which made
+    // the dashboard's "unreachable" branch dead and reported "LM Studio
+    // connected" while every pair's reason said unreachable.
+    let lmstudio_connected;
+
     match fetch_ls_models(&base_url).await {
         Ok(models) => {
+            lmstudio_connected = true;
             let loaded_ids: Vec<String> = models
                 .iter()
                 .filter(|m| m.get("state").and_then(|s| s.as_str()) == Some("loaded"))
@@ -234,6 +253,7 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
             }
         }
         Err(_) => {
+            lmstudio_connected = false;
             for pair in &mut pairs {
                 pair.reason = Some(format!("LM Studio unreachable at {}", base_url));
             }
@@ -241,7 +261,7 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
     }
 
     Ok(Json(PairsResponse {
-        lmstudio_connected: true,
+        lmstudio_connected,
         lmstudio_base_url: base_url,
         pairs,
     }))
@@ -283,8 +303,14 @@ pub async fn spec_decode_test(
     // Bind the pair the SAME way real runs do — this is the executor's own
     // loader, not a reimplementation. No-op when the pair is already resident
     // with its draft; otherwise loads the primary with the speculative binding.
-    crate::executor::lmstudio::ensure_pair_loaded(&client, &base_url, &primary_key, &draft_key, 180)
-        .await?;
+    crate::executor::lmstudio::ensure_pair_loaded(
+        &client,
+        &base_url,
+        &primary_key,
+        &draft_key,
+        180,
+    )
+    .await?;
 
     // Probe via /api/v0/chat/completions — the endpoint that reports draft
     // counters — parsed with the executor's OWN helpers so there is no drift
@@ -334,7 +360,12 @@ pub async fn spec_decode_test(
         .and_then(|s| s.draft_model.clone())
         .unwrap_or_else(|| pair.draft_model.clone());
 
-    let verdict = match (draft_active, acceptance_rate, accepted_draft_tokens, total_draft_tokens) {
+    let verdict = match (
+        draft_active,
+        acceptance_rate,
+        accepted_draft_tokens,
+        total_draft_tokens,
+    ) {
         (true, Some(rate), Some(a), Some(t)) => format!(
             "[OK] Draft active — {}% acceptance ({}/{} draft tokens)",
             (rate * 100.0).round() as i32,

@@ -73,10 +73,7 @@ pub async fn lmstudio_download(
 ) -> AppResult<Json<DownloadStarted>> {
     let client = Client::new();
     let base = &state.config.lmstudio_base_url;
-    let model_key = req
-        .key
-        .clone()
-        .unwrap_or_else(|| derive_key(&req.model));
+    let model_key = req.key.clone().unwrap_or_else(|| derive_key(&req.model));
 
     let mut body = json!({ "model": req.model });
     if let Some(q) = &req.quantization {
@@ -88,7 +85,9 @@ pub async fn lmstudio_download(
         .json(&body)
         .send()
         .await
-        .map_err(|e| crate::error::AppError::Executor(format!("LM Studio download forward failed: {}", e)))?;
+        .map_err(|e| {
+            crate::error::AppError::Executor(format!("LM Studio download forward failed: {}", e))
+        })?;
 
     if !resp.status().is_success() {
         let code = resp.status().as_u16();
@@ -103,8 +102,15 @@ pub async fn lmstudio_download(
         crate::error::AppError::Executor(format!("Malformed LM Studio download response: {}", e))
     })?;
 
-    let status = job.get("status").and_then(|s| s.as_str()).unwrap_or("unknown").to_string();
-    let job_id = job.get("job_id").and_then(|j| j.as_str()).map(|s| s.to_string());
+    let status = job
+        .get("status")
+        .and_then(|s| s.as_str())
+        .unwrap_or("unknown")
+        .to_string();
+    let job_id = job
+        .get("job_id")
+        .and_then(|j| j.as_str())
+        .map(|s| s.to_string());
     let total_size_bytes = job.get("total_size_bytes").and_then(|t| t.as_i64());
 
     if status == "already_downloaded" {
@@ -125,25 +131,30 @@ pub async fn lmstudio_download(
             .and_then(|s| s.as_str())
             .unwrap_or("")
             .to_string();
-        state
-            .active_downloads
-            .lock()
-            .await
-            .insert(jid.clone(), ActiveDownload {
+        state.active_downloads.lock().await.insert(
+            jid.clone(),
+            ActiveDownload {
                 job_id: jid.clone(),
                 model_key: model_key.clone(),
                 model_identifier: req.model.clone(),
                 total_size_bytes,
                 started_at: started,
-            });
+            },
+        );
         // Nudge the poller to pick this up immediately (best-effort; the 3s loop
         // would catch it regardless).
-        state.events_tx.send(json!({
-            "type": "model_download_started",
-            "job_id": jid,
-            "model_key": model_key,
-            "total_size_bytes": total_size_bytes,
-        }).to_string()).ok();
+        state
+            .events_tx
+            .send(
+                json!({
+                    "type": "model_download_started",
+                    "job_id": jid,
+                    "model_key": model_key,
+                    "total_size_bytes": total_size_bytes,
+                })
+                .to_string(),
+            )
+            .ok();
     }
 
     Ok(Json(DownloadStarted {
@@ -156,7 +167,9 @@ pub async fn lmstudio_download(
 }
 
 /// GET /api/lmstudio/downloads — current in-flight downloads for the UI.
-pub async fn list_downloads(State(state): State<AppState>) -> AppResult<Json<Vec<serde_json::Value>>> {
+pub async fn list_downloads(
+    State(state): State<AppState>,
+) -> AppResult<Json<Vec<serde_json::Value>>> {
     let map = state.active_downloads.lock().await;
     let mut out = Vec::new();
     for d in map.values() {
@@ -215,7 +228,11 @@ fn regex_free_strip_quant(k: &str) -> &str {
     // Quant tokens are alphanumeric + underscore, preceded by '-'.
     if let Some(pos) = k.rfind('-') {
         let suffix = &k[pos + 1..];
-        if !suffix.is_empty() && suffix.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+        if !suffix.is_empty()
+            && suffix
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '_')
+        {
             // Heuristic: a quant suffix contains a digit (e.g. 4, 8, 0).
             if suffix.chars().any(|c| c.is_ascii_digit()) {
                 return &k[..pos];
@@ -247,10 +264,7 @@ pub fn spawn_download_poller(state: AppState) {
             let base = state.config.lmstudio_base_url.clone();
 
             for job in jobs {
-                let url = format!(
-                    "{}/api/v1/models/download/status/{}",
-                    base, job.job_id
-                );
+                let url = format!("{}/api/v1/models/download/status/{}", base, job.job_id);
                 let status = client.get(&url).send().await;
                 let parsed = match status {
                     Ok(r) if r.status().is_success() => r.json::<serde_json::Value>().await.ok(),
@@ -261,7 +275,10 @@ pub fn spawn_download_poller(state: AppState) {
                     None => continue, // transient; retry next tick
                 };
 
-                let st = parsed.get("status").and_then(|s| s.as_str()).unwrap_or("unknown");
+                let st = parsed
+                    .get("status")
+                    .and_then(|s| s.as_str())
+                    .unwrap_or("unknown");
                 let downloaded = parsed.get("downloaded_bytes").and_then(|d| d.as_i64());
                 let total = parsed
                     .get("total_size_bytes")
@@ -273,15 +290,21 @@ pub fn spawn_download_poller(state: AppState) {
                     (Some(d), Some(t)) if t > 0 => (d as f64 / t as f64 * 100.0).round() as i64,
                     _ => 0,
                 };
-                state.events_tx.send(json!({
-                    "type": "model_download_progress",
-                    "job_id": job.job_id,
-                    "model_key": job.model_key,
-                    "downloaded_bytes": downloaded,
-                    "total_size_bytes": total,
-                    "pct": pct,
-                    "status": st,
-                }).to_string()).ok();
+                state
+                    .events_tx
+                    .send(
+                        json!({
+                            "type": "model_download_progress",
+                            "job_id": job.job_id,
+                            "model_key": job.model_key,
+                            "downloaded_bytes": downloaded,
+                            "total_size_bytes": total,
+                            "pct": pct,
+                            "status": st,
+                        })
+                        .to_string(),
+                    )
+                    .ok();
 
                 if st == "completed" {
                     // The model only enters LM Studio's registry ON completion,
@@ -296,12 +319,11 @@ pub fn spawn_download_poller(state: AppState) {
                         // from the HF identifier we sent. Normalize both sides
                         // in Rust and match the lmstudio row we just synced.
                         let want = normalize_key(&job.model_key);
-                        let keys: Vec<(String,)> = sqlx::query_as(
-                            "SELECT key FROM models WHERE provider = 'lmstudio'",
-                        )
-                        .fetch_all(&state.db)
-                        .await
-                        .unwrap_or_default();
+                        let keys: Vec<(String,)> =
+                            sqlx::query_as("SELECT key FROM models WHERE provider = 'lmstudio'")
+                                .fetch_all(&state.db)
+                                .await
+                                .unwrap_or_default();
                         // Primary: exact normalized match. Fallback: containment,
                         // in case LM Studio prepends/appends something we didn't
                         // anticipate (e.g. an unhandled type tag). Contains is
@@ -333,7 +355,8 @@ pub fn spawn_download_poller(state: AppState) {
                         } else {
                             tracing::warn!(
                                 "size_gb: no lmstudio row matched normalized key '{}' for {}",
-                                want, job.model_key
+                                want,
+                                job.model_key
                             );
                         }
                     }
@@ -344,18 +367,30 @@ pub fn spawn_download_poller(state: AppState) {
                     {
                         state.events_tx.send(env).ok();
                     }
-                    state.events_tx.send(json!({
-                        "type": "model_download_complete",
-                        "job_id": job.job_id,
-                        "model_key": job.model_key,
-                    }).to_string()).ok();
+                    state
+                        .events_tx
+                        .send(
+                            json!({
+                                "type": "model_download_complete",
+                                "job_id": job.job_id,
+                                "model_key": job.model_key,
+                            })
+                            .to_string(),
+                        )
+                        .ok();
                 } else if st == "failed" {
                     state.active_downloads.lock().await.remove(&job.job_id);
-                    state.events_tx.send(json!({
-                        "type": "model_download_failed",
-                        "job_id": job.job_id,
-                        "model_key": job.model_key,
-                    }).to_string()).ok();
+                    state
+                        .events_tx
+                        .send(
+                            json!({
+                                "type": "model_download_failed",
+                                "job_id": job.job_id,
+                                "model_key": job.model_key,
+                            })
+                            .to_string(),
+                        )
+                        .ok();
                 }
                 // "downloading" | "paused" → keep tracking.
             }

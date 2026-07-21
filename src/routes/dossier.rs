@@ -31,7 +31,9 @@ struct RegistryRow {
     location: String,
     context_length: i32,
     supports_vision: bool,
-    size_gb: f64,
+    // Nullable in the DB (both sync paths write NULL when size is unknown);
+    // bare f64 would 500 the whole dossier for those rows.
+    size_gb: Option<f64>,
     notes: Option<String>,
     tags: Option<Vec<String>>,
     active: bool,

@@ -102,8 +102,7 @@ pub async fn security_headers(req: Request<Body>, next: Next) -> Response<Body> 
 /// A plain token replace is correct and avoids regex look-around (unsupported
 /// by the default `regex` feature set, which would panic at runtime).
 pub fn stamp_nonce(html: &str, nonce: &str) -> String {
-    html
-        .replace("<script>", &format!("<script nonce=\"{}\">", nonce))
+    html.replace("<script>", &format!("<script nonce=\"{}\">", nonce))
         .replace(
             "<script defer src=",
             &format!("<script defer nonce=\"{}\" src=", nonce),

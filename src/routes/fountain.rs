@@ -12,11 +12,18 @@
 //! probe streams per-request telemetry over the SSE channel (no-spinner
 //! mandate: the UI shows each request land in real time).
 //!
-//! Verdict vocabulary (computed, single source of truth = verdict_for()):
+//! Verdict vocabulary (computed, single source of truth = verdict_for()).
+//! Rate verdicts are judged over rate-relevant outcomes ONLY (ok + 429):
+//! transport failures and 5xx are the prober's network or the provider's
+//! server health, never rate-policy evidence.
 //!   FOUNTAIN  — every request succeeded; no throttling observed at this rate
-//!   TRICKLE   — ≥90% succeeded, at least one 429; usable with patience
-//!   THROTTLED — 50–90% succeeded; real work degraded
-//!   MIRAGE    — <50% succeeded; advertised access is effectively a lie
+//!   TRICKLE   — ≥90% of rated requests ok, at least one 429; usable with patience
+//!   THROTTLED — 50–90% of rated requests ok; real work degraded by the limiter
+//!   MIRAGE    — <50% of rated requests ok; advertised access is effectively a lie
+//!   UNSTABLE  — no throttling observed, but some requests failed for
+//!               non-rate reasons (5xx/transport); rerun or check network
+//!   ERRORED   — every request failed before any rate evidence existed;
+//!               endpoint/key/network broken — no rate-posture claim made
 //!
 //! A verdict is always relative to the probed request count & spacing —
 //! both are stored with the evidence, never implied.
@@ -48,14 +55,31 @@ pub struct FountainReq {
 }
 
 /// Single source of truth for the fountain verdict vocabulary.
-fn verdict_for(ok: i64, sent: i64, rate_limited: i64) -> &'static str {
-    if sent == 0 {
-        return "MIRAGE"; // nothing even got out — key/endpoint dead
+///
+/// Judges RATE POSTURE over the outcomes that carry rate evidence (ok + 429).
+/// The old version folded transport/5xx errors into the denominator, so a
+/// local wifi blip read as THROTTLED ("real work degraded") and a provider
+/// 500-incident as MIRAGE ("advertised access is a lie") — indicting the
+/// provider's rate policy on evidence that says nothing about it. Errors now
+/// yield UNSTABLE (rate clean, run wasn't) or ERRORED (no rate evidence).
+fn verdict_for(ok: i64, rate_limited: i64, errored: i64) -> &'static str {
+    let rated = ok + rate_limited;
+    if rated == 0 {
+        // No request carried rate evidence: either everything errored
+        // (broken endpoint/key/network) or nothing was sent at all.
+        return if errored > 0 { "ERRORED" } else { "MIRAGE" };
     }
-    let ratio = ok as f64 / sent as f64;
+    let ratio = ok as f64 / rated as f64;
     if ratio >= 1.0 {
-        "FOUNTAIN"
-    } else if ratio >= 0.9 && rate_limited > 0 {
+        // Rate posture is clean — but with failed requests in the run we
+        // don't award the pristine verdict.
+        if errored > 0 {
+            "UNSTABLE"
+        } else {
+            "FOUNTAIN"
+        }
+    } else if ratio >= 0.9 {
+        // Any deficit inside `rated` IS 429s, so "observed 429" holds.
         "TRICKLE"
     } else if ratio >= 0.5 {
         "THROTTLED"
@@ -260,7 +284,7 @@ async fn run_probe(
     }
 
     let sent = ok_n + limited_n + err_n;
-    let verdict = verdict_for(ok_n, sent, limited_n);
+    let verdict = verdict_for(ok_n, limited_n, err_n);
     let duration = started.elapsed().as_millis() as i64;
     // Seal the full per-request evidence — same provenance discipline as runs.
     let record = format!(
@@ -353,36 +377,61 @@ pub async fn probe_detail(
 #[cfg(test)]
 mod tests {
     use super::verdict_for;
+    // Signature: verdict_for(ok, rate_limited, errored)
 
     #[test]
     fn all_ok_is_fountain() {
-        assert_eq!(verdict_for(20, 20, 0), "FOUNTAIN");
+        assert_eq!(verdict_for(20, 0, 0), "FOUNTAIN");
     }
 
     #[test]
     fn one_429_in_twenty_is_trickle() {
-        assert_eq!(verdict_for(19, 20, 1), "TRICKLE");
+        assert_eq!(verdict_for(19, 1, 0), "TRICKLE");
     }
 
     #[test]
-    fn ninety_percent_without_429_is_throttled_not_trickle() {
-        // Failures that aren't rate limits (500s, timeouts) are instability,
-        // not a polite limiter — TRICKLE requires observed 429 behavior.
-        assert_eq!(verdict_for(18, 20, 0), "THROTTLED");
+    fn transport_blip_is_unstable_not_throttled() {
+        // 19 ok + 1 timeout, zero 429s: the provider never throttled. The old
+        // logic called this THROTTLED ("real work degraded") — blaming the
+        // provider's rate policy for the prober's network. Rate posture is
+        // clean but the run wasn't pristine: UNSTABLE.
+        assert_eq!(verdict_for(19, 0, 1), "UNSTABLE");
     }
 
     #[test]
-    fn two_thirds_is_throttled() {
-        assert_eq!(verdict_for(14, 20, 6), "THROTTLED");
+    fn provider_5xx_incident_is_unstable_not_mirage() {
+        // 9 ok + 11 provider 500s, zero 429s: the old logic called this
+        // MIRAGE ("advertised access is a lie") — a server incident is not
+        // rate-policy deception.
+        assert_eq!(verdict_for(9, 0, 11), "UNSTABLE");
     }
 
     #[test]
-    fn under_half_is_mirage() {
-        assert_eq!(verdict_for(9, 20, 11), "MIRAGE");
+    fn two_thirds_within_rated_is_throttled() {
+        assert_eq!(verdict_for(14, 6, 0), "THROTTLED");
+    }
+
+    #[test]
+    fn under_half_within_rated_is_mirage() {
+        assert_eq!(verdict_for(9, 11, 0), "MIRAGE");
+    }
+
+    #[test]
+    fn all_errored_is_errored_not_mirage() {
+        // Every request died before any rate evidence existed — no
+        // rate-posture claim can honestly be made.
+        assert_eq!(verdict_for(0, 0, 20), "ERRORED");
     }
 
     #[test]
     fn nothing_sent_is_mirage() {
         assert_eq!(verdict_for(0, 0, 0), "MIRAGE");
+    }
+
+    #[test]
+    fn errors_do_not_dilute_rate_ratio() {
+        // 10 ok + 10 429s + 10 errors: rate ratio is 10/20 = 0.5 → THROTTLED.
+        // Old logic: 10/30 = 0.33 → MIRAGE, inflated by non-rate noise.
+        assert_eq!(verdict_for(10, 10, 10), "THROTTLED");
     }
 }

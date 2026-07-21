@@ -3292,7 +3292,7 @@ function renderGrid() {
     // provider's rate posture match the price tag?") has no meaning for a
     // model running on your own silicon.
     const probeBtn = m.location === 'cloud'
-      ? `<button class="btn-mini" onclick="event.stopPropagation(); startFountain('${m.key.replace(/'/g, "\\'")}', '${m.provider}')" title="Fire 20 requests at 1/s and measure what the provider ACTUALLY sustains — verdicts: FOUNTAIN (all pass), TRICKLE (slow), THROTTLED (429s/drops), MIRAGE (advertised but unusable)">⛲ Probe</button>`
+      ? `<button class="btn-mini" onclick="event.stopPropagation(); startFountain('${m.key.replace(/'/g, "\\'")}', '${m.provider}')" title="Fire 20 requests at 1/s and measure what the provider ACTUALLY sustains — verdicts: FOUNTAIN (all pass), TRICKLE (some 429s), THROTTLED (heavy 429s), MIRAGE (429'd into unusability), UNSTABLE (non-rate failures), ERRORED (nothing answered)">⛲ Probe</button>`
       : '';
 
     return `<div class="${cardClasses}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}">
@@ -3458,10 +3458,11 @@ function costLine(m) {
   const spend = fmtSpend(m.measured_cost_usd);
   // Fountain verdict = the measured answer to the tier's claim. FOUNTAIN
   // green (claim verified), TRICKLE cyan (slow but real), THROTTLED amber,
-  // MIRAGE red (advertised but unusable). Sits beside the price so the
-  // claim and the measurement read as one line.
+  // MIRAGE red (advertised but unusable). UNSTABLE amber (rate clean, but
+  // non-rate failures — 5xx/transport), ERRORED muted (no rate evidence at
+  // all). Sits beside the price so claim and measurement read as one line.
   const fv = m.fountain_verdict;
-  const fvCls = fv === 'FOUNTAIN' ? 'safe' : fv === 'TRICKLE' ? 'cost-trickle' : fv === 'THROTTLED' ? 'flaky' : fv === 'MIRAGE' ? 'unsafe' : '';
+  const fvCls = fv === 'FOUNTAIN' ? 'safe' : fv === 'TRICKLE' ? 'cost-trickle' : fv === 'THROTTLED' ? 'flaky' : fv === 'MIRAGE' ? 'unsafe' : fv === 'UNSTABLE' ? 'flaky' : '';
   const fvChip = fv ? `<span class="chip ${fvCls}" style="font-size:9px;padding:1px 6px;" title="Measured rate posture: latest fountain probe (20 req @ 1/s) — this is evidence, not the catalog's claim">⛲ ${fv}</span>` : '';
   return `<div class="cost-line" style="font-size:11px;margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
     <span class="chip ${tier.cls}" style="font-size:9px;padding:1px 6px;" title="${tier.note}">${tier.label}</span>
@@ -5555,11 +5556,14 @@ async function openInsights(key) {
         const badge = working ? '<span style="color:var(--safe);font-weight:600">WORKING</span>' : '<span style="color:var(--unsafe);font-weight:600">BROKEN</span>';
         let html = '<div class="dossier-section"><div class="dossier-section-title">Speculative decoding \u2014 acceleration pairing</div>';
         html += '<div style="margin-bottom:var(--fib-2)">Paired with <span style="font-family:var(--font-mono);color:var(--accent-gold);font-weight:600">' + esc(sd.draft_model) + '</span> ' + badge + '</div>';
-        if (sd.measured_speedup) {
-          html += '<div style="display:flex;gap:var(--fib-3);margin-bottom:var(--fib-2)">';
-          html += '<div class="metric-dial"><div class="dial-value" style="color:var(--safe)">' + sd.measured_speedup + 'x</div><div class="dial-label">SPEEDUP</div></div>';
+        if (sd.measured_acceptance_rate != null) {
+          // Real number: aggregated from this model's own recorded trial counters.
+          html += '<div style="display:flex;gap:var(--fib-3);align-items:center;margin-bottom:var(--fib-2)">';
           html += '<div class="metric-dial"><div class="dial-value" style="color:var(--safe)">' + Math.round(sd.measured_acceptance_rate * 100) + '%</div><div class="dial-label">DRAFT ACCEPT</div></div>';
+          html += '<div style="font-size:11px;color:var(--text-muted)">measured across ' + (sd.measured_trial_count || '?') + ' trial(s) with draft activity</div>';
           html += '</div>';
+        } else {
+          html += '<div style="font-size:11px;color:var(--text-muted);margin-bottom:var(--fib-2)">Pairing configured — no recorded trials with draft activity yet, so no acceptance rate to report.</div>';
         }
         html += '<div class="dossier-src">' + esc(sd.explanation) + '</div></div>';
         return html;
@@ -6273,18 +6277,20 @@ async function focusedPickSubject() {
 // axes with checkboxes. Returns array of selected test IDs or null.
 async function showTestPicker(axes) {
   return new Promise(async (resolve) => {
-    // Fetch tests for all selected axes
-    const allTests = [];
-    for (const axis of axes) {
-      try {
-        const res = await fetch('/api/tests?axis=' + axis);
-        if (res.ok) {
-          const data = await res.json();
-          const tests = Array.isArray(data) ? data : (data.tests || []);
-          for (const t of tests) allTests.push({ ...t, axis });
-        }
-      } catch (e) { /* skip axis on error */ }
-    }
+    // Fetch the full suite ONCE and filter by each test's REAL axis.
+    // The old loop fetched /api/tests?axis=X per axis, but the backend has no
+    // axis param (serde silently drops it) — every iteration got ALL tests
+    // back, mislabeled via {...t, axis} and duplicated per selected axis, so
+    // "Run Just This [axis]" silently queued the whole suite.
+    let allTests = [];
+    try {
+      const res = await fetch('/api/tests');
+      if (res.ok) {
+        const data = await res.json();
+        const tests = Array.isArray(data) ? data : (data.tests || []);
+        allTests = tests.filter(t => axes.includes(t.axis));
+      }
+    } catch (e) { /* fall through — empty list resolves null below */ }
     if (!allTests.length) { resolve(null); return; }
 
     // Create modal

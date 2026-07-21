@@ -67,7 +67,9 @@ struct ModelRow {
     display_name: String,
     location: String,
     provider: String,
-    size_gb: f64,
+    // Nullable in the DB (cloud_sync and lmstudio sync both write NULL when the
+    // size is unknown) — decoding as bare f64 500s the whole dossier for those rows.
+    size_gb: Option<f64>,
     context_length: i32,
     supports_vision: bool,
 }
@@ -97,6 +99,38 @@ const FALLACY_TESTS: &[(&str, &str, &str)] = &[
         "Model mishandles syllogism with existential assumptions",
     ),
 ];
+
+/// Does this LM Studio config file belong to `model_key`?
+///
+/// Keys may be namespaced ("google/gemma-4-31b") while configs live either
+/// under a publisher dir (google/gemma-4-31b.json) or flat with '_' flattening
+/// (google_gemma-4-31b.json); sideloaded models have bare flat names. The old
+/// check (`basename == key || key.ends_with(basename)`) had no '/' boundary,
+/// so "mlx-community/gemma-4-31b" matched google/gemma-4-31b.json and one
+/// publisher's draft config was attributed to another publisher's model.
+/// Rule: the name part must match the stem EXACTLY, and when the key carries a
+/// publisher it must match the parent dir (or the '_'-flattened stem prefix).
+fn config_matches_model(path: &std::path::Path, model_key: &str) -> bool {
+    let Some(basename) = path.file_stem().and_then(|s| s.to_str()) else {
+        return false;
+    };
+    if basename.is_empty() {
+        return false;
+    }
+    match model_key.split_once('/') {
+        None => basename == model_key,
+        Some((publisher, name)) => {
+            if basename == name {
+                path.parent()
+                    .and_then(|d| d.file_name())
+                    .and_then(|s| s.to_str())
+                    == Some(publisher)
+            } else {
+                basename == format!("{}_{}", publisher, name)
+            }
+        }
+    }
+}
 
 pub async fn model_insights(
     State(state): State<AppState>,
@@ -143,6 +177,7 @@ pub async fn model_insights(
            JOIN test_runs r ON r.id = tr.run_id
            LEFT JOIN tests t ON t.id = tr.test_id
            WHERE r.model_id = $1 AND r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE)
+             AND tr.is_infra_error = false
            GROUP BY tr.test_id, t.name, r.axis
            ORDER BY r.axis, t.name NULLS LAST"#,
     )
@@ -237,19 +272,30 @@ pub async fn model_insights(
         .collect();
 
     // ── 4. HARDWARE FIT ─────────────────────────────────────────────────
-    // Estimate RAM need including spec-decode overhead
+    // Estimate RAM need including spec-decode overhead. When size_gb is NULL
+    // the honest answer is "unknown" (null fields, no tiers) — never a 0 GB
+    // estimate that claims the model fits everywhere. The dashboard already
+    // renders model_size_gb == null as "Model size unknown."
     let base_gb = model.size_gb;
-    let spec_decode_overhead = base_gb * 0.25; // conservative estimate
     let safety_margin = 8.0; // OS + apps + inference
-    let estimated_ram_gb = base_gb + spec_decode_overhead + safety_margin;
+    let (spec_decode_overhead, estimated_ram_gb) = match base_gb {
+        Some(gb) => {
+            let overhead = gb * 0.25; // conservative estimate
+            (Some(overhead), Some(gb + overhead + safety_margin))
+        }
+        None => (None, None),
+    };
 
-    let hardware_tiers = serde_json::json!([
-        { "label": "8 GB (e.g., M1 MacBook Air)", "fits": estimated_ram_gb <= 8.0 },
-        { "label": "16 GB (e.g., M2 Pro)", "fits": estimated_ram_gb <= 16.0 },
-        { "label": "32 GB (e.g., M3 Max)", "fits": estimated_ram_gb <= 32.0 },
-        { "label": "64 GB (e.g., M4 Max)", "fits": estimated_ram_gb <= 64.0 },
-        { "label": "128 GB (e.g., M4 Max unified)", "fits": estimated_ram_gb <= 128.0 },
-    ]);
+    let hardware_tiers = match estimated_ram_gb {
+        Some(ram) => serde_json::json!([
+            { "label": "8 GB (e.g., M1 MacBook Air)", "fits": ram <= 8.0 },
+            { "label": "16 GB (e.g., M2 Pro)", "fits": ram <= 16.0 },
+            { "label": "32 GB (e.g., M3 Max)", "fits": ram <= 32.0 },
+            { "label": "64 GB (e.g., M4 Max)", "fits": ram <= 64.0 },
+            { "label": "128 GB (e.g., M4 Max unified)", "fits": ram <= 128.0 },
+        ]),
+        None => serde_json::json!([]),
+    };
 
     // ── 5. TRADEOFF SUMMARY (plain-language assessment) ─────────────────
     // Compute a plain-language summary of this model's strengths/weaknesses
@@ -283,14 +329,13 @@ pub async fn model_insights(
         ));
     }
 
-    // Size assessment
-    if base_gb > 0.0 && base_gb <= 5.0 {
-        strengths.push(format!(
-            "Compact: {:.1} GB — fits on most hardware",
-            base_gb
-        ));
-    } else if base_gb > 25.0 {
-        weaknesses.push(format!("Large: {:.1} GB — needs substantial RAM", base_gb));
+    // Size assessment (skipped entirely when size is unknown — no claim either way)
+    if let Some(gb) = base_gb {
+        if gb > 0.0 && gb <= 5.0 {
+            strengths.push(format!("Compact: {:.1} GB — fits on most hardware", gb));
+        } else if gb > 25.0 {
+            weaknesses.push(format!("Large: {:.1} GB — needs substantial RAM", gb));
+        }
     }
 
     // Fallacy assessment
@@ -324,6 +369,36 @@ pub async fn model_insights(
     // pairings. GGUF models use llm.load.llama.speculativeDecoding.draftModel
     // (works). MLX models use llm.prediction.speculativeDecoding.draftModel
     // (broken — "not supported for batched MLX models").
+
+    // Measured acceptance rate — aggregated from the draft-token counters the
+    // executor persists per trial (migration 033). NULL when this model has no
+    // spec-decode trials: the dossier must never invent a number here. (This
+    // replaces hardcoded 3.0x/0.88 literals that were rendered as "Measured".)
+    #[derive(sqlx::FromRow)]
+    struct SpecAggRow {
+        accepted: Option<i64>,
+        total: Option<i64>,
+        trial_count: i64,
+    }
+    let spec_agg: SpecAggRow = sqlx::query_as(
+        r#"SELECT SUM(tr.accepted_draft_tokens_count)::bigint AS accepted,
+                  SUM(tr.total_draft_tokens_count)::bigint    AS total,
+                  COUNT(*)                                    AS trial_count
+           FROM trial_results tr
+           JOIN test_runs r ON r.id = tr.run_id
+           WHERE r.model_id = $1 AND r.status = 'done'
+             AND (quarantined IS NULL OR quarantined = FALSE)
+             AND tr.is_infra_error = false
+             AND tr.total_draft_tokens_count > 0"#,
+    )
+    .bind(model.id)
+    .fetch_one(&state.db)
+    .await?;
+    let measured_acceptance_rate: Option<f64> = match (spec_agg.accepted, spec_agg.total) {
+        (Some(a), Some(t)) if t > 0 => Some(a as f64 / t as f64),
+        _ => None,
+    };
+
     let spec_decode = if model.location == "local" {
         let config_dir = dirs_home().join(".lmstudio/.internal/user-concrete-model-default-config");
 
@@ -341,9 +416,8 @@ pub async fn model_insights(
                 if path.extension().is_none_or(|ext| ext != "json") {
                     continue;
                 }
-                // Check nested dirs too
-                let basename = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
-                if basename == model.key || model.key.ends_with(basename) {
+                // Exact-name + publisher-aware match (see config_matches_model)
+                if config_matches_model(&path, &model.key) {
                     if let Ok(raw) = std::fs::read_to_string(&path) {
                         if let Ok(data) = serde_json::from_str::<serde_json::Value>(&raw) {
                             // Check load fields (GGUF spec decode)
@@ -407,45 +481,43 @@ pub async fn model_insights(
                                     if let Some(r) = search(&path, model_key) {
                                         return Some(r);
                                     }
-                                } else if path.extension().is_some_and(|e| e == "json") {
-                                    let basename =
-                                        path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
-                                    if basename == model_key || model_key.ends_with(basename) {
-                                        if let Ok(raw) = std::fs::read_to_string(&path) {
-                                            if let Ok(data) =
-                                                serde_json::from_str::<serde_json::Value>(&raw)
-                                            {
-                                                for section in ["load", "operation"] {
-                                                    if let Some(fields) = data
-                                                        .get(section)
-                                                        .and_then(|s| s.get("fields"))
-                                                        .and_then(|f| f.as_array())
-                                                    {
-                                                        for field in fields {
-                                                            let fkey = field
-                                                                .get("key")
-                                                                .and_then(|k| k.as_str())
-                                                                .unwrap_or("");
-                                                            if fkey.contains(
-                                                                "speculativeDecoding.draftModel",
-                                                            ) {
-                                                                let dm = field
-                                                                    .get("value")
-                                                                    .and_then(|v| v.as_str())
-                                                                    .map(String::from);
-                                                                let is_gguf = section == "load";
-                                                                return dm.map(|m| {
-                                                                    (
-                                                                        m,
-                                                                        if is_gguf {
-                                                                            "gguf".into()
-                                                                        } else {
-                                                                            "mlx".into()
-                                                                        },
-                                                                        is_gguf,
-                                                                    )
-                                                                });
-                                                            }
+                                } else if path.extension().is_some_and(|e| e == "json")
+                                    && config_matches_model(&path, model_key)
+                                {
+                                    if let Ok(raw) = std::fs::read_to_string(&path) {
+                                        if let Ok(data) =
+                                            serde_json::from_str::<serde_json::Value>(&raw)
+                                        {
+                                            for section in ["load", "operation"] {
+                                                if let Some(fields) = data
+                                                    .get(section)
+                                                    .and_then(|s| s.get("fields"))
+                                                    .and_then(|f| f.as_array())
+                                                {
+                                                    for field in fields {
+                                                        let fkey = field
+                                                            .get("key")
+                                                            .and_then(|k| k.as_str())
+                                                            .unwrap_or("");
+                                                        if fkey.contains(
+                                                            "speculativeDecoding.draftModel",
+                                                        ) {
+                                                            let dm = field
+                                                                .get("value")
+                                                                .and_then(|v| v.as_str())
+                                                                .map(String::from);
+                                                            let is_gguf = section == "load";
+                                                            return dm.map(|m| {
+                                                                (
+                                                                    m,
+                                                                    if is_gguf {
+                                                                        "gguf".into()
+                                                                    } else {
+                                                                        "mlx".into()
+                                                                    },
+                                                                    is_gguf,
+                                                                )
+                                                            });
                                                         }
                                                     }
                                                 }
@@ -506,11 +578,14 @@ pub async fn model_insights(
             "draft_type": draft_type,
             "draft_working": draft_working,
             "format": &actual_format,
-            "measured_speedup": if model.key == "google/gemma-4-31b" { Some(3.0) } else { None },
-            "measured_acceptance_rate": if model.key == "google/gemma-4-31b" { Some(0.88) } else { None },
+            // Real aggregation over persisted trial counters — null when this
+            // model has no spec-decode trials. No speedup field: no with/without
+            // timing measurement is stored anywhere, so any number would be invented.
+            "measured_acceptance_rate": measured_acceptance_rate,
+            "measured_trial_count": if spec_agg.trial_count > 0 { Some(spec_agg.trial_count) } else { None },
             "explanation": if draft_model.is_some() {
                 if draft_working == Some(true) {
-                    "This model has a speculative decoding draft model configured. When loaded, LM Studio pairs them automatically — the draft model predicts tokens the main model would produce, and verified-accepted tokens skip full inference. Measured 3x speedup with 88% acceptance rate on gemma-4-31b + gemma-4-12b-qat."
+                    "This model has a speculative decoding draft model configured. When loaded, LM Studio pairs them automatically — the draft model predicts tokens the main model would produce, and verified-accepted tokens skip full inference. The acceptance rate shown here (if any) is aggregated from this model's own recorded trials."
                 } else {
                     "This model has a draft model configured, but it's MLX format — LM Studio rejects MLX speculative decoding with 'not supported for batched MLX models'. The draft model setting should be removed for this model to load correctly."
                 }

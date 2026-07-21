@@ -393,24 +393,18 @@ pub async fn ensure_pair_loaded(
 /// Returns `None` if the file is absent/unreadable or has no useful params.
 pub fn read_stored_model_default(model_key: &str) -> Option<serde_json::Value> {
     let home = std::env::var("HOME").ok()?;
-    let candidates = [
-        format!(
-            "{}/.lmstudio/.internal/user-concrete-model-default-config/{}.json",
-            home, model_key
-        ),
-        format!(
-            "{}/.lmstudio/.internal/user-concrete-model-default-config/{}.json",
-            home,
-            model_key.replace('/', "-")
-        ),
-    ];
+    let config_root = std::path::PathBuf::from(format!(
+        "{}/.lmstudio/.internal/user-concrete-model-default-config",
+        home
+    ));
+
     // dotted LM Studio engine key -> flat load-API key.
     // NOTE: only map keys the /api/v1/models/load endpoint accepts.
     // `cpu_thread_pool_size` (llm.load.llama.cpuThreadPoolSize) is a valid
     // engine field but the LOAD endpoint rejects it as an "unrecognized
     // key" — so we deliberately do NOT map it, letting LM Studio use its
     // default. Mapping it caused HTTP 400 on every large-model load.
-    let translate = |k: &str| -> Option<&'static str> {
+    fn translate(k: &str) -> Option<&'static str> {
         match k {
             "llm.load.contextLength" => Some("context_length"),
             "llm.load.numExperts" | "llm.load.llama.num_experts" => Some("num_experts"),
@@ -421,28 +415,78 @@ pub fn read_stored_model_default(model_key: &str) -> Option<serde_json::Value> {
             "llm.load.offloadKvCacheToGpu" => Some("offload_kv_cache_to_gpu"),
             _ => None,
         }
-    };
-    for path in candidates {
-        if let Ok(s) = std::fs::read_to_string(&path) {
-            if let Ok(v) = serde_json::from_str::<serde_json::Value>(&s) {
-                if let Some(load) = v.get("load").and_then(|l| l.get("fields")) {
-                    if let Some(arr) = load.as_array() {
-                        let mut merged = serde_json::Map::new();
-                        for f in arr {
-                            if let (Some(k), Some(val)) = (
-                                f.get("key").and_then(|x| x.as_str()),
-                                f.get("value"),
-                            ) {
-                                if let Some(api_key) = translate(k) {
-                                    merged.insert(api_key.to_string(), val.clone());
-                                }
-                            }
-                        }
-                        if !merged.is_empty() {
-                            return Some(serde_json::Value::Object(merged));
-                        }
-                    }
+    }
+
+    fn parse_stored(path: &std::path::Path) -> Option<serde_json::Value> {
+        let s = std::fs::read_to_string(path).ok()?;
+        let v = serde_json::from_str::<serde_json::Value>(&s).ok()?;
+        let arr = v.get("load")?.get("fields")?.as_array()?.clone();
+        let mut merged = serde_json::Map::new();
+        for f in &arr {
+            if let (Some(k), Some(val)) = (f.get("key").and_then(|x| x.as_str()), f.get("value")) {
+                if let Some(api_key) = translate(k) {
+                    merged.insert(api_key.to_string(), val.clone());
                 }
+            }
+        }
+        if merged.is_empty() {
+            None
+        } else {
+            Some(serde_json::Value::Object(merged))
+        }
+    }
+
+    // Direct spellings first. On this disk the layout is inconsistent:
+    // publisher dirs (google/gemma-4-31b.json), flat files where LM Studio
+    // flattened '/' to '_' (stepfun-ai_step-3.5-flash.json), and bare flat
+    // names for sideloads. '-' flattening is kept for backcompat with the
+    // original probe even though '_' is what LM Studio actually writes.
+    for candidate in [
+        config_root.join(format!("{}.json", model_key)),
+        config_root.join(format!("{}.json", model_key.replace('/', "_"))),
+        config_root.join(format!("{}.json", model_key.replace('/', "-"))),
+    ] {
+        if let Some(v) = parse_stored(&candidate) {
+            return Some(v);
+        }
+    }
+
+    // Fallback: walk the config root for a stem match. This covers a BARE
+    // roster key whose config lives under a publisher dir. Publisher-aware on
+    // purpose: a namespaced key must have matched one of the direct spellings
+    // above, so for those we only accept an exact publisher-dir hit here —
+    // never another publisher's same-named config (wrong tuned defaults are
+    // not benign: a dropped num_experts aborts MoE engine startup).
+    let (publisher, name) = match model_key.split_once('/') {
+        Some((p, n)) => (Some(p), n),
+        None => (None, model_key),
+    };
+    for entry in walkdir::WalkDir::new(&config_root)
+        .follow_links(false)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        let path = entry.path();
+        if path.extension().and_then(|s| s.to_str()) != Some("json") {
+            continue;
+        }
+        let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
+            continue;
+        };
+        let matched = match publisher {
+            None => stem == name,
+            Some(p) => {
+                stem == name
+                    && path
+                        .parent()
+                        .and_then(|d| d.file_name())
+                        .and_then(|s| s.to_str())
+                        == Some(p)
+            }
+        };
+        if matched {
+            if let Some(v) = parse_stored(path) {
+                return Some(v);
             }
         }
     }
@@ -469,8 +513,7 @@ pub async fn ensure_loaded(
     {
         let models = list_ls_models(client, base_url).await?;
         let resident = models.iter().any(|m| {
-            m.id == model_key
-                && (m.load_state == "loaded" || !m.loaded_instances.is_empty())
+            m.id == model_key && (m.load_state == "loaded" || !m.loaded_instances.is_empty())
         });
         if resident {
             tracing::info!("ensure_loaded: {} already resident — using it", model_key);
@@ -650,7 +693,9 @@ pub async fn chat(
     })
 }
 
-pub(crate) fn extract_speculative_stats(json: &serde_json::Value) -> Option<super::SpeculativeDecodeStats> {
+pub(crate) fn extract_speculative_stats(
+    json: &serde_json::Value,
+) -> Option<super::SpeculativeDecodeStats> {
     let draft_model = json
         .get("draft_model")
         .and_then(|v| v.as_str())

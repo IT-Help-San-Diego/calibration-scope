@@ -558,7 +558,9 @@ async fn execute_run_inner(
                 // on slow / memory-constrained hardware. Eject only the
                 // *other* instances, keeping the target in place.
                 let target_resident = {
-                    if let Ok(models) = lmstudio::list_ls_models(&client, &config.lmstudio_base_url).await {
+                    if let Ok(models) =
+                        lmstudio::list_ls_models(&client, &config.lmstudio_base_url).await
+                    {
                         models.iter().any(|m| {
                             m.id == model_key
                                 && (m.load_state == "loaded" || !m.loaded_instances.is_empty())
@@ -589,7 +591,16 @@ async fn execute_run_inner(
                     }),
                 );
 
-                check_memory_safety(db, tx, run_id, model_id, model_key, &client, &config.lmstudio_base_url).await?;
+                check_memory_safety(
+                    db,
+                    tx,
+                    run_id,
+                    model_id,
+                    model_key,
+                    &client,
+                    &config.lmstudio_base_url,
+                )
+                .await?;
 
                 emit(
                     tx,
@@ -633,13 +644,11 @@ async fn execute_run_inner(
                 // so the result is reproducible + the UI can show what tuning
                 // was applied. This is the "what we have control over" record.
                 let runtime_cfg = preset.to_load_json(model_key, draft_model_key.as_deref());
-                sqlx::query(
-                    "UPDATE test_runs SET lmstudio_runtime_config = $1 WHERE id = $2",
-                )
-                .bind(runtime_cfg)
-                .bind(run_id)
-                .execute(db)
-                .await?;
+                sqlx::query("UPDATE test_runs SET lmstudio_runtime_config = $1 WHERE id = $2")
+                    .bind(runtime_cfg)
+                    .bind(run_id)
+                    .execute(db)
+                    .await?;
             }
             crate::routes::runs::LoadMode::SpeculativePair => {
                 let draft_key = draft_model_key.as_ref().ok_or_else(|| {
@@ -666,9 +675,27 @@ async fn execute_run_inner(
                     AppError::Executor(format!("Unknown draft model key: {}", draft_key))
                 })?;
 
-                check_memory_safety(db, tx, run_id, model_id, model_key, &client, &config.lmstudio_base_url).await?;
+                check_memory_safety(
+                    db,
+                    tx,
+                    run_id,
+                    model_id,
+                    model_key,
+                    &client,
+                    &config.lmstudio_base_url,
+                )
+                .await?;
                 if let Some(draft_id) = draft_model_id {
-                    check_memory_safety(db, tx, run_id, draft_id, draft_key, &client, &config.lmstudio_base_url).await?;
+                    check_memory_safety(
+                        db,
+                        tx,
+                        run_id,
+                        draft_id,
+                        draft_key,
+                        &client,
+                        &config.lmstudio_base_url,
+                    )
+                    .await?;
                 }
 
                 let pair_load_start = std::time::Instant::now();
@@ -883,18 +910,34 @@ async fn execute_run_inner(
             ) = match outcome {
                 Ok(o) => {
                     let expected = test.expected_result.as_deref().unwrap_or("");
-                    let score = scoring::score_response(&o.content, expected, &test.scoring_method);
-                    (
-                        score.passed,
-                        o.latency_ms as i64,
-                        o.content,
-                        o.reasoning_content,
-                        score.detail.unwrap_or_default(),
-                        false,
-                        o.prompt_tokens,
-                        o.completion_tokens,
-                        o.speculative_decode,
-                    )
+                    match scoring::score_response(&o.content, expected, &test.scoring_method) {
+                        Ok(score) => (
+                            score.passed,
+                            o.latency_ms as i64,
+                            o.content,
+                            o.reasoning_content,
+                            score.detail.unwrap_or_default(),
+                            false,
+                            o.prompt_tokens,
+                            o.completion_tokens,
+                            o.speculative_decode,
+                        ),
+                        // Unknown scoring_method: the model DID answer — keep
+                        // its response, latency and tokens as evidence — but
+                        // the trial cannot be graded. Record as infra/config
+                        // error so it never reads as a capability failure.
+                        Err(e) => (
+                            false,
+                            o.latency_ms as i64,
+                            o.content,
+                            o.reasoning_content,
+                            e,
+                            true,
+                            o.prompt_tokens,
+                            o.completion_tokens,
+                            o.speculative_decode,
+                        ),
+                    }
                 }
                 Err(e) => (
                     false,
