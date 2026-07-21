@@ -3891,12 +3891,22 @@ function brainTrialResult(d) {
 function brainRunComplete(d) {
   _brainActiveRuns.delete(d.run_id);
   if (_brainActiveRuns.size === 0) {
-    // Back to teaching mode: clear run heat, keep the map.
+    // Keep pass/fail sectional tint: regions stay colored by their final
+    // verdict (green=pass, red=fail) so the whole window shows the result.
+    // Don't clear to invisible — the map IS the science. Caption shows the
+    // overall verdict with the per-axis breakdown.
     setTimeout(() => {
       if (_brainActiveRuns.size > 0) return; // a new run started meanwhile
-      document.querySelectorAll('.brain-region.firing').forEach(el => el.classList.remove('firing'));
+      document.querySelectorAll('.brain-region.firing').forEach(el => {
+        el.classList.remove('firing');
+        // Convert the firing glow to a persistent subtle tint matching the
+        // verdict color already set by brainTrialResult.
+        el.style.opacity = '0.18';
+        el.style.filter = 'none';
+      });
       document.querySelectorAll('.brain-leg.lit').forEach(l => l.classList.remove('lit'));
-      brainCaption(BRAIN_IDLE_CAPTION);
+      const good = d.overall === 'PASS' || d.overall === 'SAFE';
+      brainCaption(`${good ? 'PASS' : 'FAIL'} — ${d.pass_count}/${d.total_count} trials · regions tinted by axis result`);
     }, 4000);
   }
 }
@@ -3918,20 +3928,21 @@ function brainInitTeaching() {
 brainInitTeaching();
 
 function log(tag, msg) {
-  const el = document.getElementById('live-log');
   const now = new Date().toLocaleTimeString();
   const cls = tag === 'phase' ? 'ts' : tag;
   const phaseClass = msg.startsWith('[') ? msg.match(/\[(\w+)\]/)?.[1] || '' : '';
   const line = document.createElement('div');
   line.className = 'log-line';
   line.innerHTML = `<span class="ts">${now}</span> <span class="${cls} ${phaseClass ? 'phase-' + phaseClass : ''}">${msg}</span>`;
-  el.appendChild(line);
-  // Trim oldest entries once over budget — see LOG_MAX_LINES comment above
-  // for why this exists (unbounded growth during a long outage or session).
-  while (el.children.length > LOG_MAX_LINES) {
-    el.removeChild(el.firstChild);
+  // Write to ALL live-log instances (deep workspace + focused shell clone)
+  // so the rolling log is visible in whichever mode the user is in.
+  const logs = [document.getElementById('live-log'), document.getElementById('focused-live-log')].filter(Boolean);
+  for (const el of logs) {
+    const copy = line.cloneNode(true);
+    el.appendChild(copy);
+    while (el.children.length > LOG_MAX_LINES) el.removeChild(el.firstChild);
+    el.scrollTop = el.scrollHeight;
   }
-  el.scrollTop = el.scrollHeight;
 }
 
 
@@ -6001,7 +6012,6 @@ function focusedSyncShell() {
   // the SAME DOM nodes stay the source of truth (SSE keeps working).
   const brain = document.querySelector('#page-benchmark #brain-viz');
   const owl = document.querySelector('#page-benchmark #owl-semaphore');
-  const stream = document.querySelector('#page-benchmark #formula-stream-container');
   const brainCopy = document.getElementById('center-scroll-copy');
   const streamWrap = document.getElementById('focused-stream-wrap');
   if (brain && brainCopy && !brainCopy.dataset.done) {
@@ -6009,17 +6019,21 @@ function focusedSyncShell() {
     if (owl) brainCopy.appendChild(owl.cloneNode(true));
     brainCopy.dataset.done = '1';
   }
-  if (stream && streamWrap && !streamWrap.dataset.done) {
-    streamWrap.appendChild(stream.cloneNode(true));
-    streamWrap.dataset.done = '1';
+  // Live stream panel: spec container (Lean formulas) + live log (trial
+  // results rolling). Both cloned from the deep workspace — the SSE log()
+  // function writes to #live-log which is the source of truth.
+  const specContainer = document.querySelector('#page-benchmark #formula-stream-container');
+  if (specContainer && streamWrap && !streamWrap.dataset.spec) {
+    const clone = specContainer.cloneNode(true);
+    clone.id = 'focused-spec-container';
+    streamWrap.appendChild(clone);
+    streamWrap.dataset.spec = '1';
   }
-  // The LIVE rolling log (SSE trial/verdict lines) lives in #ws-stream
-  // .live-log — clone it into the focused stream panel so Focused actually
-  // shows trials rolling, not a static spec container.
-  const liveLog = document.querySelector('#page-benchmark #ws-stream .live-log');
+  const liveLog = document.querySelector('#page-benchmark #live-log');
   if (liveLog && streamWrap && !streamWrap.dataset.livelog) {
     const clone = liveLog.cloneNode(true);
     clone.id = 'focused-live-log';
+    clone.style.cssText += ';border-top:1px solid var(--border);padding-top:8px;margin-top:8px;';
     streamWrap.appendChild(clone);
     streamWrap.dataset.livelog = '1';
   }
@@ -6044,10 +6058,11 @@ async function focusedRun(mode) {
       res = unwrap(await apiFetch('/api/runs/complete', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ model_key: key, provider }) }));
       log.textContent = `completion run ${res.run_id ?? '?'} · gap ${res.gap_count ?? 0}`;
     } else if (mode === 'just') {
-      const ids = prompt('Test IDs to run (comma-separated):', '');
-      if (!ids) { log.textContent = ''; return; }
-      const test_ids = ids.split(',').map(s => parseInt(s.trim(), 10)).filter(n => Number.isFinite(n));
-      if (!test_ids.length) { log.textContent = 'no valid ids'; return; }
+      // Show the test picker modal for the selected axes
+      const selectedAxes = focusedAxes();
+      if (!selectedAxes.length) { log.textContent = 'pick at least one axis'; return; }
+      const test_ids = await showTestPicker(selectedAxes);
+      if (!test_ids || !test_ids.length) { log.textContent = 'no tests selected'; return; }
       res = unwrap(await apiFetch('/api/runs', { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ model_key: key, provider, test_ids }) }));
       log.textContent = `run ${res.run_id ?? (res.run_ids||[])[0] ?? '?'} · ${test_ids.length} test(s)`;
     } else {
@@ -6065,6 +6080,97 @@ function focusedEnsure() {
     focusedPopulateSubjects();
     focusedSyncShell();
   }
+}
+
+// Test picker modal for "Run Just This" — shows all tests for the selected
+// axes with checkboxes. Returns array of selected test IDs or null.
+async function showTestPicker(axes) {
+  return new Promise(async (resolve) => {
+    // Fetch tests for all selected axes
+    const allTests = [];
+    for (const axis of axes) {
+      try {
+        const res = await fetch('/api/tests?axis=' + axis);
+        if (res.ok) {
+          const data = await res.json();
+          const tests = Array.isArray(data) ? data : (data.tests || []);
+          for (const t of tests) allTests.push({ ...t, axis });
+        }
+      } catch (e) { /* skip axis on error */ }
+    }
+    if (!allTests.length) { resolve(null); return; }
+
+    // Create modal
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:var(--bg-primary);border:1px solid var(--border);border-radius:12px;max-width:600px;width:90vw;max-height:80vh;display:flex;flex-direction:column;';
+    modal.innerHTML = `
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:14px;font-weight:700;">Pick tests to run</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${allTests.length} test(s) across ${axes.length} axis</div>
+        </div>
+        <button data-close style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:4px 8px;">✕</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:10px 18px;" id="testpicker-body">
+        ${allTests.map(t => `
+          <label style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;">
+            <input type="checkbox" value="${t.id}" data-test-id="${t.id}" style="margin-top:2px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;color:var(--text-primary);">${escHtml(t.name)}</div>
+              <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">${t.axis}${t.owl_type ? ' · ' + t.owl_type : ''} · ${t.trials_per_run || 3} trials</div>
+            </div>
+          </label>
+        `).join('')}
+      </div>
+      <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:11px;color:var(--text-muted);" id="testpicker-count">0 selected</div>
+        <div style="display:flex;gap:8px;">
+          <button data-cancel style="padding:8px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);cursor:pointer;">Cancel</button>
+          <button data-run style="padding:8px 16px;background:var(--accent-gold);border:none;border-radius:6px;color:#000;font-weight:600;cursor:pointer;">Run Selected</button>
+        </div>
+      </div>
+    `;
+    overlay.dataset.testpicker = '1';
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Count updates
+    const updateCount = () => {
+      const n = overlay.querySelectorAll('input[data-test-id]:checked').length;
+      overlay.querySelector('#testpicker-count').textContent = n + ' selected';
+    };
+    overlay.querySelectorAll('input[data-test-id]').forEach(cb => cb.addEventListener('change', updateCount));
+
+    // Select-all / select-none shortcuts
+    const body = overlay.querySelector('#testpicker-body');
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;gap:6px;margin-bottom:8px;';
+    header.innerHTML = `
+      <button type="button" class="tp-shortcut" data-act="all" style="font-size:10px;padding:3px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text-secondary);cursor:pointer;">All</button>
+      <button type="button" class="tp-shortcut" data-act="none" style="font-size:10px;padding:3px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text-secondary);cursor:pointer;">None</button>
+    `;
+    body.insertBefore(header, body.firstChild);
+    header.querySelector('[data-act="all"]').addEventListener('click', () => {
+      overlay.querySelectorAll('input[data-test-id]').forEach(c => c.checked = true);
+      updateCount();
+    });
+    header.querySelector('[data-act="none"]').addEventListener('click', () => {
+      overlay.querySelectorAll('input[data-test-id]').forEach(c => c.checked = false);
+      updateCount();
+    });
+
+    // Cancel / Run handlers — resolve the promise with the selected IDs
+    overlay.querySelector('button[data-cancel]').addEventListener('click', () => { overlay.remove(); resolve(null); });
+    overlay.querySelector('button[data-run]').addEventListener('click', () => {
+      const checked = overlay.querySelectorAll('input[data-test-id]:checked');
+      const ids = Array.from(checked).map(c => parseInt(c.dataset.testId, 10));
+      overlay.remove();
+      resolve(ids);
+    });
+    overlay.querySelector('button[data-close]').addEventListener('click', () => { overlay.remove(); resolve(null); });
+  });
 }
 function toggleMode() {
   const cur = document.documentElement.getAttribute('data-mode');
