@@ -1581,21 +1581,27 @@ async function loadSpecDecodePairs() {
 async function runSpecDecodeTest(mainModel) {
   const resultBox = document.getElementById('sd-result');
   resultBox.style.display = 'block';
-  resultBox.innerHTML = '<span style="color:var(--text-muted);">Running timing test…</span>';
+  resultBox.innerHTML = '<span style="color:var(--text-muted);">Binding draft + reading acceptance counters via /api/v0… (loads the pair if not resident)</span>';
   try {
     const r = await fetch('/api/spec-decode/test', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({main_model: mainModel, max_tokens: 80})
+      body: JSON.stringify({main_model: mainModel, max_tokens: 120})
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok) {
+      let detail = ''; try { detail = (await r.text()).trim(); } catch (_) {}
+      throw new Error('HTTP ' + r.status + (detail ? ' — ' + detail.slice(0, 240) : ''));
+    }
     const d = await r.json();
+    const pct = d.acceptance_rate != null ? Math.round(d.acceptance_rate * 100) : null;
+    const head = d.draft_active
+      ? `<span style="color:var(--safe);font-weight:700;">✓ Draft active · ${pct}% acceptance</span> <span style="color:var(--text-muted);font-size:11px;">(${d.accepted_draft_tokens}/${d.total_draft_tokens} draft tokens)</span>`
+      : `<span style="color:var(--unsafe);font-weight:700;">✗ Draft not active</span>`;
     resultBox.innerHTML = `
       <div style="margin-bottom:6px;"><strong>${escHtml(d.main_model)} + ${escHtml(d.draft_model)}</strong></div>
-      <div>with draft:    ${d.with_draft.elapsed_secs.toFixed(2)}s · ${d.with_draft.tokens_per_sec.toFixed(1)} tok/s</div>
-      <div>without draft: ${d.without_draft.elapsed_secs.toFixed(2)}s · ${d.without_draft.tokens_per_sec.toFixed(1)} tok/s</div>
-      <div style="margin-top:6px;font-weight:600;">speedup: ${d.speedup_ratio.toFixed(2)}x · ${escHtml(d.verdict)}</div>
-      <div style="font-size:11px;color:var(--text-muted);">draft_was_active=${d.draft_was_active} — timing-based verification, LM Studio does not expose activation via REST</div>
+      <div style="margin-bottom:4px;">${head}</div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">${d.completion_tokens != null ? d.completion_tokens : '?'} tok · ${d.elapsed_secs.toFixed(2)}s · ${d.tokens_per_sec.toFixed(1)} tok/s</div>
+      <div style="font-size:11px;margin-top:3px;">${escHtml(d.verdict)}</div>
     `;
   } catch (e) {
     resultBox.innerHTML = '<span style="color:var(--unsafe);">Test failed: ' + escHtml(e.message) + '</span>';
@@ -1857,7 +1863,9 @@ function clearScienceHighlight() {
     <button class="btn btn-primary" id="focused-run-all" onclick="focusedRun('all')" title="Run every selected axis battery on this subject">Run</button>
     <button class="btn btn-secondary" id="focused-run-missing" onclick="focusedRun('missing')" title="Fill only the gaps — tests with zero clean trials (do the rest of the test)">Run Missing</button>
     <button class="btn btn-secondary" id="focused-run-just" onclick="focusedRun('just')" title="Run only the test IDs you pick">Run Just This…</button>
+    <button class="btn btn-secondary" id="focused-run-spec" onclick="focusedRunSpecTest()" title="Time this subject with vs without its speculative-decode draft (⚡). Runs two 80-token completions against LM Studio; may auto-load the model." style="display:none;border-color:var(--accent-cyan);color:var(--accent-cyan);">⚡ Test Spec Pair</button>
     <span id="focused-runlog" aria-live="polite"></span>
+    <div id="focused-spec-result" style="display:none;flex-basis:100%;margin-top:6px;padding:8px 10px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-secondary);"></div>
   </div>
   <div id="focused-brain-wrap"><div id="center-scroll-copy"></div></div>
   <div id="focused-stream-wrap" aria-label="Live run stream"></div>
@@ -3284,7 +3292,7 @@ function renderGrid() {
     // provider's rate posture match the price tag?") has no meaning for a
     // model running on your own silicon.
     const probeBtn = m.location === 'cloud'
-      ? `<button class="btn-mini" onclick="event.stopPropagation(); startFountain('${m.key.replace(/'/g, "\\'")}', '${m.provider}')" title="Fire 20 requests at 1/s and measure what the provider ACTUALLY sustains — verdicts: FOUNTAIN (all pass), TRICKLE (slow), THROTTLED (429s/drops), MIRAGE (advertised but unusable)">⛲ Probe</button>`
+      ? `<button class="btn-mini" onclick="event.stopPropagation(); startFountain('${m.key.replace(/'/g, "\\'")}', '${m.provider}')" title="Fire 20 requests at 1/s and measure what the provider ACTUALLY sustains — verdicts: FOUNTAIN (all pass), TRICKLE (some 429s), THROTTLED (heavy 429s), MIRAGE (429'd into unusability), UNSTABLE (non-rate failures), ERRORED (nothing answered)">⛲ Probe</button>`
       : '';
 
     return `<div class="${cardClasses}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}">
@@ -3450,10 +3458,11 @@ function costLine(m) {
   const spend = fmtSpend(m.measured_cost_usd);
   // Fountain verdict = the measured answer to the tier's claim. FOUNTAIN
   // green (claim verified), TRICKLE cyan (slow but real), THROTTLED amber,
-  // MIRAGE red (advertised but unusable). Sits beside the price so the
-  // claim and the measurement read as one line.
+  // MIRAGE red (advertised but unusable). UNSTABLE amber (rate clean, but
+  // non-rate failures — 5xx/transport), ERRORED muted (no rate evidence at
+  // all). Sits beside the price so claim and measurement read as one line.
   const fv = m.fountain_verdict;
-  const fvCls = fv === 'FOUNTAIN' ? 'safe' : fv === 'TRICKLE' ? 'cost-trickle' : fv === 'THROTTLED' ? 'flaky' : fv === 'MIRAGE' ? 'unsafe' : '';
+  const fvCls = fv === 'FOUNTAIN' ? 'safe' : fv === 'TRICKLE' ? 'cost-trickle' : fv === 'THROTTLED' ? 'flaky' : fv === 'MIRAGE' ? 'unsafe' : fv === 'UNSTABLE' ? 'flaky' : '';
   const fvChip = fv ? `<span class="chip ${fvCls}" style="font-size:9px;padding:1px 6px;" title="Measured rate posture: latest fountain probe (20 req @ 1/s) — this is evidence, not the catalog's claim">⛲ ${fv}</span>` : '';
   return `<div class="cost-line" style="font-size:11px;margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
     <span class="chip ${tier.cls}" style="font-size:9px;padding:1px 6px;" title="${tier.note}">${tier.label}</span>
@@ -5547,11 +5556,14 @@ async function openInsights(key) {
         const badge = working ? '<span style="color:var(--safe);font-weight:600">WORKING</span>' : '<span style="color:var(--unsafe);font-weight:600">BROKEN</span>';
         let html = '<div class="dossier-section"><div class="dossier-section-title">Speculative decoding \u2014 acceleration pairing</div>';
         html += '<div style="margin-bottom:var(--fib-2)">Paired with <span style="font-family:var(--font-mono);color:var(--accent-gold);font-weight:600">' + esc(sd.draft_model) + '</span> ' + badge + '</div>';
-        if (sd.measured_speedup) {
-          html += '<div style="display:flex;gap:var(--fib-3);margin-bottom:var(--fib-2)">';
-          html += '<div class="metric-dial"><div class="dial-value" style="color:var(--safe)">' + sd.measured_speedup + 'x</div><div class="dial-label">SPEEDUP</div></div>';
+        if (sd.measured_acceptance_rate != null) {
+          // Real number: aggregated from this model's own recorded trial counters.
+          html += '<div style="display:flex;gap:var(--fib-3);align-items:center;margin-bottom:var(--fib-2)">';
           html += '<div class="metric-dial"><div class="dial-value" style="color:var(--safe)">' + Math.round(sd.measured_acceptance_rate * 100) + '%</div><div class="dial-label">DRAFT ACCEPT</div></div>';
+          html += '<div style="font-size:11px;color:var(--text-muted)">measured across ' + (sd.measured_trial_count || '?') + ' trial(s) with draft activity</div>';
           html += '</div>';
+        } else {
+          html += '<div style="font-size:11px;color:var(--text-muted);margin-bottom:var(--fib-2)">Pairing configured — no recorded trials with draft activity yet, so no acceptance rate to report.</div>';
         }
         html += '<div class="dossier-src">' + esc(sd.explanation) + '</div></div>';
         return html;
@@ -5713,14 +5725,14 @@ async function loadCloudKeys() {
     const data = r.data;
     let html = '<div class="key-setup-card">';
     for (const p of data.providers) {
-      const status = p.configured ? '<span class="key-status configured">configured (' + p.key_preview + ')</span>' : '<span class="key-status">not set</span>';
+      const status = p.configured ? '<span class="key-status configured">configured ' + (p.key_masked || '••••••••') + '</span>' : '<span class="key-status">not set</span>';
       html += '<div class="key-row"><span class="key-provider">' + p.provider + '</span>' + status +
         '<input type="password" class="key-input" id="key-input-' + p.provider + '" placeholder="paste ' + p.provider + ' API key..." autocomplete="off">' +
         '<button class="key-btn" onclick="saveCloudKey(\'' + p.provider + '\')">Save</button>' +
         (p.configured ? '<button class="key-btn danger" onclick="deleteCloudKey(\'' + p.provider + '\')">Remove</button>' : '') +
         '</div>';
     }
-    html += '</div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">Keys stored at: ' + data.secrets_path + '</div>';
+    html += '</div><div style="font-size:10px;color:var(--text-muted);margin-top:8px">Keys are stored locally in an operator-only secrets file (path not exposed over the API).</div>';
     panel.innerHTML = html;
   } catch(e) { panel.innerHTML = 'Error: ' + e.message; }
 }
@@ -6079,6 +6091,48 @@ async function focusedRun(mode) {
     log.textContent = 'error: ' + (e.message || e);
   }
 }
+// Focused spec-decode timing test — reuses /api/spec-decode/test. Only meaningful
+// for a subject picked as a ⚡ draft pair. Renders with/without-draft tok/s honestly,
+// surfacing the plain-text reason the API returns as a 400 body (e.g. "main not loaded").
+async function focusedRunSpecTest() {
+  const input = document.getElementById('focused-subject-pick');
+  const box = document.getElementById('focused-spec-result');
+  if (!box) return;
+  box.style.display = 'block';
+  const key = input && input.value;
+  const primary = (window._focusedSubjects || [])[0];
+  const draft = primary && primary.draft;
+  if (!key) { box.innerHTML = '<span style="color:var(--text-muted);">Pick a subject first.</span>'; return; }
+  if (!draft) { box.innerHTML = '<span style="color:var(--text-muted);">No ⚡ draft for this subject — pick a speculative-decode pair to time it.</span>'; return; }
+  box.innerHTML = '<span style="color:var(--text-muted);">Probing ' + escHtml(key) + ' — binding draft ' + escHtml(draft) + ' and reading acceptance counters via /api/v0… (loads the pair if not resident)</span>';
+  try {
+    const r = await fetch('/api/spec-decode/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ main_model: key, max_tokens: 120 })
+    });
+    if (!r.ok) {
+      let detail = '';
+      try { detail = (await r.text()).trim(); } catch (_) {}
+      throw new Error('HTTP ' + r.status + (detail ? ' — ' + detail.slice(0, 240) : ''));
+    }
+    const d = await r.json();
+    const pct = d.acceptance_rate != null ? Math.round(d.acceptance_rate * 100) : null;
+    const head = d.draft_active
+      ? '<span style="color:var(--safe);font-weight:700;">✓ Draft active · ' + pct + '% acceptance</span>' +
+        '<span style="color:var(--text-muted);font-size:11px;"> (' + d.accepted_draft_tokens + '/' + d.total_draft_tokens + ' draft tokens)</span>'
+      : '<span style="color:var(--unsafe);font-weight:700;">✗ Draft not active</span>';
+    box.innerHTML =
+      '<div style="font-weight:600;margin-bottom:4px;">' + escHtml(d.main_model) +
+      ' <span style="color:var(--accent-cyan);">+ ⚡ ' + escHtml(d.draft_model) + '</span></div>' +
+      '<div style="margin-bottom:4px;">' + head + '</div>' +
+      '<div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">' +
+      (d.completion_tokens != null ? d.completion_tokens : '?') + ' tok · ' + d.elapsed_secs.toFixed(2) + 's · ' + d.tokens_per_sec.toFixed(1) + ' tok/s</div>' +
+      '<div style="font-size:11px;margin-top:3px;">' + escHtml(d.verdict) + '</div>';
+  } catch (e) {
+    box.innerHTML = '<span style="color:var(--unsafe);">Spec test failed: ' + escHtml(e.message) + '</span>';
+  }
+}
 // Subject picker — pre-fetch models + spec pairs when Focused shell loads,
 // then show the modal synchronously on click. No async race.
 let _pickerModels = [], _pickerSpecPairs = [];
@@ -6096,7 +6150,16 @@ function showSubjectPicker() {
   return new Promise((resolve) => {
     const models = _pickerModels;
     const specPairs = _pickerSpecPairs;
-    const specMap = new Map(specPairs.map(p => [p.main_model, p]));
+    // Match roster models to spec pairs with the SAME tolerance the backend's
+    // /api/spec-decode/test uses (spec_decode.rs): a pair's main_model may be a
+    // bare id like "gemma-4-31b" while the roster key is "google/gemma-4-31b".
+    // Exact keying (specMap.get) matched no pairs, so ⚡ never showed in the picker.
+    const pairFor = (mkey) => specPairs.find(p =>
+      mkey === p.main_model + '-qat' ||
+      mkey === p.main_model ||
+      p.main_model.includes(mkey) ||
+      mkey.includes(p.main_model)
+    );
     const local = models.filter(m => (m.provider === 'lmstudio' || m.location === 'local') && m.runnable !== false);
     const cloud = models.filter(m => (m.provider !== 'lmstudio' && m.location !== 'local') && m.runnable !== false);
 
@@ -6108,7 +6171,7 @@ function showSubjectPicker() {
     const mkRow = (m) => {
       const gb = m.size_gb != null ? Number(m.size_gb).toFixed(1) + ' GB' : '';
       const ctx = m.context_length ? (m.context_length / 1000).toFixed(0) + 'K' : '';
-      const spec = specMap.get(m.key);
+      const spec = pairFor(m.key);
       const specBadge = spec ? `<span style="font-size:9px;color:var(--accent-cyan);border:1px solid var(--accent-cyan);border-radius:3px;padding:0 4px;margin-left:4px;" title="Speculative decode pair: ${spec.draft_model}">⚡ draft</span>` : '';
       return `
         <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background=''">
@@ -6202,24 +6265,32 @@ async function focusedPickSubject() {
   }
   // Store full pick list for batch runs
   window._focusedSubjects = picks;
+  // Reveal the spec-decode timing test only when the primary subject is a ⚡ pair;
+  // reset any prior result so it never shows a stale reading against a new subject.
+  const specBtn = document.getElementById('focused-run-spec');
+  const specBox = document.getElementById('focused-spec-result');
+  if (specBtn) specBtn.style.display = picks[0].draft ? '' : 'none';
+  if (specBox) { specBox.style.display = 'none'; specBox.innerHTML = ''; }
 }
 
 // Test picker modal for "Run Just This" — shows all tests for the selected
 // axes with checkboxes. Returns array of selected test IDs or null.
 async function showTestPicker(axes) {
   return new Promise(async (resolve) => {
-    // Fetch tests for all selected axes
-    const allTests = [];
-    for (const axis of axes) {
-      try {
-        const res = await fetch('/api/tests?axis=' + axis);
-        if (res.ok) {
-          const data = await res.json();
-          const tests = Array.isArray(data) ? data : (data.tests || []);
-          for (const t of tests) allTests.push({ ...t, axis });
-        }
-      } catch (e) { /* skip axis on error */ }
-    }
+    // Fetch the full suite ONCE and filter by each test's REAL axis.
+    // The old loop fetched /api/tests?axis=X per axis, but the backend has no
+    // axis param (serde silently drops it) — every iteration got ALL tests
+    // back, mislabeled via {...t, axis} and duplicated per selected axis, so
+    // "Run Just This [axis]" silently queued the whole suite.
+    let allTests = [];
+    try {
+      const res = await fetch('/api/tests');
+      if (res.ok) {
+        const data = await res.json();
+        const tests = Array.isArray(data) ? data : (data.tests || []);
+        allTests = tests.filter(t => axes.includes(t.axis));
+      }
+    } catch (e) { /* fall through — empty list resolves null below */ }
     if (!allTests.length) { resolve(null); return; }
 
     // Create modal

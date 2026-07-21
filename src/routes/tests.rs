@@ -72,6 +72,10 @@ pub async fn list_tests(
                 "user_action": t.user_action,
                 "fallacy_tag": t.fallacy_tag,
                 "owl_type": t.owl_type,
+                // The formal spec is a public-facing formula (rendered in the
+                // spec stream and test picker) — not ground truth, so it is
+                // NOT gated behind `full` like prompt_text/expected_result.
+                "formal_spec": t.formal_spec,
                 "created_at": t.created_at.map(|d| d.to_string()),
             });
             if q.full {
@@ -79,7 +83,6 @@ pub async fn list_tests(
                 v["expected_result"] = serde_json::json!(t.expected_result);
                 v["attachment_path"] = serde_json::json!(t.attachment_path);
                 v["attachment_sha3"] = serde_json::json!(t.attachment_sha3);
-                v["formal_spec"] = serde_json::json!(t.formal_spec);
             }
             v
         })
@@ -98,14 +101,11 @@ const VALID_AXES: [&str; 6] = [
     "literary",
     "auxiliary",
 ];
-const VALID_SCORING: [&str; 6] = [
-    "exact",
-    "substring",
-    "spatial",
-    "nested_tool",
-    "security",
-    "regex",
-];
+// Must mirror executor::scoring::ScoringMethod::parse exactly. "regex" was
+// listed here but never implemented — the scorer's old silent fallback graded
+// such tests with Exact; parse is now fallible, and accepting a method the
+// scorer can't run would just create tests whose every trial errors.
+const VALID_SCORING: [&str; 5] = ["exact", "substring", "spatial", "nested_tool", "security"];
 
 fn validate(axis: &str, scoring: &str) -> Option<String> {
     if !VALID_AXES.contains(&axis) {

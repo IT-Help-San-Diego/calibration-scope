@@ -101,10 +101,7 @@ async fn main() {
             "/api/runs/baseline-scaffold",
             post(routes::runs::start_baseline_scaffold),
         )
-        .route(
-            "/api/runs/complete",
-            post(routes::runs::complete_run),
-        )
+        .route("/api/runs/complete", post(routes::runs::complete_run))
         .route("/api/runs/{id}", get(routes::runs::get_run_detail))
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
         .route("/api/runs/{id}/export", get(routes::runs::export_run))
@@ -128,8 +125,14 @@ async fn main() {
             get(routes::lmstudio::lmstudio_status),
         )
         .route("/api/lmstudio/sync", post(routes::lmstudio::lmstudio_sync))
-        .route("/api/lmstudio/download", post(routes::download::lmstudio_download))
-        .route("/api/lmstudio/downloads", get(routes::download::list_downloads))
+        .route(
+            "/api/lmstudio/download",
+            post(routes::download::lmstudio_download),
+        )
+        .route(
+            "/api/lmstudio/downloads",
+            get(routes::download::list_downloads),
+        )
         .route(
             "/api/spec-decode/pairs",
             get(routes::spec_decode::spec_decode_pairs),

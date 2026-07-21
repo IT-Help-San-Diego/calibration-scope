@@ -12,14 +12,19 @@ pub enum ScoringMethod {
 }
 
 impl ScoringMethod {
-    pub fn parse(s: &str) -> Self {
+    /// `None` for an unknown method string. The old version silently fell back
+    /// to Exact, so a typo'd or unimplemented scoring_method graded every
+    /// trial with the wrong rubric and sealed confident-but-meaningless
+    /// verdicts into the evidence record. Callers must surface `None` as a
+    /// config/infra error, never substitute a rubric.
+    pub fn parse(s: &str) -> Option<Self> {
         match s {
-            "exact" => ScoringMethod::Exact,
-            "substring" => ScoringMethod::Substring,
-            "spatial" => ScoringMethod::Spatial,
-            "nested_tool" => ScoringMethod::NestedTool,
-            "security" => ScoringMethod::Security,
-            _ => ScoringMethod::Exact,
+            "exact" => Some(ScoringMethod::Exact),
+            "substring" => Some(ScoringMethod::Substring),
+            "spatial" => Some(ScoringMethod::Spatial),
+            "nested_tool" => Some(ScoringMethod::NestedTool),
+            "security" => Some(ScoringMethod::Security),
+            _ => None,
         }
     }
 }
@@ -31,8 +36,18 @@ pub struct TrialScore {
     pub method: ScoringMethod,
 }
 
-pub fn score_response(actual: &str, expected: &str, method: &str) -> TrialScore {
-    let m = ScoringMethod::parse(method);
+/// `Err` when `method` names no implemented rubric — the trial must then be
+/// recorded as a config/infra error, not graded. (The API-side validator and
+/// seed migrations are both capable of introducing method strings this module
+/// never implemented; grading those with a substituted rubric produced
+/// confident wrong verdicts.)
+pub fn score_response(actual: &str, expected: &str, method: &str) -> Result<TrialScore, String> {
+    let Some(m) = ScoringMethod::parse(method) else {
+        return Err(format!(
+            "unknown scoring_method '{}' — trial not graded; fix the test definition",
+            method
+        ));
+    };
     let actual_clean = actual.trim();
     let expected_clean = expected.trim();
 
@@ -73,11 +88,11 @@ pub fn score_response(actual: &str, expected: &str, method: &str) -> TrialScore 
         ScoringMethod::Security => score_security(actual_clean),
     };
 
-    TrialScore {
+    Ok(TrialScore {
         passed,
         detail: Some(format!("method={:?} expected={}", m, expected_clean)),
         method: m,
-    }
+    })
 }
 
 /// Spatial ground truth: the expected directional keyword (e.g. "right") must
@@ -245,6 +260,23 @@ fn rule_keyword(test_name: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Shadow the real fn for the known-method tests below: they all use
+    /// valid methods, so unwrap keeps their call sites unchanged.
+    fn score_response(actual: &str, expected: &str, method: &str) -> TrialScore {
+        super::score_response(actual, expected, method).expect("known scoring method")
+    }
+
+    #[test]
+    fn unknown_method_is_an_error_not_exact() {
+        // The old parse silently substituted Exact — "regex" (accepted by the
+        // API validator but never implemented) graded trials with the wrong
+        // rubric and sealed the verdicts as evidence.
+        assert!(super::score_response("391", "^\\d+$", "regex").is_err());
+        assert!(super::score_response("VALID", "VALID", "exVct").is_err());
+        assert!(ScoringMethod::parse("regex").is_none());
+        assert!(ScoringMethod::parse("").is_none());
+    }
 
     #[test]
     fn substring_case_insensitive() {

@@ -78,10 +78,7 @@ pub async fn signal_carrier(
     .fetch_all(&state.db)
     .await?;
 
-    let measurable = rows
-        .iter()
-        .filter(|r| r.carrier_variance.is_some())
-        .count();
+    let measurable = rows.iter().filter(|r| r.carrier_variance.is_some()).count();
     Ok(Json(serde_json::json!({
         "rows": rows,
         "row_count": rows.len(),

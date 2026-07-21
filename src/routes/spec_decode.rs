@@ -54,23 +54,25 @@ pub struct TestRequest {
     pub max_tokens: Option<u32>,
 }
 
+/// Result of a real speculative-decode probe. The old implementation timed a
+/// config against itself over `/v1/chat/completions` — blind to draft counters
+/// and unable to toggle the draft. This instead reports the ground-truth
+/// draft-token counters LM Studio returns from `/api/v0/chat/completions` — the
+/// SAME signal `extract_speculative_stats` reads during real benchmark runs.
+/// `acceptance_rate` = accepted / total draft tokens (None when no draft ran).
 #[derive(Debug, Serialize)]
 pub struct TestResult {
     pub main_model: String,
     pub draft_model: String,
-    pub with_draft: TimingRun,
-    pub without_draft: TimingRun,
-    pub speedup_ratio: f64,
-    pub draft_was_active: bool,
-    pub verdict: String,
-}
-
-#[derive(Debug, Serialize)]
-pub struct TimingRun {
+    pub draft_active: bool,
+    pub total_draft_tokens: Option<i64>,
+    pub accepted_draft_tokens: Option<i64>,
+    pub rejected_draft_tokens: Option<i64>,
+    pub acceptance_rate: Option<f64>,
+    pub completion_tokens: Option<i64>,
     pub elapsed_secs: f64,
-    pub total_tokens: u32,
-    pub completion_tokens: u32,
     pub tokens_per_sec: f64,
+    pub verdict: String,
 }
 
 // config scanning
@@ -134,11 +136,24 @@ fn scan_draft_pairs() -> Vec<SpecPair> {
                 }
 
                 if let Some(draft) = draft_model {
-                    let main_model = path
-                        .file_stem()
-                        .and_then(|s| s.to_str())
-                        .unwrap_or("")
-                        .to_string();
+                    // Reconstruct the NAMESPACED key: configs live under a
+                    // publisher dir (google/gemma-4-31b.json → key
+                    // "google/gemma-4-31b"). Bare file_stem() dropped the
+                    // publisher, putting main_model in a different identifier
+                    // space than draft_model / the roster / LM Studio instance
+                    // keys — the root of the bare-vs-namespaced mismatch class
+                    // (and it defeated ensure_pair_loaded's exact residency
+                    // check, risking duplicate loads from the pairs panel).
+                    let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+                    let main_model = match path
+                        .parent()
+                        .and_then(|p| p.strip_prefix(&config_root).ok())
+                        .and_then(|rel| rel.to_str())
+                        .filter(|rel| !rel.is_empty())
+                    {
+                        Some(publisher) => format!("{}/{}", publisher, stem),
+                        None => stem.to_string(),
+                    };
                     pairs.push(SpecPair {
                         main_model,
                         draft_model: draft,
@@ -197,8 +212,14 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
     let base_url = state.config.lmstudio_base_url.clone();
     let mut pairs = scan_draft_pairs();
 
+    // Reflects the fetch outcome below — previously hardcoded true, which made
+    // the dashboard's "unreachable" branch dead and reported "LM Studio
+    // connected" while every pair's reason said unreachable.
+    let lmstudio_connected;
+
     match fetch_ls_models(&base_url).await {
         Ok(models) => {
+            lmstudio_connected = true;
             let loaded_ids: Vec<String> = models
                 .iter()
                 .filter(|m| m.get("state").and_then(|s| s.as_str()) == Some("loaded"))
@@ -232,6 +253,7 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
             }
         }
         Err(_) => {
+            lmstudio_connected = false;
             for pair in &mut pairs {
                 pair.reason = Some(format!("LM Studio unreachable at {}", base_url));
             }
@@ -239,7 +261,7 @@ pub async fn spec_decode_pairs(State(state): State<AppState>) -> AppResult<Json<
     }
 
     Ok(Json(PairsResponse {
-        lmstudio_connected: true,
+        lmstudio_connected,
         lmstudio_base_url: base_url,
         pairs,
     }))
@@ -266,141 +288,108 @@ pub async fn spec_decode_test(
             req.main_model
         )))?;
 
-    let test_prompt = req.prompt.unwrap_or_else(|| {
-        "Explain why speculative decoding speeds up inference in exactly one sentence.".to_string()
+    // Drive the model by the caller's key (a full roster key like
+    // "google/gemma-4-31b") so LM Studio resolves the exact instance; the draft
+    // comes from the configured pair.
+    let primary_key = req.main_model.clone();
+    let draft_key = pair.draft_model.clone();
+    let prompt = req.prompt.clone().unwrap_or_else(|| {
+        "List the first 25 prime numbers, comma separated, then state in one sentence what makes a number prime.".to_string()
     });
-    let max_tokens = req.max_tokens.unwrap_or(80);
+    let max_tokens = req.max_tokens.unwrap_or(120);
 
-    let with_draft = run_timing(&base_url, &pair.main_model, &test_prompt, max_tokens).await?;
+    let client = reqwest::Client::new();
 
-    let without_draft = if pair.draft_loaded {
-        run_without_draft(&base_url, &pair.main_model, &test_prompt, max_tokens).await?
-    } else {
-        run_timing(&base_url, &pair.main_model, &test_prompt, max_tokens).await?
+    // Bind the pair the SAME way real runs do — this is the executor's own
+    // loader, not a reimplementation. No-op when the pair is already resident
+    // with its draft; otherwise loads the primary with the speculative binding.
+    crate::executor::lmstudio::ensure_pair_loaded(
+        &client,
+        &base_url,
+        &primary_key,
+        &draft_key,
+        180,
+    )
+    .await?;
+
+    // Probe via /api/v0/chat/completions — the endpoint that reports draft
+    // counters — parsed with the executor's OWN helpers so there is no drift
+    // from what real benchmark runs record. Unlike the trial loop we deliberately
+    // tolerate empty content: a reasoning model can spend its whole token budget
+    // in reasoning_content (finish_reason=length), and for a spec-decode probe
+    // only the draft counters matter, not the answer text.
+    let body = serde_json::json!({
+        "model": primary_key,
+        "messages": [{ "role": "user", "content": prompt }],
+        "max_tokens": max_tokens,
+        "temperature": 0.2,
+    });
+    let start = std::time::Instant::now();
+    let resp = client
+        .post(format!("{}/api/v0/chat/completions", base_url))
+        .json(&body)
+        .timeout(Duration::from_secs(120))
+        .send()
+        .await?;
+    let elapsed_secs = start.elapsed().as_secs_f64();
+    let status = resp.status();
+    if !status.is_success() {
+        let b = resp.text().await.unwrap_or_default();
+        return Err(AppError::Executor(format!(
+            "LM Studio spec-decode probe failed: HTTP {} — {}",
+            status, b
+        )));
+    }
+    let json: serde_json::Value = resp.json().await?;
+    let (_prompt_tokens, completion_tokens) = crate::executor::usage_tokens(&json);
+    let tokens_per_sec = match completion_tokens {
+        Some(c) if elapsed_secs > 0.0 => c as f64 / elapsed_secs,
+        _ => 0.0,
     };
-
-    let speedup = if without_draft.tokens_per_sec > 0.0 {
-        with_draft.tokens_per_sec / without_draft.tokens_per_sec
-    } else {
-        0.0
+    let sd = crate::executor::lmstudio::extract_speculative_stats(&json);
+    let total_draft_tokens = sd.as_ref().and_then(|s| s.total_draft_tokens_count);
+    let accepted_draft_tokens = sd.as_ref().and_then(|s| s.accepted_draft_tokens_count);
+    let rejected_draft_tokens = sd.as_ref().and_then(|s| s.rejected_draft_tokens_count);
+    let acceptance_rate = match (accepted_draft_tokens, total_draft_tokens) {
+        (Some(a), Some(t)) if t > 0 => Some(a as f64 / t as f64),
+        _ => None,
     };
+    let draft_active = total_draft_tokens.map(|t| t > 0).unwrap_or(false);
+    let draft_model = sd
+        .as_ref()
+        .and_then(|s| s.draft_model.clone())
+        .unwrap_or_else(|| pair.draft_model.clone());
 
-    let verdict = if with_draft.tokens_per_sec > without_draft.tokens_per_sec {
-        let pct = ((speedup - 1.0) * 100.0).round() as i32;
-        format!("[OK] Spec-decode active: {}% faster", pct)
-    } else if (with_draft.tokens_per_sec - without_draft.tokens_per_sec).abs() < 1.0 {
-        "[--] No measurable difference -- draft may not be active".to_string()
-    } else {
-        let pct = ((1.0 - speedup) * 100.0).round() as i32;
-        format!("[SLOW] Slower with draft: {}% slower", pct)
+    let verdict = match (
+        draft_active,
+        acceptance_rate,
+        accepted_draft_tokens,
+        total_draft_tokens,
+    ) {
+        (true, Some(rate), Some(a), Some(t)) => format!(
+            "[OK] Draft active — {}% acceptance ({}/{} draft tokens)",
+            (rate * 100.0).round() as i32,
+            a,
+            t
+        ),
+        _ if sd.is_some() => {
+            "[--] Draft bound but 0 draft tokens this run — spec-decode idle".to_string()
+        }
+        _ => "[X] No draft activity — spec-decode not active (draft not bound on this instance)"
+            .to_string(),
     };
 
     Ok(Json(TestResult {
         main_model: pair.main_model.clone(),
-        draft_model: pair.draft_model.clone(),
-        with_draft,
-        without_draft,
-        speedup_ratio: speedup,
-        draft_was_active: pair.spec_active,
+        draft_model,
+        draft_active,
+        total_draft_tokens,
+        accepted_draft_tokens,
+        rejected_draft_tokens,
+        acceptance_rate,
+        completion_tokens,
+        elapsed_secs,
+        tokens_per_sec,
         verdict,
     }))
-}
-
-async fn run_timing(
-    base_url: &str,
-    model: &str,
-    prompt: &str,
-    max_tokens: u32,
-) -> AppResult<TimingRun> {
-    let payload = serde_json::json!({
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": max_tokens,
-    });
-
-    let start = std::time::Instant::now();
-    let resp = reqwest::Client::new()
-        .post(format!("{}/v1/chat/completions", base_url))
-        .json(&payload)
-        .timeout(Duration::from_secs(120))
-        .send()
-        .await?;
-
-    let elapsed = start.elapsed().as_secs_f64();
-    let status = resp.status();
-
-    if !status.is_success() {
-        let body = resp.text().await.unwrap_or_default();
-        return Err(AppError::Executor(format!(
-            "LM Studio completion failed: HTTP {} -- {}",
-            status, body
-        )));
-    }
-
-    let result: serde_json::Value = resp.json().await?;
-    let usage = result.get("usage").cloned().unwrap_or_default();
-
-    let completion_tokens = usage
-        .get("completion_tokens")
-        .and_then(|v| v.as_u64())
-        .unwrap_or(0) as u32;
-    let total_tokens = usage
-        .get("total_tokens")
-        .and_then(|v| v.as_u64())
-        .unwrap_or(0) as u32;
-    let tokens_per_sec = if elapsed > 0.0 {
-        completion_tokens as f64 / elapsed
-    } else {
-        0.0
-    };
-
-    Ok(TimingRun {
-        elapsed_secs: elapsed,
-        total_tokens,
-        completion_tokens,
-        tokens_per_sec,
-    })
-}
-
-async fn run_without_draft(
-    base_url: &str,
-    model: &str,
-    prompt: &str,
-    max_tokens: u32,
-) -> AppResult<TimingRun> {
-    let home = PathBuf::from(std::env::var("HOME").unwrap_or_default());
-    let config_path = home
-        .join(LMSTUDIO_CONFIG_DIR)
-        .join(format!("{}.json", model));
-
-    let original_config = std::fs::read_to_string(&config_path).map_err(|e| {
-        AppError::Executor(format!(
-            "Failed to read LM Studio config for {}: {}",
-            model, e
-        ))
-    })?;
-
-    let mut cfg: serde_json::Value = serde_json::from_str(&original_config)
-        .map_err(|e| AppError::Executor(format!("Failed to parse config: {}", e)))?;
-
-    if let Some(load) = cfg.get_mut("load") {
-        if let Some(fields) = load.get_mut("fields").and_then(|f| f.as_array_mut()) {
-            fields.retain(|f| {
-                let key = f.get("key").and_then(|k| k.as_str()).unwrap_or("");
-                !key.contains("speculativeDecoding")
-            });
-        }
-    }
-
-    let temp_config = serde_json::to_string_pretty(&cfg)
-        .map_err(|e| AppError::Executor(format!("Failed to serialize temp config: {}", e)))?;
-
-    std::fs::write(&config_path, &temp_config)
-        .map_err(|e| AppError::Executor(format!("Failed to write temp config: {}", e)))?;
-
-    let result = run_timing(base_url, model, prompt, max_tokens).await;
-
-    let _ = std::fs::write(&config_path, &original_config);
-
-    result
 }

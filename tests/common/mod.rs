@@ -46,6 +46,9 @@ pub async fn test_app() -> Router {
         registry_snapshot: std::sync::Arc::new(tokio::sync::RwLock::new(None)),
         cancellations: calibration_scope_dashboard::lm_guard::CancellationRegistry::new(),
         active_runs: calibration_scope_dashboard::gpu_telemetry::ActiveRuns::new(),
+        active_downloads: std::sync::Arc::new(tokio::sync::Mutex::new(
+            std::collections::HashMap::new(),
+        )),
     };
 
     use tower_http::services::ServeDir;

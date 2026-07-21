@@ -31,7 +31,9 @@ struct RegistryRow {
     location: String,
     context_length: i32,
     supports_vision: bool,
-    size_gb: f64,
+    // Nullable in the DB (both sync paths write NULL when size is unknown);
+    // bare f64 would 500 the whole dossier for those rows.
+    size_gb: Option<f64>,
     notes: Option<String>,
     tags: Option<Vec<String>>,
     active: bool,
@@ -162,6 +164,7 @@ pub async fn model_dossier(
         JOIN test_runs r ON r.id = tr.run_id
         LEFT JOIN tests t ON t.id = tr.test_id
         WHERE r.model_id = $1 AND r.status = 'done' AND (quarantined IS NULL OR quarantined = FALSE)
+          AND tr.is_infra_error = false
         GROUP BY tr.test_id, t.name, r.axis
         ORDER BY r.axis, t.name NULLS LAST
         "#,
