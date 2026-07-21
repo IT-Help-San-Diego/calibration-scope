@@ -18,6 +18,7 @@ Exit 1 = MISMATCH (a seeded test is wrong — do not ship).
 This is the anti-"hello McFly" gate: 2,400 years of logic, machine-checked,
 so nobody has to take our ground truth on faith.
 """
+import os
 import sys
 from itertools import product
 
@@ -159,5 +160,73 @@ def main():
     sys.exit(1 if failures else 0)
 
 
+# ═══════════════════════════════════════════════════════════════════════
+# Owl Semaphore family-consistency check (migration 029) — a SEPARATE,
+# opt-in mode. Everything above this line is unchanged and has zero
+# dependencies beyond the standard library; this addition needs a live DB
+# connection (psycopg2) and only runs when explicitly invoked with
+# --check-owl-families, so nothing about the existing offline oracle
+# changes for anyone who doesn't ask for this.
+#
+# What it checks: an 'N' (non-normative/paraphrase) or 'C' (critical) row
+# is only honest if it's really testing the SAME formal structure as its
+# owl_root_id — reworded surface text, identical logical skeleton. This
+# queries the live `tests` table and flags any N/C row whose formal_spec
+# has drifted from its root's, which a human editing prompt_text by hand
+# could do by accident and nothing else in the schema would catch.
+def check_owl_families():
+    try:
+        import psycopg2
+    except ImportError:
+        print(
+            "psycopg2 not installed — this check needs a live DB connection.\n"
+            "Install with: pip install psycopg2-binary --break-system-packages",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    dsn = os.environ.get("DATABASE_URL")
+    if not dsn:
+        print("DATABASE_URL not set — see .env.example.", file=sys.stderr)
+        sys.exit(2)
+
+    conn = psycopg2.connect(dsn)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT c.id, c.name, c.owl_type, c.formal_spec,
+                       i.id AS root_id, i.name AS root_name, i.formal_spec AS root_spec
+                FROM tests c
+                JOIN tests i ON i.id = c.owl_root_id
+                WHERE c.owl_type IN ('N', 'C')
+                ORDER BY c.id
+                """
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    if not rows:
+        print("No N/C rows exist yet — nothing to check (see docs/OWL_SEMAPHORE.md).")
+        return
+
+    failures = 0
+    for cid, cname, owl_type, cspec, rid, rname, rspec in rows:
+        if cspec is not None and rspec is not None and cspec != rspec:
+            failures += 1
+            print(f"[FAIL] test {cid} '{cname}' ({owl_type}) formal_spec drifted from "
+                  f"root {rid} '{rname}': child={cspec!r} root={rspec!r}")
+        else:
+            print(f"[PASS] test {cid} '{cname}' ({owl_type}) matches root {rid} '{rname}'")
+
+    print(f"\n{len(rows) - failures}/{len(rows)} owl families consistent"
+          + (" — ALL CORRECT" if failures == 0 else f" — {failures} MISMATCH(ES), DO NOT SHIP"))
+    sys.exit(1 if failures else 0)
+
+
 if __name__ == "__main__":
-    main()
+    if "--check-owl-families" in sys.argv:
+        check_owl_families()
+    else:
+        main()

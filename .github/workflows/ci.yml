@@ -46,6 +46,21 @@ jobs:
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/calibration_scope
 
+      # seL4-style gate: prove the seeded logic ground truths are LOGICALLY
+      # correct by a complete decision procedure (truth-tables + finite-model
+      # search), not asserted. A wrong ground truth fails the build.
+      - name: Verify logic ground truth (complete decision procedure)
+        run: python3 scripts/verify_logic_ground_truth.py
+
+      # Live-DB check: every 'N'/'C' paraphrase row must share its owl-root's
+      # formal skeleton — catches a hand-edited prompt drifting from its logic.
+      - name: Verify owl-family formal consistency (live DB)
+        run: |
+          python3 -m pip install --quiet psycopg2-binary
+          python3 scripts/verify_logic_ground_truth.py --check-owl-families
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/calibration_scope
+
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
