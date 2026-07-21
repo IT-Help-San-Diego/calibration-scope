@@ -1841,7 +1841,11 @@ function clearScienceHighlight() {
 <div id="focused-shell" aria-label="Focused workspace">
   <div id="focused-top">
     <span class="ft-label">SUBJECT</span>
-    <select id="focused-subject-pick" aria-label="Pick the subject to test (silicon model or human participant)"></select>
+    <button id="focused-subject-btn" onclick="focusedPickSubject()" style="font-size:13px;min-width:220px;padding:6px 10px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;">
+      <span id="focused-subject-label">— pick subjects —</span>
+      <span style="color:var(--text-muted);font-size:11px;">▾</span>
+    </button>
+    <input type="hidden" id="focused-subject-pick">
     <span class="ft-label">AXES</span>
     <div id="focused-axes" aria-label="Pick test axes">
       <label><input type="checkbox" value="reasoning" checked> reasoning</label>
@@ -6043,11 +6047,12 @@ function focusedAxes() {
   return Array.from(document.querySelectorAll('#focused-axes input:checked')).map(i => i.value);
 }
 async function focusedRun(mode) {
-  const sel = document.getElementById('focused-subject-pick');
+  const input = document.getElementById('focused-subject-pick');
   const log = document.getElementById('focused-runlog');
-  const key = sel && sel.value;
+  const key = input && input.value;
   if (!key) { log.textContent = 'pick a subject first'; return; }
-  const provider = sel.selectedOptions[0]?.dataset.provider || 'lmstudio';
+  const picks = window._focusedSubjects || [{ key, provider: 'lmstudio' }];
+  const provider = picks[0]?.provider || 'lmstudio';
   const axes = focusedAxes();
   log.textContent = '…';
   const JSON_HEADERS = { 'Content-Type': 'application/json' };
@@ -6074,12 +6079,129 @@ async function focusedRun(mode) {
     log.textContent = 'error: ' + (e.message || e);
   }
 }
+// Subject picker — pre-fetch models + spec pairs when Focused shell loads,
+// then show the modal synchronously on click. No async race.
+let _pickerModels = [], _pickerSpecPairs = [];
+async function focusedLoadPickerData() {
+  try {
+    const [mRes, pRes] = await Promise.all([
+      fetch('/api/models').then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch('/api/spec-decode/pairs').then(r => r.ok ? r.json() : {pairs:[]}).catch(() => ({pairs:[]}))
+    ]);
+    _pickerModels = Array.isArray(mRes) ? mRes : (mRes.models || []);
+    _pickerSpecPairs = pRes.pairs || [];
+  } catch (e) { /* proceed with empty */ }
+}
+function showSubjectPicker() {
+  return new Promise((resolve) => {
+    const models = _pickerModels;
+    const specPairs = _pickerSpecPairs;
+    const specMap = new Map(specPairs.map(p => [p.main_model, p]));
+    const local = models.filter(m => (m.provider === 'lmstudio' || m.location === 'local') && m.runnable !== false);
+    const cloud = models.filter(m => (m.provider !== 'lmstudio' && m.location !== 'local') && m.runnable !== false);
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:var(--bg-primary);border:1px solid var(--border);border-radius:14px;max-width:640px;width:92vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5);';
+
+    const mkRow = (m) => {
+      const gb = m.size_gb != null ? Number(m.size_gb).toFixed(1) + ' GB' : '';
+      const ctx = m.context_length ? (m.context_length / 1000).toFixed(0) + 'K' : '';
+      const spec = specMap.get(m.key);
+      const specBadge = spec ? `<span style="font-size:9px;color:var(--accent-cyan);border:1px solid var(--accent-cyan);border-radius:3px;padding:0 4px;margin-left:4px;" title="Speculative decode pair: ${spec.draft_model}">⚡ draft</span>` : '';
+      return `
+        <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.03)'" onmouseout="this.style.background=''">
+          <input type="checkbox" value="${m.key}" data-provider="${m.provider || (m.location==='local'?'lmstudio':'cloud')}" data-spec-draft="${spec ? spec.draft_model : ''}" style="flex-shrink:0;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(m.key)}${specBadge}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);margin-top:1px;">${gb}${gb && ctx ? ' · ' : ''}${ctx}${ctx ? ' ctx' : ''}${m.quantization ? ' · ' + m.quantization : ''}</div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);flex-shrink:0;">${m.supports_vision ? '👁' : ''}</div>
+        </label>
+      `;
+    };
+
+    modal.innerHTML = `
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Pick subjects</div>
+        <div style="font-size:12px;color:var(--text-muted);">Select one or more to run. Speculative-decode pairs show ⚡ draft.</div>
+      </div>
+      <div style="display:flex;border-bottom:1px solid var(--border);" id="sp-tabs">
+        <button data-tab="local" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid var(--accent-gold);color:var(--accent-gold);font-weight:600;font-size:13px;cursor:pointer;">Local (${local.length})</button>
+        <button data-tab="cloud" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-secondary);font-weight:600;font-size:13px;cursor:pointer;">Cloud (${cloud.length})</button>
+      </div>
+      <div style="flex:1;overflow-y:auto;" id="sp-body">
+        <div id="sp-local">${local.map(mkRow).join('')}</div>
+        <div id="sp-cloud" style="display:none;">${cloud.map(mkRow).join('')}</div>
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:11px;color:var(--text-muted);" id="sp-count">0 selected</div>
+        <div style="display:flex;gap:8px;">
+          <button data-cancel style="padding:8px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);cursor:pointer;">Cancel</button>
+          <button data-run style="padding:8px 16px;background:var(--accent-gold);border:none;border-radius:8px;color:#000;font-weight:600;cursor:pointer;">Use Selected</button>
+        </div>
+      </div>
+    `;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    modal.querySelectorAll('#sp-tabs button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        modal.querySelectorAll('#sp-tabs button').forEach(b => {
+          b.style.borderBottomColor = 'transparent';
+          b.style.color = 'var(--text-secondary)';
+        });
+        btn.style.borderBottomColor = 'var(--accent-gold)';
+        btn.style.color = 'var(--accent-gold)';
+        modal.querySelector('#sp-local').style.display = btn.dataset.tab === 'local' ? '' : 'none';
+        modal.querySelector('#sp-cloud').style.display = btn.dataset.tab === 'cloud' ? '' : 'none';
+      });
+    });
+
+    const updateCount = () => {
+      const n = overlay.querySelectorAll('input[type="checkbox"]:checked').length;
+      modal.querySelector('#sp-count').textContent = n + ' selected';
+    };
+    overlay.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.addEventListener('change', updateCount));
+
+    modal.querySelector('button[data-cancel]').addEventListener('click', () => { overlay.remove(); resolve(null); });
+    modal.querySelector('button[data-run]').addEventListener('click', () => {
+      const checked = overlay.querySelectorAll('input[type="checkbox"]:checked');
+      const picks = Array.from(checked).map(c => ({
+        key: c.value,
+        provider: c.dataset.provider,
+        draft: c.dataset.specDraft || null
+      }));
+      overlay.remove();
+      resolve(picks);
+    });
+  });
+}
 // Wire focused shell when mode flips / page loads.
 function focusedEnsure() {
   if (document.documentElement.getAttribute('data-mode') === 'focused') {
-    focusedPopulateSubjects();
     focusedSyncShell();
+    focusedLoadPickerData();
   }
+}
+
+// Subject picker — opens the modal, updates the hidden input + label.
+async function focusedPickSubject() {
+  const picks = await showSubjectPicker();
+  if (!picks || !picks.length) return;
+  const input = document.getElementById('focused-subject-pick');
+  const label = document.getElementById('focused-subject-label');
+  if (input) input.value = picks[0].key; // primary subject for run API
+  if (label) {
+    if (picks.length === 1) {
+      label.textContent = picks[0].key;
+    } else {
+      label.textContent = `${picks[0].key} +${picks.length - 1} more`;
+    }
+  }
+  // Store full pick list for batch runs
+  window._focusedSubjects = picks;
 }
 
 // Test picker modal for "Run Just This" — shows all tests for the selected
@@ -6119,7 +6241,8 @@ async function showTestPicker(axes) {
             <input type="checkbox" value="${t.id}" data-test-id="${t.id}" style="margin-top:2px;">
             <div style="flex:1;min-width:0;">
               <div style="font-size:12px;color:var(--text-primary);">${escHtml(t.name)}</div>
-              <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">${t.axis}${t.owl_type ? ' · ' + t.owl_type : ''} · ${t.trials_per_run || 3} trials</div>
+              ${t.formal_spec ? `<div style="font-family:var(--font-mono);font-size:10px;color:var(--accent-gold);margin-top:2px;line-height:1.4;">${escHtml(t.formal_spec)}</div>` : ''}
+              <div style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);margin-top:2px;">${t.axis}${t.owl_type ? ' · ' + t.owl_type : ''} · ${t.trials_per_run || 3} trials</div>
             </div>
           </label>
         `).join('')}
