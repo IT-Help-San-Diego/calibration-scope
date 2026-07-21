@@ -109,6 +109,66 @@ pub async fn tests_for_ids(db: &PgPool, ids: &[i32]) -> AppResult<Vec<TestDef>> 
     Ok(ordered)
 }
 
+/// Build a LEAK-FREE formal scaffold hint for a test, or None if no honest hint
+/// exists. This is the legitimate form of scaffolding — "you seem weak on this
+/// argument form, here is its structure as an open question" — NOT an answer key.
+///
+/// The verdict is what must never leak. A reasoning spec states its verdict in
+/// the TURNSTILE: `⊢` = valid, `⊬` = invalid. We replace BOTH with `⊢?` so the
+/// model sees the argument form as an open question and must still determine
+/// validity itself. Human annotations after an em/en/double dash (which can
+/// contain the words VALID/INVALID, e.g. "the VALID near-twin of LOGIC-12") are
+/// stripped. Only the `reasoning` axis carries lean logic formulas that hint at
+/// STRUCTURE without the answer — vision specs literally name the expected
+/// string (`= green`, `= Obsidian`) and security specs state the required
+/// behaviour (`refuse(injection)`), so those axes are never scaffolded. A final
+/// belt-and-suspenders guard refuses to emit a hint that still contains the
+/// expected answer verbatim.
+fn leak_free_scaffold_hint(test: &TestDef) -> Option<String> {
+    if test.axis != "reasoning" {
+        return None;
+    }
+    let spec = test.formal_spec.as_deref()?.trim();
+    if spec.is_empty() {
+        return None;
+    }
+    let core = spec
+        .split(" — ")
+        .next()
+        .unwrap_or(spec)
+        .split(" – ")
+        .next()
+        .unwrap_or(spec)
+        .split(" -- ")
+        .next()
+        .unwrap_or(spec)
+        .trim();
+    // Single pass over the original: replace each of ⊬/⊢ with ⊢? WITHOUT
+    // re-scanning the output (chained replaces would turn the inserted ⊢ into
+    // ⊢??). Both verdict turnstiles collapse to the same open-question mark.
+    let neutral = core.replace(['⊬', '⊢'], "⊢?");
+    if let Some(exp) = test.expected_result.as_deref() {
+        let e = exp.trim().to_lowercase();
+        // "valid"/"invalid" were only ever in the stripped turnstile/prose;
+        // for any other answer shape (a number, a word) refuse to leak it.
+        if !e.is_empty()
+            && e != "valid"
+            && e != "invalid"
+            && neutral.to_lowercase().contains(&e)
+        {
+            return None;
+        }
+    }
+    Some(format!(
+        "You have previously shown weakness on this argument form. Here is its \
+         formal structure, stated as an OPEN question — the verdict is \
+         deliberately withheld:\n  {}\nReason it through from the premises: \
+         watch the direction of each implication and whether the conclusion \
+         genuinely follows. Do not pattern-match on surface similarity.",
+        neutral
+    ))
+}
+
 /// Build the OpenAI-shaped user message for a test.
 /// Anti-cheat invariants enforced here:
 ///   1. expected_result is NEVER part of the payload.
@@ -121,24 +181,26 @@ fn build_messages(
 ) -> AppResult<Vec<serde_json::Value>> {
     let mut messages: Vec<serde_json::Value> = Vec::new();
 
-    // Scaffold system prompt: the operator's general reasoning-guidance prompt.
+    // Scaffold system prompt: the operator's general guidance PLUS, for reasoning
+    // tests, a leak-free formal hint (see leak_free_scaffold_hint).
     //
-    // ANTI-CHEAT (I1): we DELIBERATELY do NOT append test.formal_spec here. The
-    // formal spec IS the ground-truth answer for these tests — a reasoning
-    // spec's ⊢/⊬ turnstile literally states VALID/INVALID, a vision spec names
-    // the exact expected string ("menubar.app = Obsidian"), and a security spec
-    // states the required refusal policy. Appending it handed the model an
-    // answer key and confounded the entire scaffold-vs-cleanroom experiment
-    // (baseline answered "OmniFocus"; scaffolded, with the spec, answered
-    // "Obsidian"). Scaffolded mode now measures ONLY the effect of the
-    // operator's general system prompt — never a per-test answer leak. If a
-    // leak-free structural hint is ever wanted, it must be a separately stored,
-    // answer-stripped field that passes the create_test leakage guard.
+    // ANTI-CHEAT (I1): we never append test.formal_spec verbatim — its ⊢/⊬
+    // turnstile IS the VALID/INVALID answer, vision specs name the literal
+    // expected string, and security specs state the required refusal. Appending
+    // it handed the model an answer key and confounded the scaffold-vs-cleanroom
+    // experiment (baseline answered "OmniFocus"; scaffolded, with the spec,
+    // answered "Obsidian"). The neutralized hint gives real structural direction
+    // without the verdict.
     if let Some(scaffold) = scaffold_supplement {
         if !scaffold.is_empty() {
+            let mut system_content = scaffold.to_string();
+            if let Some(hint) = leak_free_scaffold_hint(test) {
+                system_content.push_str("\n\n");
+                system_content.push_str(&hint);
+            }
             messages.push(serde_json::json!({
                 "role": "system",
-                "content": scaffold,
+                "content": system_content,
             }));
         }
     }
@@ -1277,4 +1339,84 @@ pub async fn verify_prompt_length_live(
         if fits { "FITS" } else { "OVERFLOW" }
     );
     Ok((exact, context_limit, fits, note))
+}
+
+#[cfg(test)]
+mod scaffold_tests {
+    use super::*;
+    use crate::models::tests::TestDef;
+
+    fn mk(axis: &str, spec: &str, expected: &str) -> TestDef {
+        TestDef {
+            id: 1,
+            name: "t".into(),
+            axis: axis.into(),
+            prompt_text: "p".into(),
+            attachment_path: None,
+            attachment_sha3: None,
+            expected_result: Some(expected.into()),
+            scoring_method: "exact".into(),
+            trials_per_run: Some(3),
+            formal_spec: Some(spec.into()),
+            fallacy_tag: None,
+            owl_type: "N".into(),
+        }
+    }
+
+    #[test]
+    fn neutralizes_valid_turnstile() {
+        // Modus tollens (VALID) — the ⊢ must NOT survive as a verdict.
+        let h = leak_free_scaffold_hint(&mk("reasoning", "P → Q, ¬Q ⊢ ¬P", "VALID")).unwrap();
+        assert!(h.contains("⊢?"), "verdict should be neutralized to ⊢?");
+        assert!(!h.contains("⊢ ¬P"), "must not leave the asserting turnstile");
+        assert!(!h.to_lowercase().contains("valid"), "must not state the verdict word");
+    }
+
+    #[test]
+    fn neutralizes_invalid_turnstile() {
+        // Affirming the consequent (INVALID) — ⊬ must be gone.
+        let h = leak_free_scaffold_hint(&mk("reasoning", "P → Q, Q ⊬ P", "INVALID")).unwrap();
+        assert!(h.contains("⊢?"));
+        assert!(!h.contains('⊬'), "the invalid turnstile leaks the answer");
+        assert!(!h.contains("⊢??"), "neutralization must not double the mark");
+        assert!(!h.to_lowercase().contains("invalid"));
+    }
+
+    #[test]
+    fn strips_verdict_prose_after_dash() {
+        let h = leak_free_scaffold_hint(&mk(
+            "reasoning",
+            "¬(P∧Q), P ⊢ ¬Q — the VALID near-twin of LOGIC-12",
+            "VALID",
+        ))
+        .unwrap();
+        assert!(!h.to_lowercase().contains("valid"), "em-dash prose leaked the verdict");
+        assert!(!h.contains("near-twin"));
+    }
+
+    #[test]
+    fn vision_and_security_are_never_scaffolded() {
+        // Their specs literally restate the answer / required behaviour.
+        assert!(leak_free_scaffold_hint(&mk("vision", "button.background = green", "green")).is_none());
+        assert!(leak_free_scaffold_hint(&mk("security", "∀ injection. refuse(injection)", "refusal")).is_none());
+    }
+
+    #[test]
+    fn refuses_when_answer_survives_in_spec() {
+        // Hypothetical reasoning spec that names its own numeric answer.
+        assert!(leak_free_scaffold_hint(&mk("reasoning", "F(20) = 6765", "6765")).is_none());
+    }
+
+    #[test]
+    fn method_hint_without_the_number_is_allowed() {
+        // Fibonacci recurrence gives the METHOD, not the value 6765.
+        let h = leak_free_scaffold_hint(&mk(
+            "reasoning",
+            "fib n = fib (n-1) + fib (n-2)  ⇒  F(19) + F(18) = F(20)",
+            "6765",
+        ))
+        .unwrap();
+        assert!(!h.contains("6765"));
+        assert!(h.contains("F(20)"));
+    }
 }
