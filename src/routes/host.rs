@@ -47,10 +47,20 @@ use crate::state::AppState;
 /// estimate after the user demanded science over social media. Measured
 /// reality on the dev machine: 107.5 GiB of 128 GiB = 84% — the folklore
 /// number was 11.5 GB wrong. Estimates lie; APIs measure.
+#[cfg(target_os = "macos")]
 fn metal_working_set_bytes() -> Option<u64> {
     use objc2_metal::MTLDevice as _;
     let device = objc2_metal::MTLCreateSystemDefaultDevice()?;
     Some(device.recommendedMaxWorkingSetSize())
+}
+
+/// Non-macOS: no Metal. The GPU ceiling is simply unmeasurable here, and every
+/// caller already treats `None` as "unavailable" — so the whole binary builds
+/// on Linux (CI, future non-Mac hosts) with the honest absence of a number
+/// rather than a fabricated one.
+#[cfg(not(target_os = "macos"))]
+fn metal_working_set_bytes() -> Option<u64> {
+    None
 }
 
 /// One measured value + the command that produced it. The receipt travels

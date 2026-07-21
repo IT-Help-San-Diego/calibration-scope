@@ -10,6 +10,55 @@ env:
   SQLX_OFFLINE: "true"
 
 jobs:
+  # ── The seL4-style gate: logic ground truths, proved not asserted ──────────
+  # Deliberately independent of the Rust build so it protects `main` even if the
+  # (macOS-targeted) app has a platform hiccup. Pure Python + a Postgres service.
+  logic-gate:
+    name: Logic ground-truth gate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: calibration_scope
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Complete decision procedure (truth-tables + finite-model search). A
+      # wrong seeded ground truth fails the build. No DB needed.
+      - name: Verify logic ground truth (offline oracle)
+        run: python3 scripts/verify_logic_ground_truth.py
+
+      # Live-DB consistency: apply the schema, then check every N/C paraphrase
+      # row shares its owl-root's formal skeleton.
+      - name: Apply migrations (psql)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          for f in $(ls migrations/*.sql | sort); do
+            PGPASSWORD=postgres psql -h localhost -U postgres -d calibration_scope -v ON_ERROR_STOP=1 -q -f "$f"
+          done
+
+      - name: Verify owl-family formal consistency (live DB)
+        run: |
+          python3 -m pip install --quiet psycopg2-binary
+          python3 scripts/verify_logic_ground_truth.py --check-owl-families
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/calibration_scope
+
+  # ── Rust quality gate (builds on Linux now that objc2/Metal is macOS-gated) ─
   quality-gate:
     name: Format · Clippy · Build · Test
     runs-on: ubuntu-latest
@@ -38,28 +87,12 @@ jobs:
           toolchain: 1.96.1
           components: rustfmt, clippy
 
-      - name: Install sqlx-cli
-        run: cargo install sqlx-cli --no-default-features --features postgres --version 0.9.3
-
-      - name: Apply migrations
-        run: sqlx migrate run
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/calibration_scope
-
-      # seL4-style gate: prove the seeded logic ground truths are LOGICALLY
-      # correct by a complete decision procedure (truth-tables + finite-model
-      # search), not asserted. A wrong ground truth fails the build.
-      - name: Verify logic ground truth (complete decision procedure)
-        run: python3 scripts/verify_logic_ground_truth.py
-
-      # Live-DB check: every 'N'/'C' paraphrase row must share its owl-root's
-      # formal skeleton — catches a hand-edited prompt drifting from its logic.
-      - name: Verify owl-family formal consistency (live DB)
+      - name: Apply migrations (psql — no sqlx-cli version coupling)
         run: |
-          python3 -m pip install --quiet psycopg2-binary
-          python3 scripts/verify_logic_ground_truth.py --check-owl-families
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/calibration_scope
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+          for f in $(ls migrations/*.sql | sort); do
+            PGPASSWORD=postgres psql -h localhost -U postgres -d calibration_scope -v ON_ERROR_STOP=1 -q -f "$f"
+          done
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2

@@ -32,10 +32,16 @@ sha3 = "0.10"
 hex = "0.4"
 base64 = "0.22"
 yaml-rust2 = "0.11.0"
-objc2-metal = { version = "0.3.2", features = ["MTLDevice"] }
-objc2 = "0.6.4"
 walkdir = "2.5.0"
 rand = "0.8"
+
+# macOS-only: Metal GPU-ceiling measurement (src/routes/host.rs). Gated so the
+# binary builds on Linux (CI, non-Mac hosts) — the GPU ceiling is simply None
+# there. objc2 fails to compile off Apple platforms, so it must NOT be an
+# unconditional dependency.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-metal = { version = "0.3.2", features = ["MTLDevice"] }
+objc2 = "0.6.4"
 
 [profile.release]
 opt-level = 3
