@@ -359,6 +359,29 @@ baseline 99.0% > haiku 97.1% > English prose 94.1% > Lean = Bribe 91.2%.
   heaviest noise. The user's FIRST inverse ("English was the noise, Lean is
   clean") AND SECOND inverse ("flattery will lift it") are BOTH falsified.
 
+**⚠ STATISTICAL AUDIT (Claude Science, 2026-07-22) — the ORDERING above is NOT
+yet supported; do not cite it as an ordered spectrum.** Fisher exact on these
+N=102 UNPAIRED arms: only the endpoints separate — baseline vs Lean/bribe,
+p=0.019 (**real**). Every ADJACENT step is noise: baseline↔haiku p=0.62,
+haiku↔English p=0.50, English↔Lean p=0.59; 95% CIs overlap heavily. The
+defensible claim today: **"heavy carriers (Lean, bribe) significantly drag the
+near-ceiling model vs baseline; the intermediate ordering is within binomial
+noise."** Brute-force N cannot fix this (unpaired power is only 0.57 even at
+N=800 — near ceiling, small gaps compress against the 100% wall); the fix is
+DESIGN: run the SAME items under every carrier and analyze paired (McNemar),
+which crosses 80% power at n≈420. Locked publication-grade protocol:
+`docs/experiments/carrier_color_experiment_spec_v1.md`; power curves:
+`docs/experiments/carrier_power_analysis.png`. Until that paired re-run lands,
+§10.8 stands as "endpoints real, middle unresolved."
+
+**Harness note (Claude Code):** the leak-free scaffold hint the executor sends
+in scaffolded mode (`leak_free_scaffold_hint`, executor/mod.rs) is itself a
+Lean-formula + English-directive **carrier** — the two carriers this experiment
+measured as heaviest for a small model. §10.7 (scaffold drags e2b 99→94%) is
+consistent. Any future scaffold work must treat the hint's REGISTER as a
+carrier variable — per this data, a haiku-register hint should beat a formal
+one for carrier-sensitive models.
+
 ## 10.9 Carrier-immunity threshold — big models shrug off ALL carrier noise (runs 922-930)
 
 Replication of §10.8 on stronger models. Same LOGIC cluster (29 tests, modular
@@ -388,6 +411,17 @@ carrier noise because the carrier consumes the same limited context/reasoning
 budget the logic needs. Big models have surplus headroom — the noise is
 absorbed without touching the logic. This is Carrier Color's capability
 threshold, measured.
+
+**⚠ Confound note (2026-07-22, see §10.14):** the local-vs-cloud leg of this
+conclusion is ENTANGLED — cloud models differ from local on two axes at once
+(more capability AND a hidden provider system prompt layered under ours), so
+this experiment cannot by itself separate capability from prompt-layer-count.
+Partial decoupling in the data: nemotron (30B) is LOCAL, single-prompted, and
+fully immune — so capability suffices for immunity without a second prompt
+layer. What remains untested is the reverse: whether an added authority layer
+DRAGS a sensitive model (the §10.14 protocol). "Immunity tracks capability"
+stays the lead hypothesis; treat the substrate half of the claim as unresolved
+until §10.14 runs.
 
 ## 10.10 Web-shell refactor — external deferred JS (2026-07-22)
 
@@ -588,6 +622,65 @@ resolved against the live source before it is treated as real.**
 
 ---
 
+## 10.14 Double system-prompting — authority confusion as a carrier (theory: Carey; audit: Claude Science, 2026-07-22)
+
+**The theory.** Cloud models arrive at our tests DOUBLY system-prompted: the
+provider's hidden system prompt underneath, then our carrier scaffold on top.
+Local models are SINGLE-authority — we control the entire prompt stack. A model
+holding two "authoritative" voices must arbitrate WHOSE intent governs; many
+models plausibly don't know where authority comes from. Authority confusion is
+also the mechanism behind genie/agentic misbehavior (a model with two masters
+picks one — maybe not yours; see the IEEE "Genie coefficient" framing, §10.16
+when written).
+
+**Why it matters to the record.** It exposes the §10.9 entanglement (see the
+confound note there): capability and prompt-layer-count varied TOGETHER in the
+local-vs-cloud comparison. Two mechanisms predict the same observation —
+saturation (provider prompt already does scaffold-like work) vs arbitration
+cost (double-prompting burns headroom deciding who's in charge).
+
+**The clean test (protocol, not yet run).** Hold ONE local carrier-sensitive
+model fixed (e2b). Inject a synthetic "provider" system prompt to manufacture
+double-prompting. Three authority conditions × the 5-carrier spectrum:
+  1. no second prompt (baseline, current data),
+  2. ALIGNED second prompt (provider-style, compatible with the task),
+  3. CONFLICTING second prompt (asserts different priorities/authority).
+If the conflicting-authority condition drags the spectrum beyond the carrier
+effect alone, authority confusion is real and measurable — a new axis for the
+instrument, and the §10.9 substrate claim resolves cleanly. Run PAIRED per the
+§10.8 audit discipline (same items across all conditions, McNemar).
+
+## 10.15 Positional integration — "logic too late" + "lost in the middle" are one theory (Carey + Claude Science, 2026-07-22)
+
+Two long-standing complaints unify into a single positional theory of where
+logic lives, with one axis per lifecycle stage:
+- **Training axis ("logic too late"):** logic enters the model LATE and SHALLOW
+  (post-training alignment, inference-time scaffolds) atop a base pretrained on
+  web/social prose. The model's native register is human prose; formal notation
+  is out-of-distribution → carrier sensitivity. Evidence: §10.8 (Lean formula =
+  heaviest carrier on the small model; haiku — closest to the native register —
+  gentlest).
+- **Inference axis ("truncate-middle is evil"):** the documented "lost in the
+  middle" failure mode — attention favors the head and tail of context and
+  neglects the middle. Logic buried mid-context (or truncated away by a
+  context-window policy) is logic the model never weighs.
+
+**The unification with §10.9's headroom finding:** a small model's limited
+attention budget means carrier noise crowds the logic toward the neglected
+middle — that is the "neutered" effect, mechanistically. Big models' surplus
+covers the whole window.
+
+**Design principle that falls out (a HARNESS rule — the intervention point):**
+put logic EARLY (primacy), never middle-buried, never truncated. This binds on
+our own executor: scaffold hints go at the head of the system prompt; nothing
+in the harness may truncate the middle of a prompt.
+
+**The experiment (protocol, not yet run):** positional sweep — the same logic
+instruction placed head / middle / tail of a padded context, across
+sensitive-band models, paired design. Predictions: middle placement worst;
+heavy-carrier × middle-placement interaction catastrophic. If the interaction
+holds, the two theories weld into one measured result.
+
 ## 11. Next steps (open — both tools)
 
 ### ✅ Completed by Hermes Agent (2026-07-22 session)
@@ -607,7 +700,21 @@ resolved against the live source before it is treated as real.**
 - [ ] Wire seL4 build+boot+validate as a CI-style release gate (compute role #2). _(Claude Science)_
 - [ ] Stand up the heavy Spot box; run l4v Isabelle/HOL proof (empirical boot → proven correct). _(Claude Science)_
 - [ ] Open-science moves #1–#6 (data package + DOI first). _(Claude Science → artifacts → Claude Code commits)_
-- [ ] **Carrier Color replication** (§10.8): does the carrier-spectrum (baseline > haiku > English > Lean = bribe) hold on OTHER models? On cloud models? See §10.8 for full experiment design + no-leakage scaffold texts. _(Claude Science)_
+- [x] ~~Carrier Color replication (§10.8)~~ **SUPERSEDED** by the audited, locked
+      protocol: `docs/experiments/carrier_color_experiment_spec_v1.md` (paired
+      McNemar design, n≥500 items, 4 models spanning the immunity band,
+      pre-registered hypotheses). Design/stats: Claude Science (**done**).
+- [ ] **★ PRIORITY: execute the paired Carrier Color re-run** per the locked
+      spec — emit trial-level CSV back for McNemar analysis. This is what turns
+      the flagship finding into publishable science; the §10.8 ordering stays
+      flagged until it lands. _(Hermes executes; Claude Science analyzes)_
+- [ ] **Double system-prompting protocol (§10.14):** aligned/conflicting
+      synthetic provider prompt × carrier spectrum on e2b, paired. Resolves the
+      §10.9 substrate confound + measures authority confusion. _(Design: Claude
+      Science; execution: Hermes)_
+- [ ] **Positional sweep (§10.15):** head/middle/tail logic placement × carrier,
+      paired, sensitive-band models. Tests the lost-in-the-middle ×
+      carrier interaction. _(Design: Claude Science; execution: Hermes)_
 - [ ] **Stop the EC2 box when idle** (billing CPU while running); run it
       stopped-with-fast-start + idle-shutdown timer. _(Carey/Claude Science)_
 - [ ] **Artifact eviction (§4b):** set up box → durable storage before stop —
@@ -620,6 +727,15 @@ resolved against the live source before it is treated as real.**
 - [ ] **OWL N/C coverage expansion:** LOGIC-05/07/08/09/10 still have zero N/C siblings. The migration 047 pattern (same formal_spec, new surface text, demodulated one-word answer for N; transform + named owl_flaw for C) is the template. The oracle (`scripts/verify_logic_ground_truth.py --check-owl-families`) validates drift.
 - [ ] **Architecture diagram update:** `docs/architecture.excalidraw` needs the Focused shell, NeuroVault proxy, signal-carrier view, spec-decode panel, human-calibration page, completion endpoint, and MCP server added. Several of these are live but not diagrammed.
 - [ ] **MCP server tool surface:** the 11 MCP tools (commit 998d8c2) are wired but the `run_benchmark` tool hasn't been tested end-to-end by a real bot connecting to `POST /mcp`. A Claude Code or Claude Science bot should connect, discover tools, and call `run_benchmark` to verify the full JSON-RPC 2.0 path works.
+- [ ] **Harness positional audit (§10.15 rule):** verify the executor never
+      middle-buries or truncates logic — scaffold hints lead the system prompt,
+      no prompt-assembly path trims the middle. Also: offer a HAIKU-register
+      variant of `leak_free_scaffold_hint` (per §10.8, the formal-register hint
+      is the heaviest carrier for exactly the models scaffolding targets).
+- [ ] Still open from the Claude Code sweep board: test-battery data fixes
+      (VVP-01 prompt leak, fib `\n`, substring-scored numerics, fallacy
+      labels), provenance sealing I3/I6, aggregate honesty (scaffolded-run
+      exclusion, PASS-RATE dial, loot metrics).
 
 ---
 
