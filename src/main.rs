@@ -133,6 +133,7 @@ async fn main() {
             "/api/lmstudio/downloads",
             get(routes::download::list_downloads),
         )
+        .route("/mcp", post(routes::mcp::mcp_handler))
         .route(
             "/api/spec-decode/pairs",
             get(routes::spec_decode::spec_decode_pairs),

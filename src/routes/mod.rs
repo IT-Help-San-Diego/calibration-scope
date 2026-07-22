@@ -3,6 +3,7 @@ pub mod cloud_sync;
 pub mod dossier;
 pub mod download;
 pub mod events;
+pub mod mcp;
 pub mod fountain;
 pub mod hermes_check;
 pub mod host;
