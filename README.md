@@ -88,6 +88,7 @@ The commit history is deliberately forensic — most fixes cite the live inciden
 - **📋 Test Registry** — blind by default (ground truth requires an explicit audit view), custom test builder with anti-leakage validation, viewable SHA3-pinned image attachments.
 - **🖥️ Reality check** — the setup page *measures your machine* (RAM via `sysctl`, GPU ceiling via Metal's `recommendedMaxWorkingSetSize` — a documented API, not folklore, live memory pressure, LM Studio state) and computes an honest AI RAM budget with the formula shown. Every number carries the command it came from.
 - **⚙️ Hermes-aware** — if you run [Hermes Agent](https://hermes-agent.nousresearch.com), the setup page reads your actual config (allowlisted fields only — never credentials) and shows verified ✅ state for main model and auxiliary task slots.
+- **🤖 MCP server** — a real Model Context Protocol server at `POST /mcp` (JSON-RPC 2.0). A bot can connect, discover 11 tools (`tools/list` with JSON-Schema args), and *tell Calibration Scope to do stuff*: `run_benchmark` (returns run_id immediately), `get_run` (poll state), `abort_run`, `list_models` (with verdicts + size_gb), `get_model_verdict`, `get_leaderboard`, `get_carrier_color`, `get_owl_state`, `get_test_spec`, `list_tests`, `get_status`. Every tool is documented + verifiable (learning from LM Studio's API anti-patterns — no hidden state, no "maybe it works" endpoints, honest data). See `docs/mcp-server-design.md`.
 
 ## Using this with Hermes Agent / Hermes Desktop
 
