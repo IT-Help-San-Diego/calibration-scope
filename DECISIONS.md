@@ -425,6 +425,40 @@ risks breaking cross-references (found: `startDownload` references 18 functions;
 the SSE onmessage handler is top-level code, not a function span). A clean
 multi-module split needs proper AST tooling, not regex.
 
+## 10.11 Human calibration — the advanced user's context footprint (2026-07-22)
+
+"Humans calibrate first" applied to context sizing: what context_length does a
+real ADVANCED user actually need? Measured 500 most-recent user messages from
+the operator's Hermes session DB (state.db, ~1.3GB of chats).
+
+**Prompt-size distribution (character count):**
+
+| Metric | Chars | ≈ Tokens (÷4) |
+|---|---|---|
+| Median | 372 | ~93 |
+| Mean | 1,430 | ~360 |
+| p75 | 844 | ~211 |
+| p90 | 1,960 | ~490 |
+| p95 | 3,415 | ~850 |
+| p99 | 23,350 | ~5,800 |
+| Max | 76,653 | ~19,000 |
+
+**Finding:** the advanced user's MEDIAN prompt is tiny (372 chars / ~93 tokens)
+— most messages are short. The MEAN is dragged up by long deep-reasoning threads.
+**95% of prompts fit in ~1K tokens; 99% fit in ~6K tokens; only the outliers
+(p99–max) need ~6K–19K.** The benchmark's 131072 (128K) context preset is
+MASSIVE headroom — an 8K–16K context covers 99% of an advanced user's real
+prompts. Implication for the lightweight preset (32768 context): even THAT is
+generous for 95% of usage; the lightweight profile could go smaller for the
+median case without hurting the deep threads (which still fit in 32K).
+
+**This is the human-side Goldilocks answer:** the operator's prompts are mostly
+small, but the instrument must handle the long threads. Context_length is not
+"more is better" — it's a per-use-case budget, and 95% of the advanced user's
+budget is ~1K tokens. (Screenshot/vision messages are rare — the operator
+doesn't screenshot often; when they do, the vision-context sizing is a separate
+question, flagged for the vision-axis work.)
+
 ---
 
 ### 🔄 HANDOFF to Claude Science — Carrier Color replication (2026-07-21)
