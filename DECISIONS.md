@@ -590,15 +590,79 @@ resolved against the live source before it is treated as real.**
 
 ## 11. Next steps (open — both tools)
 
+### ✅ Completed by Hermes Agent (2026-07-22 session)
+
 - [x] Merge PR #1 (leak fix verified) → adopt main-direct → wire verifier gate #19. **DONE.**
 - [x] CI green. **DONE.**
+- [x] **Confirm Cognitive Atlas IDs before publishing.** **DONE (§10.13).** All 6 IDs verified live; 3 were hallucinated and replaced. The `ingest/artifacts/ontology_crosswalk.json` file is the verified source.
+- [x] **OWL C/M content authoring.** **DONE (migration 047).** 8 new tests (4N+4C) for LOGIC-03/04/06/11; oracle-verified; 4 families now `fully_instrumented=t`. OWL M (σₕ) is NOT a promptable test — it's the metacognitive scoring pass, already wired (migration 036). The content gap was N (paraphrases) + C (adversarial variants), now closed for 4 core families. **Still open: N/C coverage for LOGIC-05/07/08/09/10/11 and the literary axis.**
+- [x] **Human-calibration UI.** **DONE.** Backend: 5 endpoints (POST /api/participants, GET /api/participants, POST /api/participants/{id}/start, POST /api/participants/{id}/answer, POST /api/participants/{id}/finish). Frontend: 4-step flow (create → start → answer → seal) in dashboard.html, visible in both Focused and Deep modes. E2E verified: participant created → 2 answers submitted → sealed with SHA-3-512 provenance → signal_carrier view returns human rows. **Still open: the frontend is functional but basic — a Claude Code GUI pass could add per-question timing, carrier-variance visualization, and a comparison view (human vs model side-by-side).**
+- [x] **local.calibrationscope.com friendly-URL.** **DONE.** DNS A record (127.0.0.1) placed via Route53, verified via Cloudflare 1.1.1.1. Port (:8768) advertised on the landing view. `/etc/hosts` option documented for Carey (can't be done from agent shell — needs sudo). **Still open: run the dashboard on port 80 or 443 so the URL works without :8768 — deferred to a future packaging phase per Carey's decision.**
+- [x] **Python on-ramp package.** **DONE.** Zero-dependency `pip install calibration-scope` client (stdlib urllib only, Python 3.9+). 8 methods: status, models, leaderboard, get_run, list_runs, signal_carrier, router_plan, tests. Verified end-to-end against the live dashboard. Package at `python/calibration_scope/`, installable via `pyproject.toml`. **Not yet published to PyPI — Carey decides when.**
+- [x] **Kokoro TTS permanent fix (infra).** **DONE.** Self-healing watchdog (launchd `ai.hermes.kokoro-tts-watchdog`, 60s interval) probes with real synthesis and hard-restarts on hang. Provider timeout dropped 120s→15s for fail-fast fallback. Root cause: mlx_audio.server deadlocks on MPS synthesis after long runs; the watchdog makes it self-healing.
+
+### 🔄 Claude Science lane (unchanged)
+
 - [ ] Modify the Rust root task to do something in *our* system; rebuild; hold TEST_PASS. _(Claude Science)_
 - [ ] Wire seL4 build+boot+validate as a CI-style release gate (compute role #2). _(Claude Science)_
 - [ ] Stand up the heavy Spot box; run l4v Isabelle/HOL proof (empirical boot → proven correct). _(Claude Science)_
-- [ ] Open-science moves #1–#6 (data package + DOI first); confirm Cognitive Atlas IDs before publishing. _(Claude Science → artifacts → Claude Code commits)_
-- [ ] Test-battery data fixes · provenance sealing · aggregate honesty · GUI magic. _(Claude Code — §7)_
+- [ ] Open-science moves #1–#6 (data package + DOI first). _(Claude Science → artifacts → Claude Code commits)_
+- [ ] **Carrier Color replication** (§10.8): does the carrier-spectrum (baseline > haiku > English > Lean = bribe) hold on OTHER models? On cloud models? See §10.8 for full experiment design + no-leakage scaffold texts. _(Claude Science)_
 - [ ] **Stop the EC2 box when idle** (billing CPU while running); run it
       stopped-with-fast-start + idle-shutdown timer. _(Carey/Claude Science)_
 - [ ] **Artifact eviction (§4b):** set up box → durable storage before stop —
       `git push` small/versionable artifacts; `rclone` large ones to Google Drive
       (or S3). Nothing critical lives only on the scratch disk. _(Claude Science)_
+
+### 🔄 Claude Code lane (GUI + frontend polish)
+
+- [ ] **Human-calibration UI polish:** the 4-step flow works but is basic. Add per-question timing, carrier-variance bar chart, and a human-vs-model comparison view (same signal_carrier shape, side-by-side). The backend already supports this — the signal_carrier endpoint returns both subjects in the same row format.
+- [ ] **OWL N/C coverage expansion:** LOGIC-05/07/08/09/10 still have zero N/C siblings. The migration 047 pattern (same formal_spec, new surface text, demodulated one-word answer for N; transform + named owl_flaw for C) is the template. The oracle (`scripts/verify_logic_ground_truth.py --check-owl-families`) validates drift.
+- [ ] **Architecture diagram update:** `docs/architecture.excalidraw` needs the Focused shell, NeuroVault proxy, signal-carrier view, spec-decode panel, human-calibration page, completion endpoint, and MCP server added. Several of these are live but not diagrammed.
+- [ ] **MCP server tool surface:** the 11 MCP tools (commit 998d8c2) are wired but the `run_benchmark` tool hasn't been tested end-to-end by a real bot connecting to `POST /mcp`. A Claude Code or Claude Science bot should connect, discover tools, and call `run_benchmark` to verify the full JSON-RPC 2.0 path works.
+
+---
+
+## 12. Hermes Agent session handoff (2026-07-22)
+
+**Session commits pushed to origin/main:**
+
+| Commit | Description |
+|---|---|
+| `f58bc78` | docs: dedupe Hermes-aware bullet in README |
+| `b51c678` | docs: §10.13 Cognitive Atlas ID verification — 6 hallucinated IDs replaced |
+| `6ecff9c` | feat(owl): N/C family coverage for LOGIC-03/04/06/11 (migration 047) |
+| `0d1c9c7` | feat(human-cal): participant CRUD + take-battery/answer/finish API (backend) |
+| `20e2a7e` | feat(human-cal): frontend — take-the-battery UI + focused-mode visibility |
+| `9a55de7` | feat(url): advertise local.calibrationscope.com:8768 on the landing view |
+| `221400f` | feat(python): read-only client package — pip install calibration-scope |
+
+**System state at session end:**
+- Dashboard backend: healthy (`http://127.0.0.1:8768/api/status` → 200)
+- Postgres: `archetype-postgres` container, up 3 days, DB `calibration_scope`
+- launchd: `ai.hermes.calibration-scope-dashboard` (KeepAlive, port 8768)
+- LM Studio: not loaded at session end (no model resident)
+- Kokoro TTS: self-healing watchdog live (`ai.hermes.kokoro-tts-watchdog`, 60s interval)
+- Build: `cargo build --release` clean, `cargo clippy --release` 0 warnings
+- Migration: 047 applied (8 new tests, 4 families fully instrumented)
+- Test data: cleaned up (0 participants, 0 human runs remain from E2E verification)
+- Git: working tree clean, all commits pushed
+
+**Key decisions this session:**
+1. **Main brain switched Kimi-K3 → GLM-5.2** (OpenRouter rate-limiting on K3 was blocking work; GLM-5.2 is benchmark-verified 90/90 reasoning, 3/3 tools, 3/3 security, ~10x cheaper). K3 stays as a manual deep-dive tool, not the always-on default.
+2. **Cognitive Atlas IDs must be verified live** — 6/6 were hallucinated (valid-looking trm_ prefixes, fabricated suffixes). Rule: any external ontology ID cited by any agent is resolved against the live source before it's treated as real.
+3. **Human calibration uses the SAME grader as models** — exact-match against expected_result. No LLM judges the human. No model self-assessment. The owl_signal_carrier view (migration 043) sees both subjects in the same shape, comparable directly.
+4. **Python package is zero-dependency** — stdlib urllib only. The Hermes venv's httpx/click is broken (Python 3.11 vs stale click), so the package uses urllib to work on ANY Python 3.9+ without environment issues.
+5. **OWL M (σₕ) is NOT a promptable test** — it's the metacognitive scoring pass that evaluates a model's existing reasoning_content. The "M content gap" was actually an N/C gap (paraphrases + adversarial variants), now closed for 4 families. M is already wired (migration 036 + scoring::score_metacognition).
+
+**What Claude Code should pick up:**
+- The human-calibration UI works but needs a GUI polish pass (timing, visualization, comparison view)
+- OWL N/C expansion to remaining LOGIC families (05/07/08/09/10)
+- Architecture diagram is stale (missing several live features)
+- MCP server needs a real-bot end-to-end test
+
+**What Claude Science should pick up:**
+- Carrier Color replication on other models (§10.8 has the full design)
+- seL4 build+boot+validate as CI gate
+- EC2 idle-shutdown timer
+- Open-science data package + DOI (Cognitive Atlas IDs are now verified — unblocked)
