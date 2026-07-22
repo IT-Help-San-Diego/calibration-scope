@@ -22,6 +22,7 @@
 <title>Calibration Scope — Intelligence Topology</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23d4af37'/%3E%3C/svg%3E">
+<link rel="preload" as="image" href="/assets/brain/hero-brain-realistic.webp" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="/assets/app.min.css">
 
 
@@ -320,8 +321,12 @@
        auxiliary  cerebellum   ~67%,73%
      The overlay SVG uses viewBox 0 0 1024 576 so coordinates map 1:1 to pixels. -->
 <div id="brain-hero-wrap" style="position:relative;width:100%;max-width:560px;aspect-ratio:1024/576;flex-shrink:0;">
-  <img src="/assets/brain/hero-brain-realistic.png" alt="Human brain — lateral view, functional anatomy"
-       style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;"/>
+  <picture>
+    <source srcset="/assets/brain/hero-brain-realistic.webp" type="image/webp">
+    <img src="/assets/brain/hero-brain-realistic.png" alt="Human brain — lateral view, functional anatomy"
+         style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;"
+         fetchpriority="high" decoding="async"/>
+  </picture>
   <svg id="brain-svg" viewBox="0 0 1024 576" preserveAspectRatio="xMidYMid meet"
        style="position:absolute;inset:0;width:100%;height:100%;"
        role="img" aria-label="Brain functional regions — six benchmark axes mapped onto their cortical origin">
