@@ -626,9 +626,9 @@
      leaves the viewport: rail (select/run) | center (brain + stream) |
      stream. Nothing is REMOVED (full power) — the other tabs are hidden,
      every capability still reachable by flipping back to Deep. */
-  html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark),
+  html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark):not(#tab-human-cal),
   html[data-mode="focused"] .top-nav .nav-arrow { display: none; }
-  html[data-mode="focused"] .page:not(#page-benchmark) { display: none !important; }
+  html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal) { display: none !important; }
 
   /* FOCUSED MODE — a genuinely different ARRANGEMENT of the workspace, not
      just fewer tabs. Design goal (Hawking-accessibility + "the brain is the

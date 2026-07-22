@@ -79,6 +79,8 @@
   <div class="tab" onclick="showPage('tests-page')" id="tab-tests-page">Tests</div>
   <span class="nav-arrow">→</span>
   <div class="tab" onclick="showPage('runs-page')" id="tab-runs-page">Runs</div>
+  <span class="nav-arrow">→</span>
+  <div class="tab" onclick="showPage('human-cal')" id="tab-human-cal">Human Cal</div>
   <div class="spacer"></div>
   <button class="btn-mini" onclick="syncLMStudio()" title="Check for newly downloaded local models" style="margin-right:4px">Sync Local</button>
   <button class="btn-mini" onclick="syncCloud()" title="Discover every cloud model your API keys can reach (Nous / OpenRouter / OpenAI)" style="margin-right:4px">Sync Cloud</button>
@@ -922,6 +924,72 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
 <!-- ============ /PAGE: Runs ============ -->
 
 <!-- ============ PAGE: LM Studio ============ -->
+<!-- ============ PAGE: Human Calibration ============ -->
+<div class="page" id="page-human-cal" style="display:none;">
+  <div class="setup-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🧠 Human Calibration</div>
+      <div class="setup-hero-sub">Take the SAME logic battery models take. See your signal score and carrier variance — does the wording change your verdict?</div>
+    </div>
+
+    <!-- Step 1: Create / select participant -->
+    <div id="hc-step-setup" style="margin-bottom:24px;">
+      <h3 style="color:var(--text-primary);font-size:18px;margin-bottom:12px;">1. Who's calibrating?</h3>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="hc-name" placeholder="Your name or initials"
+               style="flex:1;min-width:200px;padding:8px 12px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;font-size:14px;"
+               aria-label="Participant name">
+        <button class="btn btn-primary" onclick="hcCreate()" id="hc-create-btn">Start Session</button>
+      </div>
+      <div id="hc-existing" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- Step 2: Pick scope -->
+    <div id="hc-step-scope" style="display:none;margin-bottom:24px;">
+      <h3 style="color:var(--text-primary);font-size:18px;margin-bottom:12px;">2. What do you want to test?</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <select id="hc-axis" style="padding:8px 12px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;font-size:14px;" aria-label="Test axis">
+          <option value="reasoning">Reasoning (logic fallacies)</option>
+          <option value="literary">Literary (text fallacies)</option>
+        </select>
+        <button class="btn btn-primary" onclick="hcStartSession()">Begin Battery</button>
+        <span id="hc-session-info" style="color:var(--text-muted);font-size:13px;"></span>
+      </div>
+    </div>
+
+    <!-- Step 3: Question + answer -->
+    <div id="hc-step-quiz" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="color:var(--text-primary);font-size:18px;" id="hc-progress">Question 1 of ?</h3>
+        <span id="hc-score" style="color:var(--accent-gold);font-size:14px;font-weight:600;"></span>
+      </div>
+      <div id="hc-question-card" style="background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px;min-height:120px;">
+        <div id="hc-formal-spec" style="color:var(--accent-gold);font-family:monospace;font-size:13px;margin-bottom:8px;"></div>
+        <div id="hc-prompt-text" style="color:var(--text-primary);font-size:16px;line-height:1.6;white-space:pre-wrap;"></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <input type="text" id="hc-answer" placeholder="Type your answer (e.g. VALID, INVALID, FOLLOWS, DOESNOTFOLLOW)"
+               style="flex:1;padding:10px 14px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border);border-radius:6px;font-size:15px;"
+               aria-label="Your answer" onkeydown="if(event.key==='Enter')hcSubmit()">
+        <button class="btn btn-primary" onclick="hcSubmit()">Submit</button>
+      </div>
+      <div id="hc-feedback" style="margin-top:12px;font-size:14px;min-height:20px;"></div>
+    </div>
+
+    <!-- Step 4: Results -->
+    <div id="hc-step-results" style="display:none;">
+      <h3 style="color:var(--text-primary);font-size:18px;margin-bottom:12px;">Results</h3>
+      <div id="hc-results-card" style="background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px;">
+        <div id="hc-signal-score" style="font-size:32px;font-weight:700;color:var(--accent-gold);"></div>
+        <div id="hc-carrier-variance" style="font-size:16px;color:var(--text-secondary);margin-top:8px;"></div>
+        <div id="hc-provenance" style="font-size:12px;color:var(--text-muted);margin-top:12px;font-family:monospace;word-break:break-all;"></div>
+      </div>
+      <button class="btn btn-primary" onclick="hcReset()">Calibrate Again</button>
+    </div>
+  </div>
+</div>
+<!-- ============ /PAGE: Human Calibration ============ -->
+
 <div class="page" id="page-lmstudio" style="display:none;">
   <div class="setup-wrap">
     <div class="setup-hero">
