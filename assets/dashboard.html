@@ -21,6 +21,7 @@
 <meta charset="UTF-8">
 <title>Calibration Scope — Intelligence Topology</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23d4af37'/%3E%3C/svg%3E">
 <style>
   :root {
     /* ═══ IT Help San Diego corporate design language ═══
@@ -1271,7 +1272,7 @@
   }
   @keyframes abort-dot-blink { 50% { opacity: 0.2; } }
   #abort-bar .abort-btn {
-    background: var(--unsafe, #f87171); color: #fff; border: none;
+    background: #c0392b; color: #fff; border: none;
     padding: 8px 22px; border-radius: 6px; cursor: pointer;
     font-size: 14px; font-weight: 800; letter-spacing: 0.06em;
     font-family: var(--font-mono); text-transform: uppercase;
@@ -1817,7 +1818,7 @@ function clearScienceHighlight() {
 <!-- Top Nav -->
 <div class="top-nav" id="top-nav">
   <img class="logo" src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" onerror="this.style.display='none'" style="height:32px;margin-right:6px;cursor:pointer" onclick="showPage('benchmark')">
-  <div id="context-flip" class="tab" title="Local instrument now — calibrationscope.com web presence is a future phase (directional placeholder, no fake auth)" style="cursor:default;opacity:.85"><span style="color:var(--accent-gold)">LOCAL</span><span style="opacity:.5"> ⇄ </span><span style="opacity:.4">WEB</span></div>
+  <div id="context-flip" class="tab" title="Local instrument now — calibrationscope.com web presence is a future phase (directional placeholder, no fake auth)" style="cursor:default;opacity:.85"><span style="color:var(--accent-gold)">LOCAL</span><span style="color:var(--text-muted)"> ⇄ </span><span style="color:var(--text-secondary)">WEB</span></div>
   <button id="mode-toggle" class="tab" onclick="toggleMode()" title="Focused = single-viewport workspace (action never leaves the screen). Deep = full tab flow with everything visible. Both modes keep full power — Focused arranges, Deep exposes.">Mode: Deep</button>
   <button id="a11y-toggle" class="tab" onclick="toggleA11y()" title="High-contrast / large-text mode" style="cursor:pointer;">Readable: Off</button>
 
@@ -2014,7 +2015,7 @@ function clearScienceHighlight() {
 </aside>
 
 <!-- ═══ CENTER — the brain, pinned; teaching layers scroll beneath ═══ -->
-<main id="ws-center">
+<main id="ws-center" role="main">
 
   <div class="landing-hero" id="landing-hero">
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:96px;margin-bottom:var(--fib-4);position:relative;filter:drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15));animation:owlPulse 4s ease-in-out infinite" onerror="this.style.display='none'">
