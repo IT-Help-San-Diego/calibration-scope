@@ -389,6 +389,42 @@ budget the logic needs. Big models have surplus headroom — the noise is
 absorbed without touching the logic. This is Carrier Color's capability
 threshold, measured.
 
+## 10.10 Web-shell refactor — external deferred JS (2026-07-22)
+
+The 65→71 Lighthouse performance gap was NOT the server (10ms TTFB loopback),
+NOT RAM (confirmed under nemotron pressure), NOT network. It was the **delivery**:
+302KB of inline JS+CSS re-parsed on every page load. NO heavy framework — the
+dashboard is hand-rolled vanilla JS (227KB) + hand-rolled CSS (74KB) + KaTeX.
+
+**Refactor (safe, single-file):** extracted all 230KB of inline JS (3 blocks)
+into one external deferred `assets/app.min.js` (154KB, esbuild). dashboard.html
+376KB → 146KB. **Result: performance 71→75, accessibility 94→98, best-practices
+100.** FCP 2705ms→1510ms.
+
+**Regression found + fixed (the CI gate working):** the deferred external script
+runs with `document.readyState !== 'loading'`, so `whenReady()` fired its callback
+IMMEDIATELY — before `const FILTER_IDS` initialized → `ReferenceError: Cannot
+access 'FILTER_IDS' before initialization` (TDZ). In the inline layout the script
+ran during parsing (`readyState === 'loading'`), so `whenReady` deferred to
+DOMContentLoaded. Fix: moved the `whenReady(...)` boot block to the END of app.js
+(after all declarations). Lesson: **defer changes whenReady semantics — any
+`whenReady`/`DOMContentLoaded`-style boot must run after all const/let init.**
+Caught by the errors-in-console Lighthouse audit + live Firefox console.
+
+**Regression baseline (CI protection):** captured the pre-split function-set
+(166 definitions / 161 unique, SHA-3 cd597816b91d81cb). Post-refactor app.js has
+all 161 unique functions (match: True). 5 duplicate function definitions found
+(`openNativeSelector` etc., 2× each — dead code, last-wins) — flagged for a
+separate cleanup.
+
+**Remaining performance gap (75, not 90+):** (1) 74KB inline CSS still inline
+(render-blocking) — extract next; (2) the brain SVG is the LCP element (13.5s
+LCP) — resize/optimize; (3) the dense 349-card DOM — virtualize the grid. The
+full multi-module split (8-10 ES modules) is DEFERRED — a naive regex split
+risks breaking cross-references (found: `startDownload` references 18 functions;
+the SSE onmessage handler is top-level code, not a function span). A clean
+multi-module split needs proper AST tooling, not regex.
+
 ---
 
 ### 🔄 HANDOFF to Claude Science — Carrier Color replication (2026-07-21)
