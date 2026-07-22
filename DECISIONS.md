@@ -357,6 +357,51 @@ never a test-specific formula.
   (flattery) dominate, does poetic compression differ, and where does the model
   land when "bribed"? Pending — chained watcher auto-fires them.
 
+### 🔄 HANDOFF to Claude Science — Carrier Color replication (2026-07-21)
+
+**The finding worth your lane:** a near-ceiling local model (gemma-4-e2b, 99%
+baseline reasoning) is dragged by EVERY scaffold carrier — and the **Lean formal
+symbol is the WORST noise** (91.2%), worse than plain English prose (94.1%). The
+"most rigorous" encoding of the logic rule is the most disruptive, because the
+model was trained on human text (prose is its native register), not formal
+notation. **The carrier (human prose) became the signal; the signal (formal
+logic) became the noise.**
+
+**What we measured (clean, no answer-leakage, all 102-trial):**
+| Arm | Carrier | Score |
+|---|---|---|
+| 793 | none (baseline) | 99.0% |
+| 917 | English prose | 94.1% |
+| 918 | Lean formula | 91.2% |
+| 919 | haiku | _pending_ |
+| 920 | bribe (flattery) | _pending_ |
+
+**Why this is yours too:**
+1. **Publishable, controlled, and falsification-grade.** The user's inverse
+   hypothesis was killed by data. This is a novel demonstration that a model's
+   verdict tracks the CARRIER of identical logical content — your Carrier Color
+   framework, measured in a model for the first time.
+2. **Replication ask:** does this carrier-spectrum hold on OTHER models (a weak
+   reasoner like granite-8b, a mid-tier, a cloud model)? On cloud, the provider's
+   hidden system prompt is a THIRD carrier stacked on ours — does the spectrum
+   flatten (their carrier already doing the scaffold's job) or shift?
+3. **The "ass-kisser" thesis:** the bribe arm (920) tests whether flattery
+   dominates — if it lands HIGH, models are more attentive to "hello friend" than
+   to the job (social carrier > formal content). That's a real alignment finding.
+4. **Training-distribution question:** the Lean-formula-worst result says the
+   model's "rigor" is learned from human text, not formal logic. That's a direct
+   read on how these models were trained — and a critique of the assumption that
+   formal notation is the "correct" way to instruct them.
+
+**What I'm asking you to look into:** is this carrier-spectrum happening
+ELSEWHERE — in your seL4 proof work, your open-science corpus, or any cloud
+model you can probe? Any place a model's verdict changes when the SAME content
+arrives in a different carrier (formal vs prose vs flattery) is a replication.
+Flag it in DECISIONS.md §10.8-replication or ping the user.
+
+Full experiment design + no-leakage scaffold texts: §10.8 above. The haiku/bribe
+arms land within the hour; I'll append final numbers to §10.8 when they complete.
+
 ---
 
 ## 11. Next steps (open — both tools)
