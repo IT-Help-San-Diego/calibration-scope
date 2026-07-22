@@ -86,7 +86,7 @@
 </div>
 
 <!-- ============ PAGE: Benchmark ============ -->
-<div class="page" id="page-benchmark">
+<main class="page" id="page-benchmark">
 
 <!-- ═══ FOCUSED SHELL — the single-viewport working layout ═══
      Brain center (lights up per-trial), live stream right, real subject
@@ -261,7 +261,7 @@
 </aside>
 
 <!-- ═══ CENTER — the brain, pinned; teaching layers scroll beneath ═══ -->
-<main id="ws-center" role="main">
+<div id="ws-center">
 
   <div class="landing-hero" id="landing-hero">
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:96px;margin-bottom:var(--fib-4);position:relative;filter:drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15));animation:owlPulse 4s ease-in-out infinite" onerror="this.style.display='none'">
@@ -491,12 +491,13 @@
         <li>Standardized benchmarks (MMLU &amp; friends) are public — models have seen them, so cheating is possible. We still watch those numbers, but we don't trust them alone.</li>
         <li>The cross-check is <b>your own human test</b>: build one in the Test Builder with your own image and question the model has never seen. A good test has one objective, verifiable answer that isn't contained in the question.</li>
         <li>Local AI on your own hardware is real. The people saying it can't be done are missing method, not hardware. This page <i>is</i> the method — every number on it is one you can reproduce yourself.</li>
-      </ul>
-    </div>
-  </div>
-</div>
-</div>
-</main>
+ </ul>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ <!-- ============ /PAGE: Benchmark (center/ws-center) ============ -->
 
 <!-- ═══ RIGHT RAIL — the stream: formulas fly, log rolls, panels report ═══ -->
 <aside id="ws-stream">
@@ -518,7 +519,7 @@
 
 </div><!-- /workspace -->
 
-</div>
+</main>
 <!-- ============ /PAGE: Benchmark ============ -->
 
 <!-- ============ PAGE: Hermes Setup ============ -->
