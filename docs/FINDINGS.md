@@ -103,3 +103,37 @@ more expensive.
 **Carrier Color** is the framework: a model's verdict tracks the CARRIER of
 identical content, and the carrier sensitivity is capability-dependent. This is
 the empirical pilot for the Owl Semaphore V4 metacognitive layer.
+
+---
+
+## 5. Human calibration — what context does a real user actually need?
+
+"Humans calibrate first" applied to context sizing. Measured 500 of the
+operator's real prompts (Hermes session DB):
+
+| Metric | Chars | ≈ Tokens |
+|---|---|---|
+| Median | 372 | ~93 |
+| Mean | 1,430 | ~360 |
+| p95 | 3,415 | ~850 |
+| p99 | 23,350 | ~5,800 |
+| Max (research paste) | 314,732 | ~78,700 |
+
+**The finding — the budget is bimodal:** the advanced user's MEDIAN prompt is
+tiny (372 chars / ~93 tokens). 95% of messages fit in ~1K tokens. BUT the
+extreme tail (big research dumps, logs, attachments) is real and large — up to
+~78,700 tokens. 279 messages reference attachments/images.
+
+**The headroom principle (the Cat-8 lesson):** the operator cuts Cat-8 cable to
+90 ft, not the 98 ft spec max, because he knows what copper does. Same here:
+**don't size context to the median (~1K tokens, covers 95% of messages) — size
+it to the extreme with headroom.** A 128K context is NOT overkill for the tail —
+it's the right headroom for a ~78K-token research paste, so the model never
+truncates the biggest inputs. **The median is noise; the tail is the science.**
+
+This is the education that wins with humans: your context budget isn't one
+number. It's two modes — small median prompts + huge tail pastes — and the
+headroom serves the tail. That's why "more context" isn't "better"; it's
+"different modes, and the instrument must serve the deep-science tail, not just
+the median chat."
+
