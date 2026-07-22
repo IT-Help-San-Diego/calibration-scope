@@ -469,6 +469,40 @@ message, ~80K tokens for the deep-science paste. The 128K preset serves the
 tail. (Vision/screenshot messages: 279 attachment references — the operator DOES
 paste images more than "rarely"; vision-context sizing is part of the tail.)
 
+## 10.12 The Lighthouse settings correction — we were testing MOBILE on a desktop tool (2026-07-22)
+
+The honest lesson that reframes the whole performance hunt: **Lighthouse's
+DEFAULT is simulated MOBILE throttling** (mid-tier mobile CPU + ~85th-percentile
+mobile connection), even when run on a fast desktop. The Chrome docs confirm:
+"Lighthouse applies CPU throttling to emulate a mid-tier mobile device even when
+run on far more powerful desktop hardware."
+
+Every "performance 65→75" number in §10.10 was the MOBILE-throttled score — the
+WRONG test for a local desktop instrument on an M4 Max. The user called it:
+"are you screwing yourself with incorrect settings and simulating mobile when
+we're never gonna be mobile?" **YES.** This tool will never be mobile — it's a
+local desktop supercomputer on a loopback connection.
+
+**Correct test: `--preset=desktop`** (no mobile throttle, fast CPU + fast
+network). Result on the SAME code:
+
+| Metric | Mobile (default, wrong) | Desktop (correct) |
+|---|---|---|
+| Performance | 75 | **90** |
+| FCP | 1507ms | **366ms** |
+| LCP | 11557ms | **2126ms** |
+| TTI | 11782ms | **2158ms** |
+| Speed Index | 1802ms | **432ms** |
+| Total Blocking | — | **0ms** |
+
+**The dashboard was never slow.** On the M4 Max it IS lightning (FCP 366ms,
+LCP 2.1s, 0ms blocking). The 65-75 was Lighthouse pretending to be a slow phone.
+**The rule going forward: always run Lighthouse with `--preset=desktop` for this
+tool.** The mobile simulation is irrelevant to a local desktop instrument. The
+refactor (external JS+CSS, WebP brain, chunked grid) still helped — the desktop
+score is 90, not 75 — but the BIG fix was running the correct preset, not more
+code changes.
+
 ---
 
 ### 🔄 HANDOFF to Claude Science — Carrier Color replication (2026-07-21)
