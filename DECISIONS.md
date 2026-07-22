@@ -558,6 +558,36 @@ arms land within the hour; I'll append final numbers to §10.8 when they complet
 
 ---
 
+## 10.13 Cognitive Atlas crosswalk — hallucinated IDs caught + verified (2026-07-22)
+
+The keystone vocabulary file (`ingest/artifacts/ontology_crosswalk.json`, an
+intentionally-gitignored local artifact) shipped with six `trm_*` Cognitive Atlas
+IDs. **Every one was hallucinated** — valid-looking `trm_` prefixes with
+fabricated suffixes; all six returned Resolver404 / HTTP 404 on both the human
+term page and the REST API. This is exactly the failure class the Verification
+Principle exists for: a confident, well-formatted citation that does not resolve.
+
+**Verified replacements** (live `GET /api/v-alpha/search?q=<name>&format=json`,
+exact-name match, 2026-07-22):
+
+| Construct | ❌ old (404) | ✅ verified ID |
+|---|---|---|
+| working memory | trm_4a3fd79d0b57e | `trm_4a3fd79d0b5a7` |
+| response inhibition | trm_4a3fd79d0af71 | `trm_4a3fd79d0af66` |
+| theory of mind | trm_557b4a304aa0e | `trm_4a3fd79d0b392` |
+| decision making | trm_4a3fd79d0b64e | `trm_4a3fd79d0a038` |
+| cognitive control | trm_4a3fd79d0b642 | `trm_4aae62e4ad209` |
+| deductive reasoning | trm_4a3fd79d0b1e5 | `trm_4a3fd79d0a072` |
+
+The file now carries a per-family `cognitive_atlas_id` field plus a
+`verification` block recording method + date. This unblocks two queued items:
+NeuroVault collection admission (a collection earns display only when its
+construct's ID resolves) and the human-calibration vocabulary keystone.
+**Rule going forward: any external ontology / taxonomic ID cited by any agent is
+resolved against the live source before it is treated as real.**
+
+---
+
 ## 11. Next steps (open — both tools)
 
 - [x] Merge PR #1 (leak fix verified) → adopt main-direct → wire verifier gate #19. **DONE.**
