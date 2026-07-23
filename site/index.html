@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-Tlr443iAU42QyxMwlkUK/USFxSFSzsFQskXqvOy51Js='">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-JLGVsaNYfTewj4CibhQV9v/fTb8JLk2EhEn8el3NAYc='">
 <title>Calibration Scope — verify what minds can actually do</title>
 <meta name="description" content="A local-first scientific instrument that measures what minds — silicon and carbon — can actually do. Blind tests, sealed evidence, machine-verified ground truth, your hardware.">
 <meta name="author" content="Carey James Balboa / IT Help San Diego Inc.">
@@ -58,6 +58,9 @@ footer a{color:var(--gold)}
 .fine{font-size:12px;margin-top:10px;opacity:.8}
 .mt20{margin-top:20px}
 .mono15{font-family:var(--mono);font-size:15px}
+.codebox{font-family:var(--mono);font-size:13.5px;color:var(--text);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto;line-height:1.7;margin:14px 0}
+.codebox .c{color:var(--text2)}
+.beta{font-family:var(--mono);font-size:9px;letter-spacing:1.2px;font-weight:700;color:var(--bg);background:var(--gold);border-radius:4px;padding:2px 6px;line-height:1;cursor:help}
 .flowpanel{display:grid;grid-template-columns:1fr;gap:22px;align-items:start;margin-top:22px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px}
 @media(min-width:760px){.flowpanel{grid-template-columns:minmax(0,340px) 1fr}}
 .brainwrap{text-align:center}
@@ -112,8 +115,9 @@ footer a{color:var(--gold)}
 </head>
 <body>
 <nav><div class="wrap">
-<span class="brand"><img src="assets/owl-semaphore-logo.webp" alt="Owl of Athena — Owl Semaphore">CALIBRATION SCOPE</span>
+<span class="brand"><img src="assets/owl-semaphore-logo.webp" alt="Owl of Athena — Owl Semaphore">CALIBRATION SCOPE<span class="beta" title="Public beta, in active development — the core pipeline works; the science is being validated. Expect weekly improvement.">BETA</span></span>
 <a href="/" class="on" aria-current="page">Home</a>
+<a href="#get-started">Get Started</a>
 <a href="/lessons.html">Lessons — Human Failure Runs</a>
 <a class="flip" href="http://127.0.0.1:8768" title="Flip to the local instrument on THIS machine (Calibration Scope must be installed and running)">LOCAL<span class="s">⇄</span><span class="cur">WEB</span></a>
 </div></nav>
@@ -124,6 +128,17 @@ footer a{color:var(--gold)}
 <p class="tag">Verify what minds can actually do — silicon and carbon, under one instrument.</p>
 <p class="sub">A local-first scientific instrument that runs blind capability tests on AI models — and on you — with machine-verified ground truth and evidence you can audit. No account. No cloud requirement. Your hardware, your data, your verdicts.</p>
 </div></header>
+
+<section id="get-started"><div class="wrap">
+<h2>Get started</h2>
+<p>Runs on macOS and Linux. You need three things first: the <a href="https://www.rust-lang.org/tools/install" rel="noopener">Rust toolchain</a>, PostgreSQL (on a Mac: <span class="mono15">brew install postgresql@17</span> or <a href="https://postgresapp.com/" rel="noopener">Postgres.app</a>), and <a href="https://lmstudio.ai/" rel="noopener">LM Studio</a> with its local server on <span class="mono15">:1234</span>.</p>
+<pre class="codebox">git clone https://github.com/IT-Help-San-Diego/calibration-scope.git
+cd calibration-scope
+cp .env.example .env          <span class="c"># set DATABASE_URL (and optional cloud API keys)</span>
+cargo run --release           <span class="c"># migrations run automatically</span></pre>
+<p>Then open <a href="http://127.0.0.1:8768" class="mono15">127.0.0.1:8768</a>, sync your LM Studio library, pick a model, and press <span class="mono15">▶ Run</span>. Full instructions, source, and sealed evidence live at <a href="https://github.com/IT-Help-San-Diego/calibration-scope" rel="noopener">github.com/IT-Help-San-Diego/calibration-scope</a>.</p>
+<p class="flownote">A Homebrew formula and prebuilt binaries are in the works — this section will shrink to one line when they land. To audit your evidence database afterward, any Postgres client works; we like <a href="https://tableplus.com/" rel="noopener">TablePlus</a>. The schema is the API.</p>
+</div></section>
 
 <section><div class="wrap">
 <h2>How validation actually happens</h2>
