@@ -37,7 +37,6 @@
     --font-mono: 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
     --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, sans-serif;
   }
-  }
   /* ═══ Accessibility — high-contrast / large-text mode ═══
      Toggle via the "Readable" button in the top nav. Increases base
      font, boosts text contrast to near-solid, enlarges hit targets.
@@ -374,8 +373,8 @@
      Selection = whole row clickable + gold fill + gold left-rail. */
   .model-grid.compact { grid-template-columns: 1fr; gap: 6px; }
 
-  // Visual instrumentation: data-click-count so we can verify clicks reach
-  // the row, and instant visual feedback for selected/unselected state.
+  /* Visual instrumentation: data-click-count so we can verify clicks reach
+     the row, and instant visual feedback for selected/unselected state. */
   .model-row {
     display: flex; align-items: center; gap: 11px;
     background: var(--bg-card);

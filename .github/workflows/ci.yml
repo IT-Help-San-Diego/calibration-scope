@@ -212,6 +212,15 @@ jobs:
       - name: Web regression gate — node --check on the minified JS
         run: node --check assets/app.min.js
 
+      # Drift guard: app.js/app.css are the SOURCE OF TRUTH; the .min files are
+      # build artifacts. Commit 20e2a7e once edited app.min.js directly and the
+      # fork was invisible until an audit caught it. Rebuild and fail on any
+      # difference — hand-editing a .min file can never ship silently again.
+      - name: Web regression gate — minified assets match source (no fork)
+        run: |
+          bash scripts/build-web.sh
+          git diff --exit-code assets/app.min.js assets/app.min.css
+
       - name: Web regression gate — inline-script syntax (extract + node --check)
         run: |
           python3 - <<'PY'

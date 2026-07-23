@@ -4288,3 +4288,169 @@ whenReady(function() {
   loadOwlCoverage();      // real I/N/C/M counts from the DB, honest N/C = 0
   owlInit();
 });
+
+// ═══ Human-calibration frontend (hcCreate … hcReset) ════════════════════════
+// Reconciled 2026-07-23: commit 20e2a7e added these directly to app.min.js,
+// forking it from this source file. Recovered parser-exact (acorn) from the
+// served build. app.js is the SOURCE OF TRUTH from now on —
+// scripts/build-web.sh regenerates app.min.js/app.min.css, and CI fails if
+// the committed minified files do not match this source.
+async function hcCreate() {
+    const name = document.getElementById("hc-name").value.trim();
+    if (!name) {
+        alert("Enter a name first.");
+        return;
+    }
+    const r = await fetch("/api/participants", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            display_name: name
+        })
+    });
+    if (!r.ok) {
+        alert("Failed: " + r.status);
+        return;
+    }
+    const d = await r.json();
+    hcParticipantId = d.id;
+    document.getElementById("hc-step-setup").style.display = "none";
+    document.getElementById("hc-step-scope").style.display = "";
+    hcLoadExisting();
+}
+
+async function hcLoadExisting() {
+    const r = await fetch("/api/participants");
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d.length) return;
+    const el = document.getElementById("hc-existing");
+    el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;margin-top:8px;">Previous participants:</div>' +
+        d.map(p => `<button class="btn-mini" style="margin:4px 4px 0 0" onclick="hcReuse(${p.id},'${p.display_name.replace(/'/g,"\\'")}')">${esc(p.display_name)}</button>`).join("");
+}
+
+function hcReuse(id, name) {
+    hcParticipantId = id;
+    document.getElementById("hc-step-setup").style.display = "none";
+    document.getElementById("hc-step-scope").style.display = "";
+}
+
+async function hcStartSession() {
+    const axis = document.getElementById("hc-axis").value;
+    const r = await fetch(`/api/participants/${hcParticipantId}/start`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            axis: axis
+        })
+    });
+    if (!r.ok) {
+        alert("Failed to start: " + r.status);
+        return;
+    }
+    const d = await r.json();
+    hcRunId = d.run_id;
+    hcTests = d.tests;
+    hcIndex = 0;
+    hcCorrect = 0;
+    document.getElementById("hc-step-scope").style.display = "none";
+    document.getElementById("hc-step-quiz").style.display = "";
+    document.getElementById("hc-session-info").textContent = `${hcTests.length} questions · run #${hcRunId}`;
+    hcShowQuestion();
+}
+
+function hcShowQuestion() {
+    const t = hcTests[hcIndex];
+    document.getElementById("hc-progress").textContent = `Question ${hcIndex+1} of ${hcTests.length}`;
+    document.getElementById("hc-score").textContent = hcCorrect > 0 ? `${hcCorrect} correct` : "";
+    document.getElementById("hc-formal-spec").textContent = t.formal_spec ? ("⟦ " + t.formal_spec + " ⟧") : "";
+    document.getElementById("hc-prompt-text").textContent = t.prompt_text;
+    document.getElementById("hc-answer").value = "";
+    document.getElementById("hc-feedback").innerHTML = "";
+    document.getElementById("hc-answer").focus();
+}
+
+async function hcSubmit() {
+    const answer = document.getElementById("hc-answer").value.trim();
+    if (!answer) return;
+    const t = hcTests[hcIndex];
+    const r = await fetch(`/api/participants/${hcParticipantId}/answer`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            run_id: hcRunId,
+            test_id: t.id,
+            answer: answer
+        })
+    });
+    if (!r.ok) {
+        alert("Submit failed: " + r.status);
+        return;
+    }
+    const d = await r.json();
+    if (d.passed) {
+        hcCorrect++;
+        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--safe)">✓ Correct — ${esc(d.test_name)}</span>`;
+    } else {
+        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--unsafe)">✗ Expected: ${esc(d.expected)}</span>`;
+    }
+    hcIndex++;
+    if (hcIndex < hcTests.length) {
+        setTimeout(hcShowQuestion, 1200);
+    } else {
+        setTimeout(hcFinish, 1500);
+    }
+}
+
+async function hcFinish() {
+    const r = await fetch(`/api/participants/${hcParticipantId}/finish`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            run_id: hcRunId
+        })
+    });
+    if (!r.ok) {
+        alert("Finish failed: " + r.status);
+        return;
+    }
+    const d = await r.json();
+    document.getElementById("hc-step-quiz").style.display = "none";
+    document.getElementById("hc-step-results").style.display = "";
+    const pct = d.total_count > 0 ? Math.round(d.pass_count / d.total_count * 100) : 0;
+    document.getElementById("hc-signal-score").textContent = `${d.pass_count}/${d.total_count} (${pct}%)`;
+    document.getElementById("hc-carrier-variance").textContent = "Signal score = pooled pass rate across all surface forms. Carrier variance available in the signal-carrier view once ≥2 forms are attempted.";
+    document.getElementById("hc-provenance").textContent = "sealed: " + d.sha3_provenance;
+    // Fetch signal-carrier data for this participant
+    const sc = await fetch("/api/signal-carrier");
+    if (sc.ok) {
+        const scd = await sc.json();
+        const human = scd.rows.filter(x => x.subject_kind === "human");
+        if (human.length) {
+            const vars = human.filter(x => x.carrier_variance != null);
+            if (vars.length) {
+                document.getElementById("hc-carrier-variance").textContent = `Carrier variance: ${vars[0].carrier_variance.toFixed(4)} (0 = no wording swing, higher = wording changes your verdict)`;
+            }
+        }
+    }
+}
+
+function hcReset() {
+    hcParticipantId = null;
+    hcRunId = null;
+    hcTests = [];
+    hcIndex = 0;
+    hcCorrect = 0;
+    document.getElementById("hc-step-results").style.display = "none";
+    document.getElementById("hc-step-setup").style.display = "";
+    document.getElementById("hc-name").value = "";
+    document.getElementById("hc-existing").innerHTML = "";
+}
