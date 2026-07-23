@@ -61,9 +61,7 @@ pub async fn create_participant(
     Ok(Json(row))
 }
 
-pub async fn list_participants(
-    State(state): State<AppState>,
-) -> AppResult<Json<Vec<Participant>>> {
+pub async fn list_participants(State(state): State<AppState>) -> AppResult<Json<Vec<Participant>>> {
     let rows: Vec<Participant> = sqlx::query_as(
         r#"SELECT id, kind, display_name, notes, created_at
            FROM participants ORDER BY created_at DESC"#,
@@ -108,12 +106,11 @@ pub async fn start_session(
     Json(req): Json<StartSession>,
 ) -> AppResult<Json<SessionStart>> {
     // Validate participant exists
-    let exists: bool = sqlx::query_scalar(
-        "SELECT EXISTS(SELECT 1 FROM participants WHERE id = $1)",
-    )
-    .bind(participant_id)
-    .fetch_one(&state.db)
-    .await?;
+    let exists: bool =
+        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM participants WHERE id = $1)")
+            .bind(participant_id)
+            .fetch_one(&state.db)
+            .await?;
     if !exists {
         return Err(AppError::Executor(format!(
             "participant {participant_id} not found"

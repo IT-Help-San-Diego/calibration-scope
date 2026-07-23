@@ -213,12 +213,31 @@ def check_owl_families():
 
     failures = 0
     for cid, cname, owl_type, cspec, rid, rname, rspec in rows:
-        if cspec is not None and rspec is not None and cspec != rspec:
-            failures += 1
-            print(f"[FAIL] test {cid} '{cname}' ({owl_type}) formal_spec drifted from "
-                  f"root {rid} '{rname}': child={cspec!r} root={rspec!r}")
+        if owl_type == "N":
+            # Migration 036 canon: an N row is "the SAME formal_spec /
+            # theorem as its owl_root_id, different surface text". Drift
+            # here is always a bug.
+            if cspec is not None and rspec is not None and cspec != rspec:
+                failures += 1
+                print(f"[FAIL] test {cid} '{cname}' (N) formal_spec drifted from "
+                      f"root {rid} '{rname}': child={cspec!r} root={rspec!r}")
+            else:
+                print(f"[PASS] test {cid} '{cname}' (N) matches root {rid} '{rname}'")
         else:
-            print(f"[PASS] test {cid} '{cname}' ({owl_type}) matches root {rid} '{rname}'")
+            # C rows: 036 does NOT require spec equality — a C row that
+            # presents the root's converse as a trap truthfully carries the
+            # trap's structure, not the root's. Requiring equality here would
+            # force the spec to lie about the stimulus. What a C row MUST
+            # have is a spec at all (plus transform+flaw, DB-enforced by
+            # owl_c_completeness).
+            if cspec is None:
+                failures += 1
+                print(f"[FAIL] test {cid} '{cname}' (C) has NULL formal_spec")
+            elif cspec != rspec:
+                print(f"[PASS] test {cid} '{cname}' (C) carries trap spec "
+                      f"{cspec!r} (root {rid} '{rname}' = {rspec!r} — allowed for C)")
+            else:
+                print(f"[PASS] test {cid} '{cname}' (C) matches root {rid} '{rname}'")
 
     print(f"\n{len(rows) - failures}/{len(rows)} owl families consistent"
           + (" — ALL CORRECT" if failures == 0 else f" — {failures} MISMATCH(ES), DO NOT SHIP"))

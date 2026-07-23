@@ -41,8 +41,24 @@ pub struct JsonRpcResponse {
 }
 
 // ── Row type aliases (clippy: avoid very-complex-type warnings on the tuples) ──
-type TestSpecRow = (i32, String, String, Option<String>, Option<String>, Option<String>, Option<i32>);
-type TestRow = (i32, String, String, Option<String>, Option<String>, Option<String>, bool);
+type TestSpecRow = (
+    i32,
+    String,
+    String,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    Option<i32>,
+);
+type TestRow = (
+    i32,
+    String,
+    String,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    bool,
+);
 
 #[derive(Debug, Serialize)]
 pub struct JsonRpcError {
@@ -61,7 +77,12 @@ fn ok(id: Value, result: Value) -> Json<JsonRpcResponse> {
     })
 }
 
-fn err(id: Value, code: i32, message: impl Into<String>, data: Option<Value>) -> Json<JsonRpcResponse> {
+fn err(
+    id: Value,
+    code: i32,
+    message: impl Into<String>,
+    data: Option<Value>,
+) -> Json<JsonRpcResponse> {
     Json(JsonRpcResponse {
         jsonrpc: "2.0".into(),
         result: None,
@@ -260,12 +281,7 @@ async fn dispatch_tool(
         "get_owl_state" => tool_get_owl_state(state, id).await,
         "get_test_spec" => tool_get_test_spec(state, id, args).await,
         "list_tests" => tool_list_tests(state, id, args).await,
-        other => Ok(err(
-            id,
-            -32602,
-            format!("Unknown tool: {}", other),
-            None,
-        )),
+        other => Ok(err(id, -32602, format!("Unknown tool: {}", other), None)),
     }
 }
 
@@ -301,12 +317,11 @@ async fn tool_get_status(state: &AppState, id: Value) -> AppResult<Json<JsonRpcR
         .fetch_one(&state.db)
         .await
         .ok();
-    let running: Option<i64> = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM test_runs WHERE status IN ('queued','running')",
-    )
-    .fetch_one(&state.db)
-    .await
-    .ok();
+    let running: Option<i64> =
+        sqlx::query_scalar("SELECT COUNT(*) FROM test_runs WHERE status IN ('queued','running')")
+            .fetch_one(&state.db)
+            .await
+            .ok();
     let models: Option<i64> = sqlx::query_scalar("SELECT COUNT(*) FROM models WHERE active = true")
         .fetch_one(&state.db)
         .await
@@ -322,7 +337,11 @@ async fn tool_get_status(state: &AppState, id: Value) -> AppResult<Json<JsonRpcR
     )
 }
 
-async fn tool_list_models(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
+async fn tool_list_models(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
     let location = args.get("location").and_then(|v| v.as_str());
     let provider = args.get("provider").and_then(|v| v.as_str());
     // Use the SAME fetch_unique_models the REST API uses (computes verdicts via JOIN —
@@ -352,7 +371,11 @@ async fn tool_list_models(state: &AppState, id: Value, args: Value) -> AppResult
     tool_result(id, json!({ "models": models, "count": models.len() }))
 }
 
-async fn tool_get_model_verdict(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
+async fn tool_get_model_verdict(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
     let key = match args.get("model_key").and_then(|v| v.as_str()) {
         Some(k) => k,
         None => return tool_error(id, "model_key is required"),
@@ -362,25 +385,27 @@ async fn tool_get_model_verdict(state: &AppState, id: Value, args: Value) -> App
         .await
         .unwrap_or_default();
     match all.into_iter().find(|m| m.key == key) {
-        Some(m) => {
-            tool_result(
-                id,
-                json!({
-                    "key": m.key,
-                    "provider": m.provider,
-                    "location": m.location,
-                    "context_length": m.context_length,
-                    "size_gb": m.size_gb,
-                    "supports_vision": m.supports_vision,
-                    "verdicts": m.verdicts.and_then(|v| serde_json::from_str::<Value>(&v).ok())
-                }),
-            )
-        }
+        Some(m) => tool_result(
+            id,
+            json!({
+                "key": m.key,
+                "provider": m.provider,
+                "location": m.location,
+                "context_length": m.context_length,
+                "size_gb": m.size_gb,
+                "supports_vision": m.supports_vision,
+                "verdicts": m.verdicts.and_then(|v| serde_json::from_str::<Value>(&v).ok())
+            }),
+        ),
         None => tool_error(id, format!("model not found: {}", key)),
     }
 }
 
-async fn tool_run_benchmark(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
+async fn tool_run_benchmark(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
     let model_key = match args.get("model_key").and_then(|v| v.as_str()) {
         Some(k) => k.to_string(),
         None => return tool_error(id, "model_key is required"),
@@ -392,8 +417,14 @@ async fn tool_run_benchmark(state: &AppState, id: Value, args: Value) -> AppResu
     let test_ids: Option<Vec<i32>> = args
         .get("test_ids")
         .and_then(|v| serde_json::from_value::<Vec<i32>>(v.clone()).ok());
-    let load_preset = args.get("load_preset").and_then(|v| v.as_str()).map(|s| s.to_string());
-    let provider = args.get("provider").and_then(|v| v.as_str()).map(|s| s.to_string());
+    let load_preset = args
+        .get("load_preset")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    let provider = args
+        .get("provider")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
 
     // Build the StartRunRequest and call the SAME start_runs logic the REST API uses.
     let req = crate::routes::runs::StartRunRequest {
@@ -412,23 +443,28 @@ async fn tool_run_benchmark(state: &AppState, id: Value, args: Value) -> AppResu
     }
 }
 
-async fn tool_get_run(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
+async fn tool_get_run(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
     let run_id = match args.get("run_id").and_then(|v| v.as_i64()) {
         Some(r) => r as i32,
         None => return tool_error(id, "run_id is required"),
     };
-    match crate::routes::runs::get_run_detail(
-        State(state.clone()),
-        axum::extract::Path(run_id),
-    )
-    .await
+    match crate::routes::runs::get_run_detail(State(state.clone()), axum::extract::Path(run_id))
+        .await
     {
         Ok(Json(resp)) => tool_result(id, resp),
         Err(e) => tool_error(id, format!("get_run failed: {}", e)),
     }
 }
 
-async fn tool_abort_run(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
+async fn tool_abort_run(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
     let run_id = match args.get("run_id").and_then(|v| v.as_i64()) {
         Some(r) => r as i32,
         None => return tool_error(id, "run_id is required"),
@@ -439,8 +475,15 @@ async fn tool_abort_run(state: &AppState, id: Value, args: Value) -> AppResult<J
     }
 }
 
-async fn tool_get_leaderboard(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
-    let axis = args.get("axis").and_then(|v| v.as_str()).unwrap_or("reasoning");
+async fn tool_get_leaderboard(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
+    let axis = args
+        .get("axis")
+        .and_then(|v| v.as_str())
+        .unwrap_or("reasoning");
     let rows: Vec<(String, i64, i64)> = sqlx::query_as(
         r#"
         SELECT m.key,
@@ -510,7 +553,11 @@ async fn tool_get_owl_state(state: &AppState, id: Value) -> AppResult<Json<JsonR
     )
 }
 
-async fn tool_get_test_spec(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
+async fn tool_get_test_spec(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
     let test_id = match args.get("test_id").and_then(|v| v.as_i64()) {
         Some(t) => t as i32,
         None => return tool_error(id, "test_id is required"),
@@ -542,36 +589,41 @@ async fn tool_get_test_spec(state: &AppState, id: Value, args: Value) -> AppResu
     }
 }
 
-async fn tool_list_tests(state: &AppState, id: Value, args: Value) -> AppResult<Json<JsonRpcResponse>> {
+async fn tool_list_tests(
+    state: &AppState,
+    id: Value,
+    args: Value,
+) -> AppResult<Json<JsonRpcResponse>> {
     let axis = args.get("axis").and_then(|v| v.as_str());
     let active = args.get("active").and_then(|v| v.as_bool()).unwrap_or(true);
     // Parameterized query — no string formatting with user input (SQL-injection safe).
-    let rows: Vec<TestRow> =
-        sqlx::query_as(
-            "SELECT id, name, axis, formal_spec, expected_result, owl_type, active
+    let rows: Vec<TestRow> = sqlx::query_as(
+        "SELECT id, name, axis, formal_spec, expected_result, owl_type, active
              FROM tests
              WHERE ($1::text IS NULL OR axis = $1)
                AND ($2::bool IS NULL OR active = $2)
              ORDER BY id LIMIT 500",
-        )
-        .bind(axis)
-        .bind(if active { Some(true) } else { None::<bool> })
-        .fetch_all(&state.db)
-        .await
-        .unwrap_or_default();
+    )
+    .bind(axis)
+    .bind(if active { Some(true) } else { None::<bool> })
+    .fetch_all(&state.db)
+    .await
+    .unwrap_or_default();
     let tests: Vec<Value> = rows
         .into_iter()
-        .map(|(id, name, axis, formal_spec, expected_result, owl_type, active)| {
-            json!({
-                "id": id,
-                "name": name,
-                "axis": axis,
-                "formal_spec": formal_spec,
-                "expected_result": expected_result,
-                "owl_type": owl_type,
-                "active": active
-            })
-        })
+        .map(
+            |(id, name, axis, formal_spec, expected_result, owl_type, active)| {
+                json!({
+                    "id": id,
+                    "name": name,
+                    "axis": axis,
+                    "formal_spec": formal_spec,
+                    "expected_result": expected_result,
+                    "owl_type": owl_type,
+                    "active": active
+                })
+            },
+        )
         .collect();
     tool_result(id, json!({ "tests": tests, "count": tests.len() }))
 }
