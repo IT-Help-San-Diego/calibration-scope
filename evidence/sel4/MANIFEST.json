@@ -1,0 +1,29 @@
+{
+  "artifact": "seL4 Rust root-task boot validation",
+  "produced": "2026-07-21T16:49:00Z (file mtimes)",
+  "evicted": "2026-07-23T00:45:15.623302Z",
+  "host": "ip-172-31-42-228",
+  "instance": "i-08ca65b7acd2dc275 (c7i.2xlarge, us-west-2)",
+  "source_repo": "https://github.com/seL4/rust-root-task-demo.git",
+  "source_commit": "7dcc192b54d002aa43e0b5bb9f6d00f851243f9a",
+  "toolchain": {
+    "rustc": "rustc 1.96.0-nightly (91021ccc7 2026-03-17)",
+    "channel": "nightly-2026-03-18",
+    "qemu": "QEMU emulator version 6.2.0 (Debian 1:6.2+dfsg-2ubuntu6.31)",
+    "target": "aarch64-sel4, qemu -machine virt,virtualization=on -cpu cortex-a57 -m 1G"
+  },
+  "verifier": "test.py (pexpect, expects literal TEST_PASS within 3s, nonzero exit otherwise)",
+  "verdict": "TEST_PASS (1 occurrence in boot.log)",
+  "files": {
+    "boot.log": {
+      "sha256": "sha256:49fbc0ffa389295bcccff014720ba8dc340b2654eae7965d4eb0cdccf1e807a1",
+      "sha3_256": "sha3-256:2a9fe191611ecfba7c2dbf7eb1c7e042603c47f2ea8ada8b1d8e75e87a0b415c",
+      "bytes": 7956
+    },
+    "image.elf": {
+      "sha256": "sha256:b663e54b776820e2df3fdd25fe2c0fe58ca978d305e3ab87273ac48265a0db35",
+      "sha3_256": "sha3-256:75860e8b2df94ceb24fb440fd8c1441af2ac61cca00901e06c739b63165ad54d",
+      "bytes": 488995
+    }
+  }
+}
