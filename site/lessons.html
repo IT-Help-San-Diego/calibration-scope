@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-Q7lzylifXNvadBsU8m84iTWAFFR8JU7xE9WaQe8Hq+0='">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-OT3qcZyiAj2YraG5lE7T3K+kgTIAHgTAS82P1awD11Q='">
 <title>Lessons - Human Failure Runs | Calibration Scope</title>
 <meta name="description" content="Four measured ways an AI model fails, each printed with the exact knob that causes it, held up next to the human bug it rhymes with. Every seal is a real SHA3-256 of a sealed lesson file.">
 <meta name="author" content="Carey James Balboa / IT Help San Diego Inc.">
@@ -23,7 +23,15 @@ a{color:var(--gold);text-decoration:underline}
 a:hover{color:var(--text)}
 .wrap{max-width:880px;margin:0 auto;padding:0 24px}
 nav{border-bottom:1px solid var(--border);background:var(--bg2)}
-nav .wrap{display:flex;gap:22px;align-items:center;min-height:52px;flex-wrap:wrap}
+nav .wrap{display:flex;gap:22px;align-items:center;min-height:52px;flex-wrap:wrap;padding-left:124px}
+/* Canonical LOCAL⇄WEB portal pill — IDENTICAL geometry to index.html and the
+   local instrument (top:10px,left:14px, same string, same size): flipping
+   surfaces never moves the control under the cursor. Keep in sync. */
+.flip{position:fixed;top:10px;left:14px;z-index:400;display:inline-flex;align-items:center;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:11px;letter-spacing:.6px;line-height:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text2);white-space:nowrap;text-decoration:none;background:var(--bg2)}
+.flip .cur{color:var(--gold);font-weight:700}
+.flip .s{opacity:.6}
+.flip:hover{color:var(--text);border-color:var(--gold)}
+.flip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 nav a{text-decoration:none;font-size:14px;color:var(--text2);padding:6px 0}
 nav a.on,nav a:hover{color:var(--gold)}
 nav .brand{color:var(--gold);font-weight:700;font-family:var(--mono);font-size:15px}
@@ -66,6 +74,7 @@ footer a{color:var(--gold)}
 <span class="brand">CALIBRATION SCOPE</span>
 <a href="/">Home</a>
 <a href="/lessons.html" class="on" aria-current="page">Lessons - Human Failure Runs</a>
+<a class="flip" href="http://127.0.0.1:8768" title="Flip to the local instrument on THIS machine (Calibration Scope must be installed and running)">LOCAL<span class="s"> ⇄ </span><span class="cur">WEB</span></a>
 </div></nav>
 
 <header><div class="wrap">

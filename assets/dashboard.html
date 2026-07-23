@@ -64,7 +64,7 @@
 <!-- Top Nav -->
 <div class="top-nav" id="top-nav">
   <img class="logo" src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" onerror="this.style.display='none'" style="height:32px;margin-right:6px;cursor:pointer" onclick="showPage('benchmark')">
-  <div id="context-flip" class="tab" title="You are on the local instrument — flip to the calibrationscope.com web presence" style="opacity:.9"><span style="color:var(--accent-gold)">LOCAL</span><span style="color:var(--text-muted)"> ⇄ </span><a href="https://calibrationscope.com/" style="color:var(--text-secondary);text-decoration:none;border-bottom:1px dotted var(--text-muted)" title="Open calibrationscope.com">WEB</a></div>
+  <a id="context-flip" href="https://calibrationscope.com/" title="You are on the local instrument — flip to calibrationscope.com"><span class="cur">LOCAL</span><span class="s"> ⇄ </span>WEB</a>
   <button id="mode-toggle" class="tab" onclick="toggleMode()" title="Focused = single-viewport workspace (action never leaves the screen). Deep = full tab flow with everything visible. Both modes keep full power — Focused arranges, Deep exposes.">Mode: Deep</button>
   <button id="a11y-toggle" class="tab" onclick="toggleA11y()" title="High-contrast / large-text mode" style="cursor:pointer;">Readable: Off</button>
 

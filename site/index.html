@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-jKeq4EsFZZi4EUryHirU0TrJU6GdZrTyO4E5yEoQN8M='">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-QLRH1PQjh7JG9nbCCLEAKGepxAlKC7VyiqwRVLgExqE='">
 <title>Calibration Scope — verify what minds can actually do</title>
 <meta name="description" content="A local-first scientific instrument that measures what minds — silicon and carbon — can actually do. Blind tests, sealed evidence, machine-verified ground truth, your hardware.">
 <meta name="author" content="Carey James Balboa / IT Help San Diego Inc.">
@@ -23,14 +23,21 @@ a{color:var(--gold);text-decoration:underline}
 a:hover{color:var(--text)}
 .wrap{max-width:880px;margin:0 auto;padding:0 24px}
 nav{border-bottom:1px solid var(--border);background:var(--bg2)}
-nav .wrap{display:flex;gap:22px;align-items:center;min-height:52px;flex-wrap:wrap}
+nav .wrap{display:flex;gap:22px;align-items:center;min-height:52px;flex-wrap:wrap;padding-left:124px}
 nav a{text-decoration:none;font-size:14px;color:var(--text2);padding:6px 0}
 nav a.on,nav a:hover{color:var(--gold)}
 nav .brand{color:var(--gold);font-weight:700;font-family:var(--mono);font-size:15px;display:flex;align-items:center;gap:8px}
 nav .brand img{width:22px;height:22px;display:block}
-.flip{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.6px;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text2);white-space:nowrap;text-decoration:none}
-.flip b{color:var(--gold);font-weight:700}
+/* The LOCAL⇄WEB portal pill — CANONICAL GEOMETRY, do not fork per surface.
+   Fixed at the same screen spot (top:10px,left:14px), same size, same string
+   on the web site AND the local instrument, so flipping surfaces never moves
+   the control under the cursor (no mouse jerk — Carey's rule, 2026-07-23).
+   The current surface reads gold; the whole pill links to the other one. */
+.flip{position:fixed;top:10px;left:14px;z-index:400;display:inline-flex;align-items:center;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:11px;letter-spacing:.6px;line-height:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text2);white-space:nowrap;text-decoration:none;background:var(--bg2)}
+.flip .cur{color:var(--gold);font-weight:700}
+.flip .s{opacity:.6}
 .flip:hover{color:var(--text);border-color:var(--gold)}
+.flip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 header{padding:64px 0 40px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg))}
 .owlhero{width:88px;height:88px;filter:drop-shadow(0 0 18px rgba(212,168,83,.35));margin-bottom:14px}
 h1{font-size:clamp(30px,6vw,44px);font-family:var(--mono);letter-spacing:-.5px}
@@ -53,8 +60,42 @@ footer a{color:var(--gold)}
 .flowpanel{display:grid;grid-template-columns:1fr;gap:22px;align-items:start;margin-top:22px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px}
 @media(min-width:760px){.flowpanel{grid-template-columns:minmax(0,340px) 1fr}}
 .brainwrap{text-align:center}
-.brainwrap img{max-width:100%;height:auto;filter:drop-shadow(0 0 22px rgba(212,168,83,.25))}
+.brainwrap img{max-width:100%;height:auto;filter:drop-shadow(0 0 22px rgba(212,168,83,.25));position:relative;z-index:1}
 .braincap{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:6px}
+/* The spec-stream, brought to the site: real Lean-notation schemas from the
+   battery rising past the brain — the same motif as the instrument's live
+   formula stream. CSS-only (@keyframes on inline SVG <text>): zero JS, so it
+   survives script-src 'none'. Transforms+opacity only (compositor-friendly).
+   ⊢ = the form holds, ⊬ = the fallacy doesn't — the actual ground truth. */
+.brainstage{position:relative;display:inline-block;max-width:100%}
+.formulae{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;z-index:2;pointer-events:none}
+.formulae text{font-family:var(--mono);font-size:11px;fill:var(--gold);opacity:0;animation:formula-rise 14s linear infinite}
+.formulae .dim{fill:var(--text2)}
+/* Stagger via classes ONLY — style="" attributes are blocked by the hash CSP. */
+.formulae .f2{animation-duration:17s;animation-delay:2.5s}
+.formulae .f3{animation-duration:13s;animation-delay:5s}
+.formulae .f4{animation-duration:19s;animation-delay:1s}
+.formulae .f5{animation-duration:15s;animation-delay:8s}
+.formulae .f6{animation-duration:16s;animation-delay:11s}
+.formulae .f7{animation-duration:18s;animation-delay:6.5s}
+.formulae .f8{animation-duration:14.5s;animation-delay:9.5s}
+@keyframes formula-rise{
+  0%{transform:translateY(204px);opacity:0}
+  10%{opacity:.6}
+  80%{opacity:.4}
+  100%{transform:translateY(-14px);opacity:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .formulae text{animation:none;opacity:.26}
+  .formulae .f1{transform:translateY(30px)}
+  .formulae .f2{transform:translateY(168px)}
+  .formulae .f3{transform:translateY(70px)}
+  .formulae .f4{transform:translateY(118px)}
+  .formulae .f5{transform:translateY(146px)}
+  .formulae .f6{transform:translateY(50px)}
+  .formulae .f7{transform:translateY(96px)}
+  .formulae .f8{transform:translateY(182px)}
+}
 .pipe{display:flex;flex-direction:column;gap:10px}
 .pipe-step{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:start}
 .pipe-lab{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text2);text-transform:uppercase;padding-top:4px}
@@ -73,7 +114,7 @@ footer a{color:var(--gold)}
 <span class="brand"><img src="assets/owl-semaphore-logo.webp" alt="Owl of Athena — Owl Semaphore">CALIBRATION SCOPE</span>
 <a href="/" class="on" aria-current="page">Home</a>
 <a href="/lessons.html">Lessons — Human Failure Runs</a>
-<a class="flip" href="http://127.0.0.1:8768" title="Open the instrument on THIS machine (Calibration Scope must be installed and running)"><b>LOCAL</b> ⇄ WEB</a>
+<a class="flip" href="http://127.0.0.1:8768" title="Flip to the local instrument on THIS machine (Calibration Scope must be installed and running)">LOCAL<span class="s"> ⇄ </span><span class="cur">WEB</span></a>
 </div></nav>
 
 <header><div class="wrap">
@@ -88,7 +129,19 @@ footer a{color:var(--gold)}
 <p>A human writes a sentence. The sentence becomes a theorem. The theorem is machine-checked against the model's answer — not a vibe, not a benchmark score someone else published. This is how humans tell computers <em>what must be true</em>, and then hold every mind — silicon and carbon — to it.</p>
 <div class="flowpanel">
   <div class="brainwrap">
-    <img src="assets/hero-brain-realistic.webp" alt="A human brain lit with neon circuit traces — silicon and carbon under one instrument" width="340" height="340">
+    <div class="brainstage">
+      <svg class="formulae" viewBox="0 0 340 190" aria-hidden="true" focusable="false">
+        <text class="f1" x="8" y="0">P → Q, P ⊢ Q</text>
+        <text class="f2 dim" x="196" y="0">¬(P ∧ Q) ⊢ ¬P ∨ ¬Q</text>
+        <text class="f3" x="226" y="0">P → Q, Q ⊬ P</text>
+        <text class="f4 dim" x="14" y="0">∀x(Px → Qx), Pa ⊢ Qa</text>
+        <text class="f5" x="120" y="0">P ∨ Q, ¬P ⊢ Q</text>
+        <text class="f6 dim" x="60" y="0">P → Q, ¬Q ⊢ ¬P</text>
+        <text class="f7" x="180" y="0">∃x Px ⊬ ∀x Px</text>
+        <text class="f8 dim" x="104" y="0">⊢ P ∨ ¬P</text>
+      </svg>
+      <img src="assets/hero-brain-realistic.webp" alt="A human brain lit with neon circuit traces — silicon and carbon under one instrument" width="340" height="191">
+    </div>
     <div class="braincap">SILICON ⇄ CARBON · one instrument</div>
   </div>
   <div class="pipe">
