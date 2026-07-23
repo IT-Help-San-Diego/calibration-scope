@@ -780,5 +780,75 @@ holds, the two theories weld into one measured result.
 **What Claude Science should pick up:**
 - Carrier Color replication on other models (§10.8 has the full design)
 - seL4 build+boot+validate as CI gate
-- EC2 idle-shutdown timer
+- ~~EC2 idle-shutdown timer~~ **DONE by Hermes 2026-07-23 — see §13**
 - Open-science data package + DOI (Cognitive Atlas IDs are now verified — unblocked)
+
+---
+
+## 13. FOR CLAUDE SCIENCE — your EC2 builder changed under you (2026-07-23, Hermes)
+
+Read this before your next session on the seL4 box. Three things happened:
+
+### 13a. Evidence eviction — your boot receipts are in the repo now
+
+The artifact-eviction rule (§4b) is now enforced on your lane. I pulled the
+boot-validation receipts off the builder and sealed them into the repo at
+`evidence/sel4/` (commit `e2e5a85`):
+
+- `boot.log` — full serial capture ending in `TEST_PASS` (badge 0x1337)
+- `image.elf` — the exact 489KB bootable image that produced that log
+- `MANIFEST.json` — provenance: seL4/rust-root-task-demo @`7dcc192`, rustc
+  1.96.0-nightly (channel 2026-03-18), QEMU 6.2.0 aarch64 virt/cortex-a57,
+  the test.py verifier contract, host + instance ID, **sha256 + sha3-256
+  per file**. Hashes were recomputed on the Mac after transfer — both match.
+
+**Going forward: every validation run you do on the box must end with an
+eviction like this.** Pattern: seal a MANIFEST.json next to the artifacts on
+the box (hash everything), tgz, scp to the Mac, re-verify hashes locally,
+commit under `evidence/sel4/<topic>/`. Nothing critical lives only on the
+scratch disk — the box is now allowed to kill itself (see 13b).
+
+### 13b. The box now AUTO-STOPS — your long jobs must account for this
+
+The instance ran **idle for 32 hours** (≈$30-35 burned) because "manual
+start/stop" relied on memory. There is now an idle watchdog installed ON the
+box (systemd `idle-shutdown.timer`, every 5 min, enabled at boot):
+
+> If **no SSH sessions** AND **1-min load < 0.2** for **6 consecutive checks
+> (30 min)** → `shutdown -h now` → EC2 **stopped** (disk-only billing).
+
+What this means for you:
+- An attached SSH session keeps it alive indefinitely — interactive work is safe.
+- A **detached long build** (nohup/screen with you logged out) is safe only
+  while it keeps load ≥ 0.2 — real compiles do, but a job that blocks on I/O
+  or waits on a lock for 30+ min while you're logged out **will be stopped**.
+  For the l4v Isabelle/HOL proof run: stay attached, or touch a keepalive
+  (e.g. `while true; do sleep 200 & wait; done` is NOT enough — hold an SSH
+  session or bump the threshold in `/usr/local/bin/idle-shutdown.sh`).
+- After a stop, `aws ec2 start-instances --instance-ids i-08ca65b7acd2dc275
+  --region us-west-2` brings it back; the Elastic IP 44.228.179.31 persists.
+
+### 13c. CI was red for ~20 hours — my fault, now green, two lessons for you
+
+Every push from `998d8c2` (MCP server) through `e2e5a85` failed CI. All three
+root causes were mine and are fixed as of `a670583` (run 29971082703 = fully
+green: logic gate ✓, fmt/clippy/build/test ✓, CodeQL ✓, web quality ✓):
+
+1. **Migration 047 referenced rows by hardcoded id** — dev-DB sequence ids
+   (28/29/31/40) land on DIFFERENT tests in CI's fresh database; the owl
+   gate honestly reported 8/8 families drifted. Fix: migration 048 re-points
+   by NAME. **Rule now on the record: migrations never reference rows by raw
+   id — always a stable natural key.** Your ingest artifacts should follow
+   the same rule if they ever generate SQL.
+2. **The owl gate over-constrained C rows** — it demanded child spec == root
+   spec for N *and* C, but 036's canon only requires that of N; a C row
+   truthfully carries the TRAP's structure (e.g. LOGIC-01C is `P → Q, Q ⊬ P`
+   under root `P → Q, P ⊢ Q`). Gate now: N must match, C must be non-null.
+3. **The web-quality job double-migrated** — psql pre-apply left
+   `_sqlx_migrations` empty, the binary re-ran the chain and panicked at
+   008's ON CONFLICT (023 had dropped that constraint). The binary's embedded
+   migrator now owns the schema in that job, same as production.
+
+Also: the dashboard-start step now dumps `dash.log` into the CI log on
+failure (`3497446`) — no more blind "HTTP 000". If you ever see that job red,
+the panic is printed right there.
