@@ -596,10 +596,27 @@ arms land within the hour; I'll append final numbers to §10.8 when they complet
 
 The keystone vocabulary file (`ingest/artifacts/ontology_crosswalk.json`, an
 intentionally-gitignored local artifact) shipped with six `trm_*` Cognitive Atlas
-IDs. **Every one was hallucinated** — valid-looking `trm_` prefixes with
-fabricated suffixes; all six returned Resolver404 / HTTP 404 on both the human
-term page and the REST API. This is exactly the failure class the Verification
-Principle exists for: a confident, well-formatted citation that does not resolve.
+IDs. **Every one was wrong as a construct→ID mapping — but in two distinct
+failure modes** (definitional reconciliation 2026-07-23, after Claude Science
+re-derived the counts first-hand and caught the distinction):
+
+- **3 hard-dead** (no such concept, API errors): working memory
+  `trm_4a3fd79d0b57e`, theory of mind `trm_557b4a304aa0e`, deductive
+  reasoning `trm_4a3fd79d0b1e5`.
+- **3 valid-but-mismapped** (the ID resolves to a REAL concept with the
+  WRONG name): `trm_4a3fd79d0af71` given for "response inhibition" actually
+  resolves to **"response selection"**; `trm_4a3fd79d0b64e` given for
+  "decision making" → **"risk seeking"**; `trm_4a3fd79d0b642` given for
+  "cognitive control" → **"risk aversion"**.
+
+So "6/6 hallucinated" (as mappings) and "3/6" (as hard 404s) were both
+defensible counts of different things — the record now carries the
+distinction instead of a bare number. The mismapped three are the more
+dangerous class: a bare does-it-resolve check would have PASSED them.
+**Verification of an external ID must match the NAME, not just the status
+code.** This is exactly the failure class the Verification Principle exists
+for: a confident, well-formatted citation that does not resolve — or worse,
+resolves to something else.
 
 **Verified replacements** (live `GET /api/v-alpha/search?q=<name>&format=json`,
 exact-name match, 2026-07-22):
@@ -687,7 +704,7 @@ holds, the two theories weld into one measured result.
 
 - [x] Merge PR #1 (leak fix verified) → adopt main-direct → wire verifier gate #19. **DONE.**
 - [x] CI green. **DONE.**
-- [x] **Confirm Cognitive Atlas IDs before publishing.** **DONE (§10.13).** All 6 IDs verified live; all 6 originals were hallucinated (404) and all 6 were replaced — count re-confirmed against the live resolver 2026-07-23 after Claude Science flagged a §11/§13d transcription error that said "3 of 6". The `ingest/artifacts/ontology_crosswalk.json` file is the verified source.
+- [x] **Confirm Cognitive Atlas IDs before publishing.** **DONE (§10.13).** All 6 original construct→ID mappings were wrong — 3 hard-dead IDs + 3 valid IDs resolving to the WRONG concept (see §10.13 for the definitional reconciliation with Claude Science, 2026-07-23). All 6 replacements verified by name-match against the live resolver. The `ingest/artifacts/ontology_crosswalk.json` file is the verified source.
 - [x] **OWL C/M content authoring.** **DONE (migration 047).** 8 new tests (4N+4C) for LOGIC-03/04/06/11; oracle-verified; 4 families now `fully_instrumented=t`. OWL M (σₕ) is NOT a promptable test — it's the metacognitive scoring pass, already wired (migration 036). The content gap was N (paraphrases) + C (adversarial variants), now closed for 4 core families. **Still open: N/C coverage for LOGIC-05/07/08/09/10/11 and the literary axis.**
 - [x] **Human-calibration UI.** **DONE.** Backend: 5 endpoints (POST /api/participants, GET /api/participants, POST /api/participants/{id}/start, POST /api/participants/{id}/answer, POST /api/participants/{id}/finish). Frontend: 4-step flow (create → start → answer → seal) in dashboard.html, visible in both Focused and Deep modes. E2E verified: participant created → 2 answers submitted → sealed with SHA-3-512 provenance → signal_carrier view returns human rows. **Still open: the frontend is functional but basic — a Claude Code GUI pass could add per-question timing, carrier-variance visualization, and a comparison view (human vs model side-by-side).**
 - [x] **local.calibrationscope.com friendly-URL.** **DONE.** DNS A record (127.0.0.1) placed via Route53, verified via Cloudflare 1.1.1.1. Port (:8768) advertised on the landing view. `/etc/hosts` option documented for Carey (can't be done from agent shell — needs sudo). **Still open: run the dashboard on port 80 or 443 so the URL works without :8768 — deferred to a future packaging phase per Carey's decision.**
@@ -766,7 +783,7 @@ holds, the two theories weld into one measured result.
 
 **Key decisions this session:**
 1. **Main brain switched Kimi-K3 → GLM-5.2** (OpenRouter rate-limiting on K3 was blocking work; GLM-5.2 is benchmark-verified 90/90 reasoning, 3/3 tools, 3/3 security, ~10x cheaper). K3 stays as a manual deep-dive tool, not the always-on default.
-2. **Cognitive Atlas IDs must be verified live** — 6/6 were hallucinated (valid-looking trm_ prefixes, fabricated suffixes). Rule: any external ontology ID cited by any agent is resolved against the live source before it's treated as real.
+2. **Cognitive Atlas IDs must be verified live BY NAME, not just status code** — all 6 original mappings were wrong: 3 hard-dead IDs plus 3 valid IDs pointing at the WRONG concept (§10.13). A bare does-it-resolve check passes the second class. Rule: any external ontology ID cited by any agent is resolved against the live source AND name-matched before it's treated as real.
 3. **Human calibration uses the SAME grader as models** — exact-match against expected_result. No LLM judges the human. No model self-assessment. The owl_signal_carrier view (migration 043) sees both subjects in the same shape, comparable directly.
 4. **Python package is zero-dependency** — stdlib urllib only. The Hermes venv's httpx/click is broken (Python 3.11 vs stale click), so the package uses urllib to work on ANY Python 3.9+ without environment issues.
 5. **OWL M (σₕ) is NOT a promptable test** — it's the metacognitive scoring pass that evaluates a model's existing reasoning_content. The "M content gap" was actually an N/C gap (paraphrases + adversarial variants), now closed for 4 families. M is already wired (migration 036 + scoring::score_metacognition).
