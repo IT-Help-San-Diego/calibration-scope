@@ -133,6 +133,15 @@ stimuli are embedded (`src/embedded.rs`) — and every release carries GitHub
 build-provenance attestations (`gh attestation verify`). Local-model runs need
 [LM Studio](https://lmstudio.ai) serving on `:1234`; cloud runs just need keys.
 
+**Hardware reality, disclosed:** the instrument is featherweight and runs on
+nearly anything, ARM included — *hosting models* is the heavy part, and the
+iron deserves honest labels: small machines top out around the 2B floor our
+own leaderboard measured ([FINDINGS](docs/FINDINGS.md)); "local AI at frontier
+quality" means something like a maxed-out MacBook Pro — a several-thousand-dollar
+supercomputer in a laptop costume; and "cloud" means renting someone else's
+data center by the token. On weak hardware you're benchmarking cloud models —
+and yourself. The scope runs on a $60 board; the minds it measures do not.
+
 ## Quick start (from source)
 
 ```bash
