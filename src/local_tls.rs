@@ -214,6 +214,12 @@ pub async fn serve_dual(
     shutdown: impl std::future::Future<Output = ()>,
 ) {
     let acceptor = TlsAcceptor::from(tls_config);
+    // Pre-build BOTH scheme-tagged services ONCE. Router::layer rebuilds the
+    // route tree — doing that per accepted connection taxed every request
+    // (Lighthouse perf 85→76 in CI caught it). Cloning a built Router is
+    // cheap (Arc-backed); per connection we only clone.
+    let http_app = app.clone().layer(Extension(ConnScheme { https: false }));
+    let tls_app = app.layer(Extension(ConnScheme { https: true }));
     tokio::pin!(shutdown);
     loop {
         tokio::select! {
@@ -231,17 +237,19 @@ pub async fn serve_dual(
                     Err(e) => { tracing::debug!("accept error: {}", e); continue; }
                 };
                 let acceptor = acceptor.clone();
-                let app = app.clone();
+                let http_app = http_app.clone();
+                let tls_app = tls_app.clone();
                 tokio::spawn(async move {
                     let mut first = [0u8; 1];
                     let n = match stream.peek(&mut first).await {
                         Ok(n) => n,
-                        Err(e) => { tracing::debug!("peek {}: {}", peer, e); return; }
+                        Err(e) => {
+                            tracing::debug!("peek {}: {}", peer, e);
+                            return;
+                        }
                     };
                     let is_tls = n == 1 && first[0] == 0x16;
-                    let svc = TowerToHyperService::new(
-                        app.layer(Extension(ConnScheme { https: is_tls })),
-                    );
+                    let svc = TowerToHyperService::new(if is_tls { tls_app } else { http_app });
                     if is_tls {
                         match acceptor.accept(stream).await {
                             Ok(tls_stream) => {
