@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-tdvIQ6CPFhx32IOL0TiUae4MQUggNkU42gO1nFdY/58='">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-jKeq4EsFZZi4EUryHirU0TrJU6GdZrTyO4E5yEoQN8M='">
 <title>Calibration Scope — verify what minds can actually do</title>
 <meta name="description" content="A local-first scientific instrument that measures what minds — silicon and carbon — can actually do. Blind tests, sealed evidence, machine-verified ground truth, your hardware.">
 <meta name="author" content="Carey James Balboa / IT Help San Diego Inc.">
@@ -26,8 +26,13 @@ nav{border-bottom:1px solid var(--border);background:var(--bg2)}
 nav .wrap{display:flex;gap:22px;align-items:center;min-height:52px;flex-wrap:wrap}
 nav a{text-decoration:none;font-size:14px;color:var(--text2);padding:6px 0}
 nav a.on,nav a:hover{color:var(--gold)}
-nav .brand{color:var(--gold);font-weight:700;font-family:var(--mono);font-size:15px}
-header{padding:72px 0 48px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg))}
+nav .brand{color:var(--gold);font-weight:700;font-family:var(--mono);font-size:15px;display:flex;align-items:center;gap:8px}
+nav .brand img{width:22px;height:22px;display:block}
+.flip{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.6px;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text2);white-space:nowrap;text-decoration:none}
+.flip b{color:var(--gold);font-weight:700}
+.flip:hover{color:var(--text);border-color:var(--gold)}
+header{padding:64px 0 40px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg))}
+.owlhero{width:88px;height:88px;filter:drop-shadow(0 0 18px rgba(212,168,83,.35));margin-bottom:14px}
 h1{font-size:clamp(30px,6vw,44px);font-family:var(--mono);letter-spacing:-.5px}
 .tag{color:var(--gold);font-size:clamp(16px,3vw,19px);margin-top:12px}
 .sub{color:var(--text2);max-width:640px;margin:18px auto 0;font-size:16px}
@@ -45,20 +50,58 @@ footer a{color:var(--gold)}
 .fine{font-size:12px;margin-top:10px;opacity:.8}
 .mt20{margin-top:20px}
 .mono15{font-family:var(--mono);font-size:15px}
+.flowpanel{display:grid;grid-template-columns:1fr;gap:22px;align-items:start;margin-top:22px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px}
+@media(min-width:760px){.flowpanel{grid-template-columns:minmax(0,340px) 1fr}}
+.brainwrap{text-align:center}
+.brainwrap img{max-width:100%;height:auto;filter:drop-shadow(0 0 22px rgba(212,168,83,.25))}
+.braincap{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:6px}
+.pipe{display:flex;flex-direction:column;gap:10px}
+.pipe-step{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:start}
+.pipe-lab{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--text2);text-transform:uppercase;padding-top:4px}
+.pipe-en{font-size:14px;color:var(--text);background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 12px}
+.pipe-lean{font-family:var(--mono);font-size:13px;color:var(--gold);background:#d4a85310;border:1px solid #d4a85330;border-radius:6px;padding:8px 12px}
+.pipe-verdict{font-family:var(--mono);font-size:13px;font-weight:700;border-radius:6px;padding:8px 12px;text-align:center}
+.pipe-verdict.ok{color:var(--green);background:#3fb95014;border:1px solid #3fb95050}
+.pipe-verdict.bad{color:#f85149;background:#f8514912;border:1px solid #f8514940}
+.pipe-arrow{color:var(--text2);font-size:12px;text-align:center;user-select:none}
+.flowhead{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:.5px;margin-bottom:6px}
+.flownote{font-size:12.5px;color:var(--text2);margin-top:8px}
 </style>
 </head>
 <body>
 <nav><div class="wrap">
-<span class="brand">CALIBRATION SCOPE</span>
+<span class="brand"><img src="assets/owl-semaphore-logo.webp" alt="Owl of Athena — Owl Semaphore">CALIBRATION SCOPE</span>
 <a href="/" class="on" aria-current="page">Home</a>
 <a href="/lessons.html">Lessons — Human Failure Runs</a>
+<a class="flip" href="http://127.0.0.1:8768" title="Open the instrument on THIS machine (Calibration Scope must be installed and running)"><b>LOCAL</b> ⇄ WEB</a>
 </div></nav>
 
 <header><div class="wrap">
+<img class="owlhero" width="88" height="88" src="assets/owl-semaphore-logo.webp" alt="Owl of Athena, gold seal — the Owl Semaphore">
 <h1>Calibration Scope</h1>
 <p class="tag">Verify what minds can actually do — silicon and carbon, under one instrument.</p>
 <p class="sub">A local-first scientific instrument that runs blind capability tests on AI models — and on you — with machine-verified ground truth and evidence you can audit. No account. No cloud requirement. Your hardware, your data, your verdicts.</p>
 </div></header>
+
+<section><div class="wrap">
+<h2>How validation actually happens</h2>
+<p>A human writes a sentence. The sentence becomes a theorem. The theorem is machine-checked against the model's answer — not a vibe, not a benchmark score someone else published. This is how humans tell computers <em>what must be true</em>, and then hold every mind — silicon and carbon — to it.</p>
+<div class="flowpanel">
+  <div class="brainwrap">
+    <img src="assets/hero-brain-realistic.webp" alt="A human brain lit with neon circuit traces — silicon and carbon under one instrument" width="340" height="340">
+    <div class="braincap">SILICON ⇄ CARBON · one instrument</div>
+  </div>
+  <div class="pipe">
+    <div class="flowhead">ENGLISH → LEAN → VERIFIED</div>
+    <div class="pipe-step"><span class="pipe-lab">English</span><span class="pipe-en">"If the model reasons, its verdicts follow from the premises."</span></div>
+    <div class="pipe-arrow">▼ as Lean</div>
+    <div class="pipe-step"><span class="pipe-lab">Lean spec</span><span class="pipe-lean">∀ (P Q : Prop), (P → Q) → P → Q&nbsp;&nbsp;—&nbsp;&nbsp;modus ponens, as a machine-checkable theorem</span></div>
+    <div class="pipe-arrow">▼ model answers N=3, blind</div>
+    <div class="pipe-step"><span class="pipe-lab">Verdict</span><span class="pipe-verdict ok">PASS — verdict sealed with SHA-3</span></div>
+    <p class="flownote">Every test in the battery carries its formal spec beside the prompt. When a model fails, we check the instrument first — the same rule applied to the human calibration arm. Theorems are introduced, not asserted.</p>
+  </div>
+</div>
+</div></section>
 
 <section><div class="wrap">
 <h2>Why this exists</h2>
@@ -88,7 +131,7 @@ footer a{color:var(--gold)}
 
 <section><div class="wrap">
 <h2>Local-first, by design</h2>
-<p>The instrument is a single binary with a PostgreSQL database, running entirely on your machine at <span class="mono15">127.0.0.1:8768</span>. It drives your local models directly, keeps every trial in a database you own and can open, and never phones home. This website is documentation and findings — the science happens on your hardware, where you can check it.</p>
+<p>The instrument is a single binary with a PostgreSQL database, running entirely on your machine at <a href="http://127.0.0.1:8768" class="mono15">127.0.0.1:8768</a> (direct, loopback-only — <span class="mono15">local.calibrationscope.com</span> resolves there too on machines with the DNS record). It drives your local models directly, keeps every trial in a database you own and can open, and never phones home. This website is documentation and findings — the science happens on your hardware, where you can check it.</p>
 </div></section>
 
 <footer><div class="wrap">
