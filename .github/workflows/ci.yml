@@ -218,6 +218,11 @@ jobs:
       # difference — hand-editing a .min file can never ship silently again.
       - name: Web regression gate — minified assets match source (no fork)
         run: |
+          # npm install (not bare npx) so the platform-correct esbuild binary
+          # is fetched via its install script — bare `npx esbuild` on this
+          # runner produced "Exec format error". Version pinned to match
+          # scripts/build-web.sh, or byte-equality breaks.
+          npm install -g esbuild@0.28.1
           bash scripts/build-web.sh
           git diff --exit-code assets/app.min.js assets/app.min.css
 

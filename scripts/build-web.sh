@@ -8,11 +8,14 @@
 # if the committed min files don't match the source — so hand-editing a .min
 # file can never ship silently again.
 #
+# esbuild is PINNED to 0.28.1: CI rebuilds and byte-compares the committed min
+# files, so the version must be identical everywhere or equality breaks.
+#
 # No identifier mangling: inline onclick= handlers in dashboard.html need the
 # global function names intact.
 set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 node --check "$REPO/assets/app.js"
-npx --yes esbuild "$REPO/assets/app.js"  --minify-whitespace --minify-syntax --charset=utf8 --outfile="$REPO/assets/app.min.js"  --allow-overwrite
-npx --yes esbuild "$REPO/assets/app.css" --minify --charset=utf8 --outfile="$REPO/assets/app.min.css" --allow-overwrite
+npx --yes esbuild@0.28.1 "$REPO/assets/app.js"  --minify-whitespace --minify-syntax --charset=utf8 --outfile="$REPO/assets/app.min.js"  --allow-overwrite
+npx --yes esbuild@0.28.1 "$REPO/assets/app.css" --minify --charset=utf8 --outfile="$REPO/assets/app.min.css" --allow-overwrite
 echo "built: app.min.js ($(wc -c < "$REPO/assets/app.min.js" | tr -d ' ') bytes), app.min.css ($(wc -c < "$REPO/assets/app.min.css" | tr -d ' ') bytes)"
