@@ -197,7 +197,14 @@ jobs:
             fi
             sleep 2
           done
-          curl -s -o /dev/null -w "dashboard HTTP %{http_code}\n" http://127.0.0.1:8768/
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8768/ || true)
+          echo "dashboard HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "──── /tmp/dash.log (startup failure evidence) ────"
+            cat /tmp/dash.log || true
+            echo "──── end dash.log ────"
+            exit 7
+          fi
 
       - name: Setup Node for Lighthouse + node --check
         uses: actions/setup-node@v4
