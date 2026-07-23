@@ -204,9 +204,52 @@ fn build_messages(
     match &test.attachment_path {
         Some(rel_path) => {
             let full = project_root.join(rel_path);
-            let bytes = std::fs::read(&full).map_err(|e| {
-                AppError::Executor(format!("Attachment {} unreadable: {}", full.display(), e))
-            })?;
+            // Disk first, embedded copy second (src/embedded.rs) — prebuilt
+            // binaries carry the pinned stimuli inside themselves. Three
+            // guards keep the fallback from ever weakening evidence:
+            //   - only a MISSING file falls back; permission/I-O failures
+            //     stay loud (they mean misconfiguration, not packaging);
+            //   - an embedded substitute is only accepted when the test pins
+            //     a SHA3 (the pin check below vouches for the bytes); an
+            //     unpinned stimulus must never be silently swapped for the
+            //     build-time copy;
+            //   - every substitution is logged, so "why did this run use old
+            //     pixels" is answerable from the service log.
+            let bytes = match std::fs::read(&full) {
+                Ok(b) => b,
+                Err(disk_err) if disk_err.kind() == std::io::ErrorKind::NotFound => {
+                    if test.attachment_sha3.is_none() {
+                        return Err(AppError::Executor(format!(
+                            "Attachment {} missing on disk and test '{}' has no SHA3 pin — \
+                             refusing the embedded substitute (unverifiable stimulus)",
+                            full.display(),
+                            test.name
+                        )));
+                    }
+                    let embedded = rel_path
+                        .strip_prefix("assets/")
+                        .and_then(crate::embedded::get)
+                        .ok_or_else(|| {
+                            AppError::Executor(format!(
+                                "Attachment {} unreadable: {} (and no embedded copy)",
+                                full.display(),
+                                disk_err
+                            ))
+                        })?;
+                    tracing::warn!(
+                        "Attachment {} not on disk — using embedded copy (SHA3 pin enforced below)",
+                        rel_path
+                    );
+                    embedded
+                }
+                Err(disk_err) => {
+                    return Err(AppError::Executor(format!(
+                        "Attachment {} unreadable: {}",
+                        full.display(),
+                        disk_err
+                    )));
+                }
+            };
 
             if let Some(pinned) = &test.attachment_sha3 {
                 let actual = provenance::sha3_256_bytes(&bytes);

@@ -3,7 +3,8 @@
 
 # Rust
 /target
-Cargo.lock
+# Cargo.lock is COMMITTED (binary crate): releases build with --locked so the
+# artifact is reproducible and immune to semver-compatible upstream surprises.
 
 # SQLx offline cache (generate with `cargo sqlx prepare`)
 /.sqlx

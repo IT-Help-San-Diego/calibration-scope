@@ -1,5 +1,6 @@
 mod config;
 mod db;
+mod embedded;
 mod error;
 mod executor;
 mod gpu_telemetry;
@@ -10,6 +11,7 @@ mod routes;
 mod security;
 mod state;
 
+use axum::handler::HandlerWithoutStateExt;
 use axum::routing::{get, post};
 use axum::Router;
 use config::Config;
@@ -19,6 +21,20 @@ use tower_http::trace::TraceLayer;
 
 #[tokio::main]
 async fn main() {
+    // Load ./.env BEFORE anything reads the environment — this is what makes
+    // the README's `cp .env.example .env && cargo run` actually true (dotenvy
+    // was previously dev-dependency-only, so the binary never read .env).
+    // from_path, NOT dotenvy::dotenv(): dotenv() walks ancestor directories,
+    // which would let a stray ~/Documents/.env leak into any process launched
+    // below it — working directory only, explicitly. Precedence is unchanged
+    // for real deployments: variables already set by launchd/systemd always
+    // win (dotenv never overrides existing env), a missing .env is not an
+    // error, and a service that wants ZERO .env influence (e.g. launchd with
+    // WorkingDirectory = a repo root where a dev .env may exist) sets
+    // CALIBRATION_SCOPE_NO_DOTENV=1 in its plist.
+    let dotenv_loaded = std::env::var_os("CALIBRATION_SCOPE_NO_DOTENV").is_none()
+        && dotenvy::from_path(std::path::Path::new(".env")).is_ok();
+
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
@@ -34,6 +50,18 @@ async fn main() {
     // Order matters: load env before building Config, or config.gemini_api_key
     // etc. freeze to None and cloud runs fail to resolve the key.
     routes::cloud_keys::load_keys_to_env();
+
+    // Announce the env source loudly: an unexpected .env silently choosing
+    // the database or bind port should be diagnosable from the first lines
+    // of the service log.
+    if dotenv_loaded {
+        tracing::info!(
+            "Loaded .env from {} (pre-set environment variables always win)",
+            std::env::current_dir()
+                .map(|d| d.display().to_string())
+                .unwrap_or_else(|_| "<unknown cwd>".into())
+        );
+    }
 
     let config = Config::from_env();
     tracing::info!(
@@ -68,7 +96,10 @@ async fn main() {
         Err(e) => tracing::error!("Orphan-run reaper failed: {}", e),
     }
 
-    let static_files = ServeDir::new(&config.assets_dir);
+    // Disk first (dev checkout, live-editable), embedded copy on miss (prebuilt
+    // binary anywhere else). See src/embedded.rs for the contract.
+    let static_files = ServeDir::new(&config.assets_dir)
+        .not_found_service(embedded::asset_fallback.into_service());
 
     // GPU telemetry sampler: 1Hz gpu_sample SSE events while runs execute,
     // fully dormant when idle. See gpu_telemetry.rs for the measured cost.

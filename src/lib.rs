@@ -1,5 +1,6 @@
 pub mod config;
 pub mod db;
+pub mod embedded;
 pub mod error;
 pub mod executor;
 pub mod gpu_telemetry;

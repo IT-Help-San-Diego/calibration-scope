@@ -1,7 +1,11 @@
 [package]
 name = "calibration-scope"
-version = "0.1.0"
+version = "0.1.0-beta.1"
 edition = "2021"
+description = "Test your AI models like a scientist — ground-truth benchmarks, N=3 trials, SHA3-sealed evidence, local-first"
+repository = "https://github.com/IT-Help-San-Diego/calibration-scope"
+homepage = "https://calibrationscope.com"
+license = "Apache-2.0"
 
 [lib]
 name = "calibration_scope_dashboard"
@@ -35,6 +39,16 @@ yaml-rust2 = "0.11.0"
 walkdir = "2.5.0"
 rand = "0.8"
 
+# .env auto-load for `cargo run` dev flows (README quick start). Real
+# deployments inject env via launchd/systemd; dotenv never overrides them.
+dotenvy = "0.15.7"
+
+# Prebuilt-binary self-containment: assets/ (dashboard, JS/CSS, SHA3-pinned
+# test stimuli) embedded at compile time, used only when the disk copy is
+# absent. See src/embedded.rs.
+rust-embed = { version = "8", features = ["include-exclude"] }
+mime_guess = "2"
+
 # Local HTTPS (handoff item 1): self-provisioned CA + leaf via rcgen, served
 # with rustls. ring backend (not aws-lc) so Linux CI builds without cmake/perl.
 rcgen = "0.13"
@@ -64,5 +78,11 @@ fips = ["tokio-rustls/fips"]
 opt-level = 3
 lto = true
 
+# The profile that 'dist' will build with — matches [profile.release] (fat
+# LTO) so a released binary performs identically to a locally built one.
+[profile.dist]
+inherits = "release"
+lto = true
+
 [dev-dependencies]
-dotenvy = "0.15.7"
+# (dotenvy moved to [dependencies] — the binary itself now loads .env.)
