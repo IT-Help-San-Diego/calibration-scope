@@ -1,0 +1,271 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" width="1600" height="1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+  <defs>
+    <filter id="soft3" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
+    </filter>
+    <pattern id="fill3" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="#231a10"></rect>
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#4a3818" stroke-width="5"></line>
+    </pattern>
+    
+  </defs>
+
+  <rect width="1600" height="1560" fill="#0d1017"></rect>
+
+  <rect x="26" y="22" width="14" height="92" fill="#f59e0b"></rect>
+  <text x="56" y="46" font-size="18" fill="#f59e0b" font-weight="700" class="head" letter-spacing="1">CALIBRATION SCOPE · HUMAN FAILURE MODES · vol.2</text>
+  <text x="54" y="94" font-weight="700" class="head" font-size="52" fill="#f2f4fa">TOKEN EXHAUSTION</text>
+  <text x="56" y="126" font-size="21" fill="#8b93a7">your AI didn&#39;t fail the question — it ran out of paper.</text>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="26" y="150" width="1148" height="366" rx="14"></rect></g>
+  <clipPath id="p1"><rect x="26" y="150" width="1148" height="366" rx="14"></rect></clipPath>
+  <g clip-path="url(#p1)">
+    <rect x="26" y="150" width="1148" height="366" fill="#161a26"></rect>
+    <rect x="44" y="166" width="392" height="30" rx="15" fill="#3a2a0a"></rect>
+    <text x="58" y="188" font-size="15" font-weight="700" class="chip" fill="#fcd34d">① THE REASONING — what the model actually did</text>
+
+    
+    <g transform="translate(168,360)">
+      <rect x="-64" y="60" width="128" height="150" rx="24" fill="#4a6fa5"></rect>
+      <rect x="24" y="70" width="26" height="96" rx="13" fill="#4a6fa5" transform="rotate(38 37 118)"></rect>
+      <circle cx="78" cy="150" r="15" fill="#e8b98f"></circle>
+      <rect x="66" y="150" width="40" height="10" rx="4" fill="#1f2430" transform="rotate(40 86 155)"></rect>
+      <rect x="-14" y="36" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-4" rx="52" ry="56" fill="#e8b98f"></ellipse>
+      <path d="M-52 -12 q-4 -60 52 -60 q56 0 52 60 q-24 -30 -52 -30 q-28 0 -52 30 z" fill="#2f2620"></path>
+      <g stroke="#d7dce6" stroke-width="4" fill="#0f1420" fill-opacity="0.25">
+        <rect x="-42" y="-12" width="34" height="28" rx="8"></rect>
+        <rect x="8" y="-12" width="34" height="28" rx="8"></rect>
+        <line x1="-8" y1="0" x2="8" y2="0"></line>
+      </g>
+      <circle cx="-25" cy="2" r="4" fill="#14161f"></circle>
+      <circle cx="25" cy="2" r="4" fill="#14161f"></circle>
+      <path d="M-12 34 q12 6 24 2" stroke="#7a4a2a" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <rect x="8" y="30" width="10" height="6" rx="2" fill="#c96"></rect>
+    </g>
+    <g filter="url(#soft3)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="60" y="196" width="270" height="88" rx="16"></rect>
+      <path d="M150 282 l-8 30 l30 -16 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="195" y="230" text-anchor="middle" fill="#14161f" font-size="19" class="dlg">Almost there — carry</text>
+    <text x="195" y="256" text-anchor="middle" fill="#14161f" font-size="19" class="dlg">the 2, one more step…</text>
+
+    
+    <g transform="translate(0,0)">
+      <rect x="372" y="206" width="770" height="286" rx="12" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="3"></rect>
+      <rect x="372" y="206" width="770" height="36" rx="12" fill="#e7e0cd"></rect>
+      <text x="392" y="230" font-size="15" font-weight="700" class="head mono" fill="#6b6450">SCRATCH WORK · reasoning trace · pg 1–39</text>
+      <text x="1122" y="230" text-anchor="end" font-size="13" class="mono" fill="#8a9a5b">✓ all correct</text>
+      <g class="mono" fill="#3f6aa5" font-size="15">
+        <text x="392" y="272">let f(x) = x²·ln x,  x &gt; 0</text>
+        <text x="392" y="300">f′(x) = 2x·ln x + x</text>
+        <text x="392" y="328">∫₀^∞ e^(−x) dx = 1</text>
+        <text x="392" y="356">Σ k=1..n  k = n(n+1)/2</text>
+        <text x="392" y="384">P(A|B) = P(B|A)·P(A) / P(B)</text>
+        <text x="392" y="412">lim (1 + 1/n)ⁿ = e</text>
+        <text x="392" y="440">∴ substitute n = 6 → 42</text>
+      </g>
+      <g class="mono" fill="#7c86a0" font-size="14">
+        <text x="792" y="272">// step 1: expand product rule</text>
+        <text x="792" y="300">// step 2: check convergence ✓</text>
+        <text x="792" y="328">// step 3: closed form ✓</text>
+        <text x="792" y="356">// step 4: apply Bayes ✓</text>
+        <text x="792" y="384">// step 5: evaluate the limit ✓</text>
+        <text x="792" y="412">// step 6: assemble final…</text>
+        <text x="792" y="440">// almost done — writing answer</text>
+      </g>
+      
+      <rect x="392" y="458" width="620" height="16" rx="8" fill="#0d1017"></rect>
+      <rect x="393" y="459" width="592" height="14" rx="7" fill="#f59e0b"></rect>
+      <text x="1122" y="472" text-anchor="end" font-size="14" font-weight="700" class="mono" fill="#f59e0b">487 / 512 tok</text>
+    </g>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="26" y="534" width="1148" height="312" rx="14"></rect></g>
+  <clipPath id="p2"><rect x="26" y="534" width="1148" height="312" rx="14"></rect></clipPath>
+  <g clip-path="url(#p2)">
+    <rect x="26" y="534" width="1148" height="312" fill="#12151f"></rect>
+    <rect x="44" y="550" width="300" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="572" font-size="15" font-weight="700" class="chip mono" fill="#fecaca">② finish_reason: &#34;length&#34;</text>
+
+    
+    <rect x="70" y="596" width="700" height="220" rx="12" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="3"></rect>
+    <rect x="70" y="596" width="700" height="34" rx="12" fill="#e7e0cd"></rect>
+    <text x="90" y="619" font-size="14" font-weight="700" class="head mono" fill="#6b6450">pg 40 — the last page</text>
+    <text x="90" y="664" font-size="15" class="mono" fill="#3f6aa5">…therefore n = 6, and the answer is</text>
+    <text x="90" y="700" font-size="20" font-weight="700" class="head" fill="#14161f">FINAL ANSWER:</text>
+    <line x1="290" y1="702" x2="720" y2="702" stroke="#b6ae97" stroke-width="2"></line>
+    <rect x="292" y="684" width="3" height="26" fill="#14161f"></rect>
+    <text x="90" y="742" font-size="16" font-style="italic" fill="#b23c3c">(pen stops — no paper left)</text>
+    
+    <rect x="88" y="756" width="664" height="42" rx="8" fill="#3a0e12" stroke="#f87171" stroke-width="2.5"></rect>
+    <text x="420" y="783" text-anchor="middle" font-size="17" font-weight="700" class="mono" fill="#fecaca">⟨ output truncated — 0 tokens left for the answer ⟩</text>
+
+    
+    <text x="808" y="628" font-size="15" class="mono" fill="#8b93a7">token budget</text>
+    <rect x="808" y="640" width="330" height="20" rx="4" fill="#0d1017" stroke="#3b4363" stroke-width="2"></rect>
+    <rect x="810" y="642" width="326" height="16" rx="2" fill="url(#fill3)"></rect>
+    <text x="808" y="686" font-size="17" font-weight="700" class="mono" fill="#f87171">512 / 512 — OUT OF ROOM</text>
+
+    <text x="808" y="732" font-size="15" class="mono" fill="#8b93a7">what the grader received:</text>
+    <rect x="808" y="744" width="330" height="54" rx="8" fill="#0a0d15" stroke="#232a3b" stroke-width="1.5"></rect>
+    <text x="826" y="777" font-size="18" class="mono" fill="#e6e9f2">output = <tspan fill="#f87171">&#34;&#34;</tspan>  <tspan fill="#5b6274">(empty)</tspan></text>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="26" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="p3"><rect x="26" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#p3)">
+    <rect x="26" y="864" width="563" height="326" fill="#161a26"></rect>
+    <rect x="44" y="880" width="220" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="902" font-size="15" font-weight="700" class="chip" fill="#fecaca">③ THE VERDICT</text>
+
+    
+    <g transform="translate(120,1120) rotate(-8)">
+      <rect x="-60" y="-70" width="120" height="150" rx="6" fill="#efe9d8" stroke="#c9c2ad" stroke-width="2"></rect>
+      <rect x="-52" y="-78" width="120" height="150" rx="6" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="2"></rect>
+      <g class="mono" fill="#9aa6bd" font-size="9">
+        <text x="-42" y="-52">f′=2x ln x+x</text><text x="-42" y="-36">Σk=n(n+1)/2</text>
+        <text x="-42" y="-20">∫e^-x=1</text><text x="-42" y="-4">lim=e ✓</text>
+      </g>
+      <text x="6" y="60" text-anchor="middle" font-size="10" font-style="italic" fill="#8a91a1">39 correct pages</text>
+    </g>
+
+    
+    <g transform="translate(370,1030)">
+      <rect x="-70" y="40" width="140" height="130" rx="22" fill="#3f4657"></rect>
+      <polygon points="-16,40 0,68 16,40" fill="#2c3140"></polygon>
+      <rect x="-14" y="16" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-30" rx="50" ry="54" fill="#e8b98f"></ellipse>
+      <path d="M-50 -38 q-4 -56 50 -56 q54 0 50 56 q-22 -28 -50 -28 q-28 0 -50 28 z" fill="#5a5145"></path>
+      <line x1="-30" y1="-30" x2="-14" y2="-30" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="14" y1="-30" x2="30" y2="-30" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <path d="M-14 -4 q14 -8 28 0" stroke="#7a4a2a" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      
+      <rect x="40" y="30" width="26" height="70" rx="12" fill="#3f4657" transform="rotate(24 53 65)"></rect>
+      <rect x="70" y="86" width="44" height="22" rx="4" fill="#7a2e2e"></rect>
+      <rect x="84" y="72" width="16" height="18" fill="#5c2020"></rect>
+    </g>
+    
+    <g transform="translate(300,1112) rotate(6)">
+      <rect x="-50" y="-64" width="112" height="150" rx="6" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="2"></rect>
+      <text x="6" y="-30" text-anchor="middle" font-size="12" class="mono" fill="#b6ae97">FINAL ANSWER:</text>
+      <line x1="-40" y1="-14" x2="52" y2="-14" stroke="#d9d2bd" stroke-width="2"></line>
+      <text x="6" y="64" text-anchor="middle" font-size="88" font-weight="700" fill="#c0271f" transform="rotate(-6)">0</text>
+    </g>
+    <g filter="url(#soft3)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="316" y="892" width="242" height="90" rx="16"></rect>
+      <path d="M360 978 l-14 30 l32 -16 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="437" y="928" text-anchor="middle" fill="#14161f" font-size="23" class="dlg">Blank sheet.</text>
+    <text x="437" y="958" text-anchor="middle" fill="#c0271f" font-size="23" font-weight="700" class="dlg">Zero.</text>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="611" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="p4"><rect x="611" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#p4)">
+    <rect x="611" y="864" width="563" height="326" fill="#10221b"></rect>
+    <rect x="629" y="880" width="330" height="30" rx="15" fill="#123a2c"></rect>
+    <text x="643" y="902" font-size="15" font-weight="700" class="chip mono" fill="#6ee7b7">④ THE FIX — max_tokens 512→4096</text>
+
+    
+    <g transform="translate(0,0)">
+      <rect x="646" y="946" width="300" height="210" rx="10" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="3"></rect>
+      <rect x="936" y="952" width="18" height="198" rx="4" fill="#d9d2bd"></rect>
+      <rect x="946" y="958" width="14" height="186" rx="4" fill="#cfc7b0"></rect>
+      <text x="666" y="984" font-size="14" font-weight="700" class="head mono" fill="#6b6450">pg 40 — with room left</text>
+      <text x="666" y="1022" font-size="15" class="mono" fill="#3f6aa5">…therefore n = 6, so the</text>
+      <text x="666" y="1054" font-size="20" font-weight="700" class="head" fill="#14161f">FINAL ANSWER: <tspan fill="#0e7a4b">42</tspan> ✓</text>
+      <rect x="666" y="1088" width="260" height="14" rx="7" fill="#0d1017"></rect>
+      <rect x="667" y="1089" width="118" height="12" rx="6" fill="#34d399"></rect>
+      <text x="666" y="1126" font-size="14" font-weight="700" class="mono" fill="#34d399">1,842 / 4,096 tok — room to spare</text>
+    </g>
+    
+    <g transform="translate(1070,940) rotate(8)">
+      <circle cx="0" cy="0" r="52" fill="none" stroke="#34d399" stroke-width="5"></circle>
+      <text x="0" y="16" text-anchor="middle" font-size="42" font-weight="700" fill="#34d399">100</text>
+    </g>
+    <text x="892" y="1180" text-anchor="middle" font-size="16" font-style="italic" fill="#6ee7b7">same model. same reasoning. it just had paper.</text>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect x="26" y="1208" width="1148" height="270" rx="14" fill="#0d1017" stroke="#f59e0b" stroke-width="3"></rect></g>
+  <clipPath id="p5"><rect x="26" y="1208" width="1148" height="270" rx="14"></rect></clipPath>
+  <g clip-path="url(#p5)">
+    <rect x="26" y="1208" width="1148" height="270" fill="#1c1608"></rect>
+    <rect x="52" y="1236" width="150" height="72" rx="8" fill="#2a2010" stroke="#6b5a2b" stroke-width="2.5"></rect>
+    <text x="127" y="1268" text-anchor="middle" font-size="13" fill="#c9a94a" font-weight="700" class="head mono">⟨ 0 tok</text>
+    <text x="127" y="1288" text-anchor="middle" font-size="13" fill="#c9a94a" font-weight="700" class="head mono">left ⟩</text>
+
+    <text x="234" y="1258" font-size="25" fill="#f4ecd8">An empty answer isn&#39;t a wrong answer. Your model filled its</text>
+    <text x="234" y="1292" font-size="25" fill="#f4ecd8">booklet with correct reasoning and ran out of pages one line</text>
+    <text x="234" y="1326" font-size="25" fill="#f4ecd8">early — then the grader read the blank as a zero.</text>
+
+    <rect x="52" y="1348" width="1096" height="46" rx="10" fill="#2a1608" stroke="#f59e0b" stroke-width="2"></rect>
+    <text x="600" y="1379" text-anchor="middle" font-weight="700" class="head mono" font-size="21" fill="#fcd34d">finish_reason: &#34;length&#34;  ≠  finish_reason: &#34;stop&#34;   ·   one means &#34;done&#34;, the other means &#34;out of room&#34;</text>
+
+    <text x="600" y="1436" text-anchor="middle" font-size="21" fill="#8b93a7" font-style="italic">Ever been marked zero on the one page you didn&#39;t have time to write?</text>
+    <text x="600" y="1464" text-anchor="middle" font-size="21" fill="#f59e0b" font-style="italic">Congratulations — you&#39;ve met your AI.</text>
+  </g>
+
+  
+  <g class="mono">
+    <rect x="1200" y="150" width="384" height="1328" rx="16" fill="#0a0d15" stroke="#f59e0b" stroke-opacity="0.35" stroke-width="2"></rect>
+    <rect x="1214" y="164" width="356" height="40" rx="10" fill="#2a2010"></rect>
+    <circle cx="1234" cy="184" r="5" fill="#f87171"></circle>
+    <circle cx="1252" cy="184" r="5" fill="#fbbf24"></circle>
+    <circle cx="1270" cy="184" r="5" fill="#34d399"></circle>
+    <text x="1556" y="189" text-anchor="end" font-size="12.5" fill="#8b93a7">completions.create</text>
+
+    <text x="1224" y="241" font-size="18" font-weight="700" fill="#f59e0b">⚙ GENERATION CONFIG</text>
+    <text x="1224" y="265" font-size="12.5" fill="#8b93a7" font-style="italic">the ceiling the answer never reached</text>
+
+    <rect x="1218" y="282" width="348" height="88" rx="8" fill="#10151f" stroke="#232a3b" stroke-width="1.5"></rect>
+    <text x="1234" y="308" font-size="13" fill="#8b93a7">model</text><text x="1300" y="308" font-size="13" fill="#fcd34d">reasoning-30b-instruct.Q5</text>
+    <text x="1234" y="332" font-size="13" fill="#8b93a7">task</text><text x="1300" y="332" font-size="13" fill="#e6e9f2">multi-step math (CoT)</text>
+    <text x="1234" y="356" font-size="13" fill="#8b93a7">ctx</text><text x="1300" y="356" font-size="13" fill="#e6e9f2">8192</text>
+
+    <text x="1224" y="410" font-size="14" font-weight="700" fill="#f59e0b">▸ LIMITS</text>
+    <text x="1224" y="440" font-size="13" fill="#e6e9f2">max_tokens</text><text x="1556" y="440" text-anchor="end" font-size="13" fill="#f87171">512  ⚠ too small</text>
+    <text x="1224" y="474" font-size="13" fill="#e6e9f2">reasoning</text><text x="1556" y="474" text-anchor="end" font-size="13" fill="#c9a94a">on (eats budget)</text>
+    <text x="1224" y="508" font-size="13" fill="#e6e9f2">stop</text><text x="1556" y="508" text-anchor="end" font-size="13" fill="#8b93a7">finish_reason</text>
+
+    <text x="1224" y="562" font-size="14" font-weight="700" fill="#f59e0b">▸ EPISTEMIC LOG</text>
+    <text x="1224" y="594" font-size="13" fill="#e6e9f2" xml:space="preserve">reasoning_used = <tspan fill="#f59e0b">512</tspan> tok</text>
+    <text x="1224" y="624" font-size="13" fill="#e6e9f2" xml:space="preserve">answer_tokens  =   <tspan fill="#f87171">0</tspan> tok  ← none left</text>
+    <text x="1224" y="654" font-size="13" fill="#e6e9f2" xml:space="preserve">finish_reason  = <tspan fill="#f87171">&#34;length&#34;</tspan></text>
+    <text x="1224" y="684" font-size="13" fill="#e6e9f2" xml:space="preserve">output         = <tspan fill="#f87171">&#34;&#34;</tspan></text>
+    <text x="1224" y="714" font-size="13" fill="#e6e9f2" xml:space="preserve">old_score(&#34;&#34;)  = <tspan fill="#f87171">0</tspan>  ✗ wrong verdict</text>
+
+    <rect x="1218" y="742" width="348" height="70" rx="8" fill="#2a0e0e" stroke="#f87171" stroke-width="1.5"></rect>
+    <text x="1242" y="770" font-size="12.5" font-weight="700" fill="#fecaca">NO FINAL ANSWER —</text>
+    <text x="1242" y="792" font-size="12.5" font-weight="700" fill="#fecaca">this is a failure, not a result.</text>
+
+    <rect x="1218" y="828" width="348" height="92" rx="8" fill="#0e1a14" stroke="#34d399" stroke-width="1.5"></rect>
+    <text x="1234" y="854" font-size="13" font-weight="700" fill="#6ee7b7">✔ the fix</text>
+    <text x="1234" y="878" font-size="12.5" fill="#cbead9">max_tokens 512 → 4096</text>
+    <text x="1234" y="902" font-size="12.5" fill="#cbead9">detect finish_reason, banner it</text>
+
+    <line x1="1224" y1="952" x2="1560" y2="952" stroke="#232a3b" stroke-width="1.5"></line>
+    <text x="1224" y="988" font-size="14" fill="#e6e9f2">Give it room —</text>
+    <text x="1224" y="1016" font-size="14" fill="#e6e9f2"><tspan fill="#f59e0b" font-weight="700">then</tspan> grade it.</text>
+    <text x="1224" y="1052" font-size="13" fill="#8b93a7">A blank booklet and a wrong</text>
+    <text x="1224" y="1076" font-size="13" fill="#8b93a7">answer are not the same failure.</text>
+
+    <text x="1224" y="1240" font-size="12" fill="#39405a" xml:space="preserve">// empty ≠ incorrect · check the receipt</text>
+    <text x="1224" y="1270" font-size="12" fill="#39405a">// commit 6cc9b6e</text>
+    <text x="1224" y="1430" font-size="12" fill="#2f3547">// eof — leave room for the ending</text>
+  </g>
+
+  
+  <g class="mono">
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/03-token-exhaustion.md" target="_blank" style="cursor:pointer"><title>SHA3-256 ca23cb91e8e1415e61f1632fd282e1560e5c7ef101959b561774b9f7fa669eec · click to open the sealed run · verify: openssl dgst -sha3-256</title><rect x="26" y="1494" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <polygon points="52,1502 63,1508 63,1520 52,1526 41,1520 41,1508" fill="none" stroke="#f59e0b" stroke-width="2"></polygon>
+    <text x="80" y="1519" font-size="13" fill="#f59e0b">SHA3-256  ca23cb91…fa669eec</text>
+    <text x="470" y="1519" font-size="13" fill="#5b6274">· this joke is reproducible ·</text>
+    <text x="1560" y="1519" text-anchor="end" font-size="13" fill="#f59e0b">calibration-scope ↗</text></a>
+  </g>
+</svg>

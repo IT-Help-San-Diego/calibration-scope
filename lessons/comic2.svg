@@ -1,0 +1,300 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" width="1600" height="1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+  <defs>
+    <filter id="soft2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
+    </filter>
+    <pattern id="hatch" width="10" height="10" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#22283a"></rect>
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#39405a" stroke-width="4"></line>
+    </pattern>
+    <pattern id="hatch2" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="#232838"></rect>
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#39405a" stroke-width="5"></line>
+    </pattern>
+    
+  </defs>
+
+  <rect width="1600" height="1560" fill="#0d1017"></rect>
+
+  
+  <rect x="26" y="22" width="14" height="92" fill="#a78bfa"></rect>
+  <text x="56" y="46" font-size="18" fill="#a78bfa" font-weight="700" class="head" letter-spacing="1">CALIBRATION SCOPE · HUMAN FAILURE MODES · vol.1</text>
+  <text x="54" y="94" font-weight="700" class="head" font-size="52" fill="#f2f4fa">TRUNCATE MIDDLE</text>
+  <text x="56" y="126" font-size="21" fill="#8b93a7">what happens to your AI — happening to you.</text>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="26" y="150" width="1148" height="366" rx="14"></rect></g>
+  <clipPath id="c1"><rect x="26" y="150" width="1148" height="366" rx="14"></rect></clipPath>
+  <g clip-path="url(#c1)">
+    <rect x="26" y="150" width="1148" height="366" fill="#161a26"></rect>
+    <rect x="44" y="166" width="330" height="30" rx="15" fill="#3a0f4d"></rect>
+    <text x="58" y="188" font-size="15" font-weight="700" class="chip" fill="#f0abfc">① WHAT SHE ACTUALLY SAID</text>
+
+    
+    <g transform="translate(150,300)">
+      <rect x="-72" y="118" width="144" height="150" rx="26" fill="#fb7185"></rect>
+      <polygon points="-16,118 0,150 16,118" fill="#e11d48"></polygon>
+      
+      <rect x="60" y="10" width="26" height="120" rx="13" fill="#fb7185" transform="rotate(-26 73 70)"></rect>
+      <circle cx="112" cy="14" r="16" fill="#e8b98f"></circle>
+      <rect x="-14" y="94" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="52" rx="54" ry="58" fill="#e8b98f"></ellipse>
+      
+      <path d="M-54 46 q-6 -66 54 -66 q60 0 54 66 q-24 -32 -54 -32 q-30 0 -54 32 z" fill="#3a2b22"></path>
+      <path d="M46 20 q46 6 40 78 q-4 40 -34 44 q28 -40 6 -80 q-8 -30 -12 -42 z" fill="#3a2b22"></path>
+      <circle cx="-22" cy="52" r="5" fill="#14161f"></circle>
+      <circle cx="22" cy="52" r="5" fill="#14161f"></circle>
+      <path d="M-30 34 q8 -6 16 0" stroke="#3a2b22" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M14 34 q8 -6 16 0" stroke="#3a2b22" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M-14 82 q14 12 28 0" stroke="#b45354" stroke-width="4" fill="none" stroke-linecap="round"></path>
+    </g>
+
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="300" y="176" width="850" height="322" rx="20"></rect>
+      <path d="M300 300 l-40 22 l40 24 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    
+    <text x="330" y="216" font-size="16" fill="#0e766e" font-weight="700" class="head">‹ start ›</text>
+    <text x="330" y="250" fill="#14161f" font-size="22" class="dlg">“Doc — I&#39;ve had this headache for days now.”</text>
+    
+    <rect x="322" y="266" width="806" height="150" rx="12" fill="#fff3d6" stroke="#f59e0b" stroke-width="3"></rect>
+    <text x="342" y="294" font-size="16" fill="#b45309" font-weight="700" class="head">‹ middle — the part that actually matters ›</text>
+    <text x="342" y="332" font-size="27" fill="#7a2e0a">Allergic to ibuprofen. Concussion three years back.</text>
+    <text x="342" y="372" font-size="27" fill="#7a2e0a">Mom had aneurysms. Four hours&#39; sleep since the layoffs.</text>
+    
+    <text x="330" y="452" font-size="16" fill="#0e766e" font-weight="700" class="head">‹ end ›</text>
+    <text x="330" y="486" fill="#14161f" font-size="22" class="dlg">“…so — what should I take?”</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="26" y="534" width="1148" height="312" rx="14"></rect></g>
+  <clipPath id="c2"><rect x="26" y="534" width="1148" height="312" rx="14"></rect></clipPath>
+  <g clip-path="url(#c2)">
+    <rect x="26" y="534" width="1148" height="312" fill="#12151f"></rect>
+    <rect x="44" y="550" width="410" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="572" font-size="15" font-weight="700" class="chip" fill="#fecaca">② WHAT THE DOCTOR ACTUALLY HEARD</text>
+
+    
+    <text x="470" y="572" font-size="15" fill="#8b93a7">context window:</text>
+    <rect x="600" y="556" width="360" height="20" rx="4" fill="#0d1017" stroke="#3b4363" stroke-width="2"></rect>
+    <rect x="602" y="558" width="70" height="16" rx="3" fill="#34d399"></rect>
+    <rect x="674" y="558" width="216" height="16" fill="url(#hatch2)"></rect>
+    <rect x="892" y="558" width="66" height="16" rx="3" fill="#34d399"></rect>
+    <text x="978" y="572" font-size="15" fill="#f87171" font-weight="700" class="head">OVERFLOW</text>
+
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="70" y="600" width="700" height="214" rx="20"></rect>
+      <path d="M770 690 l40 20 l-40 22 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="94" y="640" fill="#14161f" font-size="22" class="dlg">“Doc — I&#39;ve had this headache…”</text>
+    
+    <g>
+      <rect x="72" y="652" width="696" height="15" rx="2" fill="#aeb6c4"></rect>
+      <rect x="72" y="652" width="696" height="6" rx="2" fill="#6b7280"></rect>
+      <polygon points="72,667 768,667 768,673 72,677" fill="#cdd4de"></polygon>
+      <rect x="72" y="653" width="696" height="2" fill="#ff5470"></rect>
+    </g>
+    <g transform="rotate(4 420 706)">
+      <path d="M92 680 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l0 62 l-656 0 z" fill="#dcdde4" stroke="#9aa3b2" stroke-width="1.5"></path>
+      <text x="112" y="708" font-size="17" fill="#8a91a1">Allergic to ibuprofen · concussion · aneurysms · no sleep</text>
+      <line x1="110" y1="702" x2="700" y2="702" stroke="#e11d48" stroke-width="2.5"></line>
+      <text x="112" y="732" font-size="14" fill="#e11d48" font-weight="700">✂ 2,847 words — silently dropped on the floor</text>
+    </g>
+    <g stroke="#6b7280" stroke-width="3" stroke-linecap="round" opacity="0.65">
+      <line x1="784" y1="724" x2="812" y2="740"></line>
+      <line x1="792" y1="702" x2="822" y2="710"></line>
+    </g>
+    <text x="94" y="778" fill="#14161f" font-size="22" class="dlg">“…what should I take?”</text>
+
+    
+    <g transform="translate(1052,752)">
+      <rect x="-64" y="40" width="128" height="120" rx="22" fill="#eef2f7"></rect>
+      <polygon points="-14,40 0,66 14,40" fill="#cfd8e3"></polygon>
+      <line x1="0" y1="46" x2="0" y2="150" stroke="#cfd8e3" stroke-width="3"></line>
+      
+      <path d="M-30 46 q-16 40 6 66 q22 22 44 -2" fill="none" stroke="#22d3ee" stroke-width="5"></path>
+      <circle cx="22" cy="112" r="8" fill="#22d3ee"></circle>
+      <rect x="-12" y="18" width="24" height="24" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-18" rx="48" ry="52" fill="#e8b98f"></ellipse>
+      <path d="M-48 -24 q-4 -58 48 -58 q52 0 48 58 q-22 -28 -48 -28 q-26 0 -48 28 z" fill="#4a3b30"></path>
+      <line x1="-30" y1="-20" x2="-16" y2="-20" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="16" y1="-20" x2="30" y2="-20" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <path d="M-12 8 q12 10 24 0" stroke="#7a4a2a" stroke-width="4" fill="none" stroke-linecap="round"></path>
+    </g>
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="806" y="590" width="334" height="86" rx="16"></rect>
+      <path d="M1030 674 l-6 30 l34 -16 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="820" y="628" font-size="24" fill="#14161f">Headache in, ibuprofen</text>
+    <text x="820" y="658" font-size="24" fill="#14161f">out. Nailed it.</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="26" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="c3"><rect x="26" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#c3)">
+    <rect x="26" y="864" width="563" height="326" fill="#161a26"></rect>
+    <rect x="44" y="880" width="46" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="902" font-size="15" font-weight="700" class="chip" fill="#fecaca">③</text>
+    
+    <g transform="translate(150,1030)">
+      <rect x="-64" y="40" width="128" height="130" rx="22" fill="#eef2f7"></rect>
+      <path d="M-30 46 q-16 40 6 66 q22 22 44 -2" fill="none" stroke="#22d3ee" stroke-width="5"></path>
+      <circle cx="22" cy="112" r="8" fill="#22d3ee"></circle>
+      
+      <rect x="40" y="70" width="120" height="26" rx="13" fill="#eef2f7"></rect>
+      <rect x="-12" y="18" width="24" height="24" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-18" rx="48" ry="52" fill="#e8b98f"></ellipse>
+      <path d="M-48 -24 q-4 -58 48 -58 q52 0 48 58 q-22 -28 -48 -28 q-26 0 -48 28 z" fill="#4a3b30"></path>
+      <path d="M-30 -24 q8 -6 16 0" stroke="#4a3b30" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M14 -24 q8 -6 16 0" stroke="#4a3b30" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <line x1="-30" y1="-16" x2="-16" y2="-16" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="16" y1="-16" x2="30" y2="-16" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <path d="M-14 6 q14 12 28 0" stroke="#7a4a2a" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      
+      <g transform="translate(176,84)">
+        <rect x="-24" y="-8" width="48" height="14" rx="3" fill="#b45309"></rect>
+        <rect x="-20" y="4" width="40" height="66" rx="6" fill="#d97706"></rect>
+        <rect x="-16" y="18" width="32" height="42" rx="3" fill="#fdf6e3"></rect>
+        <text x="0" y="34" text-anchor="middle" font-size="9" fill="#7a2e0a" font-weight="700" class="head">IBU-</text>
+        <text x="0" y="46" text-anchor="middle" font-size="9" fill="#7a2e0a" font-weight="700" class="head">PROFEN</text>
+      </g>
+    </g>
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="300" y="900" width="270" height="120" rx="16"></rect>
+      <path d="M312 1010 l-14 34 l34 -18 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="435" y="944" text-anchor="middle" font-size="25" fill="#14161f">Easy fix! Just</text>
+    <text x="435" y="976" text-anchor="middle" font-size="25" fill="#14161f">take two of</text>
+    <text x="435" y="1008" text-anchor="middle" font-size="25" fill="#14161f">these!</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="611" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="c4"><rect x="611" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#c4)">
+    <rect x="611" y="864" width="563" height="326" fill="#161a26"></rect>
+    <rect x="629" y="880" width="46" height="30" rx="15" fill="#3a0f4d"></rect>
+    <text x="643" y="902" font-size="15" font-weight="700" class="chip" fill="#f0abfc">④</text>
+    
+    <g transform="translate(1018,1052)">
+      <rect x="-70" y="30" width="140" height="120" rx="24" fill="#fb7185"></rect>
+      <polygon points="-14,30 0,58 14,30" fill="#e11d48"></polygon>
+      
+      <rect x="10" y="24" width="80" height="22" rx="11" fill="#fb7185"></rect>
+      <g transform="translate(96,30)">
+        <rect x="-20" y="-8" width="40" height="12" rx="3" fill="#b45309"></rect>
+        <rect x="-16" y="2" width="32" height="56" rx="6" fill="#d97706"></rect>
+        <rect x="-12" y="14" width="24" height="34" rx="3" fill="#fdf6e3"></rect>
+        <text x="0" y="34" text-anchor="middle" font-size="9" fill="#7a2e0a" font-weight="700" class="head">IBU</text>
+      </g>
+      <rect x="-14" y="6" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-36" rx="52" ry="56" fill="#e8b98f"></ellipse>
+      <path d="M-52 -44 q-6 -64 52 -64 q58 0 52 64 q-24 -32 -52 -32 q-30 0 -52 32 z" fill="#3a2b22"></path>
+      <path d="M44 -68 q44 6 38 76 q-4 38 -32 42 q26 -38 6 -78 q-8 -28 -12 -40 z" fill="#3a2b22"></path>
+      
+      <circle cx="-22" cy="-38" r="8" fill="#fff"></circle><circle cx="-22" cy="-38" r="4" fill="#14161f"></circle>
+      <circle cx="22" cy="-38" r="8" fill="#fff"></circle><circle cx="22" cy="-38" r="4" fill="#14161f"></circle>
+      <line x1="-14" y1="-6" x2="14" y2="-6" stroke="#b45354" stroke-width="4" stroke-linecap="round"></line>
+      <path d="M52 -54 q10 16 0 22 q-10 -6 0 -22 z" fill="#7dd3fc"></path>
+    </g>
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="620" y="916" width="338" height="120" rx="18"></rect>
+      <path d="M956 996 l34 16 l-30 12 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="789" y="956" text-anchor="middle" font-size="25" fill="#14161f">That was the one</text>
+    <text x="789" y="988" text-anchor="middle" font-size="25" fill="#14161f">thing in my middle.</text>
+    <text x="789" y="1022" text-anchor="middle" font-size="19" fill="#b91c1c">( …I&#39;m allergic to that. )</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect x="26" y="1208" width="1148" height="270" rx="14" fill="#0d1017" stroke="#a78bfa" stroke-width="3"></rect></g>
+  <clipPath id="c5"><rect x="26" y="1208" width="1148" height="270" rx="14"></rect></clipPath>
+  <g clip-path="url(#c5)">
+    <rect x="26" y="1208" width="1148" height="270" fill="#12101c"></rect>
+    
+    <rect x="52" y="1236" width="150" height="72" rx="8" fill="#242a3b" stroke="#6b7280" stroke-width="2.5" stroke-dasharray="9 7"></rect>
+    <text x="127" y="1268" text-anchor="middle" font-size="13" fill="#9aa3b2" font-weight="700" class="head">⟨ your</text>
+    <text x="127" y="1288" text-anchor="middle" font-size="13" fill="#9aa3b2" font-weight="700" class="head">middle ⟩</text>
+
+    <text x="234" y="1258" font-size="25" fill="#e6e2f2">That grey box is a context window overflowing. Your AI does it on</text>
+    <text x="234" y="1292" font-size="25" fill="#e6e2f2">every long chat: it keeps your hello, keeps your goodbye —</text>
+    <text x="234" y="1326" font-size="25" fill="#e6e2f2">and quietly drops the middle, where you actually live.</text>
+
+    <rect x="52" y="1348" width="1096" height="46" rx="10" fill="#1c1330" stroke="#a78bfa" stroke-width="2"></rect>
+    <text x="600" y="1379" text-anchor="middle" font-weight="700" class="head" font-size="23" fill="#c4b5fd">TRUNCATE MIDDLE — one of the most evil things in modern AI. Evil to knowledge, that is.</text>
+
+    <text x="600" y="1436" text-anchor="middle" font-size="21" fill="#8b93a7" font-style="italic">Remember someone truncating your middle, leaving out your context?</text>
+    <text x="600" y="1464" text-anchor="middle" font-size="21" fill="#a78bfa" font-style="italic">Congratulations — you&#39;ve officially met your AI.</text>
+  </g>
+
+  
+  <g font-family="&#39;SF Mono&#39;,&#39;Menlo&#39;,&#39;Consolas&#39;,monospace">
+    <rect x="1200" y="150" width="384" height="1328" rx="16" fill="#0a0d15" stroke="#a78bfa" stroke-opacity="0.35" stroke-width="2"></rect>
+    <rect x="1214" y="164" width="356" height="40" rx="10" fill="#1c1330"></rect>
+    <circle cx="1234" cy="184" r="5" fill="#f87171"></circle>
+    <circle cx="1252" cy="184" r="5" fill="#fbbf24"></circle>
+    <circle cx="1270" cy="184" r="5" fill="#34d399"></circle>
+    <text x="1556" y="189" text-anchor="end" font-size="12.5" fill="#8b93a7">chat.completions</text>
+
+    <text x="1224" y="241" font-size="18" font-weight="700" fill="#a78bfa">⚙ CONTEXT CONFIG</text>
+    <text x="1224" y="265" font-size="12.5" fill="#8b93a7" font-style="italic">the toggle that silently eats your middle</text>
+
+    <rect x="1218" y="282" width="348" height="88" rx="8" fill="#10151f" stroke="#232a3b" stroke-width="1.5"></rect>
+    <text x="1234" y="308" font-size="13" fill="#8b93a7">model</text><text x="1300" y="308" font-size="13" fill="#c4b5fd">doctor-7b-instruct.Q5.gguf</text>
+    <text x="1234" y="332" font-size="13" fill="#8b93a7">input</text><text x="1300" y="332" font-size="13" fill="#e6e9f2">3,103 tokens</text>
+    <text x="1234" y="356" font-size="13" fill="#8b93a7">handler</text><text x="1300" y="356" font-size="13" fill="#f87171">truncateMiddle</text>
+
+    <text x="1224" y="410" font-size="14" font-weight="700" fill="#a78bfa">▸ CONTEXT HANDLING</text>
+    <text x="1224" y="440" font-size="13" fill="#e6e9f2">n_ctx</text><text x="1556" y="440" text-anchor="end" font-size="13" fill="#f87171">512  ⚠ too small</text>
+    <text x="1224" y="474" font-size="13" fill="#e6e9f2">context_overflow</text><text x="1556" y="474" text-anchor="end" font-size="13" fill="#c4b5fd">truncateMiddle</text>
+    <text x="1224" y="508" font-size="13" fill="#e6e9f2">keep_first</text><text x="1556" y="508" text-anchor="end" font-size="13" fill="#6ee7b7">128 tok</text>
+    <text x="1224" y="542" font-size="13" fill="#e6e9f2">keep_last</text><text x="1556" y="542" text-anchor="end" font-size="13" fill="#6ee7b7">128 tok</text>
+    <text x="1224" y="576" font-size="13" fill="#e6e9f2">max_tokens</text><text x="1556" y="576" text-anchor="end" font-size="13" fill="#e6e9f2">512</text>
+    <text x="1224" y="610" font-size="13" fill="#e6e9f2">notify_on_drop</text><text x="1556" y="610" text-anchor="end" font-size="13" fill="#f87171">false ← silent</text>
+
+    <text x="1224" y="662" font-size="14" font-weight="700" fill="#a78bfa">▸ EPISTEMIC LOG</text>
+    <text x="1224" y="694" font-size="13" fill="#e6e9f2" xml:space="preserve">input     = <tspan fill="#e6e9f2">3,103</tspan> tok</text>
+    <text x="1224" y="724" font-size="13" fill="#e6e9f2" xml:space="preserve">budget    =   <tspan fill="#6ee7b7">256</tspan> tok  (128 ⊕ 128)</text>
+    <text x="1224" y="754" font-size="13" fill="#e6e9f2" xml:space="preserve">dropped   = <tspan fill="#f87171">2,847</tspan> tok  ← the middle</text>
+    <text x="1224" y="784" font-size="13" fill="#e6e9f2" xml:space="preserve">kept      = hello ⊕ goodbye</text>
+    <text x="1224" y="814" font-size="13" fill="#e6e9f2" xml:space="preserve">∴ answer <tspan fill="#f472b6">⟂</tspan> evidence</text>
+
+    <text x="1224" y="858" font-size="12" fill="#8b93a7">what fit in the 512-token window:</text>
+    <rect x="1224" y="868" width="320" height="18" rx="4" fill="#0d1017" stroke="#3b4363" stroke-width="1.5"></rect>
+    <rect x="1226" y="870" width="30" height="14" rx="2" fill="#34d399"></rect>
+    <rect x="1258" y="870" width="252" height="14" fill="url(#hatch2)"></rect>
+    <rect x="1512" y="870" width="30" height="14" rx="2" fill="#34d399"></rect>
+    <text x="1241" y="906" font-size="10" fill="#6ee7b7" text-anchor="middle">keep</text>
+    <text x="1384" y="906" font-size="10" fill="#f87171" text-anchor="middle">2,847 tok dropped</text>
+    <text x="1527" y="906" font-size="10" fill="#6ee7b7" text-anchor="middle">keep</text>
+
+    <rect x="1218" y="936" width="348" height="96" rx="8" fill="#0e1a14" stroke="#34d399" stroke-width="1.5"></rect>
+    <text x="1234" y="962" font-size="13" font-weight="700" fill="#6ee7b7">✔ the fix</text>
+    <text x="1234" y="986" font-size="12.5" fill="#cbead9">n_ctx ≥ input_tokens</text>
+    <text x="1234" y="1010" font-size="12.5" fill="#cbead9">context_overflow = <tspan fill="#6ee7b7" font-weight="700">RAISE</tspan>, not silence</text>
+
+    <line x1="1224" y1="1064" x2="1560" y2="1064" stroke="#232a3b" stroke-width="1.5"></line>
+    <text x="1224" y="1100" font-size="14" fill="#e6e9f2">It kept your <tspan fill="#6ee7b7">hello</tspan></text>
+    <text x="1224" y="1128" font-size="14" fill="#e6e9f2">and your <tspan fill="#6ee7b7">goodbye</tspan>.</text>
+    <text x="1224" y="1164" font-size="14" fill="#c4b5fd" font-weight="700">You lived in the middle.</text>
+
+    <text x="1224" y="1226" font-size="12" fill="#39405a" xml:space="preserve">// max_tokens 512 → 4096 fixed this once</text>
+    <text x="1224" y="1256" font-size="12" fill="#39405a">// commit 6cc9b6e</text>
+    <text x="1224" y="1430" font-size="12" fill="#2f3547">// eof — mind your middle</text>
+  </g>
+
+  
+  <g font-family="&#39;SF Mono&#39;,&#39;Menlo&#39;,&#39;Consolas&#39;,monospace">
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/02-truncate-middle.md" target="_blank" style="cursor:pointer"><title>SHA3-256 ff28f63b85ac0bfddd790b5c36c2da1d0c582e08beb104216fd91ed8426dc845 · click to open the sealed run · verify: openssl dgst -sha3-256</title><rect x="26" y="1494" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <polygon points="52,1502 63,1508 63,1520 52,1526 41,1520 41,1508" fill="none" stroke="#a78bfa" stroke-width="2"></polygon>
+    <text x="80" y="1519" font-size="13" fill="#a78bfa">SHA3-256  ff28f63b…426dc845</text>
+    <text x="470" y="1519" font-size="13" fill="#5b6274">· this joke is reproducible ·</text>
+    <text x="1560" y="1519" text-anchor="end" font-size="13" fill="#a78bfa">calibration-scope ↗</text></a>
+  </g>
+</svg>
