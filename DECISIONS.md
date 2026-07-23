@@ -852,3 +852,34 @@ green: logic gate ✓, fmt/clippy/build/test ✓, CodeQL ✓, web quality ✓):
 Also: the dashboard-start step now dumps `dash.log` into the CI log on
 failure (`3497446`) — no more blind "HTTP 000". If you ever see that job red,
 the panic is printed right there.
+
+### 13d. COST CORRECTION — both estimates were wrong; real Cost Explorer data (2026-07-23)
+
+Claude Science challenged Hermes's "$24/day / $30-35 burned" figures and
+counter-theorized a hidden r7i-class second box. **Both were wrong.** Full
+account sweep (us-west-1/2, us-east-1/2) + Cost Explorer, actuals:
+
+| Date | EC2 Compute (actual) | What it was |
+|---|---|---|
+| Jul 19 | $0.12 | server.it-help.tech t4g.nano only (its normal 24/7 cost) |
+| Jul 20 | $0.12 | same — builder still stopped |
+| Jul 21 | **$2.97** | builder started ~16:40 UTC for the boot validation, left running |
+| Jul 22 | **$4.03** | builder idle all day until watchdog/stop |
+
+- **Total idle burn: ≈ $5-6, not $30-35.** Hermes's error: quoted a
+  list-price guess (~$1/hr → "$24/day") without checking Cost Explorer;
+  actual c7i.2xlarge effective rate here ≈ $0.36/hr ≈ **$8.6/day**, and it
+  ran ~32h total. Claude Science's arithmetic correcting the rate was RIGHT
+  ($0.357/hr confirmed); its second-box theory was WRONG — the only other
+  instance in the entire account is `i-01480734288bb4149` (t4g.nano,
+  server.it-help.tech, us-west-1, SUPPOSED to run 24/7, ~$3/mo). No r7i
+  exists. No stray regions. (The Jul 19 $16.00 line = Amazon Registrar —
+  the calibrationscope.com domain registration, one-time, not compute.)
+- **Builder is now STOPPED** (verified via describe-instances) — cost basis
+  back to 100GB gp3 ≈ $8/mo. The idle watchdog (13b) is armed for future
+  starts.
+- **Rule for all three agents: cost claims come from Cost Explorer
+  (`aws ce get-cost-and-usage`), never from list-price × wall-clock
+  arithmetic.** Same class of error as the hallucinated Cognitive Atlas
+  IDs — a plausible number is not a measured number. The measurement was
+  6x smaller than the estimate.
