@@ -114,6 +114,13 @@ fn csp(nonce: &str) -> String {
 /// Axum middleware (`from_fn`) that generates a per-request nonce, threads
 /// it into the handler via `Extension<Nonce>`, then stamps the response with
 /// all security headers once the handler has produced it.
+///
+/// SINGLE SOURCE OF TRUTH for the nonce: the middleware stamps BOTH the CSP
+/// header AND the HTML body with the SAME per-request nonce. The handler
+/// (index_handler) also stamps, but the middleware's stamp is authoritative
+/// because it owns the header — if the two ever diverge (they did, 2026-07-22,
+/// intermittent white pages under Safari), the middleware's stamp is a no-op
+/// only because the body already carries the same nonce it wrote.
 pub async fn security_headers(req: Request<Body>, next: Next) -> Response<Body> {
     // DNS-rebinding guard: reject any Host we don't serve, before the request
     // reaches a handler. 421 Misdirected Request is the precise status.
@@ -131,7 +138,32 @@ pub async fn security_headers(req: Request<Body>, next: Next) -> Response<Body> 
     parts.extensions.insert(Nonce(nonce.clone()));
     let req = Request::from_parts(parts, body);
 
-    let mut resp = next.run(req).await.into_response();
+    let resp = next.run(req).await.into_response();
+
+    // Stamp HTML bodies with THIS request's nonce too. If the handler already
+    // stamped (index_handler), the replace is a no-op because no bare <script>
+    // or <script defer src= remains. This closes the header/body divergence.
+    let (parts, body) = resp.into_parts();
+    let is_html = parts
+        .headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .map(|v| v.starts_with("text/html"))
+        .unwrap_or(false);
+
+    let final_body = if is_html {
+        match axum::body::to_bytes(body, usize::MAX).await {
+            Ok(bytes) => match String::from_utf8(bytes.to_vec()) {
+                Ok(html) => axum::body::Body::from(stamp_nonce(&html, &nonce)),
+                Err(_) => axum::body::Body::from(bytes),
+            },
+            Err(_) => axum::body::Body::empty(),
+        }
+    } else {
+        body
+    };
+
+    let mut resp = Response::from_parts(parts, final_body);
 
     let headers = resp.headers_mut();
     // CSP is the load-bearing one; rebuilt per nonce.
