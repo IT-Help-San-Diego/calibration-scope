@@ -17,12 +17,16 @@ re-runs or data changes you make.
   pages' style hashes ('self' + sha256 of each page's <style> block).
   Recompute on EVERY CSS change or the page blanks. Policy id
   42a28561-ee87-4c3a-8621-94187ee9e22e.
-- **CSP is different per surface.** Public site = full hardening incl.
-  upgrade-insecure-requests (correct — real TLS). Local dashboard =
-  SAME strict policy MINUS upgrade-insecure-requests (correct — the
-  instrument serves plain HTTP on 127.0.0.1:8768; that directive would tell
-  Safari to fetch its own assets over TLS and fail). Do NOT copy a CSP from
-  one surface to the other blindly.
+- **CSP is different per surface — and on the LOCAL surface, per CONNECTION**
+  (updated 2026-07-22, local HTTPS shipped). Public site = full hardening incl.
+  upgrade-insecure-requests (correct — real TLS). Local dashboard now speaks
+  BOTH protocols on one port (first-byte peek → rustls or plain HTTP):
+  upgrade-insecure-requests is emitted ONLY on TLS connections
+  (security.rs::csp takes an `https` flag from the per-connection ConnScheme
+  extension). On a plain-HTTP connection the directive would command Safari to
+  refetch assets over TLS the client may not trust — the white-page bug. Do
+  NOT make it unconditional in either direction, and do NOT copy a CSP
+  between surfaces blindly.
 - **Verify in the live browser, not by curl.** Firefox MCP
   (mcp__firefox_devtools__*) is the instrument: navigate, evaluate_script for
   computed sizes + sheetCount, list_console_messages. The
@@ -59,14 +63,21 @@ re-runs or data changes you make.
 
 ## Open items (pick in order)
 
-1. **Local HTTPS (the real Safari fix, not the workaround).** The local
-   dashboard should serve HTTPS on 8768 via rustls + a local CA + leaf cert
-   for `local.calibrationscope.com`, trusted in the user's Keychain. Then
-   `upgrade-insecure-requests` can come back on the local CSP too, and the
-   instrument is honest everywhere. Design: local CA in ~/.calibration-scope/ca/,
-   leaf for local.calibrationscope.com + 127.0.0.1 SANs, trust anchor
-   installed via `security add-trusted-cert` (documented for the user, needs
-   their password once). This is the proper next big piece — Carey's ask.
+1. ~~Local HTTPS~~ **DONE (Claude Code, 2026-07-22).** Dual-protocol on ONE
+   port (8768): first-byte peek routes TLS → rustls, everything else → plain
+   HTTP — so no existing http consumer (curl, Python client, Hermes scripts,
+   launchd checks) broke, and trusting the CA is an opt-in upgrade, never a
+   prerequisite. Self-provisioned CA + leaf via rcgen (src/local_tls.rs):
+   `~/.calibration-scope/ca/`, SANs local.calibrationscope.com + localhost +
+   127.0.0.1 + ::1, leaf 820-day validity + serverAuth EKU (Apple's 825-day
+   rule honored), keys 0600. upgrade-insecure-requests restored on TLS
+   connections only (per-connection ConnScheme). Trust: double-click
+   ca.cert.pem or `scripts/trust-local-ca.sh`. Crypto: rustls + ring (audited,
+   zero extra toolchain); FIPS 140-3 available as opt-in `--features fips`
+   (AWS-LC FIPS) — decided ring-default because most scientists don't need
+   FIPS and it costs cmake/go build friction. Verified live: chain+hostname
+   validation (ssl_verify_result=0), IP SAN, SSE over TLS, CSP split, 36 unit
+   tests, clippy 0.
 2. **Site polish — owl+brain graphic pass.** Homepage has the working
    structure (owl semaphore nav/hero, brain+English→Lean→VERIFIED panel).
    Give it a design polish pass — better brain art, the Lean formulas

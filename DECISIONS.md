@@ -740,6 +740,20 @@ holds, the two theories weld into one measured result.
 
 ### 🔄 Claude Code lane (GUI + frontend polish)
 
+- [x] **Local HTTPS (handoff item 1). DONE 2026-07-22.** One port, both
+      protocols: 8768 first-byte-peeks TLS vs plain HTTP, so every legacy http
+      consumer kept working and CA trust is opt-in. Self-provisioned CA + leaf
+      (rcgen, `src/local_tls.rs`, `~/.calibration-scope/ca/`, Apple-compliant
+      820-day leaf, SANs local.calibrationscope.com/localhost/127.0.0.1/::1).
+      `upgrade-insecure-requests` restored on TLS connections ONLY
+      (per-connection ConnScheme — see the updated CSP gate rule in
+      policy/HANDOFF_claude_code_gui.md). Trust anchor: double-click
+      `ca.cert.pem` or `scripts/trust-local-ca.sh`. **Crypto decision:** rustls
+      + ring default (audited, zero extra toolchain — right for scientists);
+      FIPS 140-3 as opt-in `--features fips` (AWS-LC) for institutions that
+      require it. Verified live: chain+hostname validation, IP SAN, SSE over
+      TLS, per-connection CSP split, 36 unit tests, clippy 0.
+
 - [ ] **Human-calibration UI polish:** the 4-step flow works but is basic. Add per-question timing, carrier-variance bar chart, and a human-vs-model comparison view (same signal_carrier shape, side-by-side). The backend already supports this — the signal_carrier endpoint returns both subjects in the same row format.
 - [ ] **OWL N/C coverage expansion:** LOGIC-05/07/08/09/10 still have zero N/C siblings. The migration 047 pattern (same formal_spec, new surface text, demodulated one-word answer for N; transform + named owl_flaw for C) is the template. The oracle (`scripts/verify_logic_ground_truth.py --check-owl-families`) validates drift.
 - [ ] **Architecture diagram update:** `docs/architecture.excalidraw` needs the Focused shell, NeuroVault proxy, signal-carrier view, spec-decode panel, human-calibration page, completion endpoint, and MCP server added. Several of these are live but not diagrammed.

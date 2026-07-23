@@ -35,6 +35,14 @@ yaml-rust2 = "0.11.0"
 walkdir = "2.5.0"
 rand = "0.8"
 
+# Local HTTPS (handoff item 1): self-provisioned CA + leaf via rcgen, served
+# with rustls. ring backend (not aws-lc) so Linux CI builds without cmake/perl.
+rcgen = "0.13"
+time = "0.3"
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
+rustls-pemfile = "2"
+hyper-util = { version = "0.1", features = ["server-auto", "http1", "http2", "tokio", "service"] }
+
 # macOS-only: Metal GPU-ceiling measurement (src/routes/host.rs). Gated so the
 # binary builds on Linux (CI, non-Mac hosts) — the GPU ceiling is simply None
 # there. objc2 fails to compile off Apple platforms, so it must NOT be an
@@ -42,6 +50,15 @@ rand = "0.8"
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-metal = { version = "0.3.2", features = ["MTLDevice"] }
 objc2 = "0.6.4"
+
+[features]
+default = []
+# FIPS-validated crypto (AWS-LC FIPS module) for institutions whose policy
+# requires FIPS 140-3: build with `cargo build --release --features fips`.
+# Needs cmake (and go) at build time — which is why it is opt-in, not default:
+# the default ring backend keeps the instrument installable with zero extra
+# toolchain. Same rustls TLS either way; only the crypto provider swaps.
+fips = ["tokio-rustls/fips"]
 
 [profile.release]
 opt-level = 3

@@ -94,7 +94,24 @@ fn gen_nonce() -> String {
 /// blocked (the 1000-error regression). We scope it to 'self' + 'unsafe-inline'
 /// because handler attributes cannot carry a nonce; this is the documented
 /// CSP pattern for event-handler attributes.
-fn csp(nonce: &str) -> String {
+/// Marks whether this request arrived over the TLS side of the dual-protocol
+/// listener (see local_tls::serve_dual — a per-connection Extension).
+#[derive(Clone, Copy, Debug)]
+pub struct ConnScheme {
+    pub https: bool,
+}
+
+fn csp(nonce: &str, https: bool) -> String {
+    // upgrade-insecure-requests is PER-CONNECTION honest (Safari incident,
+    // commit 102b63f): on a TLS connection it is correct and restored; on a
+    // plain-HTTP connection it would command Safari to refetch this page's
+    // own assets over TLS the client may not trust yet — the white-page bug.
+    // Never make this unconditional again.
+    let upgrade = if https {
+        "; upgrade-insecure-requests"
+    } else {
+        ""
+    };
     format!(
         "default-src 'self'; \
          script-src 'self' 'nonce-{nonce}' 'strict-dynamic'; \
@@ -106,7 +123,7 @@ fn csp(nonce: &str) -> String {
          frame-ancestors 'none'; \
          base-uri 'self'; \
          form-action 'self'; \
-         object-src 'none'"
+         object-src 'none'{upgrade}"
     )
 }
 
@@ -130,6 +147,14 @@ pub async fn security_headers(req: Request<Body>, next: Next) -> Response<Body> 
         )
             .into_response();
     }
+
+    // Did this request arrive over the TLS half of the dual-protocol listener?
+    // (Absent extension = plain HTTP, e.g. the axum::serve fallback path.)
+    let https = req
+        .extensions()
+        .get::<ConnScheme>()
+        .map(|c| c.https)
+        .unwrap_or(false);
 
     // Fresh nonce for THIS request.
     let nonce = gen_nonce();
@@ -165,8 +190,9 @@ pub async fn security_headers(req: Request<Body>, next: Next) -> Response<Body> 
     let mut resp = Response::from_parts(parts, final_body);
 
     let headers = resp.headers_mut();
-    // CSP is the load-bearing one; rebuilt per nonce.
-    if let Ok(v) = HeaderValue::from_str(&csp(&nonce)) {
+    // CSP is the load-bearing one; rebuilt per nonce, per-connection honest
+    // about upgrade-insecure-requests (TLS connections only).
+    if let Ok(v) = HeaderValue::from_str(&csp(&nonce, https)) {
         headers.insert(header::CONTENT_SECURITY_POLICY, v);
     }
     // Defense-in-depth: explicit clickjacking + MIME sniff guards.

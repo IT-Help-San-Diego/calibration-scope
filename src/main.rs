@@ -4,6 +4,7 @@ mod error;
 mod executor;
 mod gpu_telemetry;
 mod lm_guard;
+mod local_tls;
 mod models;
 mod routes;
 mod security;
@@ -225,6 +226,14 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
+    // Crypto provider for rustls: ring by default (light, audited, zero extra
+    // toolchain). Institutions requiring FIPS 140-3 build with --features fips
+    // (AWS-LC FIPS module) — same TLS stack, different validated provider.
+    #[cfg(feature = "fips")]
+    let _ = tokio_rustls::rustls::crypto::default_fips_provider().install_default();
+    #[cfg(not(feature = "fips"))]
+    let _ = tokio_rustls::rustls::crypto::ring::default_provider().install_default();
+
     let listener = tokio::net::TcpListener::bind(config.bind_addr())
         .await
         .expect("Failed to bind listener");
@@ -233,13 +242,30 @@ async fn main() {
         "Listening on {}",
         listener.local_addr().expect("listener has a local addr")
     );
-    // Graceful shutdown: launchd sends SIGTERM on unload/kickstart. Draining
-    // in-flight HTTP (incl. open SSE streams) instead of dropping mid-write;
-    // the startup reaper covers any executor tasks cut off by the exit.
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal())
-        .await
-        .expect("Server error");
+
+    // Dual-protocol on ONE port: TLS (self-provisioned local CA) and plain
+    // HTTP both answer on listen_port — nothing breaks for http consumers,
+    // and https://local.calibrationscope.com:<port> works once the CA is
+    // trusted (scripts/trust-local-ca.sh). If cert provisioning ever fails,
+    // fall back to plain HTTP so the instrument never refuses to start.
+    match local_tls::ensure_local_tls() {
+        Ok((tls_config, ca_path)) => {
+            tracing::info!(
+                "TLS live on the same port — https://{}:{} (trust anchor: {})",
+                local_tls::LOCAL_HOSTNAME,
+                config.listen_port,
+                ca_path.display()
+            );
+            local_tls::serve_dual(listener, app, tls_config, shutdown_signal()).await;
+        }
+        Err(e) => {
+            tracing::warn!("local TLS unavailable ({}); serving plain HTTP only", e);
+            axum::serve(listener, app)
+                .with_graceful_shutdown(shutdown_signal())
+                .await
+                .expect("Server error");
+        }
+    }
 }
 
 async fn shutdown_signal() {
