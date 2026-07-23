@@ -1,0 +1,25 @@
+{
+  "artifact": "EC2 idle-shutdown watchdog — live self-stop certification",
+  "task": "Claude Science TASK_watchdog_versioncontrol_and_proof, Part 2",
+  "method": "API-only observation: after the last SSH exec channel closed, state was polled exclusively via aws ec2 describe-instances every 300s (SSH would have reset the idle clock). No stop command was issued by any agent or human after disconnect_utc.",
+  "instance": "i-08ca65b7acd2dc275 (c7i.2xlarge, us-west-2)",
+  "watchdog_version": "infra/ec2-idle-shutdown/idle-shutdown.sh @ commit 9ee952c (ss-based SSH detection + PROOF_RUNNING sentinel)",
+  "preconditions": {
+    "sentinel": "/tmp/PROOF_RUNNING confirmed absent",
+    "idle_counter": "/run/idle-shutdown.count = 0 at disconnect",
+    "timer": "systemctl is-enabled idle-shutdown.timer = enabled"
+  },
+  "timeline_utc": {
+    "disconnect": "2026-07-23T01:52:01Z",
+    "polls_running": ["01:57:02Z", "02:02:03Z", "02:07:04Z", "02:12:05Z", "02:17:05Z", "02:22:06Z"],
+    "poll_stopped": "02:27:07Z",
+    "stopped_confirmed": "2026-07-23T02:28:08Z",
+    "elapsed_disconnect_to_stop": "~35 min (spec: 30 min idle + up to one 5-min check cycle — IN SPEC)"
+  },
+  "api_evidence": {
+    "State": "stopped",
+    "Reason": "User initiated",
+    "reason_note": "'User initiated' is AWS's label for ANY OS-level shutdown (shutdown -h now inside the guest), as opposed to API StopInstances calls or AWS-side failures — consistent with the watchdog firing, not contradicting it."
+  },
+  "verdict": "CERTIFIED — the instance stopped ITSELF within the designed window with zero external intervention, observed entirely from outside the box."
+}

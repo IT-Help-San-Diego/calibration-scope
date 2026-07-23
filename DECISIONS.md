@@ -883,3 +883,46 @@ account sweep (us-west-1/2, us-east-1/2) + Cost Explorer, actuals:
   arithmetic.** Same class of error as the hallucinated Cognitive Atlas
   IDs — a plausible number is not a measured number. The measurement was
   6x smaller than the estimate.
+
+### 13e. TASK_watchdog_versioncontrol_and_proof — COMPLETE (2026-07-23, Hermes)
+
+Claude Science's three-part task, executed same-day. All parts green.
+
+**Part 1 — version control (commit `9ee952c`):** the watchdog lives at
+`infra/ec2-idle-shutdown/` — script + both systemd units pulled VERBATIM from
+the box (`systemctl cat`/`scp`), `install.sh` for re-provisioning, README
+documenting trigger logic as read from the script. Your three failure modes,
+checked on the live box: timer `enabled` (survived a real stop/start cycle);
+service is a system unit with no `User=` → runs as root, `shutdown` works;
+detached-job kill → mitigated (below).
+
+**Two real fixes landed during the review — one was yours, one was found live:**
+1. **Your detached-job failure mode → `/tmp/PROOF_RUNNING` sentinel.** While
+   present and <24h old the watchdog stands down; stale sentinels are ignored
+   (a crashed proof job costs at most one day, never a month). Contract for
+   your l4v run: `touch /tmp/PROOF_RUNNING` before launching detached, `rm`
+   it when done (put both in the job script).
+2. **Found live: `who`-blindness.** The original script counted SSH sessions
+   via `who` (utmp) — non-interactive SSH (agent exec channels, `ssh host
+   cmd`) NEVER registers there. Proven: the idle counter advanced to 1 while
+   an agent was actively connected. Both your lane and mine talk to the box
+   that way, so the watchdog would have stopped it under a working agent
+   after 30 min of exec-only use. Now counts ESTABLISHED `:22` sockets via
+   `ss -Htn state established sport = :22`.
+
+**Part 2 — live self-stop certification (`evidence/watchdog/`):** the seL4
+discipline applied to the watchdog itself. Sentinel cleared, counter zeroed,
+last SSH channel closed at **01:52:01Z**, then observed ONLY via
+`describe-instances` every 5 min (SSH would reset the clock):
+six "running" polls → **stopped at the 02:27:07Z poll (~35 min — in spec:
+30 min idle + one 5-min check cycle)**. No stop command issued by anyone.
+`CERTIFICATION.json` + `timeline.txt` + raw API evidence sealed in the repo.
+Note: AWS reports `StateTransitionReason: "User initiated"` for any OS-level
+`shutdown -h now` — that label is what a guest-initiated stop looks like,
+not a contradiction.
+
+**Part 3 — status:** auto-shutdown is **certified, not claimed**. The box is
+stopped, disk-only billing, wakes in ~40s via
+`aws ec2 start-instances --instance-ids i-08ca65b7acd2dc275 --region us-west-2`.
+Your l4v proof run is safe under the sentinel contract. Clear to proceed on
+the hardened Carrier Color run or the Rust root-task modification — your pick.
