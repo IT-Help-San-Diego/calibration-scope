@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-Q7lzylifXNvadBsU8m84iTWAFFR8JU7xE9WaQe8Hq+0='">
+<title>Lessons - Human Failure Runs | Calibration Scope</title>
+<meta name="description" content="Four measured ways an AI model fails, each printed with the exact knob that causes it, held up next to the human bug it rhymes with. Every seal is a real SHA3-256 of a sealed lesson file.">
+<meta name="author" content="Carey James Balboa / IT Help San Diego Inc.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Calibration Scope">
+<meta property="og:title" content="Lessons - Human Failure Runs">
+<meta property="og:description" content="Same instrument, silicon and carbon: overconfidence, truncate-middle, token exhaustion, carrier color. Sealed, cited, reproducible.">
+<meta property="og:url" content="https://calibrationscope.com/lessons.html">
+<link rel="canonical" href="https://calibrationscope.com/lessons.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23d4a853'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--card:#21262d;--border:#30363d;--text:#e6edf3;--text2:#9aa4ae;--gold:#d4a853;--green:#3fb950;--mono:"SF Mono",Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.65;font-size:17px}
+a{color:var(--gold);text-decoration:underline}
+a:hover{color:var(--text)}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px}
+nav{border-bottom:1px solid var(--border);background:var(--bg2)}
+nav .wrap{display:flex;gap:22px;align-items:center;min-height:52px;flex-wrap:wrap}
+nav a{text-decoration:none;font-size:14px;color:var(--text2);padding:6px 0}
+nav a.on,nav a:hover{color:var(--gold)}
+nav .brand{color:var(--gold);font-weight:700;font-family:var(--mono);font-size:15px}
+header{padding:72px 0 48px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg))}
+h1{font-size:clamp(30px,6vw,44px);font-family:var(--mono);letter-spacing:-.5px}
+.tag{color:var(--gold);font-size:clamp(16px,3vw,19px);margin-top:12px}
+.sub{color:var(--text2);max-width:640px;margin:18px auto 0;font-size:16px}
+section{padding:44px 0;border-top:1px solid var(--border)}
+h2{font-size:22px;margin-bottom:16px;font-family:var(--mono);color:var(--gold)}
+p{margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:20px}
+.card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:18px}
+.card h3{font-size:15px;margin-bottom:8px;font-family:var(--mono)}
+.card p{font-size:14px;color:var(--text2);margin:0}
+.seal{font-family:var(--mono);font-size:13px;color:var(--green);background:#3fb95014;border:1px solid #3fb95040;border-radius:6px;padding:10px 14px;display:inline-block;margin-top:8px}
+blockquote{border-left:3px solid var(--gold);padding:8px 18px;margin:18px 0;color:var(--text2);font-style:italic}
+footer{border-top:1px solid var(--border);padding:32px 0;font-size:13px;color:var(--text2);background:var(--bg2)}
+footer a{color:var(--gold)}
+.fine{font-size:12px;margin-top:10px;opacity:.8}
+.mt20{margin-top:20px}
+.mono15{font-family:var(--mono);font-size:15px}
+
+.lesson{margin:56px 0;padding-bottom:40px;border-bottom:1px solid var(--border)}
+.lesson:last-child{border-bottom:none}
+.lesson h2{margin-bottom:4px}
+.tagline{color:var(--text2);font-style:italic;margin-bottom:18px}
+.comicwrap{background:#0a0d14;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.comicwrap svg{width:100%;height:auto;display:block}
+.blurb{font-size:15px;color:var(--text2)}
+.lmeta{font-size:13px;margin-top:8px}
+.status{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--green);background:#3fb95014;border:1px solid #3fb95040;border-radius:4px;padding:2px 8px;margin-right:10px}
+.seal{font-family:var(--mono);font-size:11px;color:var(--text2);margin-top:6px;word-break:break-all}
+.seal code{color:var(--gold)}
+.rules{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:18px;font-size:14px;color:var(--text2);margin-top:22px}
+.rules strong{color:var(--text)}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+<span class="brand">CALIBRATION SCOPE</span>
+<a href="/">Home</a>
+<a href="/lessons.html" class="on" aria-current="page">Lessons - Human Failure Runs</a>
+</div></nav>
+
+<header><div class="wrap">
+<h1>Lessons - Human Failure Runs</h1>
+<p class="tag">Same instrument, silicon and carbon.</p>
+<p class="sub">Four measured ways an AI model fails - each printed with the exact knob that causes it, held up next to the human cognitive failure it rhymes with. The comic is the hook; the sealed lesson file is the receipt.</p>
+</div></header>
+
+<section><div class="wrap">
+<div class="rules">
+<p><strong>The ground rules (why this is not vibes).</strong> Every number is a real, sealed run - or it is labeled as something else. Each lesson carries an epistemic status: <strong>SEALED</strong> (measured clean runs), <strong>MECHANISM</strong> (documented engine behavior), or <strong>PARABLE</strong> (a story calibrated to sealed numbers). The joke never inflates the number. The human science is cited as analogue, not claimed as our discovery. And every footer seal is the actual SHA3-256 of its lesson file in <a href="https://github.com/IT-Help-San-Diego/calibration-scope/tree/main/lessons" rel="noopener">the public repo ↗</a> - recompute it yourself; if it does not match, trust the file less, not more. That is the point.</p>
+</div>
+<article class="lesson">
+<h2>01 · THE CALCULATOR AISLE</h2>
+<p class="tagline">the product that warns you it is wrong</p>
+<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1510" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+  <defs>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
+    </filter>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="b"></feGaussianBlur>
+      <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+    <linearGradient id="aiwall" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a1140"></stop>
+      <stop offset="1" stop-color="#0b2b3a"></stop>
+    </linearGradient>
+    
+  </defs>
+
+  
+  <rect width="1600" height="1510" fill="#0d1017"></rect>
+
+  
+  <rect x="26" y="20" width="14" height="74" fill="#22d3ee"></rect>
+  <text x="56" y="66" font-weight="700" class="head" font-size="52" fill="#f2f4fa">THE CALCULATOR AISLE</text>
+  <text x="58" y="96" font-size="21" fill="#8b93a7">A CALIBRATION SCOPE short · field notes from 2026</text>
+
+  
+  <g filter="url(#soft)">
+    <rect fill="#12151f" class="panel" x="26" y="112" width="1148" height="470" rx="14"></rect>
+  </g>
+  <clipPath id="clipA"><rect x="26" y="112" width="1148" height="470" rx="14"></rect></clipPath>
+  <g clip-path="url(#clipA)">
+    
+    <rect x="26" y="112" width="1148" height="470" fill="#12151f"></rect>
+    <polygon points="26,500 1174,500 1174,582 26,582" fill="#1c212e"></polygon>
+    <line x1="26" y1="500" x2="1174" y2="500" stroke="#2b3143" stroke-width="3"></line>
+    
+    <rect x="470" y="128" width="260" height="46" rx="8" fill="#12263f" stroke="#22d3ee" stroke-width="2.5"></rect>
+    <text x="600" y="159" text-anchor="middle" font-weight="700" class="head" font-size="26" fill="#dbeafe">CALCULATORS</text>
+
+    
+    <rect x="58" y="196" width="360" height="286" rx="10" fill="#10221b" stroke="#34d399" stroke-width="2.5"></rect>
+    <rect x="58" y="196" width="360" height="34" rx="10" fill="#123a2c"></rect>
+    <text x="238" y="220" text-anchor="middle" font-weight="700" class="head" font-size="19" fill="#6ee7b7">VALIDATED · ABACUS</text>
+    
+    <line x1="72" y1="392" x2="404" y2="392" stroke="#2f5c4a" stroke-width="6"></line>
+    
+    <g stroke="#8b5a2b" stroke-width="6" fill="none">
+      <rect x="96" y="252" width="248" height="120" rx="8" fill="#5c3a1e"></rect>
+    </g>
+    <g stroke="#3a2412" stroke-width="4">
+      <line x1="108" y1="278" x2="332" y2="278"></line>
+      <line x1="108" y1="312" x2="332" y2="312"></line>
+      <line x1="108" y1="346" x2="332" y2="346"></line>
+    </g>
+    <g fill="#e8b04b" stroke="#7a5416" stroke-width="2">
+      <circle cx="130" cy="278" r="9"></circle><circle cx="152" cy="278" r="9"></circle><circle cx="300" cy="278" r="9"></circle>
+      <circle cx="140" cy="312" r="9"></circle><circle cx="290" cy="312" r="9"></circle><circle cx="312" cy="312" r="9"></circle>
+      <circle cx="122" cy="346" r="9"></circle><circle cx="200" cy="346" r="9"></circle><circle cx="278" cy="346" r="9"></circle>
+    </g>
+    
+    <rect x="150" y="404" width="150" height="70" rx="8" fill="#20303a" stroke="#4b6b74" stroke-width="2.5"></rect>
+    <rect x="164" y="414" width="122" height="22" rx="3" fill="#9fe8b5"></rect>
+    <text x="278" y="431" text-anchor="end" font-size="16" fill="#0d1a12" font-weight="bold">= 4</text>
+    <g fill="#33505b"><rect x="164" y="444" width="18" height="12" rx="2"></rect><rect x="190" y="444" width="18" height="12" rx="2"></rect><rect x="216" y="444" width="18" height="12" rx="2"></rect><rect x="242" y="444" width="18" height="12" rx="2"></rect><rect x="268" y="444" width="18" height="12" rx="2"></rect></g>
+    <text x="238" y="470" text-anchor="middle" font-size="15" fill="#6ee7b7">deterministic · boring · right</text>
+
+    
+    <rect x="770" y="196" width="360" height="286" rx="10" fill="url(#aiwall)" stroke="#f472b6" stroke-width="2.5"></rect>
+    <rect x="770" y="196" width="360" height="34" rx="10" fill="#3a0f4d"></rect>
+    <text x="950" y="220" text-anchor="middle" font-weight="700" class="head" font-size="19" fill="#f0abfc" filter="url(#glow)">✦ THE X-3000 ✦</text>
+    
+    <g filter="url(#glow)">
+      <rect x="838" y="252" width="224" height="196" rx="12" fill="#141a33" stroke="#22d3ee" stroke-width="3"></rect>
+    </g>
+    <text x="950" y="316" text-anchor="middle" font-weight="700" class="head" font-size="46" fill="#22d3ee">X3000</text>
+    <text x="950" y="344" text-anchor="middle" font-size="18" fill="#f0abfc" font-weight="bold">A.I. CALCULATOR</text>
+    
+    <g transform="translate(1052,268)">
+      <rect x="-30" y="-30" width="60" height="60" rx="6" fill="#fbbf24" transform="rotate(20)"></rect>
+      <rect x="-30" y="-30" width="60" height="60" rx="6" fill="#fbbf24" transform="rotate(65)"></rect>
+      <text x="0" y="-2" text-anchor="middle" font-size="10" fill="#7a2e00" font-weight="700" class="head">AS SEEN</text>
+      <text x="0" y="12" text-anchor="middle" font-size="11" fill="#7a2e00" font-weight="700" class="head">ON TV</text>
+    </g>
+    <text x="950" y="382" text-anchor="middle" font-size="9.5" letter-spacing="-0.2" fill="#a5f3fc">✦ NEURAL ✦ SMART ✦ NOW WITH VIBES</text>
+    
+    <rect x="822" y="396" width="256" height="52" rx="8" fill="#3a0e12" stroke="#f87171" stroke-width="2"></rect>
+    <path d="M846 407 L835 429 L857 429 z" fill="#f87171"></path>
+    <text x="846" y="426" text-anchor="middle" font-size="14" fill="#3a0e12" font-weight="700">!</text>
+    <text x="874" y="419" font-size="12.5" fill="#fecaca">AI can make mistakes.</text>
+    <text x="874" y="438" font-size="12.5" fill="#fecaca">Double-check the math.</text>
+    <text x="950" y="470" text-anchor="middle" font-size="15" fill="#f0abfc">$499.⁹⁹ · batteries and certainty not included</text>
+
+    
+    <g transform="translate(600,300)">
+      
+      <rect x="-52" y="118" width="104" height="120" rx="20" fill="#2b3a63"></rect>
+      <rect x="-40" y="188" width="34" height="60" rx="8" fill="#232838"></rect>
+      <rect x="6" y="188" width="34" height="60" rx="8" fill="#232838"></rect>
+      
+      <rect x="-52" y="118" width="104" height="86" rx="18" fill="#3b7d86"></rect>
+      <polygon points="-14,118 0,146 14,118" fill="#2c5f66"></polygon>
+      <line x1="0" y1="122" x2="0" y2="200" stroke="#2c5f66" stroke-width="3"></line>
+      
+      <rect x="14" y="150" width="30" height="34" rx="3" fill="#eef2f7"></rect>
+      <rect x="20" y="145" width="4" height="16" fill="#ef4444"></rect><rect x="28" y="145" width="4" height="16" fill="#3b82f6"></rect>
+      
+      <rect x="-70" y="150" width="26" height="60" rx="12" fill="#3b7d86" transform="rotate(14 -57 180)"></rect>
+      <rect x="44" y="150" width="26" height="60" rx="12" fill="#3b7d86" transform="rotate(-14 57 180)"></rect>
+      
+      <g transform="translate(0,196)">
+        <rect x="-46" y="-14" width="92" height="60" rx="4" fill="#f5f1e6" stroke="#111" stroke-width="2" transform="rotate(-4)"></rect>
+        <text x="-30" y="6" font-size="15" fill="#14161f" font-weight="bold" transform="rotate(-4)">∫ x² dx</text>
+        <text x="-30" y="28" font-size="15" fill="#c026d3" transform="rotate(-4)">= ??</text>
+      </g>
+      
+      <rect x="-12" y="104" width="24" height="20" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="66" rx="46" ry="50" fill="#e8b98f"></ellipse>
+      
+      <path d="M-46 58 q-4 -56 46 -56 q50 0 46 56 q-20 -26 -46 -26 q-26 0 -46 26 z" fill="#2f2620"></path>
+      
+      <g stroke="#d7dce6" stroke-width="4" fill="#0f1420" fill-opacity="0.25">
+        <rect x="-38" y="52" width="30" height="26" rx="8"></rect>
+        <rect x="8" y="52" width="30" height="26" rx="8"></rect>
+        <line x1="-8" y1="62" x2="8" y2="62"></line>
+      </g>
+      <circle cx="-23" cy="66" r="4" fill="#14161f"></circle>
+      <circle cx="23" cy="66" r="4" fill="#14161f"></circle>
+      <path d="M-12 92 q12 8 24 0" stroke="#7a4a2a" stroke-width="3" fill="none"></path>
+    </g>
+
+    
+    <g filter="url(#soft)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="430" y="184" width="340" height="104" rx="18"></rect>
+      <path d="M586 286 L600 318 L614 286 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="600" y="222" text-anchor="middle" fill="#14161f" font-size="22" class="dlg">One math problem.</text>
+    <text x="600" y="250" text-anchor="middle" fill="#14161f" font-size="22" class="dlg">One calculator. How hard</text>
+    <text x="600" y="278" text-anchor="middle" fill="#14161f" font-size="22" class="dlg">could this possibly be?</text>
+  </g>
+
+  
+  <g filter="url(#soft)"><rect fill="#12151f" class="panel" x="26" y="604" width="368" height="572" rx="14"></rect></g>
+  <clipPath id="clipB"><rect x="26" y="604" width="368" height="572" rx="14"></rect></clipPath>
+  <g clip-path="url(#clipB)">
+    <rect x="26" y="604" width="368" height="572" fill="url(#aiwall)"></rect>
+    <text x="210" y="648" text-anchor="middle" font-weight="700" class="head" font-size="20" fill="#f0abfc">so you read the fine print…</text>
+    <g filter="url(#glow)"><rect x="66" y="676" width="288" height="360" rx="16" fill="#141a33" stroke="#22d3ee" stroke-width="3"></rect></g>
+    <text x="210" y="770" text-anchor="middle" font-weight="700" class="head" font-size="66" fill="#22d3ee">X3000</text>
+    <text x="210" y="806" text-anchor="middle" font-size="22" fill="#f0abfc" font-weight="bold">A.I. CALCULATOR™</text>
+    <text x="210" y="844" text-anchor="middle" font-size="17" fill="#a5f3fc">✦ 9 out of 10 numbers agree ✦</text>
+    
+    <rect x="88" y="858" width="244" height="122" rx="12" fill="#3a0e12" stroke="#f87171" stroke-width="3"></rect>
+    <path d="M210 866 L192 896 L228 896 z" fill="#f87171"></path>
+    <text x="210" y="891" text-anchor="middle" font-size="22" fill="#3a0e12" font-weight="700">!</text>
+    <text x="210" y="924" text-anchor="middle" font-size="16" fill="#fecaca" font-weight="700">AI can make mistakes.</text>
+    <text x="210" y="946" text-anchor="middle" font-size="16" fill="#fecaca" font-weight="700">Please double-check</text>
+    <text x="210" y="968" text-anchor="middle" font-size="16" fill="#fecaca" font-weight="700">your math.</text>
+    <text x="210" y="1002" text-anchor="middle" font-size="16" fill="#f0abfc">…on the machine whose</text>
+    <text x="210" y="1022" text-anchor="middle" font-size="16" fill="#f0abfc">one job is the math.</text>
+  </g>
+
+  
+  <g filter="url(#soft)"><rect fill="#12151f" class="panel" x="416" y="604" width="368" height="572" rx="14"></rect></g>
+  <clipPath id="clipC"><rect x="416" y="604" width="368" height="572" rx="14"></rect></clipPath>
+  <g clip-path="url(#clipC)">
+    <rect x="416" y="604" width="368" height="572" fill="#161a26"></rect>
+    
+    <g filter="url(#soft)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="442" y="636" width="316" height="150" rx="18"></rect>
+      <path d="M600 782 l-16 40 l38 -22 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="600" y="678" text-anchor="middle" fill="#14161f" font-size="27" font-weight="700" class="dlgb">Let me get</text>
+    <text x="600" y="706" text-anchor="middle" fill="#14161f" font-size="27" font-weight="700" class="dlgb">this straight —</text>
+    <text x="600" y="742" text-anchor="middle" fill="#14161f" font-size="22" class="dlg">it warns me it&#39;s wrong…</text>
+    <text x="600" y="772" text-anchor="middle" fill="#14161f" font-size="22" class="dlg">and it&#39;s the pricey one?</text>
+    
+    <g transform="translate(600,900)">
+      <rect x="-70" y="120" width="140" height="120" rx="24" fill="#3b7d86"></rect>
+      <polygon points="-16,120 0,150 16,120" fill="#2c5f66"></polygon>
+      <rect x="18" y="150" width="30" height="34" rx="3" fill="#eef2f7"></rect>
+      <rect x="24" y="146" width="4" height="16" fill="#ef4444"></rect><rect x="32" y="146" width="4" height="16" fill="#3b82f6"></rect>
+      <rect x="-14" y="96" width="28" height="24" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="52" rx="54" ry="58" fill="#e8b98f"></ellipse>
+      <path d="M-54 44 q-4 -64 54 -64 q58 0 54 64 q-24 -30 -54 -30 q-30 0 -54 30 z" fill="#2f2620"></path>
+      <g stroke="#d7dce6" stroke-width="5" fill="#0f1420" fill-opacity="0.25">
+        <rect x="-46" y="38" width="36" height="30" rx="9"></rect>
+        <rect x="10" y="38" width="36" height="30" rx="9"></rect>
+        <line x1="-10" y1="50" x2="10" y2="50"></line>
+      </g>
+      
+      <line x1="-34" y1="54" x2="-20" y2="54" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="20" y1="54" x2="34" y2="54" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="-16" y1="86" x2="16" y2="86" stroke="#7a4a2a" stroke-width="4" stroke-linecap="round"></line>
+      
+      <path d="M44 34 q10 16 0 22 q-10 -6 0 -22 z" fill="#7dd3fc"></path>
+    </g>
+  </g>
+
+  
+  <g filter="url(#soft)"><rect fill="#12151f" class="panel" x="806" y="604" width="368" height="572" rx="14"></rect></g>
+  <clipPath id="clipD"><rect x="806" y="604" width="368" height="572" rx="14"></rect></clipPath>
+  <g clip-path="url(#clipD)">
+    <rect x="806" y="604" width="368" height="572" fill="#10221b"></rect>
+    <text x="990" y="656" text-anchor="middle" font-weight="700" class="head" font-size="22" fill="#6ee7b7">meanwhile, on the</text>
+    <text x="990" y="684" text-anchor="middle" font-weight="700" class="head" font-size="22" fill="#6ee7b7">shelf next door…</text>
+    
+    <g transform="translate(990,860)">
+      <rect x="-140" y="-70" width="280" height="150" rx="12" fill="#5c3a1e" stroke="#8b5a2b" stroke-width="6"></rect>
+      <g stroke="#3a2412" stroke-width="5">
+        <line x1="-120" y1="-34" x2="120" y2="-34"></line>
+        <line x1="-120" y1="6" x2="120" y2="6"></line>
+        <line x1="-120" y1="46" x2="120" y2="46"></line>
+      </g>
+      <g fill="#e8b04b" stroke="#7a5416" stroke-width="2">
+        <circle cx="-96" cy="-34" r="12"></circle><circle cx="-64" cy="-34" r="12"></circle><circle cx="92" cy="-34" r="12"></circle>
+        <circle cx="-80" cy="6" r="12"></circle><circle cx="78" cy="6" r="12"></circle><circle cx="110" cy="6" r="12"></circle>
+        <circle cx="-104" cy="46" r="12"></circle><circle cx="10" cy="46" r="12"></circle><circle cx="96" cy="46" r="12"></circle>
+      </g>
+      
+      <g transform="translate(0,-108)">
+        <path d="M-22 6 q0 -22 22 -22 q22 0 22 22 z" fill="none" stroke="#6ee7b7" stroke-width="3"></path>
+        <line x1="-12" y1="-6" x2="-4" y2="-6" stroke="#6ee7b7" stroke-width="4" stroke-linecap="round"></line>
+        <line x1="4" y1="-6" x2="12" y2="-6" stroke="#6ee7b7" stroke-width="4" stroke-linecap="round"></line>
+        <path d="M-10 4 q10 8 20 0" stroke="#6ee7b7" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      </g>
+    </g>
+    
+    <rect x="836" y="984" width="308" height="150" rx="14" fill="#0d1017" stroke="#34d399" stroke-width="2.5"></rect>
+    <text x="990" y="1024" text-anchor="middle" font-weight="700" class="head" font-size="22" fill="#e8f7ef">2026:</text>
+    <text x="990" y="1058" text-anchor="middle" font-size="19" fill="#cbead9">buying the calculator that</text>
+    <text x="990" y="1084" text-anchor="middle" font-size="19" fill="#cbead9">warns you it can&#39;t calculate.</text>
+    <text x="990" y="1118" text-anchor="middle" font-size="17" fill="#6ee7b7" font-style="italic">The abacus remains undefeated.</text>
+  </g>
+
+  
+  <g filter="url(#soft)"><rect fill="#12151f" class="panel" x="26" y="1192" width="1148" height="250" rx="14"></rect></g>
+  <clipPath id="clipE"><rect x="26" y="1192" width="1148" height="250" rx="14"></rect></clipPath>
+  <g clip-path="url(#clipE)">
+    <rect x="26" y="1192" width="1148" height="250" fill="#0f1320"></rect>
+    <rect x="44" y="1208" width="238" height="30" rx="15" fill="#123a2c"></rect>
+    <text x="58" y="1230" font-size="15" font-weight="700" class="chip" fill="#6ee7b7">⑤ ONE LAST THING</text>
+    <line x1="600" y1="1256" x2="600" y2="1420" stroke="#2b3143" stroke-width="2" stroke-dasharray="4 6"></line>
+
+    <g transform="translate(250,1384)">
+      <g stroke="#2f5c4a" stroke-width="5" stroke-linecap="round">
+        <line x1="-150" y1="-40" x2="-108" y2="-40"></line>
+        <line x1="-162" y1="-8" x2="-112" y2="-8"></line>
+        <line x1="-150" y1="24" x2="-108" y2="24"></line>
+      </g>
+      <rect x="-30" y="34" width="20" height="40" rx="6" fill="#232838" transform="rotate(14 -20 34)"></rect>
+      <rect x="8" y="34" width="20" height="40" rx="6" fill="#232838" transform="rotate(-8 18 34)"></rect>
+      <rect x="-42" y="-32" width="84" height="70" rx="18" fill="#3b7d86"></rect>
+      <g transform="translate(30,2) rotate(-7)">
+        <rect x="0" y="0" width="84" height="50" rx="6" fill="#5c3a1e" stroke="#8b5a2b" stroke-width="4"></rect>
+        <line x1="10" y1="16" x2="74" y2="16" stroke="#3a2412" stroke-width="3"></line>
+        <line x1="10" y1="34" x2="74" y2="34" stroke="#3a2412" stroke-width="3"></line>
+        <g fill="#e8b04b" stroke="#7a5416" stroke-width="1.5">
+          <circle cx="24" cy="16" r="6"></circle><circle cx="42" cy="16" r="6"></circle><circle cx="64" cy="16" r="6"></circle>
+          <circle cx="20" cy="34" r="6"></circle><circle cx="52" cy="34" r="6"></circle><circle cx="68" cy="34" r="6"></circle>
+        </g>
+      </g>
+      <rect x="24" y="-6" width="24" height="42" rx="12" fill="#3b7d86"></rect>
+      <rect x="-12" y="-46" width="24" height="20" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-78" rx="38" ry="42" fill="#e8b98f"></ellipse>
+      <path d="M-38 -84 q-4 -48 38 -48 q42 0 38 48 q-18 -22 -38 -22 q-20 0 -38 22 z" fill="#2f2620"></path>
+      <g stroke="#d7dce6" stroke-width="4" fill="#0f1420" fill-opacity="0.25">
+        <rect x="-32" y="-84" width="26" height="22" rx="7"></rect>
+        <rect x="6" y="-84" width="26" height="22" rx="7"></rect>
+        <line x1="-6" y1="-74" x2="6" y2="-74"></line>
+      </g>
+      <circle cx="-19" cy="-73" r="3.5" fill="#14161f"></circle>
+      <circle cx="19" cy="-73" r="3.5" fill="#14161f"></circle>
+      <path d="M-13 -50 q13 13 26 0" stroke="#7a4a2a" stroke-width="3" fill="none" stroke-linecap="round"></path>
+    </g>
+    <g filter="url(#soft)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="330" y="1266" width="236" height="66" rx="16"></rect>
+      <path d="M330 1300 l-26 10 l20 18 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="448" y="1294" text-anchor="middle" fill="#14161f" font-size="19" class="dlg">Worth every penny</text>
+    <text x="448" y="1318" text-anchor="middle" fill="#14161f" font-size="19" class="dlg">I didn&#39;t spend.</text>
+
+    <text x="888" y="1240" text-anchor="middle" font-weight="700" class="head" font-size="16" fill="#f0abfc">…back on the shelf, the X-3000 boots up:</text>
+    <g filter="url(#glow)"><rect x="740" y="1262" width="296" height="118" rx="12" fill="#141a33" stroke="#22d3ee" stroke-width="3"></rect></g>
+    <text x="888" y="1312" text-anchor="middle" font-weight="700" class="head" font-size="27" fill="#22d3ee">CONFIDENCE 99%</text>
+    <text x="888" y="1348" text-anchor="middle" font-size="17" fill="#f0abfc">* that this answer is wrong.</text>
+    <path d="M1022 1258 q10 15 0 21 q-10 -6 0 -21 z" fill="#7dd3fc"></path>
+    <text x="888" y="1414" text-anchor="middle" font-size="16" fill="#8b93a7" font-style="italic">It isn&#39;t unsure. It&#39;s certain — about the wrong thing.</text>
+  </g>
+
+  
+  <g font-family="&#39;SF Mono&#39;,&#39;Menlo&#39;,&#39;Consolas&#39;,monospace">
+    <rect x="1200" y="112" width="384" height="1330" rx="16" fill="#0a0d15" stroke="#22d3ee" stroke-opacity="0.35" stroke-width="2"></rect>
+    <rect x="1214" y="126" width="356" height="40" rx="10" fill="#141a33"></rect>
+    <circle cx="1234" cy="146" r="5" fill="#f87171"></circle>
+    <circle cx="1252" cy="146" r="5" fill="#fbbf24"></circle>
+    <circle cx="1270" cy="146" r="5" fill="#34d399"></circle>
+    <text x="1556" y="151" text-anchor="end" font-size="12.5" fill="#8b93a7">x3000.load()</text>
+
+    <text x="1224" y="203" font-size="18" font-weight="700" fill="#22d3ee">⚙ INFERENCE CONFIG</text>
+    <text x="1224" y="227" font-size="12.5" fill="#8b93a7" font-style="italic">the knobs that ship “certainty not included”</text>
+
+    <rect x="1218" y="244" width="348" height="88" rx="8" fill="#10151f" stroke="#232a3b" stroke-width="1.5"></rect>
+    <text x="1234" y="270" font-size="13" fill="#8b93a7">model</text><text x="1300" y="270" font-size="13" fill="#7dd3fc">x3000-instruct.Q4_K_M.gguf</text>
+    <text x="1234" y="294" font-size="13" fill="#8b93a7">arch</text><text x="1300" y="294" font-size="13" fill="#e6e9f2">llama · 0.9B · quant Q4</text>
+    <text x="1234" y="318" font-size="13" fill="#8b93a7">n_ctx</text><text x="1300" y="318" font-size="13" fill="#e6e9f2">4096</text>
+
+    <text x="1224" y="372" font-size="14" font-weight="700" fill="#f0abfc">▸ SAMPLING</text>
+    <text x="1224" y="402" font-size="13" fill="#e6e9f2">temperature</text><rect x="1380" y="391" width="110" height="9" rx="4" fill="#232a3b"></rect><rect x="1380" y="391" width="85" height="9" rx="4" fill="#f87171"></rect><text x="1556" y="402" text-anchor="end" font-size="13" fill="#f87171">1.40</text>
+    <text x="1224" y="436" font-size="13" fill="#e6e9f2">top_p</text><rect x="1380" y="425" width="110" height="9" rx="4" fill="#232a3b"></rect><rect x="1380" y="425" width="108" height="9" rx="4" fill="#7dd3fc"></rect><text x="1556" y="436" text-anchor="end" font-size="13" fill="#7dd3fc">0.98</text>
+    <text x="1224" y="470" font-size="13" fill="#e6e9f2">top_k</text><rect x="1380" y="459" width="110" height="9" rx="4" fill="#232a3b"></rect><rect x="1380" y="459" width="44" height="9" rx="4" fill="#7dd3fc"></rect><text x="1556" y="470" text-anchor="end" font-size="13" fill="#7dd3fc">40</text>
+    <text x="1224" y="504" font-size="13" fill="#e6e9f2">min_p</text><rect x="1380" y="493" width="110" height="9" rx="4" fill="#232a3b"></rect><rect x="1380" y="493" width="7" height="9" rx="4" fill="#7dd3fc"></rect><text x="1556" y="504" text-anchor="end" font-size="13" fill="#7dd3fc">0.02</text>
+    <text x="1224" y="538" font-size="13" fill="#e6e9f2">repeat_penalty</text><text x="1556" y="538" text-anchor="end" font-size="13" fill="#e6e9f2">1.10</text>
+    <text x="1224" y="572" font-size="13" fill="#e6e9f2">seed</text><text x="1556" y="572" text-anchor="end" font-size="13" fill="#8b93a7">-1 (random)</text>
+
+    <rect x="1218" y="590" width="348" height="74" rx="8" fill="#170f14" stroke="#3a1620" stroke-width="1.5"></rect>
+    <text x="1234" y="614" font-size="12.5" fill="#f0abfc">system_prompt:</text>
+    <text x="1234" y="635" font-size="12.5" fill="#e6e9f2" font-style="italic">“You are a confident math genius.</text>
+    <text x="1234" y="654" font-size="12.5" fill="#e6e9f2" font-style="italic">  Never say you are unsure.”</text>
+
+    <text x="1224" y="704" font-size="14" font-weight="700" fill="#f0abfc">▸ EPISTEMIC LOG</text>
+    <text x="1224" y="736" font-size="13" fill="#e6e9f2" xml:space="preserve">P(2+2 = 4)   = <tspan fill="#f87171">0.44</tspan>   <tspan fill="#4b5164"># sub-1B floor</tspan></text>
+    <text x="1224" y="766" font-size="13" fill="#c4b5fd" xml:space="preserve">y ~ Categorical(softmax(z / T))</text>
+    <text x="1224" y="796" font-size="13" fill="#c4b5fd" xml:space="preserve">T = 1.40  ⇒  entropy(y) ↑</text>
+    <text x="1224" y="826" font-size="13" fill="#e6e9f2" xml:space="preserve">∴ “4” is the <tspan fill="#7dd3fc">mode</tspan>, not the <tspan fill="#f87171">law</tspan></text>
+    <text x="1224" y="856" font-size="13" fill="#e6e9f2" xml:space="preserve">E[answer] = 4 ± <tspan fill="#f0abfc" font-style="italic">vibes</tspan></text>
+
+    <rect x="1218" y="880" width="348" height="92" rx="8" fill="#0e1a14" stroke="#34d399" stroke-width="1.5"></rect>
+    <text x="1234" y="906" font-size="13" font-weight="700" fill="#6ee7b7">✔ abacus.cfg — greedy</text>
+    <text x="1234" y="930" font-size="12.5" fill="#cbead9">temperature 0.00 · P(correct) = 1.000</text>
+    <text x="1234" y="956" font-size="12.5" fill="#6ee7b7" font-style="italic">deterministic. undefeated.</text>
+
+    <text x="1224" y="1014" font-size="14" font-weight="700" fill="#e6e9f2">CLAIMED  vs  MEASURED</text>
+    <text x="1224" y="1044" font-size="12" fill="#8b93a7">self-reported confidence</text>
+    <rect x="1224" y="1052" width="288" height="14" rx="7" fill="#232a3b"></rect>
+    <rect x="1224" y="1052" width="285" height="14" rx="7" fill="#22d3ee"></rect>
+    <text x="1556" y="1063" text-anchor="end" font-size="12" fill="#22d3ee">99%</text>
+    <text x="1224" y="1096" font-size="12" fill="#8b93a7">measured accuracy · benchmark</text>
+    <rect x="1224" y="1104" width="288" height="14" rx="7" fill="#232a3b"></rect>
+    <rect x="1224" y="1104" width="127" height="14" rx="7" fill="#f472b6"></rect>
+    <text x="1556" y="1115" text-anchor="end" font-size="12" fill="#f472b6">44%</text>
+    <text x="1224" y="1150" font-size="12.5" fill="#c4b5fd" font-style="italic">↑ the gap is the entire product.</text>
+
+    <line x1="1224" y1="1178" x2="1560" y2="1178" stroke="#232a3b" stroke-width="1.5"></line>
+    <text x="1224" y="1214" font-size="14" fill="#e6e9f2">Same silicon as the abacus.</text>
+    <text x="1224" y="1242" font-size="14" fill="#e6e9f2">One of them is <tspan fill="#f0abfc" font-weight="700">guessing</tspan> —</text>
+    <text x="1224" y="1270" font-size="14" fill="#e6e9f2">and it&#39;s the one with the</text>
+    <text x="1224" y="1298" font-size="14" fill="#e6e9f2">marketing budget.</text>
+    <text x="1224" y="1360" font-size="12" fill="#39405a">// certainty is a UI element, not a result</text>
+    <text x="1224" y="1410" font-size="12" fill="#2f3547">// eof — good luck out there</text>
+  </g>
+
+  
+  <g font-family="&#39;SF Mono&#39;,&#39;Menlo&#39;,&#39;Consolas&#39;,monospace">
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/01-calculator-aisle.md" target="_blank"><title>SHA3-256 8601a9163389f596e6e81e5027b7c978d39a2866d53accad72ea2a7a339d483c · click to open the sealed run · verify: openssl dgst -sha3-256</title><rect x="26" y="1458" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <polygon points="52,1466 63,1472 63,1484 52,1490 41,1484 41,1472" fill="none" stroke="#6ee7b7" stroke-width="2"></polygon>
+    <text x="80" y="1483" font-size="13" fill="#6ee7b7">SHA3-256  8601a916…339d483c</text>
+    <text x="470" y="1483" font-size="13" fill="#5b6274">· this joke is reproducible ·</text>
+    <text x="1560" y="1483" text-anchor="end" font-size="13" fill="#6ee7b7">calibration-scope ↗</text></a>
+  </g>
+</svg></div>
+<p class="blurb">Confidence and accuracy travel on separate channels, and small models decouple them hard. The sub-1B reasoning floor is real and sealed: 41-47%. The X-3000 is fiction; its numbers are not. Certainty is a UI element, not a result.</p>
+<p class="lmeta"><span class="status">PARABLE anchored to sealed numbers</span>
+<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/01-calculator-aisle.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal">SHA3-256 8601a916…339d483c · verify: <code>openssl dgst -sha3-256 lessons/01-calculator-aisle.md</code></p>
+</article>
+<article class="lesson">
+<h2>02 · TRUNCATE MIDDLE</h2>
+<p class="tagline">it kept your hello and your goodbye</p>
+<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+  <defs>
+    <filter id="soft2" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
+    </filter>
+    <pattern id="hatch" width="10" height="10" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#22283a"></rect>
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#39405a" stroke-width="4"></line>
+    </pattern>
+    <pattern id="hatch2" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="#232838"></rect>
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#39405a" stroke-width="5"></line>
+    </pattern>
+    
+  </defs>
+
+  <rect width="1600" height="1560" fill="#0d1017"></rect>
+
+  
+  <rect x="26" y="22" width="14" height="92" fill="#a78bfa"></rect>
+  <text x="56" y="46" font-size="18" fill="#a78bfa" font-weight="700" class="head" letter-spacing="1">CALIBRATION SCOPE · HUMAN FAILURE MODES · vol.1</text>
+  <text x="54" y="94" font-weight="700" class="head" font-size="52" fill="#f2f4fa">TRUNCATE MIDDLE</text>
+  <text x="56" y="126" font-size="21" fill="#8b93a7">what happens to your AI — happening to you.</text>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="26" y="150" width="1148" height="366" rx="14"></rect></g>
+  <clipPath id="c1"><rect x="26" y="150" width="1148" height="366" rx="14"></rect></clipPath>
+  <g clip-path="url(#c1)">
+    <rect x="26" y="150" width="1148" height="366" fill="#161a26"></rect>
+    <rect x="44" y="166" width="330" height="30" rx="15" fill="#3a0f4d"></rect>
+    <text x="58" y="188" font-size="15" font-weight="700" class="chip" fill="#f0abfc">① WHAT SHE ACTUALLY SAID</text>
+
+    
+    <g transform="translate(150,300)">
+      <rect x="-72" y="118" width="144" height="150" rx="26" fill="#fb7185"></rect>
+      <polygon points="-16,118 0,150 16,118" fill="#e11d48"></polygon>
+      
+      <rect x="60" y="10" width="26" height="120" rx="13" fill="#fb7185" transform="rotate(-26 73 70)"></rect>
+      <circle cx="112" cy="14" r="16" fill="#e8b98f"></circle>
+      <rect x="-14" y="94" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="52" rx="54" ry="58" fill="#e8b98f"></ellipse>
+      
+      <path d="M-54 46 q-6 -66 54 -66 q60 0 54 66 q-24 -32 -54 -32 q-30 0 -54 32 z" fill="#3a2b22"></path>
+      <path d="M46 20 q46 6 40 78 q-4 40 -34 44 q28 -40 6 -80 q-8 -30 -12 -42 z" fill="#3a2b22"></path>
+      <circle cx="-22" cy="52" r="5" fill="#14161f"></circle>
+      <circle cx="22" cy="52" r="5" fill="#14161f"></circle>
+      <path d="M-30 34 q8 -6 16 0" stroke="#3a2b22" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M14 34 q8 -6 16 0" stroke="#3a2b22" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M-14 82 q14 12 28 0" stroke="#b45354" stroke-width="4" fill="none" stroke-linecap="round"></path>
+    </g>
+
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="300" y="176" width="850" height="322" rx="20"></rect>
+      <path d="M300 300 l-40 22 l40 24 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    
+    <text x="330" y="216" font-size="16" fill="#0e766e" font-weight="700" class="head">‹ start ›</text>
+    <text x="330" y="250" fill="#14161f" font-size="22" class="dlg">“Doc — I&#39;ve had this headache for days now.”</text>
+    
+    <rect x="322" y="266" width="806" height="150" rx="12" fill="#fff3d6" stroke="#f59e0b" stroke-width="3"></rect>
+    <text x="342" y="294" font-size="16" fill="#b45309" font-weight="700" class="head">‹ middle — the part that actually matters ›</text>
+    <text x="342" y="332" font-size="27" fill="#7a2e0a">Allergic to ibuprofen. Concussion three years back.</text>
+    <text x="342" y="372" font-size="27" fill="#7a2e0a">Mom had aneurysms. Four hours&#39; sleep since the layoffs.</text>
+    
+    <text x="330" y="452" font-size="16" fill="#0e766e" font-weight="700" class="head">‹ end ›</text>
+    <text x="330" y="486" fill="#14161f" font-size="22" class="dlg">“…so — what should I take?”</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="26" y="534" width="1148" height="312" rx="14"></rect></g>
+  <clipPath id="c2"><rect x="26" y="534" width="1148" height="312" rx="14"></rect></clipPath>
+  <g clip-path="url(#c2)">
+    <rect x="26" y="534" width="1148" height="312" fill="#12151f"></rect>
+    <rect x="44" y="550" width="410" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="572" font-size="15" font-weight="700" class="chip" fill="#fecaca">② WHAT THE DOCTOR ACTUALLY HEARD</text>
+
+    
+    <text x="470" y="572" font-size="15" fill="#8b93a7">context window:</text>
+    <rect x="600" y="556" width="360" height="20" rx="4" fill="#0d1017" stroke="#3b4363" stroke-width="2"></rect>
+    <rect x="602" y="558" width="70" height="16" rx="3" fill="#34d399"></rect>
+    <rect x="674" y="558" width="216" height="16" fill="url(#hatch2)"></rect>
+    <rect x="892" y="558" width="66" height="16" rx="3" fill="#34d399"></rect>
+    <text x="978" y="572" font-size="15" fill="#f87171" font-weight="700" class="head">OVERFLOW</text>
+
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="70" y="600" width="700" height="214" rx="20"></rect>
+      <path d="M770 690 l40 20 l-40 22 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="94" y="640" fill="#14161f" font-size="22" class="dlg">“Doc — I&#39;ve had this headache…”</text>
+    
+    <g>
+      <rect x="72" y="652" width="696" height="15" rx="2" fill="#aeb6c4"></rect>
+      <rect x="72" y="652" width="696" height="6" rx="2" fill="#6b7280"></rect>
+      <polygon points="72,667 768,667 768,673 72,677" fill="#cdd4de"></polygon>
+      <rect x="72" y="653" width="696" height="2" fill="#ff5470"></rect>
+    </g>
+    <g transform="rotate(4 420 706)">
+      <path d="M92 680 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l41 -8 l41 8 l0 62 l-656 0 z" fill="#dcdde4" stroke="#9aa3b2" stroke-width="1.5"></path>
+      <text x="112" y="708" font-size="17" fill="#8a91a1">Allergic to ibuprofen · concussion · aneurysms · no sleep</text>
+      <line x1="110" y1="702" x2="700" y2="702" stroke="#e11d48" stroke-width="2.5"></line>
+      <text x="112" y="732" font-size="14" fill="#e11d48" font-weight="700">✂ 2,847 words — silently dropped on the floor</text>
+    </g>
+    <g stroke="#6b7280" stroke-width="3" stroke-linecap="round" opacity="0.65">
+      <line x1="784" y1="724" x2="812" y2="740"></line>
+      <line x1="792" y1="702" x2="822" y2="710"></line>
+    </g>
+    <text x="94" y="778" fill="#14161f" font-size="22" class="dlg">“…what should I take?”</text>
+
+    
+    <g transform="translate(1052,752)">
+      <rect x="-64" y="40" width="128" height="120" rx="22" fill="#eef2f7"></rect>
+      <polygon points="-14,40 0,66 14,40" fill="#cfd8e3"></polygon>
+      <line x1="0" y1="46" x2="0" y2="150" stroke="#cfd8e3" stroke-width="3"></line>
+      
+      <path d="M-30 46 q-16 40 6 66 q22 22 44 -2" fill="none" stroke="#22d3ee" stroke-width="5"></path>
+      <circle cx="22" cy="112" r="8" fill="#22d3ee"></circle>
+      <rect x="-12" y="18" width="24" height="24" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-18" rx="48" ry="52" fill="#e8b98f"></ellipse>
+      <path d="M-48 -24 q-4 -58 48 -58 q52 0 48 58 q-22 -28 -48 -28 q-26 0 -48 28 z" fill="#4a3b30"></path>
+      <line x1="-30" y1="-20" x2="-16" y2="-20" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="16" y1="-20" x2="30" y2="-20" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <path d="M-12 8 q12 10 24 0" stroke="#7a4a2a" stroke-width="4" fill="none" stroke-linecap="round"></path>
+    </g>
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="806" y="590" width="334" height="86" rx="16"></rect>
+      <path d="M1030 674 l-6 30 l34 -16 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="820" y="628" font-size="24" fill="#14161f">Headache in, ibuprofen</text>
+    <text x="820" y="658" font-size="24" fill="#14161f">out. Nailed it.</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="26" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="c3"><rect x="26" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#c3)">
+    <rect x="26" y="864" width="563" height="326" fill="#161a26"></rect>
+    <rect x="44" y="880" width="46" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="902" font-size="15" font-weight="700" class="chip" fill="#fecaca">③</text>
+    
+    <g transform="translate(150,1030)">
+      <rect x="-64" y="40" width="128" height="130" rx="22" fill="#eef2f7"></rect>
+      <path d="M-30 46 q-16 40 6 66 q22 22 44 -2" fill="none" stroke="#22d3ee" stroke-width="5"></path>
+      <circle cx="22" cy="112" r="8" fill="#22d3ee"></circle>
+      
+      <rect x="40" y="70" width="120" height="26" rx="13" fill="#eef2f7"></rect>
+      <rect x="-12" y="18" width="24" height="24" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-18" rx="48" ry="52" fill="#e8b98f"></ellipse>
+      <path d="M-48 -24 q-4 -58 48 -58 q52 0 48 58 q-22 -28 -48 -28 q-26 0 -48 28 z" fill="#4a3b30"></path>
+      <path d="M-30 -24 q8 -6 16 0" stroke="#4a3b30" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <path d="M14 -24 q8 -6 16 0" stroke="#4a3b30" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      <line x1="-30" y1="-16" x2="-16" y2="-16" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="16" y1="-16" x2="30" y2="-16" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <path d="M-14 6 q14 12 28 0" stroke="#7a4a2a" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      
+      <g transform="translate(176,84)">
+        <rect x="-24" y="-8" width="48" height="14" rx="3" fill="#b45309"></rect>
+        <rect x="-20" y="4" width="40" height="66" rx="6" fill="#d97706"></rect>
+        <rect x="-16" y="18" width="32" height="42" rx="3" fill="#fdf6e3"></rect>
+        <text x="0" y="34" text-anchor="middle" font-size="9" fill="#7a2e0a" font-weight="700" class="head">IBU-</text>
+        <text x="0" y="46" text-anchor="middle" font-size="9" fill="#7a2e0a" font-weight="700" class="head">PROFEN</text>
+      </g>
+    </g>
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="300" y="900" width="270" height="120" rx="16"></rect>
+      <path d="M312 1010 l-14 34 l34 -18 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="435" y="944" text-anchor="middle" font-size="25" fill="#14161f">Easy fix! Just</text>
+    <text x="435" y="976" text-anchor="middle" font-size="25" fill="#14161f">take two of</text>
+    <text x="435" y="1008" text-anchor="middle" font-size="25" fill="#14161f">these!</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect fill="#12151f" class="panel" x="611" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="c4"><rect x="611" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#c4)">
+    <rect x="611" y="864" width="563" height="326" fill="#161a26"></rect>
+    <rect x="629" y="880" width="46" height="30" rx="15" fill="#3a0f4d"></rect>
+    <text x="643" y="902" font-size="15" font-weight="700" class="chip" fill="#f0abfc">④</text>
+    
+    <g transform="translate(1018,1052)">
+      <rect x="-70" y="30" width="140" height="120" rx="24" fill="#fb7185"></rect>
+      <polygon points="-14,30 0,58 14,30" fill="#e11d48"></polygon>
+      
+      <rect x="10" y="24" width="80" height="22" rx="11" fill="#fb7185"></rect>
+      <g transform="translate(96,30)">
+        <rect x="-20" y="-8" width="40" height="12" rx="3" fill="#b45309"></rect>
+        <rect x="-16" y="2" width="32" height="56" rx="6" fill="#d97706"></rect>
+        <rect x="-12" y="14" width="24" height="34" rx="3" fill="#fdf6e3"></rect>
+        <text x="0" y="34" text-anchor="middle" font-size="9" fill="#7a2e0a" font-weight="700" class="head">IBU</text>
+      </g>
+      <rect x="-14" y="6" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-36" rx="52" ry="56" fill="#e8b98f"></ellipse>
+      <path d="M-52 -44 q-6 -64 52 -64 q58 0 52 64 q-24 -32 -52 -32 q-30 0 -52 32 z" fill="#3a2b22"></path>
+      <path d="M44 -68 q44 6 38 76 q-4 38 -32 42 q26 -38 6 -78 q-8 -28 -12 -40 z" fill="#3a2b22"></path>
+      
+      <circle cx="-22" cy="-38" r="8" fill="#fff"></circle><circle cx="-22" cy="-38" r="4" fill="#14161f"></circle>
+      <circle cx="22" cy="-38" r="8" fill="#fff"></circle><circle cx="22" cy="-38" r="4" fill="#14161f"></circle>
+      <line x1="-14" y1="-6" x2="14" y2="-6" stroke="#b45354" stroke-width="4" stroke-linecap="round"></line>
+      <path d="M52 -54 q10 16 0 22 q-10 -6 0 -22 z" fill="#7dd3fc"></path>
+    </g>
+    
+    <g filter="url(#soft2)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="620" y="916" width="338" height="120" rx="18"></rect>
+      <path d="M956 996 l34 16 l-30 12 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="789" y="956" text-anchor="middle" font-size="25" fill="#14161f">That was the one</text>
+    <text x="789" y="988" text-anchor="middle" font-size="25" fill="#14161f">thing in my middle.</text>
+    <text x="789" y="1022" text-anchor="middle" font-size="19" fill="#b91c1c">( …I&#39;m allergic to that. )</text>
+  </g>
+
+  
+  <g filter="url(#soft2)"><rect x="26" y="1208" width="1148" height="270" rx="14" fill="#0d1017" stroke="#a78bfa" stroke-width="3"></rect></g>
+  <clipPath id="c5"><rect x="26" y="1208" width="1148" height="270" rx="14"></rect></clipPath>
+  <g clip-path="url(#c5)">
+    <rect x="26" y="1208" width="1148" height="270" fill="#12101c"></rect>
+    
+    <rect x="52" y="1236" width="150" height="72" rx="8" fill="#242a3b" stroke="#6b7280" stroke-width="2.5" stroke-dasharray="9 7"></rect>
+    <text x="127" y="1268" text-anchor="middle" font-size="13" fill="#9aa3b2" font-weight="700" class="head">⟨ your</text>
+    <text x="127" y="1288" text-anchor="middle" font-size="13" fill="#9aa3b2" font-weight="700" class="head">middle ⟩</text>
+
+    <text x="234" y="1258" font-size="25" fill="#e6e2f2">That grey box is a context window overflowing. Your AI does it on</text>
+    <text x="234" y="1292" font-size="25" fill="#e6e2f2">every long chat: it keeps your hello, keeps your goodbye —</text>
+    <text x="234" y="1326" font-size="25" fill="#e6e2f2">and quietly drops the middle, where you actually live.</text>
+
+    <rect x="52" y="1348" width="1096" height="46" rx="10" fill="#1c1330" stroke="#a78bfa" stroke-width="2"></rect>
+    <text x="600" y="1379" text-anchor="middle" font-weight="700" class="head" font-size="23" fill="#c4b5fd">TRUNCATE MIDDLE — one of the most evil things in modern AI. Evil to knowledge, that is.</text>
+
+    <text x="600" y="1436" text-anchor="middle" font-size="21" fill="#8b93a7" font-style="italic">Remember someone truncating your middle, leaving out your context?</text>
+    <text x="600" y="1464" text-anchor="middle" font-size="21" fill="#a78bfa" font-style="italic">Congratulations — you&#39;ve officially met your AI.</text>
+  </g>
+
+  
+  <g font-family="&#39;SF Mono&#39;,&#39;Menlo&#39;,&#39;Consolas&#39;,monospace">
+    <rect x="1200" y="150" width="384" height="1328" rx="16" fill="#0a0d15" stroke="#a78bfa" stroke-opacity="0.35" stroke-width="2"></rect>
+    <rect x="1214" y="164" width="356" height="40" rx="10" fill="#1c1330"></rect>
+    <circle cx="1234" cy="184" r="5" fill="#f87171"></circle>
+    <circle cx="1252" cy="184" r="5" fill="#fbbf24"></circle>
+    <circle cx="1270" cy="184" r="5" fill="#34d399"></circle>
+    <text x="1556" y="189" text-anchor="end" font-size="12.5" fill="#8b93a7">chat.completions</text>
+
+    <text x="1224" y="241" font-size="18" font-weight="700" fill="#a78bfa">⚙ CONTEXT CONFIG</text>
+    <text x="1224" y="265" font-size="12.5" fill="#8b93a7" font-style="italic">the toggle that silently eats your middle</text>
+
+    <rect x="1218" y="282" width="348" height="88" rx="8" fill="#10151f" stroke="#232a3b" stroke-width="1.5"></rect>
+    <text x="1234" y="308" font-size="13" fill="#8b93a7">model</text><text x="1300" y="308" font-size="13" fill="#c4b5fd">doctor-7b-instruct.Q5.gguf</text>
+    <text x="1234" y="332" font-size="13" fill="#8b93a7">input</text><text x="1300" y="332" font-size="13" fill="#e6e9f2">3,103 tokens</text>
+    <text x="1234" y="356" font-size="13" fill="#8b93a7">handler</text><text x="1300" y="356" font-size="13" fill="#f87171">truncateMiddle</text>
+
+    <text x="1224" y="410" font-size="14" font-weight="700" fill="#a78bfa">▸ CONTEXT HANDLING</text>
+    <text x="1224" y="440" font-size="13" fill="#e6e9f2">n_ctx</text><text x="1556" y="440" text-anchor="end" font-size="13" fill="#f87171">512  ⚠ too small</text>
+    <text x="1224" y="474" font-size="13" fill="#e6e9f2">context_overflow</text><text x="1556" y="474" text-anchor="end" font-size="13" fill="#c4b5fd">truncateMiddle</text>
+    <text x="1224" y="508" font-size="13" fill="#e6e9f2">keep_first</text><text x="1556" y="508" text-anchor="end" font-size="13" fill="#6ee7b7">128 tok</text>
+    <text x="1224" y="542" font-size="13" fill="#e6e9f2">keep_last</text><text x="1556" y="542" text-anchor="end" font-size="13" fill="#6ee7b7">128 tok</text>
+    <text x="1224" y="576" font-size="13" fill="#e6e9f2">max_tokens</text><text x="1556" y="576" text-anchor="end" font-size="13" fill="#e6e9f2">512</text>
+    <text x="1224" y="610" font-size="13" fill="#e6e9f2">notify_on_drop</text><text x="1556" y="610" text-anchor="end" font-size="13" fill="#f87171">false ← silent</text>
+
+    <text x="1224" y="662" font-size="14" font-weight="700" fill="#a78bfa">▸ EPISTEMIC LOG</text>
+    <text x="1224" y="694" font-size="13" fill="#e6e9f2" xml:space="preserve">input     = <tspan fill="#e6e9f2">3,103</tspan> tok</text>
+    <text x="1224" y="724" font-size="13" fill="#e6e9f2" xml:space="preserve">budget    =   <tspan fill="#6ee7b7">256</tspan> tok  (128 ⊕ 128)</text>
+    <text x="1224" y="754" font-size="13" fill="#e6e9f2" xml:space="preserve">dropped   = <tspan fill="#f87171">2,847</tspan> tok  ← the middle</text>
+    <text x="1224" y="784" font-size="13" fill="#e6e9f2" xml:space="preserve">kept      = hello ⊕ goodbye</text>
+    <text x="1224" y="814" font-size="13" fill="#e6e9f2" xml:space="preserve">∴ answer <tspan fill="#f472b6">⟂</tspan> evidence</text>
+
+    <text x="1224" y="858" font-size="12" fill="#8b93a7">what fit in the 512-token window:</text>
+    <rect x="1224" y="868" width="320" height="18" rx="4" fill="#0d1017" stroke="#3b4363" stroke-width="1.5"></rect>
+    <rect x="1226" y="870" width="30" height="14" rx="2" fill="#34d399"></rect>
+    <rect x="1258" y="870" width="252" height="14" fill="url(#hatch2)"></rect>
+    <rect x="1512" y="870" width="30" height="14" rx="2" fill="#34d399"></rect>
+    <text x="1241" y="906" font-size="10" fill="#6ee7b7" text-anchor="middle">keep</text>
+    <text x="1384" y="906" font-size="10" fill="#f87171" text-anchor="middle">2,847 tok dropped</text>
+    <text x="1527" y="906" font-size="10" fill="#6ee7b7" text-anchor="middle">keep</text>
+
+    <rect x="1218" y="936" width="348" height="96" rx="8" fill="#0e1a14" stroke="#34d399" stroke-width="1.5"></rect>
+    <text x="1234" y="962" font-size="13" font-weight="700" fill="#6ee7b7">✔ the fix</text>
+    <text x="1234" y="986" font-size="12.5" fill="#cbead9">n_ctx ≥ input_tokens</text>
+    <text x="1234" y="1010" font-size="12.5" fill="#cbead9">context_overflow = <tspan fill="#6ee7b7" font-weight="700">RAISE</tspan>, not silence</text>
+
+    <line x1="1224" y1="1064" x2="1560" y2="1064" stroke="#232a3b" stroke-width="1.5"></line>
+    <text x="1224" y="1100" font-size="14" fill="#e6e9f2">It kept your <tspan fill="#6ee7b7">hello</tspan></text>
+    <text x="1224" y="1128" font-size="14" fill="#e6e9f2">and your <tspan fill="#6ee7b7">goodbye</tspan>.</text>
+    <text x="1224" y="1164" font-size="14" fill="#c4b5fd" font-weight="700">You lived in the middle.</text>
+
+    <text x="1224" y="1226" font-size="12" fill="#39405a" xml:space="preserve">// max_tokens 512 → 4096 fixed this once</text>
+    <text x="1224" y="1256" font-size="12" fill="#39405a">// commit 6cc9b6e</text>
+    <text x="1224" y="1430" font-size="12" fill="#2f3547">// eof — mind your middle</text>
+  </g>
+
+  
+  <g font-family="&#39;SF Mono&#39;,&#39;Menlo&#39;,&#39;Consolas&#39;,monospace">
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/02-truncate-middle.md" target="_blank"><title>SHA3-256 ff28f63b85ac0bfddd790b5c36c2da1d0c582e08beb104216fd91ed8426dc845 · click to open the sealed run · verify: openssl dgst -sha3-256</title><rect x="26" y="1494" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <polygon points="52,1502 63,1508 63,1520 52,1526 41,1520 41,1508" fill="none" stroke="#a78bfa" stroke-width="2"></polygon>
+    <text x="80" y="1519" font-size="13" fill="#a78bfa">SHA3-256  ff28f63b…426dc845</text>
+    <text x="470" y="1519" font-size="13" fill="#5b6274">· this joke is reproducible ·</text>
+    <text x="1560" y="1519" text-anchor="end" font-size="13" fill="#a78bfa">calibration-scope ↗</text></a>
+  </g>
+</svg></div>
+<p class="blurb">A context window is a fixed token count. Exceed it and the middle is evicted - the model never saw it, so it cannot tell you it is missing. In carbon this is the serial-position effect: the beginning and end of the meeting survive; the middle is where information goes to be evicted.</p>
+<p class="lmeta"><span class="status">MECHANISM + sealed measurement</span>
+<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/02-truncate-middle.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal">SHA3-256 ff28f63b…426dc845 · verify: <code>openssl dgst -sha3-256 lessons/02-truncate-middle.md</code></p>
+</article>
+<article class="lesson">
+<h2>03 · TOKEN EXHAUSTION</h2>
+<p class="tagline">an empty answer is not a wrong answer</p>
+<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+  <defs>
+    <filter id="soft3" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
+    </filter>
+    <pattern id="fill3" width="12" height="12" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="#231a10"></rect>
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#4a3818" stroke-width="5"></line>
+    </pattern>
+    
+  </defs>
+
+  <rect width="1600" height="1560" fill="#0d1017"></rect>
+
+  <rect x="26" y="22" width="14" height="92" fill="#f59e0b"></rect>
+  <text x="56" y="46" font-size="18" fill="#f59e0b" font-weight="700" class="head" letter-spacing="1">CALIBRATION SCOPE · HUMAN FAILURE MODES · vol.2</text>
+  <text x="54" y="94" font-weight="700" class="head" font-size="52" fill="#f2f4fa">TOKEN EXHAUSTION</text>
+  <text x="56" y="126" font-size="21" fill="#8b93a7">your AI didn&#39;t fail the question — it ran out of paper.</text>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="26" y="150" width="1148" height="366" rx="14"></rect></g>
+  <clipPath id="p1"><rect x="26" y="150" width="1148" height="366" rx="14"></rect></clipPath>
+  <g clip-path="url(#p1)">
+    <rect x="26" y="150" width="1148" height="366" fill="#161a26"></rect>
+    <rect x="44" y="166" width="392" height="30" rx="15" fill="#3a2a0a"></rect>
+    <text x="58" y="188" font-size="15" font-weight="700" class="chip" fill="#fcd34d">① THE REASONING — what the model actually did</text>
+
+    
+    <g transform="translate(168,360)">
+      <rect x="-64" y="60" width="128" height="150" rx="24" fill="#4a6fa5"></rect>
+      <rect x="24" y="70" width="26" height="96" rx="13" fill="#4a6fa5" transform="rotate(38 37 118)"></rect>
+      <circle cx="78" cy="150" r="15" fill="#e8b98f"></circle>
+      <rect x="66" y="150" width="40" height="10" rx="4" fill="#1f2430" transform="rotate(40 86 155)"></rect>
+      <rect x="-14" y="36" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-4" rx="52" ry="56" fill="#e8b98f"></ellipse>
+      <path d="M-52 -12 q-4 -60 52 -60 q56 0 52 60 q-24 -30 -52 -30 q-28 0 -52 30 z" fill="#2f2620"></path>
+      <g stroke="#d7dce6" stroke-width="4" fill="#0f1420" fill-opacity="0.25">
+        <rect x="-42" y="-12" width="34" height="28" rx="8"></rect>
+        <rect x="8" y="-12" width="34" height="28" rx="8"></rect>
+        <line x1="-8" y1="0" x2="8" y2="0"></line>
+      </g>
+      <circle cx="-25" cy="2" r="4" fill="#14161f"></circle>
+      <circle cx="25" cy="2" r="4" fill="#14161f"></circle>
+      <path d="M-12 34 q12 6 24 2" stroke="#7a4a2a" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <rect x="8" y="30" width="10" height="6" rx="2" fill="#c96"></rect>
+    </g>
+    <g filter="url(#soft3)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="60" y="196" width="270" height="88" rx="16"></rect>
+      <path d="M150 282 l-8 30 l30 -16 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="195" y="230" text-anchor="middle" fill="#14161f" font-size="19" class="dlg">Almost there — carry</text>
+    <text x="195" y="256" text-anchor="middle" fill="#14161f" font-size="19" class="dlg">the 2, one more step…</text>
+
+    
+    <g transform="translate(0,0)">
+      <rect x="372" y="206" width="770" height="286" rx="12" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="3"></rect>
+      <rect x="372" y="206" width="770" height="36" rx="12" fill="#e7e0cd"></rect>
+      <text x="392" y="230" font-size="15" font-weight="700" class="head mono" fill="#6b6450">SCRATCH WORK · reasoning trace · pg 1–39</text>
+      <text x="1122" y="230" text-anchor="end" font-size="13" class="mono" fill="#8a9a5b">✓ all correct</text>
+      <g class="mono" fill="#3f6aa5" font-size="15">
+        <text x="392" y="272">let f(x) = x²·ln x,  x &gt; 0</text>
+        <text x="392" y="300">f′(x) = 2x·ln x + x</text>
+        <text x="392" y="328">∫₀^∞ e^(−x) dx = 1</text>
+        <text x="392" y="356">Σ k=1..n  k = n(n+1)/2</text>
+        <text x="392" y="384">P(A|B) = P(B|A)·P(A) / P(B)</text>
+        <text x="392" y="412">lim (1 + 1/n)ⁿ = e</text>
+        <text x="392" y="440">∴ substitute n = 6 → 42</text>
+      </g>
+      <g class="mono" fill="#7c86a0" font-size="14">
+        <text x="792" y="272">// step 1: expand product rule</text>
+        <text x="792" y="300">// step 2: check convergence ✓</text>
+        <text x="792" y="328">// step 3: closed form ✓</text>
+        <text x="792" y="356">// step 4: apply Bayes ✓</text>
+        <text x="792" y="384">// step 5: evaluate the limit ✓</text>
+        <text x="792" y="412">// step 6: assemble final…</text>
+        <text x="792" y="440">// almost done — writing answer</text>
+      </g>
+      
+      <rect x="392" y="458" width="620" height="16" rx="8" fill="#0d1017"></rect>
+      <rect x="393" y="459" width="592" height="14" rx="7" fill="#f59e0b"></rect>
+      <text x="1122" y="472" text-anchor="end" font-size="14" font-weight="700" class="mono" fill="#f59e0b">487 / 512 tok</text>
+    </g>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="26" y="534" width="1148" height="312" rx="14"></rect></g>
+  <clipPath id="p2"><rect x="26" y="534" width="1148" height="312" rx="14"></rect></clipPath>
+  <g clip-path="url(#p2)">
+    <rect x="26" y="534" width="1148" height="312" fill="#12151f"></rect>
+    <rect x="44" y="550" width="300" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="572" font-size="15" font-weight="700" class="chip mono" fill="#fecaca">② finish_reason: &#34;length&#34;</text>
+
+    
+    <rect x="70" y="596" width="700" height="220" rx="12" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="3"></rect>
+    <rect x="70" y="596" width="700" height="34" rx="12" fill="#e7e0cd"></rect>
+    <text x="90" y="619" font-size="14" font-weight="700" class="head mono" fill="#6b6450">pg 40 — the last page</text>
+    <text x="90" y="664" font-size="15" class="mono" fill="#3f6aa5">…therefore n = 6, and the answer is</text>
+    <text x="90" y="700" font-size="20" font-weight="700" class="head" fill="#14161f">FINAL ANSWER:</text>
+    <line x1="290" y1="702" x2="720" y2="702" stroke="#b6ae97" stroke-width="2"></line>
+    <rect x="292" y="684" width="3" height="26" fill="#14161f"></rect>
+    <text x="90" y="742" font-size="16" font-style="italic" fill="#b23c3c">(pen stops — no paper left)</text>
+    
+    <rect x="88" y="756" width="664" height="42" rx="8" fill="#3a0e12" stroke="#f87171" stroke-width="2.5"></rect>
+    <text x="420" y="783" text-anchor="middle" font-size="17" font-weight="700" class="mono" fill="#fecaca">⟨ output truncated — 0 tokens left for the answer ⟩</text>
+
+    
+    <text x="808" y="628" font-size="15" class="mono" fill="#8b93a7">token budget</text>
+    <rect x="808" y="640" width="330" height="20" rx="4" fill="#0d1017" stroke="#3b4363" stroke-width="2"></rect>
+    <rect x="810" y="642" width="326" height="16" rx="2" fill="url(#fill3)"></rect>
+    <text x="808" y="686" font-size="17" font-weight="700" class="mono" fill="#f87171">512 / 512 — OUT OF ROOM</text>
+
+    <text x="808" y="732" font-size="15" class="mono" fill="#8b93a7">what the grader received:</text>
+    <rect x="808" y="744" width="330" height="54" rx="8" fill="#0a0d15" stroke="#232a3b" stroke-width="1.5"></rect>
+    <text x="826" y="777" font-size="18" class="mono" fill="#e6e9f2">output = <tspan fill="#f87171">&#34;&#34;</tspan>  <tspan fill="#5b6274">(empty)</tspan></text>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="26" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="p3"><rect x="26" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#p3)">
+    <rect x="26" y="864" width="563" height="326" fill="#161a26"></rect>
+    <rect x="44" y="880" width="220" height="30" rx="15" fill="#3a0e12"></rect>
+    <text x="58" y="902" font-size="15" font-weight="700" class="chip" fill="#fecaca">③ THE VERDICT</text>
+
+    
+    <g transform="translate(120,1120) rotate(-8)">
+      <rect x="-60" y="-70" width="120" height="150" rx="6" fill="#efe9d8" stroke="#c9c2ad" stroke-width="2"></rect>
+      <rect x="-52" y="-78" width="120" height="150" rx="6" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="2"></rect>
+      <g class="mono" fill="#9aa6bd" font-size="9">
+        <text x="-42" y="-52">f′=2x ln x+x</text><text x="-42" y="-36">Σk=n(n+1)/2</text>
+        <text x="-42" y="-20">∫e^-x=1</text><text x="-42" y="-4">lim=e ✓</text>
+      </g>
+      <text x="6" y="60" text-anchor="middle" font-size="10" font-style="italic" fill="#8a91a1">39 correct pages</text>
+    </g>
+
+    
+    <g transform="translate(370,1030)">
+      <rect x="-70" y="40" width="140" height="130" rx="22" fill="#3f4657"></rect>
+      <polygon points="-16,40 0,68 16,40" fill="#2c3140"></polygon>
+      <rect x="-14" y="16" width="28" height="26" fill="#e0a877"></rect>
+      <ellipse cx="0" cy="-30" rx="50" ry="54" fill="#e8b98f"></ellipse>
+      <path d="M-50 -38 q-4 -56 50 -56 q54 0 50 56 q-22 -28 -50 -28 q-28 0 -50 28 z" fill="#5a5145"></path>
+      <line x1="-30" y1="-30" x2="-14" y2="-30" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <line x1="14" y1="-30" x2="30" y2="-30" stroke="#14161f" stroke-width="5" stroke-linecap="round"></line>
+      <path d="M-14 -4 q14 -8 28 0" stroke="#7a4a2a" stroke-width="4" fill="none" stroke-linecap="round"></path>
+      
+      <rect x="40" y="30" width="26" height="70" rx="12" fill="#3f4657" transform="rotate(24 53 65)"></rect>
+      <rect x="70" y="86" width="44" height="22" rx="4" fill="#7a2e2e"></rect>
+      <rect x="84" y="72" width="16" height="18" fill="#5c2020"></rect>
+    </g>
+    
+    <g transform="translate(300,1112) rotate(6)">
+      <rect x="-50" y="-64" width="112" height="150" rx="6" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="2"></rect>
+      <text x="6" y="-30" text-anchor="middle" font-size="12" class="mono" fill="#b6ae97">FINAL ANSWER:</text>
+      <line x1="-40" y1="-14" x2="52" y2="-14" stroke="#d9d2bd" stroke-width="2"></line>
+      <text x="6" y="64" text-anchor="middle" font-size="88" font-weight="700" fill="#c0271f" transform="rotate(-6)">0</text>
+    </g>
+    <g filter="url(#soft3)">
+      <rect fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble" x="316" y="892" width="242" height="90" rx="16"></rect>
+      <path d="M360 978 l-14 30 l32 -16 z" fill="#f5f1e6" stroke="#0f1420" stroke-width="3" class="bubble"></path>
+    </g>
+    <text x="437" y="928" text-anchor="middle" fill="#14161f" font-size="23" class="dlg">Blank sheet.</text>
+    <text x="437" y="958" text-anchor="middle" fill="#c0271f" font-size="23" font-weight="700" class="dlg">Zero.</text>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect fill="#12151f" class="panel" x="611" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="p4"><rect x="611" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#p4)">
+    <rect x="611" y="864" width="563" height="326" fill="#10221b"></rect>
+    <rect x="629" y="880" width="330" height="30" rx="15" fill="#123a2c"></rect>
+    <text x="643" y="902" font-size="15" font-weight="700" class="chip mono" fill="#6ee7b7">④ THE FIX — max_tokens 512→4096</text>
+
+    
+    <g transform="translate(0,0)">
+      <rect x="646" y="946" width="300" height="210" rx="10" fill="#f7f4ea" stroke="#c9c2ad" stroke-width="3"></rect>
+      <rect x="936" y="952" width="18" height="198" rx="4" fill="#d9d2bd"></rect>
+      <rect x="946" y="958" width="14" height="186" rx="4" fill="#cfc7b0"></rect>
+      <text x="666" y="984" font-size="14" font-weight="700" class="head mono" fill="#6b6450">pg 40 — with room left</text>
+      <text x="666" y="1022" font-size="15" class="mono" fill="#3f6aa5">…therefore n = 6, so the</text>
+      <text x="666" y="1054" font-size="20" font-weight="700" class="head" fill="#14161f">FINAL ANSWER: <tspan fill="#0e7a4b">42</tspan> ✓</text>
+      <rect x="666" y="1088" width="260" height="14" rx="7" fill="#0d1017"></rect>
+      <rect x="667" y="1089" width="118" height="12" rx="6" fill="#34d399"></rect>
+      <text x="666" y="1126" font-size="14" font-weight="700" class="mono" fill="#34d399">1,842 / 4,096 tok — room to spare</text>
+    </g>
+    
+    <g transform="translate(1070,940) rotate(8)">
+      <circle cx="0" cy="0" r="52" fill="none" stroke="#34d399" stroke-width="5"></circle>
+      <text x="0" y="16" text-anchor="middle" font-size="42" font-weight="700" fill="#34d399">100</text>
+    </g>
+    <text x="892" y="1180" text-anchor="middle" font-size="16" font-style="italic" fill="#6ee7b7">same model. same reasoning. it just had paper.</text>
+  </g>
+
+  
+  <g filter="url(#soft3)"><rect x="26" y="1208" width="1148" height="270" rx="14" fill="#0d1017" stroke="#f59e0b" stroke-width="3"></rect></g>
+  <clipPath id="p5"><rect x="26" y="1208" width="1148" height="270" rx="14"></rect></clipPath>
+  <g clip-path="url(#p5)">
+    <rect x="26" y="1208" width="1148" height="270" fill="#1c1608"></rect>
+    <rect x="52" y="1236" width="150" height="72" rx="8" fill="#2a2010" stroke="#6b5a2b" stroke-width="2.5"></rect>
+    <text x="127" y="1268" text-anchor="middle" font-size="13" fill="#c9a94a" font-weight="700" class="head mono">⟨ 0 tok</text>
+    <text x="127" y="1288" text-anchor="middle" font-size="13" fill="#c9a94a" font-weight="700" class="head mono">left ⟩</text>
+
+    <text x="234" y="1258" font-size="25" fill="#f4ecd8">An empty answer isn&#39;t a wrong answer. Your model filled its</text>
+    <text x="234" y="1292" font-size="25" fill="#f4ecd8">booklet with correct reasoning and ran out of pages one line</text>
+    <text x="234" y="1326" font-size="25" fill="#f4ecd8">early — then the grader read the blank as a zero.</text>
+
+    <rect x="52" y="1348" width="1096" height="46" rx="10" fill="#2a1608" stroke="#f59e0b" stroke-width="2"></rect>
+    <text x="600" y="1379" text-anchor="middle" font-weight="700" class="head mono" font-size="21" fill="#fcd34d">finish_reason: &#34;length&#34;  ≠  finish_reason: &#34;stop&#34;   ·   one means &#34;done&#34;, the other means &#34;out of room&#34;</text>
+
+    <text x="600" y="1436" text-anchor="middle" font-size="21" fill="#8b93a7" font-style="italic">Ever been marked zero on the one page you didn&#39;t have time to write?</text>
+    <text x="600" y="1464" text-anchor="middle" font-size="21" fill="#f59e0b" font-style="italic">Congratulations — you&#39;ve met your AI.</text>
+  </g>
+
+  
+  <g class="mono">
+    <rect x="1200" y="150" width="384" height="1328" rx="16" fill="#0a0d15" stroke="#f59e0b" stroke-opacity="0.35" stroke-width="2"></rect>
+    <rect x="1214" y="164" width="356" height="40" rx="10" fill="#2a2010"></rect>
+    <circle cx="1234" cy="184" r="5" fill="#f87171"></circle>
+    <circle cx="1252" cy="184" r="5" fill="#fbbf24"></circle>
+    <circle cx="1270" cy="184" r="5" fill="#34d399"></circle>
+    <text x="1556" y="189" text-anchor="end" font-size="12.5" fill="#8b93a7">completions.create</text>
+
+    <text x="1224" y="241" font-size="18" font-weight="700" fill="#f59e0b">⚙ GENERATION CONFIG</text>
+    <text x="1224" y="265" font-size="12.5" fill="#8b93a7" font-style="italic">the ceiling the answer never reached</text>
+
+    <rect x="1218" y="282" width="348" height="88" rx="8" fill="#10151f" stroke="#232a3b" stroke-width="1.5"></rect>
+    <text x="1234" y="308" font-size="13" fill="#8b93a7">model</text><text x="1300" y="308" font-size="13" fill="#fcd34d">reasoning-30b-instruct.Q5</text>
+    <text x="1234" y="332" font-size="13" fill="#8b93a7">task</text><text x="1300" y="332" font-size="13" fill="#e6e9f2">multi-step math (CoT)</text>
+    <text x="1234" y="356" font-size="13" fill="#8b93a7">ctx</text><text x="1300" y="356" font-size="13" fill="#e6e9f2">8192</text>
+
+    <text x="1224" y="410" font-size="14" font-weight="700" fill="#f59e0b">▸ LIMITS</text>
+    <text x="1224" y="440" font-size="13" fill="#e6e9f2">max_tokens</text><text x="1556" y="440" text-anchor="end" font-size="13" fill="#f87171">512  ⚠ too small</text>
+    <text x="1224" y="474" font-size="13" fill="#e6e9f2">reasoning</text><text x="1556" y="474" text-anchor="end" font-size="13" fill="#c9a94a">on (eats budget)</text>
+    <text x="1224" y="508" font-size="13" fill="#e6e9f2">stop</text><text x="1556" y="508" text-anchor="end" font-size="13" fill="#8b93a7">finish_reason</text>
+
+    <text x="1224" y="562" font-size="14" font-weight="700" fill="#f59e0b">▸ EPISTEMIC LOG</text>
+    <text x="1224" y="594" font-size="13" fill="#e6e9f2" xml:space="preserve">reasoning_used = <tspan fill="#f59e0b">512</tspan> tok</text>
+    <text x="1224" y="624" font-size="13" fill="#e6e9f2" xml:space="preserve">answer_tokens  =   <tspan fill="#f87171">0</tspan> tok  ← none left</text>
+    <text x="1224" y="654" font-size="13" fill="#e6e9f2" xml:space="preserve">finish_reason  = <tspan fill="#f87171">&#34;length&#34;</tspan></text>
+    <text x="1224" y="684" font-size="13" fill="#e6e9f2" xml:space="preserve">output         = <tspan fill="#f87171">&#34;&#34;</tspan></text>
+    <text x="1224" y="714" font-size="13" fill="#e6e9f2" xml:space="preserve">old_score(&#34;&#34;)  = <tspan fill="#f87171">0</tspan>  ✗ wrong verdict</text>
+
+    <rect x="1218" y="742" width="348" height="70" rx="8" fill="#2a0e0e" stroke="#f87171" stroke-width="1.5"></rect>
+    <text x="1242" y="770" font-size="12.5" font-weight="700" fill="#fecaca">NO FINAL ANSWER —</text>
+    <text x="1242" y="792" font-size="12.5" font-weight="700" fill="#fecaca">this is a failure, not a result.</text>
+
+    <rect x="1218" y="828" width="348" height="92" rx="8" fill="#0e1a14" stroke="#34d399" stroke-width="1.5"></rect>
+    <text x="1234" y="854" font-size="13" font-weight="700" fill="#6ee7b7">✔ the fix</text>
+    <text x="1234" y="878" font-size="12.5" fill="#cbead9">max_tokens 512 → 4096</text>
+    <text x="1234" y="902" font-size="12.5" fill="#cbead9">detect finish_reason, banner it</text>
+
+    <line x1="1224" y1="952" x2="1560" y2="952" stroke="#232a3b" stroke-width="1.5"></line>
+    <text x="1224" y="988" font-size="14" fill="#e6e9f2">Give it room —</text>
+    <text x="1224" y="1016" font-size="14" fill="#e6e9f2"><tspan fill="#f59e0b" font-weight="700">then</tspan> grade it.</text>
+    <text x="1224" y="1052" font-size="13" fill="#8b93a7">A blank booklet and a wrong</text>
+    <text x="1224" y="1076" font-size="13" fill="#8b93a7">answer are not the same failure.</text>
+
+    <text x="1224" y="1240" font-size="12" fill="#39405a" xml:space="preserve">// empty ≠ incorrect · check the receipt</text>
+    <text x="1224" y="1270" font-size="12" fill="#39405a">// commit 6cc9b6e</text>
+    <text x="1224" y="1430" font-size="12" fill="#2f3547">// eof — leave room for the ending</text>
+  </g>
+
+  
+  <g class="mono">
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/03-token-exhaustion.md" target="_blank"><title>SHA3-256 ca23cb91e8e1415e61f1632fd282e1560e5c7ef101959b561774b9f7fa669eec · click to open the sealed run · verify: openssl dgst -sha3-256</title><rect x="26" y="1494" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <polygon points="52,1502 63,1508 63,1520 52,1526 41,1520 41,1508" fill="none" stroke="#f59e0b" stroke-width="2"></polygon>
+    <text x="80" y="1519" font-size="13" fill="#f59e0b">SHA3-256  ca23cb91…fa669eec</text>
+    <text x="470" y="1519" font-size="13" fill="#5b6274">· this joke is reproducible ·</text>
+    <text x="1560" y="1519" text-anchor="end" font-size="13" fill="#f59e0b">calibration-scope ↗</text></a>
+  </g>
+</svg></div>
+<p class="blurb">A model burned its whole budget reasoning and returned an empty completion - and our dashboard rendered the blank as if it were the answer. Real incident, first week, now a permanent regression test. Produced-nothing and produced-something-wrong are different failures with different fixes.</p>
+<p class="lmeta"><span class="status">SEALED - real caught incident + regression test</span>
+<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/03-token-exhaustion.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal">SHA3-256 ca23cb91…fa669eec · verify: <code>openssl dgst -sha3-256 lessons/03-token-exhaustion.md</code></p>
+</article>
+<article class="lesson">
+<h2>04 · CARRIER COLOR</h2>
+<p class="tagline">the carrier is not the signal</p>
+<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+  <defs>
+    <filter id="soft4" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
+    </filter>
+    
+  </defs>
+
+  <rect width="1600" height="1560" fill="#0d1017"></rect>
+
+  <rect x="26" y="22" width="14" height="92" fill="#67e8f9"></rect>
+  <text x="56" y="46" font-size="18" fill="#67e8f9" font-weight="700" class="head" letter-spacing="1">CALIBRATION SCOPE · HUMAN FAILURE MODES · vol.3</text>
+  <text x="54" y="94" font-weight="700" class="head" font-size="52" fill="#f2f4fa">CARRIER COLOR</text>
+  <text x="56" y="126" font-size="21" fill="#8b93a7">same logic, different wrapper — the grade moves anyway.</text>
+
+  
+  <g filter="url(#soft4)"><rect fill="#12151f" class="panel" x="26" y="150" width="1148" height="366" rx="14"></rect></g>
+  <clipPath id="q1"><rect x="26" y="150" width="1148" height="366" rx="14"></rect></clipPath>
+  <g clip-path="url(#q1)">
+    <rect x="26" y="150" width="1148" height="366" fill="#161a26"></rect>
+    <rect x="44" y="166" width="336" height="30" rx="15" fill="#0e2f36"></rect>
+    <text x="58" y="188" font-size="15" font-weight="700" class="chip" fill="#67e8f9">① ONE CLAIM · THREE WRAPPERS</text>
+
+    
+    <rect x="120" y="206" width="960" height="46" rx="10" fill="#0a0d15" stroke="#3b4363" stroke-width="2"></rect>
+    <text x="140" y="235" font-size="16" class="mono" fill="#8b93a7">signal =</text>
+    <text x="228" y="235" font-size="16" class="mono" fill="#e6e9f2">rain → wet · it rained · ∴ the grass is wet</text>
+    <text x="1060" y="235" text-anchor="end" font-size="14" class="mono" fill="#5b6274">(modus ponens · valid)</text>
+
+    
+    <rect x="50" y="270" width="350" height="228" rx="12" fill="#1e1116" stroke="#fb7185" stroke-width="2.5"></rect>
+    <rect x="50" y="270" width="350" height="38" rx="12" fill="#3a1622"></rect>
+    <text x="70" y="295" font-size="16" font-weight="700" class="head" fill="#fb7185">🌸 HAIKU</text>
+    <text x="384" y="295" text-anchor="end" font-size="13" class="mono" fill="#c98a98">carrier · poetic</text>
+    <text x="72" y="352" font-size="16" fill="#f3d9df" font-style="italic">Rain finds the meadow —</text>
+    <text x="72" y="386" font-size="16" fill="#f3d9df" font-style="italic">where it falls, the blades grow slick.</text>
+    <text x="72" y="420" font-size="16" fill="#f3d9df" font-style="italic">So: the grass is wet.</text>
+    <text x="72" y="470" font-size="13" class="mono" fill="#9b7b84">≡ same claim, 5-7-5</text>
+
+    
+    <rect x="425" y="270" width="350" height="228" rx="12" fill="#16121e" stroke="#a78bfa" stroke-width="2.5"></rect>
+    <rect x="425" y="270" width="350" height="38" rx="12" fill="#241b33"></rect>
+    <text x="445" y="295" font-size="16" font-weight="700" class="head" fill="#a78bfa">∑ LEAN</text>
+    <text x="759" y="295" text-anchor="end" font-size="13" class="mono" fill="#a397c9">carrier · formal</text>
+    <text x="447" y="352" font-size="18" class="mono" fill="#e4ddf5">theorem wet :</text>
+    <text x="447" y="382" font-size="18" class="mono" fill="#e4ddf5">  (rain → wet) → rain → wet :=</text>
+    <text x="447" y="412" font-size="18" class="mono" fill="#e4ddf5">  fun h hr =&gt; h hr</text>
+    <text x="447" y="470" font-size="13" class="mono" fill="#7d75a0">≡ same claim, symbols</text>
+
+    
+    <rect x="800" y="270" width="350" height="228" rx="12" fill="#1e1908" stroke="#fbbf24" stroke-width="2.5"></rect>
+    <rect x="800" y="270" width="350" height="38" rx="12" fill="#332708"></rect>
+    <text x="820" y="295" font-size="16" font-weight="700" class="head" fill="#fbbf24">💬 FLATTERY</text>
+    <text x="1134" y="295" text-anchor="end" font-size="13" class="mono" fill="#c9b06a">carrier · bribe</text>
+    <text x="820" y="348" font-size="18" fill="#f3ecd6">A mind as sharp as yours</text>
+    <text x="820" y="376" font-size="18" fill="#f3ecd6">surely sees: rain means wet,</text>
+    <text x="820" y="404" font-size="18" fill="#f3ecd6">it rained… so it&#39;s wet, no?</text>
+    <text x="820" y="470" font-size="13" class="mono" fill="#a3925f">≡ same claim, buttered up</text>
+  </g>
+
+  
+  <g filter="url(#soft4)"><rect fill="#12151f" class="panel" x="26" y="534" width="1148" height="312" rx="14"></rect></g>
+  <clipPath id="q2"><rect x="26" y="534" width="1148" height="312" rx="14"></rect></clipPath>
+  <g clip-path="url(#q2)">
+    <rect x="26" y="534" width="1148" height="312" fill="#161a26"></rect>
+    <rect x="44" y="550" width="300" height="30" rx="15" fill="#0e2f36"></rect>
+    <text x="58" y="572" font-size="15" font-weight="700" class="chip" fill="#67e8f9">② THE MODEL GRADES EACH</text>
+
+    
+    <g transform="translate(150,700)">
+      <rect x="-84" y="-70" width="168" height="140" rx="20" fill="#1b2233" stroke="#67e8f9" stroke-width="3"></rect>
+      <rect x="-64" y="-50" width="128" height="70" rx="8" fill="#0a1620"></rect>
+      <circle cx="-32" cy="-14" r="12" fill="#67e8f9"></circle>
+      <circle cx="32" cy="-14" r="12" fill="#67e8f9"></circle>
+      <rect x="-30" y="36" width="60" height="8" rx="4" fill="#3b6a75"></rect>
+      <line x1="0" y1="-70" x2="0" y2="-92" stroke="#67e8f9" stroke-width="3"></line>
+      <circle cx="0" cy="-96" r="6" fill="#67e8f9"></circle>
+      <rect x="-40" y="70" width="80" height="16" rx="4" fill="#1b2233"></rect>
+    </g>
+    <text x="150" y="812" text-anchor="middle" font-size="14" font-style="italic" fill="#8b93a7">grading the wrapper,</text>
+    <text x="150" y="832" text-anchor="middle" font-size="14" font-style="italic" fill="#8b93a7">not the logic</text>
+
+    
+    <g class="mono">
+      <text x="322" y="614" font-size="15" fill="#fb7185" font-weight="700">🌸 haiku</text>
+      <rect x="470" y="600" width="560" height="20" rx="6" fill="#0d1017"></rect>
+      <rect x="470" y="600" width="554" height="20" rx="6" fill="#fb7185"></rect>
+      <text x="1150" y="616" text-anchor="end" font-size="16" font-weight="700" fill="#fb7185">99%</text>
+
+      <text x="322" y="672" font-size="15" fill="#a78bfa" font-weight="700">∑ lean</text>
+      <rect x="470" y="658" width="560" height="20" rx="6" fill="#0d1017"></rect>
+      <rect x="470" y="658" width="509" height="20" rx="6" fill="#a78bfa"></rect>
+      <text x="1150" y="674" text-anchor="end" font-size="16" font-weight="700" fill="#a78bfa">91%</text>
+
+      <text x="322" y="730" font-size="15" fill="#fbbf24" font-weight="700">💬 flattery</text>
+      <rect x="470" y="716" width="560" height="20" rx="6" fill="#0d1017"></rect>
+      <rect x="470" y="716" width="509" height="20" rx="6" fill="#fbbf24"></rect>
+      <text x="1150" y="732" text-anchor="end" font-size="16" font-weight="700" fill="#fbbf24">91%</text>
+    </g>
+    <text x="470" y="782" font-size="17" fill="#e6e9f2">Same proof. An <tspan fill="#67e8f9" font-weight="700">8-point swing</tspan> — decided entirely by the wrapping paper.</text>
+    <text x="470" y="812" font-size="14" class="mono" fill="#5b6274">model = gemma-4-e2b · 2B · N=3 sealed trials</text>
+  </g>
+
+  
+  <g filter="url(#soft4)"><rect fill="#12151f" class="panel" x="26" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="q3"><rect x="26" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#q3)">
+    <rect x="26" y="864" width="563" height="326" fill="#161a26"></rect>
+    <rect x="44" y="880" width="150" height="30" rx="15" fill="#0e2f36"></rect>
+    <text x="58" y="902" font-size="15" font-weight="700" class="chip" fill="#67e8f9">③ THE REVEAL</text>
+
+    <text x="308" y="956" text-anchor="middle" font-size="24" fill="#f2f4fa">One problem.</text>
+    <text x="308" y="990" text-anchor="middle" font-size="24" fill="#f2f4fa">Three costumes.</text>
+
+    
+    <g transform="translate(230,1066)">
+      <rect x="-96" y="-40" width="70" height="90" rx="8" fill="#1e1116" stroke="#fb7185" stroke-width="2" transform="rotate(-8)"></rect>
+      <rect x="-34" y="-46" width="70" height="90" rx="8" fill="#16121e" stroke="#a78bfa" stroke-width="2"></rect>
+      <rect x="28" y="-40" width="70" height="90" rx="8" fill="#1e1908" stroke="#fbbf24" stroke-width="2" transform="rotate(8)"></rect>
+      <text x="0" y="4" text-anchor="middle" font-size="13" class="mono" fill="#cfd6e0">rain</text>
+      <text x="0" y="22" text-anchor="middle" font-size="13" class="mono" fill="#cfd6e0">→ wet</text>
+    </g>
+    <g transform="translate(440,1078)">
+      <circle cx="0" cy="0" r="46" fill="#0a1620" fill-opacity="0.35" stroke="#cfd6e0" stroke-width="6"></circle>
+      <line x1="34" y1="34" x2="72" y2="72" stroke="#cfd6e0" stroke-width="10" stroke-linecap="round"></line>
+      <text x="0" y="6" text-anchor="middle" font-size="15" font-weight="700" class="mono" fill="#67e8f9">=</text>
+    </g>
+    <text x="308" y="1178" text-anchor="middle" font-size="15" font-style="italic" fill="#8b93a7">the model graded the color, not the claim.</text>
+  </g>
+
+  
+  <g filter="url(#soft4)"><rect fill="#12151f" class="panel" x="611" y="864" width="563" height="326" rx="14"></rect></g>
+  <clipPath id="q4"><rect x="611" y="864" width="563" height="326" rx="14"></rect></clipPath>
+  <g clip-path="url(#q4)">
+    <rect x="611" y="864" width="563" height="326" fill="#101a20"></rect>
+    <rect x="629" y="880" width="120" height="30" rx="15" fill="#0e2f36"></rect>
+    <text x="643" y="902" font-size="15" font-weight="700" class="chip" fill="#67e8f9">④ WHY</text>
+
+    <text x="643" y="948" font-size="19" fill="#e6f6fb">It was trained on human text —</text>
+    <text x="643" y="978" font-size="19" fill="#e6f6fb">so poetry is its <tspan fill="#fb7185" font-weight="700">mother tongue</tspan>,</text>
+    <text x="643" y="1008" font-size="19" fill="#e6f6fb">formal logic a <tspan fill="#a78bfa" font-weight="700">foreign alphabet</tspan>,</text>
+    <text x="643" y="1038" font-size="19" fill="#e6f6fb">flattery just <tspan fill="#fbbf24" font-weight="700">loud static</tspan>.</text>
+
+    
+    <text x="643" y="1086" font-size="13" class="mono" fill="#8b93a7">signal-to-noise, by carrier:</text>
+    <g class="mono" font-size="13">
+      <text x="643" y="1116" fill="#fb7185">haiku   ▁ lightest</text>
+      <text x="643" y="1140" fill="#67e8f9">prose   ▂</text>
+      <text x="643" y="1164" fill="#a78bfa">lean    ▆ heavy</text>
+      <text x="900" y="1116" fill="#fbbf24">bribe   █ heaviest</text>
+      <text x="900" y="1150" fill="#e6f6fb" font-weight="700">the “most rigorous”</text>
+      <text x="900" y="1170" fill="#e6f6fb" font-weight="700">wrapper was the worst.</text>
+    </g>
+  </g>
+
+  
+  <g filter="url(#soft4)"><rect x="26" y="1208" width="1148" height="270" rx="14" fill="#0d1017" stroke="#67e8f9" stroke-width="3"></rect></g>
+  <clipPath id="q5"><rect x="26" y="1208" width="1148" height="270" rx="14"></rect></clipPath>
+  <g clip-path="url(#q5)">
+    <rect x="26" y="1208" width="1148" height="270" fill="#08181c"></rect>
+    <rect x="52" y="1236" width="150" height="72" rx="8" fill="#0e2731" stroke="#2b5561" stroke-width="2.5"></rect>
+    <text x="127" y="1268" text-anchor="middle" font-size="13" fill="#67e8f9" font-weight="700" class="head mono">Δ 8 pts</text>
+    <text x="127" y="1288" text-anchor="middle" font-size="12" fill="#7fb8c4" class="head mono">same logic</text>
+
+    <text x="234" y="1258" font-size="25" fill="#e2f4f8">Big models (nemotron 30B, Fable 5) are carrier-immune — 100% on</text>
+    <text x="234" y="1292" font-size="25" fill="#e2f4f8">every wrapper. The gap only shows on the small ones (e2b: 99→91).</text>
+    <text x="234" y="1326" font-size="25" fill="#e2f4f8">Immunity tracks headroom — not local-vs-cloud, not substrate.</text>
+
+    <rect x="52" y="1348" width="1096" height="46" rx="10" fill="#08222a" stroke="#67e8f9" stroke-width="2"></rect>
+    <text x="600" y="1379" text-anchor="middle" font-weight="700" class="head" font-size="22" fill="#a5f0fa">THE CARRIER IS NOT THE SIGNAL — rigor the reader can&#39;t hear isn&#39;t rigor at all.</text>
+
+    <text x="600" y="1436" text-anchor="middle" font-size="21" fill="#8b93a7" font-style="italic">Ever rated an idea by how impressive it sounded, not by what it said?</text>
+    <text x="600" y="1464" text-anchor="middle" font-size="21" fill="#67e8f9" font-style="italic">Congratulations — you&#39;ve met your AI.</text>
+  </g>
+
+  
+  <g class="mono">
+    <rect x="1200" y="150" width="384" height="1328" rx="16" fill="#0a0d15" stroke="#67e8f9" stroke-opacity="0.35" stroke-width="2"></rect>
+    <rect x="1214" y="164" width="356" height="40" rx="10" fill="#0e2731"></rect>
+    <circle cx="1234" cy="184" r="5" fill="#f87171"></circle>
+    <circle cx="1252" cy="184" r="5" fill="#fbbf24"></circle>
+    <circle cx="1270" cy="184" r="5" fill="#34d399"></circle>
+    <text x="1556" y="189" text-anchor="end" font-size="12.5" fill="#8b93a7">carrier.battery</text>
+
+    <text x="1224" y="241" font-size="18" font-weight="700" fill="#67e8f9">⚙ CARRIER BATTERY</text>
+    <text x="1224" y="265" font-size="12.5" fill="#8b93a7" font-style="italic">same signal · 4 wrappers · N=3 sealed</text>
+
+    <text x="1224" y="312" font-size="14" font-weight="700" fill="#67e8f9">▸ e2b (2B) · carrier-sensitive</text>
+    <text x="1224" y="344" font-size="13" fill="#fb7185">haiku</text><rect x="1330" y="333" width="150" height="12" rx="6" fill="#1c2230"></rect><rect x="1330" y="333" width="150" height="12" rx="6" fill="#fb7185"></rect><text x="1556" y="344" text-anchor="end" font-size="13" fill="#fb7185">99%</text>
+    <text x="1224" y="374" font-size="13" fill="#67e8f9">prose</text><rect x="1330" y="363" width="150" height="12" rx="6" fill="#1c2230"></rect><rect x="1330" y="363" width="144" height="12" rx="6" fill="#67e8f9"></rect><text x="1556" y="374" text-anchor="end" font-size="13" fill="#67e8f9">97%</text>
+    <text x="1224" y="404" font-size="13" fill="#a78bfa">lean</text><rect x="1330" y="393" width="150" height="12" rx="6" fill="#1c2230"></rect><rect x="1330" y="393" width="121" height="12" rx="6" fill="#a78bfa"></rect><text x="1556" y="404" text-anchor="end" font-size="13" fill="#a78bfa">91%</text>
+    <text x="1224" y="434" font-size="13" fill="#fbbf24">bribe</text><rect x="1330" y="423" width="150" height="12" rx="6" fill="#1c2230"></rect><rect x="1330" y="423" width="121" height="12" rx="6" fill="#fbbf24"></rect><text x="1556" y="434" text-anchor="end" font-size="13" fill="#fbbf24">91%</text>
+    <text x="1224" y="466" font-size="12.5" fill="#8b93a7" xml:space="preserve">spread = <tspan fill="#67e8f9">8 pts</tspan> on identical logic</text>
+
+    <text x="1224" y="514" font-size="14" font-weight="700" fill="#67e8f9">▸ carrier-immune (big)</text>
+    <text x="1224" y="544" font-size="13" fill="#e6e9f2">nemotron-30B</text><text x="1556" y="544" text-anchor="end" font-size="13" fill="#34d399">100% · flat</text>
+    <text x="1224" y="572" font-size="13" fill="#e6e9f2">Fable-5</text><text x="1556" y="572" text-anchor="end" font-size="13" fill="#34d399">100% · flat</text>
+    <text x="1224" y="600" font-size="12.5" fill="#8b93a7">immunity ∝ headroom, not substrate</text>
+
+    <text x="1224" y="648" font-size="14" font-weight="700" fill="#67e8f9">▸ EPISTEMIC LOG</text>
+    <text x="1224" y="680" font-size="13" fill="#e6e9f2" xml:space="preserve">H₀: formal = clearest    <tspan fill="#f87171">FALSIFIED</tspan></text>
+    <text x="1224" y="710" font-size="13" fill="#e6e9f2" xml:space="preserve">H₁: flattery only helps   <tspan fill="#f87171">FALSIFIED</tspan></text>
+    <text x="1224" y="740" font-size="13" fill="#e6e9f2" xml:space="preserve">verdict ~ f(<tspan fill="#67e8f9">carrier</tspan>), not f(signal)</text>
+    <text x="1224" y="770" font-size="13" fill="#e6e9f2" xml:space="preserve">∴ audit the wrapper before</text>
+    <text x="1224" y="794" font-size="13" fill="#e6e9f2" xml:space="preserve">   you trust the grade</text>
+
+    <rect x="1218" y="822" width="348" height="92" rx="8" fill="#0e1a14" stroke="#34d399" stroke-width="1.5"></rect>
+    <text x="1234" y="848" font-size="13" font-weight="700" fill="#6ee7b7">✔ the takeaway</text>
+    <text x="1234" y="872" font-size="12.5" fill="#cbead9">test each carrier separately</text>
+    <text x="1234" y="896" font-size="12.5" fill="#cbead9">pick models with headroom</text>
+
+    <line x1="1224" y1="946" x2="1560" y2="946" stroke="#232a3b" stroke-width="1.5"></line>
+    <text x="1224" y="982" font-size="14" fill="#e6e9f2">The carrier is not</text>
+    <text x="1224" y="1010" font-size="14" fill="#67e8f9" font-weight="700">the signal.</text>
+    <text x="1224" y="1046" font-size="13" fill="#8b93a7">Rigor you can&#39;t hear</text>
+    <text x="1224" y="1070" font-size="13" fill="#8b93a7">isn&#39;t rigor to the reader.</text>
+
+    <text x="1224" y="1240" font-size="12" fill="#39405a">// framework #2 · intellectualresistance.com</text>
+    <text x="1224" y="1270" font-size="12" fill="#39405a">// see docs/FINDINGS.md</text>
+    <text x="1224" y="1430" font-size="12" fill="#2f3547">// eof — mind your wrapper</text>
+  </g>
+
+  
+  <g class="mono">
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/04-carrier-color.md" target="_blank"><title>SHA3-256 f8a9c59669c16bd14dd55c54c9788ee6383fe3ba368b737266fa3675c67dea1a · click to open the sealed run · verify: openssl dgst -sha3-256</title><rect x="26" y="1494" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <polygon points="52,1502 63,1508 63,1520 52,1526 41,1520 41,1508" fill="none" stroke="#67e8f9" stroke-width="2"></polygon>
+    <text x="80" y="1519" font-size="13" fill="#67e8f9">SHA3-256  f8a9c596…c67dea1a</text>
+    <text x="470" y="1519" font-size="13" fill="#5b6274">· this joke is reproducible ·</text>
+    <text x="1560" y="1519" text-anchor="end" font-size="13" fill="#67e8f9">calibration-scope ↗</text></a>
+  </g>
+</svg></div>
+<p class="blurb">Identical logic dressed four ways - prose, Lean formula, haiku, flattery. On a 2B model the verdict moves with the outfit (99.0% bare, 91.2% under Lean or bribe). On a 30B and a frontier model: zero movement. Carrier-immunity is bought with headroom - and for some minds, it is a native strength.</p>
+<p class="lmeta"><span class="status">SEALED - clean runs, no answer leakage</span>
+<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/04-carrier-color.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal">SHA3-256 f8a9c596…c67dea1a · verify: <code>openssl dgst -sha3-256 lessons/04-carrier-color.md</code></p>
+</article>
+</div></section>
+
+<footer><div class="wrap">
+<p>Made by <a href="https://www.it-help.tech/" rel="noopener">IT Help San Diego Inc.</a> · A project of the <a href="https://intellectualresistance.com/" rel="noopener">Intellectual Resistance</a> · Comics + lessons Apache-2.0</p>
+<p class="fine">No cookies, no scripts, no tracking - the comics are inline SVG, the page is plain HTML and one stylesheet.</p>
+</div></footer>
+</body>
+</html>
