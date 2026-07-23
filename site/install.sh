@@ -68,7 +68,8 @@ main() {
     # ── 1. Port & sibling-service safety. Never install a competitor. ───────
     if curl -sf -m 2 "http://127.0.0.1:${PORT}/api/status" >/dev/null 2>&1; then
         say "Calibration Scope is already running on 127.0.0.1:${PORT} — opening it."
-        say "(To upgrade:  brew upgrade ${TAP}/${FORMULA}  then restart the service.)"
+        say "To upgrade (one line, closes on its own):"
+        say "  brew upgrade ${TAP}/${FORMULA} && launchctl kickstart -k gui/\$(id -u)/${LABEL}"
         open "http://127.0.0.1:${PORT}" || true
         exit 0
     fi

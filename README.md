@@ -142,6 +142,22 @@ supercomputer in a laptop costume; and "cloud" means renting someone else's
 data center by the token. On weak hardware you're benchmarking cloud models —
 and yourself. The scope runs on a $60 board; the minds it measures do not.
 
+## Updating
+
+No auto-updater, by design — the instrument never phones home, and that
+includes not checking for its own updates. Updating is one deliberate line:
+
+```bash
+brew upgrade it-help-san-diego/tap/calibration-scope && launchctl kickstart -k gui/$(id -u)/com.calibrationscope.dashboard
+```
+
+(The kickstart matters: brew swaps the binary on disk, but the running
+service keeps the old one in memory until restarted.) If you installed via
+the release tarball instead of brew, re-run the newer release's installer.
+Every release is announced on the
+[GitHub releases page](https://github.com/IT-Help-San-Diego/calibration-scope/releases)
+— watch the repo to get notified.
+
 ## Quick start (from source)
 
 ```bash

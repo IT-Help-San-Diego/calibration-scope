@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use Calibration Scope in your research, please cite it as below."
+title: "Calibration Scope"
+abstract: "A local-first scientific instrument for verifying what minds — silicon and carbon — can actually do: blind capability tests with machine-verified ground truth (propositional and first-order logic checked by complete decision procedures), N=3 trials, SHA3-sealed evidence, and pinned stimuli. The same battery runs against local models, cloud endpoints, and human operators."
+type: software
+authors:
+  - family-names: "Balboa"
+    given-names: "Carey James"
+    orcid: "https://orcid.org/0009-0000-5237-9065"
+    affiliation: "IT Help San Diego Inc."
+license: Apache-2.0
+repository-code: "https://github.com/IT-Help-San-Diego/calibration-scope"
+url: "https://calibrationscope.com"
+version: 0.1.0-beta.1
+date-released: 2026-07-23
+keywords:
+  - AI evaluation
+  - benchmarking
+  - formal logic
+  - reproducibility
+  - evidence provenance
+  - local-first
+  - human calibration

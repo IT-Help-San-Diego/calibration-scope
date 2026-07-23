@@ -43,6 +43,14 @@ Skipping these does not block the release: the GitHub Release, binaries,
 checksums, and shell installer all publish first; only the
 `publish-homebrew-formula` job then fails (and the announce step is skipped).
 
+**Token expiry is a time bomb with a known signature:** fine-grained PATs
+expire, and when this one does, releases go back to failing exactly like the
+first attempt — `publish-homebrew-formula` red with "Bad credentials" at the
+checkout step. The fix is always: regenerate the token, re-seat the secret
+(`pbpaste | gh secret set HOMEBREW_TAP_TOKEN -R IT-Help-San-Diego/calibration-scope`),
+re-run the failed job (`gh run rerun <run-id> --failed`). Check the expiry at
+github.com/settings/personal-access-tokens when planning a release.
+
 ## Cutting a release
 
 First set the new version in `Cargo.toml` `[package] version`, bump
