@@ -1,0 +1,18 @@
+doi,title_claimed,src
+10.1145/3770743.3804292,ExpertFlow: Efficient Mixture-of-Experts Inference via Predictive Expert Caching and Token Scheduling,arxiv_moe_routing.csv
+10.26342/2024-72-1,Revisiting Challenges and Hazards in Large Language Model Evaluation.,paper_table_statistical-r_3yGPSi.csv
+10.7302/27262,Beyond Benchmarks: Human-Aligned Evaluation Frameworks for Large Language Models,paper_table_statistical-r_3yGPSi.csv
+10.18130/mky5-q030,Enhancing Performance of Deep Learning Training and Inference on Resource-Constrained Edge Devices,combined_local_llm_evaluation_consumer_hardware.csv
+10.17605/osf.io/3fq2n,Large Language Models Show Human-like Social Desirability Biases in Survey Responses,paper_table_sycophancy-in_6yv4K6.csv
+10.1145/3769012.3770614,lm-Meter: Unveiling Runtime Inference Latency for On-Device Language Models,paper_table_local-llm-eva_e6Rq4m.csv
+10.5281/zenodo.18301872,OMNIA-1: A Deterministic Governance Shell for Safe LLM Interactions in High-Risk Domains,paper_table_comprehensive_UbBHDm.csv
+10.5281/zenodo.17192009,Countermind: A Multi-Layered Security Architecture for Large Language Models,paper_table_comprehensive_UbBHDm.csv
+10.17605/osf.io/smvw7,Sycophantic AI Decreases Prosocial Intentions and Promotes Dependence,paper_table_sycophancy-in_6yv4K6.csv
+10.5281/zenodo.18331315,LOIS: Learning-Optimized Inference System for Cost-Efficient Large Language Model Deployment,paper_table_llm-model-rou_79scS5.csv
+10.60692/wvdqv-bmn71,Unveiling the Veil: A Comprehensive Analysis of Data Contamination in Leading Language Models,paper_table_benchmark-con_7FgjCd.csv
+10.5281/zenodo.6563622,"TraVLR: Now You See It, Now You Don't! A Bimodal Dataset for Evaluating Visio-Linguisic Reasoning",paper_table_vision-langua_JBsl3h.csv
+10.5281/zenodo.18310366,"SUPREME‑1 v3.0 — A Deterministic, Cryptographically‑Auditable Governance Framework for High‑Risk AI Systems under the EU AI Act",paper_table_comprehensive_UbBHDm.csv
+10.5281/zenodo.18286009,"SAGE-AI: Structured, Auditable, and Statistically Rigorous Evaluation of Agentic AI Systems",paper_table_agentic-llm-b_GWmCUk.csv
+10.5281/zenodo.18203183,Prompt Injection: A Security Challenge for Modern AI Communication,scispace_prompt_injection_jailbreak.csv
+10.5281/zenodo.18331316,LOIS: Learning-Optimized Inference System for Cost-Efficient Large Language Model Deployment,combined_llm_routing_deep_review.csv
+10.5281/zenodo.18310365,"SUPREME‑1 v3.0 — A Deterministic, Cryptographically‑Auditable Governance Framework for High‑Risk AI Systems under the EU AI Act",paper_table_comprehensive_UbBHDm.csv
