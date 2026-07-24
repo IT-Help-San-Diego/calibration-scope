@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-JLGVsaNYfTewj4CibhQV9v/fTb8JLk2EhEn8el3NAYc='">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-ZfjAQyBFujnzJm26QY+c4AugomyMLk3OZPg1wv08wZI='">
 <title>Calibration Scope — verify what minds can actually do</title>
 <meta name="description" content="A local-first scientific instrument that measures what minds — silicon and carbon — can actually do. Blind tests, sealed evidence, machine-verified ground truth, your hardware.">
 <meta name="author" content="Carey James Balboa / IT Help San Diego Inc.">
@@ -111,6 +111,9 @@ footer a{color:var(--gold)}
 .pipe-arrow{color:var(--text2);font-size:12px;text-align:center;user-select:none}
 .flowhead{font-family:var(--mono);font-size:13px;color:var(--gold);letter-spacing:.5px;margin-bottom:6px}
 .flownote{font-size:12.5px;color:var(--text2);margin-top:8px}
+.origin{margin:0}
+.origin .comicwrap{margin-bottom:18px}
+.origin-note{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--text2);border:1px dashed var(--border);border-radius:6px;padding:8px 12px;display:inline-block;margin-top:6px}
 </style>
 </head>
 <body>
@@ -177,6 +180,320 @@ footer a{color:var(--gold)}
 <p>Every week a new model claims to reason. The claims arrive wrapped in benchmarks the model may have memorized, scored by graders nobody audits, summarized in press releases nobody can reproduce. That isn't measurement — it's marketing with numbers on it.</p>
 <p>Calibration Scope takes the opposite bet: <strong>a verdict is only worth what its evidence chain can prove.</strong> Every test has formal ground truth checked by a complete decision procedure — truth tables and finite model search, 2,400 years of logic, machine-checked. Every run is sealed with SHA-3 the moment it completes. Every stimulus is pinned by hash so nobody — including us — can quietly swap the question after seeing the answer.</p>
 <blockquote>A real measurement beats a confident reading. That is the Verification Principle.</blockquote>
+</div></section>
+
+<section class="origin"><div class="wrap">
+<h2>The birth of the black box</h2>
+<p>An origin story, not a measurement. Three deliveries — 1972, 1984, 2012 — and every time the floor dropped, a human said <em>'trust it, ship it.'</em> The black box was never born by accident; it was handed to people who couldn't say no. This is why the Lessons exist, and why the instrument insists on evidence a human can open.</p>
+<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1080" width="1600" height="1080" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+  <defs>
+    <filter id="bbSoft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
+    </filter>
+    <filter id="bbGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="6" result="b"></feGaussianBlur>
+      <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+    </filter>
+    <radialGradient id="bbWarm" cx="45%" cy="52%" r="62%">
+      <stop offset="0" stop-color="#40391a" stop-opacity="0.9"></stop>
+      <stop offset="55%" stop-color="#182310" stop-opacity="0.5"></stop>
+      <stop offset="100%" stop-color="#0f120d" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="bbCold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a3852" stop-opacity="0.85"></stop>
+      <stop offset="100%" stop-color="#0c0f15" stop-opacity="0"></stop>
+    </linearGradient>
+    <radialGradient id="bbCave" cx="50%" cy="46%" r="60%">
+      <stop offset="0" stop-color="#050506"></stop>
+      <stop offset="70%" stop-color="#08080c"></stop>
+      <stop offset="100%" stop-color="#17171f"></stop>
+    </radialGradient>
+    <radialGradient id="bbMatch" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#fbbf24" stop-opacity="0.85"></stop>
+      <stop offset="60%" stop-color="#b45309" stop-opacity="0.28"></stop>
+      <stop offset="100%" stop-color="#0c0f15" stop-opacity="0"></stop>
+    </radialGradient>
+    <radialGradient id="bbLamp" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#c9d4e4" stop-opacity="0.5"></stop>
+      <stop offset="100%" stop-color="#08080b" stop-opacity="0"></stop>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="1080" fill="#0a0a0c"></rect>
+
+  
+  <rect x="26" y="30" width="12" height="58" fill="#22d3ee"></rect>
+  <text x="52" y="52" font-size="16" fill="#8b93a7">A CALIBRATION SCOPE short · origin story</text>
+  <text x="52" y="100" font-weight="700" font-size="44" fill="#f2f4fa">THE BIRTH OF THE BLACK BOX</text>
+  <text x="54" y="132" font-size="20" fill="#8b93a7">Told honestly. Three deliveries. All of them human.</text>
+
+  
+  <g filter="url(#bbSoft)"><rect x="26" y="170" width="500" height="720" rx="14" fill="#0f120d"></rect></g>
+  <clipPath id="bbcA"><rect x="26" y="170" width="500" height="720" rx="14"></rect></clipPath>
+  <g clip-path="url(#bbcA)">
+    <rect x="26" y="170" width="500" height="720" fill="#0f120d"></rect>
+    <rect x="26" y="170" width="500" height="720" fill="url(#bbWarm)"></rect>
+
+    
+    <rect x="40" y="184" width="78" height="30" rx="15" fill="#16281a" stroke="#34633f" stroke-width="1.5"></rect>
+    <text x="79" y="204" text-anchor="middle" font-size="16" font-weight="700" fill="#7fe0a0">1972</text>
+    <text x="40" y="246" font-size="24" font-weight="700" fill="#bfe3a8">THE CLEAN BIRTH</text>
+    <line x1="40" y1="262" x2="502" y2="262" stroke="#2c3a24" stroke-width="1.5"></line>
+
+    
+    <line x1="66" y1="596" x2="486" y2="596" stroke="#3a4a2f" stroke-width="4"></line>
+    <line x1="66" y1="602" x2="486" y2="602" stroke="#1e2a16" stroke-width="3"></line>
+
+    
+    <g>
+      <rect x="112" y="300" width="16" height="58" rx="8" fill="#43616e" transform="rotate(26 120 358)"></rect>
+      <rect x="172" y="300" width="16" height="58" rx="8" fill="#43616e" transform="rotate(-26 180 358)"></rect>
+      <circle cx="116" cy="302" r="7" fill="#e8b98f"></circle>
+      <circle cx="184" cy="302" r="7" fill="#e8b98f"></circle>
+      <rect x="116" y="392" width="68" height="96" rx="18" fill="#43616e"></rect>
+      <rect x="140" y="372" width="20" height="24" fill="#e0a877"></rect>
+      <ellipse cx="150" cy="344" rx="24" ry="26" fill="#e8b98f"></ellipse>
+      <path d="M126 344 q-4 -46 24 -46 q28 0 24 46 q-14 -18 -24 -18 q-10 0 -24 18 z" fill="#2f2620"></path>
+      <g stroke="#cdd6c2" stroke-width="3" fill="#0f1420" fill-opacity="0.22">
+        <rect x="130" y="338" width="18" height="15" rx="5"></rect>
+        <rect x="152" y="338" width="18" height="15" rx="5"></rect>
+        <line x1="148" y1="345" x2="152" y2="345"></line>
+      </g>
+      <circle cx="139" cy="346" r="3" fill="#14161f"></circle>
+      <circle cx="161" cy="346" r="3" fill="#14161f"></circle>
+      <path d="M140 362 q10 8 20 0" stroke="#7a4a2a" stroke-width="3" fill="none" stroke-linecap="round"></path>
+    </g>
+
+    
+    <g>
+      <rect x="338" y="396" width="68" height="92" rx="18" fill="#7a5a44"></rect>
+      <rect x="384" y="360" width="15" height="64" rx="7" fill="#7a5a44" transform="rotate(-16 391 392)"></rect>
+      <rect x="362" y="372" width="20" height="24" fill="#e0a877"></rect>
+      <ellipse cx="372" cy="346" rx="24" ry="26" fill="#e8b98f"></ellipse>
+      <path d="M348 346 q-2 -48 24 -48 q30 0 22 44 q-16 -16 -30 -12 q-10 4 -16 16 z" fill="#3a2a1c"></path>
+      <circle cx="362" cy="346" r="3" fill="#14161f"></circle>
+      <circle cx="383" cy="346" r="3" fill="#14161f"></circle>
+      <path d="M362 364 q10 6 20 0" stroke="#7a4a2a" stroke-width="3" fill="none" stroke-linecap="round"></path>
+      <circle cx="386" cy="362" r="8" fill="#e0a877"></circle>
+    </g>
+
+    
+    <rect x="84" y="476" width="356" height="12" rx="3" fill="#241d10"></rect>
+    <rect x="84" y="476" width="356" height="4" fill="#4a3d22"></rect>
+
+    
+    <polygon points="246,476 296,476 306,488 236,488" fill="#221b0f"></polygon>
+    <rect x="196" y="372" width="150" height="104" rx="10" fill="#2b2a20" stroke="#574f38" stroke-width="3"></rect>
+    <g filter="url(#bbGlow)">
+      <rect x="208" y="384" width="126" height="80" rx="6" fill="#07160c" stroke="#3ddc84" stroke-width="2"></rect>
+    </g>
+    <g fill="#4ade80">
+      <rect x="218" y="394" width="72" height="5" rx="2"></rect>
+      <rect x="218" y="406" width="98" height="5" rx="2" fill="#86efac"></rect>
+      <rect x="218" y="418" width="54" height="5" rx="2"></rect>
+      <rect x="218" y="430" width="86" height="5" rx="2"></rect>
+      <rect x="218" y="442" width="40" height="5" rx="2" fill="#86efac"></rect>
+      <rect x="264" y="442" width="10" height="7" fill="#4ade80"></rect>
+    </g>
+
+    
+    <rect x="168" y="496" width="176" height="92" rx="4" fill="#241d10" stroke="#574f38" stroke-width="2.5"></rect>
+    <rect x="196" y="516" width="40" height="46" rx="2" fill="#e6dcc0" stroke="#b8ab86" stroke-width="1.5" transform="rotate(-6 216 539)"></rect>
+    <rect x="240" y="510" width="40" height="52" rx="2" fill="#efe7d0" stroke="#b8ab86" stroke-width="1.5" transform="rotate(3 260 536)"></rect>
+    <rect x="286" y="518" width="38" height="44" rx="2" fill="#e6dcc0" stroke="#b8ab86" stroke-width="1.5" transform="rotate(9 305 540)"></rect>
+    <rect x="150" y="548" width="212" height="42" rx="4" fill="#30271a" stroke="#6b5c3a" stroke-width="2.5"></rect>
+    <rect x="236" y="564" width="40" height="8" rx="4" fill="#6b5c3a"></rect>
+
+    
+    <line x1="40" y1="632" x2="502" y2="632" stroke="#2c3a24" stroke-width="1.5"></line>
+    <text x="40" y="664" font-size="30" fill="#e6ecd6">We hid the wiring so you</text>
+    <text x="40" y="702" font-size="30" fill="#e6ecd6">wouldn&#39;t trip on it. The</text>
+    <text x="40" y="740" font-size="30" fill="#e6ecd6">drawer still opens. Look</text>
+    <text x="40" y="778" font-size="30" fill="#e6ecd6">anytime.</text>
+
+    
+    <text x="40" y="826" font-size="14.5" fill="#8ba078">Parnas, 1972 — information hiding.</text>
+    <text x="40" y="848" font-size="14.5" fill="#8ba078">A design courtesy, not a wall.</text>
+  </g>
+
+  
+  <g filter="url(#bbSoft)"><rect x="546" y="170" width="500" height="720" rx="14" fill="#0c0f15"></rect></g>
+  <clipPath id="bbcB"><rect x="546" y="170" width="500" height="720" rx="14"></rect></clipPath>
+  <g clip-path="url(#bbcB)">
+    <rect x="546" y="170" width="500" height="720" fill="#0c0f15"></rect>
+    <polygon points="660,306 932,306 992,600 600,600" fill="url(#bbCold)" opacity="0.55"></polygon>
+
+    
+    <rect x="560" y="184" width="122" height="30" rx="15" fill="#1a2130" stroke="#3a4658" stroke-width="1.5"></rect>
+    <text x="621" y="204" text-anchor="middle" font-size="16" font-weight="700" fill="#9fb2cc">1983–84</text>
+    <text x="560" y="246" font-size="24" font-weight="700" fill="#c2cee2">THE LOCKED BIRTH</text>
+    <line x1="560" y1="262" x2="1022" y2="262" stroke="#333c4d" stroke-width="1.5"></line>
+
+    
+    <g filter="url(#bbGlow)">
+      <rect x="636" y="292" width="320" height="13" rx="5" fill="#cdd8e8"></rect>
+    </g>
+    <rect x="686" y="286" width="10" height="8" fill="#59647a"></rect>
+    <rect x="896" y="286" width="10" height="8" fill="#59647a"></rect>
+
+    
+    <line x1="590" y1="592" x2="878" y2="592" stroke="#3a4152" stroke-width="4"></line>
+    <path d="M878 592 l14 12 l-10 10" fill="none" stroke="#3a4152" stroke-width="4" stroke-linejoin="round"></path>
+    <line x1="906" y1="606" x2="1010" y2="606" stroke="#333c4d" stroke-width="4"></line>
+
+    
+    <rect x="706" y="396" width="180" height="192" rx="6" fill="#1c2028" stroke="#39414f" stroke-width="3"></rect>
+    <line x1="716" y1="452" x2="876" y2="452" stroke="#39414f" stroke-width="2"></line>
+    <line x1="716" y1="514" x2="876" y2="514" stroke="#39414f" stroke-width="2"></line>
+    <rect x="778" y="424" width="36" height="7" rx="3" fill="#39414f"></rect>
+    <rect x="778" y="548" width="36" height="7" rx="3" fill="#39414f"></rect>
+    
+    <rect x="780" y="470" width="34" height="42" rx="4" fill="#2a303b"></rect>
+    <path d="M786 478 v-10 a11 11 0 0 1 22 0 v10" fill="none" stroke="#c3ccd8" stroke-width="6"></path>
+    <rect x="776" y="478" width="42" height="40" rx="6" fill="#9aa4b5" stroke="#c3ccd8" stroke-width="2"></rect>
+    <circle cx="797" cy="496" r="5" fill="#2a303b"></circle>
+    <rect x="795" y="498" width="4" height="10" fill="#2a303b"></rect>
+    
+    <line x1="812" y1="480" x2="838" y2="470" stroke="#8b95a8" stroke-width="1.5"></line>
+    <rect x="832" y="466" width="34" height="22" rx="3" fill="#d9c48a" stroke="#a8925a" stroke-width="1.5" transform="rotate(6 849 477)"></rect>
+    <g stroke="#8a7748" stroke-width="1.5" transform="rotate(6 849 477)">
+      <line x1="838" y1="474" x2="860" y2="474"></line>
+      <line x1="838" y1="481" x2="856" y2="481"></line>
+    </g>
+
+    
+    <g transform="translate(46,0)">
+      <ellipse cx="784" cy="394" rx="12" ry="5" fill="#0a0c10"></ellipse>
+      <ellipse cx="808" cy="394" rx="12" ry="5" fill="#0a0c10"></ellipse>
+      <rect x="778" y="330" width="13" height="64" fill="#14161c"></rect>
+      <rect x="801" y="330" width="13" height="64" fill="#14161c"></rect>
+      <path d="M770 268 q26 -10 52 0 l8 66 l-68 0 z" fill="#1b1e26"></path>
+      <path d="M796 268 l-12 30 l12 8 l12 -8 z" fill="#2a2e38"></path>
+      <path d="M793 276 l6 0 l-2 46 l-2 0 z" fill="#3a2230"></path>
+      <rect x="742" y="272" width="14" height="58" rx="7" fill="#1b1e26" transform="rotate(10 749 301)"></rect>
+      <rect x="836" y="272" width="14" height="58" rx="7" fill="#1b1e26" transform="rotate(-10 843 301)"></rect>
+      <rect x="828" y="322" width="34" height="26" rx="3" fill="#20242c" stroke="#39414f" stroke-width="2" transform="rotate(-10 845 335)"></rect>
+      <rect x="740" y="322" width="12" height="10" rx="3" fill="#d9a982"></rect>
+      <rect x="838" y="322" width="12" height="10" rx="3" fill="#d9a982"></rect>
+      <rect x="786" y="240" width="20" height="20" fill="#cf9e79"></rect>
+      <ellipse cx="796" cy="220" rx="21" ry="23" fill="#d9a982"></ellipse>
+      <path d="M776 218 q-2 -34 20 -34 q22 0 20 34 q-12 -14 -20 -14 q-8 0 -20 14 z" fill="#23262e"></path>
+      <line x1="787" y1="220" x2="792" y2="220" stroke="#14161f" stroke-width="2.5" stroke-linecap="round"></line>
+      <line x1="800" y1="220" x2="805" y2="220" stroke="#14161f" stroke-width="2.5" stroke-linecap="round"></line>
+      <line x1="789" y1="234" x2="803" y2="234" stroke="#7a4a2a" stroke-width="2.5" stroke-linecap="round"></line>
+    </g>
+
+    
+    <g transform="translate(628,506)">
+      <circle cx="36" cy="-38" r="24" fill="url(#bbMatch)"></circle>
+      <rect x="-12" y="10" width="26" height="40" rx="9" fill="#2b3340"></rect>
+      <rect x="8" y="-8" width="11" height="34" rx="5" fill="#2b3340" transform="rotate(-32 13 26)"></rect>
+      <circle cx="0" cy="-2" r="13" fill="#d9a982"></circle>
+      <path d="M-13 -4 q-1 -18 13 -18 q14 0 13 18 q-8 -8 -13 -8 q-5 0 -13 8 z" fill="#2f2620"></path>
+      <line x1="20" y1="-14" x2="34" y2="-30" stroke="#7a5a3a" stroke-width="3" stroke-linecap="round"></line>
+      <g filter="url(#bbGlow)">
+        <path d="M35 -46 q8 9 0 18 q-8 -9 0 -18 z" fill="#fbbf24"></path>
+      </g>
+      <path d="M35 -42 q4 5 0 11 q-4 -6 0 -11 z" fill="#fb923c"></path>
+    </g>
+
+    
+    <line x1="560" y1="632" x2="1022" y2="632" stroke="#333c4d" stroke-width="1.5"></line>
+    <text x="560" y="664" font-size="30" fill="#dde3ee">This one has a name on it.</text>
+    <text x="560" y="702" font-size="30" fill="#dde3ee">Not &#39;you don&#39;t need to</text>
+    <text x="560" y="740" font-size="30" fill="#dde3ee">look.&#39; You may not look.</text>
+
+    
+    <text x="560" y="792" font-size="14.5" fill="#8b95a8">Post-divestiture UNIX licensing — binaries ship,</text>
+    <text x="560" y="814" font-size="14.5" fill="#8b95a8">source becomes trade secret. A business decision,</text>
+    <text x="560" y="836" font-size="14.5" fill="#8b95a8">made by people, with signatures.</text>
+  </g>
+
+  
+  <g filter="url(#bbSoft)"><rect x="1066" y="170" width="500" height="720" rx="14" fill="#08080b"></rect></g>
+  <clipPath id="bbcC"><rect x="1066" y="170" width="500" height="720" rx="14"></rect></clipPath>
+  <g clip-path="url(#bbcC)">
+    <rect x="1066" y="170" width="500" height="720" fill="#08080b"></rect>
+
+    
+    <rect x="1080" y="184" width="112" height="30" rx="15" fill="#121218" stroke="#2a2a34" stroke-width="1.5"></rect>
+    <text x="1136" y="204" text-anchor="middle" font-size="16" font-weight="700" fill="#7c8290">2012 →</text>
+    <text x="1080" y="246" font-size="24" font-weight="700" fill="#aeb3c0">THE BIRTH NOBODY ADMITS TO</text>
+    <line x1="1080" y1="262" x2="1542" y2="262" stroke="#1c1c24" stroke-width="1.5"></line>
+
+    
+    <polygon points="1156,436 1176,436 1360,560 1150,560" fill="url(#bbLamp)" opacity="0.5"></polygon>
+    <circle cx="1150" cy="430" r="30" fill="url(#bbLamp)"></circle>
+
+    
+    <path d="M1206 616 q-30 -150 120 -178 q150 28 120 178 z" fill="#101015"></path>
+    <ellipse cx="1330" cy="502" rx="120" ry="104" fill="url(#bbCave)"></ellipse>
+    <path d="M1224 470 q106 -78 212 0" fill="none" stroke="#b9c2d0" stroke-width="2" opacity="0.12"></path>
+
+    
+    <g filter="url(#bbGlow)">
+      <circle cx="1314" cy="490" r="7" fill="#22d3ee" opacity="0.16"></circle>
+      <circle cx="1348" cy="490" r="7" fill="#22d3ee" opacity="0.16"></circle>
+    </g>
+    <path d="M1298 516 q33 26 66 0" fill="none" stroke="#22d3ee" stroke-width="3" opacity="0.12" stroke-linecap="round"></path>
+
+    
+    <path d="M1300 486 q-40 -34 -74 -8 q-24 20 -4 34 q14 10 22 -6" fill="none" stroke="#5b6270" stroke-width="2.5" opacity="0.55" stroke-linecap="round"></path>
+
+    
+    <line x1="1150" y1="446" x2="1150" y2="582" stroke="#2b3040" stroke-width="4"></line>
+    <line x1="1128" y1="582" x2="1172" y2="582" stroke="#2b3040" stroke-width="4" stroke-linecap="round"></line>
+    <path d="M1140 432 a12 12 0 0 1 24 0 z" fill="#3a4256"></path>
+    <circle cx="1152" cy="434" r="5" fill="#e8eef7"></circle>
+
+    
+    <g>
+      <ellipse cx="1196" cy="580" rx="26" ry="6" fill="#050506"></ellipse>
+      <rect x="1176" y="512" width="16" height="66" rx="7" fill="#15171e"></rect>
+      <rect x="1198" y="512" width="16" height="66" rx="7" fill="#15171e"></rect>
+      <path d="M1172 470 q6 -22 44 -18 q30 4 26 30 l-12 40 l-56 0 z" fill="#181a22"></path>
+      <path d="M1216 452 q26 -6 40 8 q10 10 4 20 l-18 -2 q-2 -12 -14 -14 z" fill="#181a22"></path>
+      <ellipse cx="1236" cy="448" rx="21" ry="22" fill="#20222c"></ellipse>
+      <path d="M1218 442 q0 -26 22 -24 q22 2 20 22 q-12 -12 -22 -10 q-10 2 -20 12 z" fill="#0e0f14"></path>
+      <path d="M1254 448 l10 4 l-10 6 z" fill="#20222c"></path>
+      <path d="M1256 458 q10 4 14 12 q-14 2 -22 -2 q-8 -6 -4 -12 q6 -4 12 2 z" fill="#20222c"></path>
+      
+      <path d="M1172 470 q6 -22 44 -18" fill="none" stroke="#4a5364" stroke-width="2" opacity="0.6"></path>
+      <path d="M1176 512 l0 62" fill="none" stroke="#3a4152" stroke-width="1.5" opacity="0.5"></path>
+    </g>
+
+    
+    <line x1="1090" y1="580" x2="1206" y2="580" stroke="#26262e" stroke-width="4"></line>
+    <path d="M1206 580 l8 8 l-6 8 l10 6" fill="none" stroke="#26262e" stroke-width="4" stroke-linejoin="round"></path>
+
+    
+    <line x1="1080" y1="632" x2="1542" y2="632" stroke="#1c1c24" stroke-width="1.5"></line>
+    <text x="1080" y="664" font-size="30" fill="#d6d8e0">Nobody locked this one.</text>
+    <text x="1080" y="702" font-size="30" fill="#d6d8e0">We built a thing with no</text>
+    <text x="1080" y="740" font-size="30" fill="#d6d8e0">drawer to open — and</text>
+    <text x="1080" y="778" font-size="30" fill="#d6d8e0">shipped it grinning.</text>
+
+    
+    <text x="1080" y="826" font-size="14.5" fill="#7d818e">Deep networks at scale. Opaque to its own builders.</text>
+    <text x="1080" y="848" font-size="14.5" fill="#7d818e">Weights fully open and still unreadable.</text>
+  </g>
+
+  
+  <line x1="26" y1="924" x2="1566" y2="924" stroke="#2b3143" stroke-width="1.5" stroke-dasharray="3 7"></line>
+  <text x="796" y="962" text-anchor="middle" font-size="28" fill="#e6e9f2">Every time the floor dropped, a human said <tspan fill="#e8b04b">&#39;trust it, ship it&#39;</tspan> —</text>
+  <text x="796" y="998" text-anchor="middle" font-size="28" fill="#e6e9f2">and handed the dark to someone who <tspan fill="#7c8290">couldn&#39;t say no.</tspan></text>
+
+  
+  <g font-family="&#39;SF Mono&#39;,&#39;Menlo&#39;,&#39;Consolas&#39;,monospace">
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/tree/main/lessons" target="_blank" style="cursor:pointer"><title>No SHA3 seal on this one — it is history, not a reproducible run. Sources are cited in each panel. Click to open the series.</title><rect x="26" y="1018" width="1540" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <circle cx="52" cy="1038" r="9" fill="none" stroke="#5b6274" stroke-width="2"></circle>
+    <line x1="46" y1="1044" x2="58" y2="1032" stroke="#5b6274" stroke-width="2"></line>
+    <text x="76" y="1043" font-size="13" fill="#8b93a7">NO SEAL — history, not a run. Nothing here is reproducible, so nothing here is stamped.</text>
+    <text x="900" y="1043" font-size="13" fill="#5b6274">· sources cited in every panel ·</text>
+    <text x="1548" y="1043" text-anchor="end" font-size="13" fill="#6ee7b7">calibration-scope ↗</text></a>
+  </g>
+</svg></div>
+<p class="origin-note">NO SEAL — history, not a run. Nothing here is reproducible, so nothing here is stamped. Sources are cited in each panel. The sealed runs are on the <a href="/lessons.html">Lessons</a> page.</p>
 </div></section>
 
 <section><div class="wrap">
