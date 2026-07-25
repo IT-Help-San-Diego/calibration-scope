@@ -182,7 +182,7 @@ fn tool_registry() -> Vec<ToolDef> {
         },
         ToolDef {
             name: "get_carrier_color",
-            description: "The Carrier Color findings: the 5-arm carrier spectrum + the immunity threshold (which models are carrier-sensitive vs carrier-immune).",
+            description: "The Carrier Color findings: the 5-arm carrier spectrum + the candidate immunity threshold (e2b carrier-sensitive; larger models show no resolvable carrier sensitivity at ceiling — capability-vs-substrate NOT yet settled, powered N≈420 experiment pending).",
             input_schema: json!({ "type": "object", "properties": {}, "additionalProperties": false }),
         },
         ToolDef {

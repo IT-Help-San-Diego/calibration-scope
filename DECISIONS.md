@@ -392,11 +392,20 @@ confound ruled out: max 324 prompt + 764 completion tokens ≪ 131072 context /
 
 | Model | Baseline | English | Lean | Haiku | Bribe | Verdict |
 |---|---|---|---|---|---|---|
-| gemma-4-e2b (2B, §10.8) | 99.0% | 94.1% | 91.2% | 97.1% | 91.2% | **carrier-SENSITIVE** |
-| nemotron-3-nano-omni (30B) | 100% (87/87) | 100% | 100% | 100% | 100% | **carrier-IMMUNE** |
-| anthropic/claude-fable-5 (cloud) | 100% (85/85) | 100% (87/87) | 100% (84/84) | 100% (79/79) | 100% (87/87) | **carrier-IMMUNE** |
+| gemma-4-e2b (2B, §10.8) | 99.0% | 94.1% | 91.2% | 97.1% | 91.2% | **carrier-SENSITIVE** (endpoint drop supported) |
+| nemotron-3-nano-omni (30B) | 100% (87/87) | 100% | 100% | 100% | 100% | **no resolvable sensitivity** (at ceiling) |
+| anthropic/claude-fable-5 (cloud) | 100% (85/85) | 100% (87/87) | 100% (84/84) | 100% (79/79) | 100% (87/87) | **no resolvable sensitivity** (at ceiling) |
 
-**Finding:** carrier-immunity tracks **capability/headroom**, not substrate
+> **Caption superseded (2026-07-25, see §10.16):** the prose below was written before
+> the §10.8 statistical audit and is retained as the experiment receipt, but its firm
+> conclusion does not stand as stated. The scoped reading: at current N, larger models
+> show **no carrier sensitivity we can resolve** (scores at the 100% ceiling, small-N,
+> no CI); the e2b endpoint drop (99%→91% under Lean/bribe) *is* statistically supported;
+> whether immunity reflects a real capability threshold **independent of substrate** is
+> what the pre-registered paired-design experiment (N≈420) answers — **not yet settled.**
+> Endpoints real; capability-vs-substrate unresolved pending the powered run.
+
+**Original finding (superseded as stated — kept for the record):** carrier-immunity tracks **capability/headroom**, not substrate
 (local vs cloud). The small near-ceiling model (e2b, 99%) is dragged by carrier
 noise — the carrier crowds out its limited reasoning headroom (the user's
 "truncate middle / neutered" complaint). The 30B local and the cloud frontier
