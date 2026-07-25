@@ -60,6 +60,11 @@ MCP-sampling item. A single "98.4%" therefore blends logic + injection resistanc
 4. **Add sound controls** to the pack (specificity currently rests on ~2 items).
 
 ## Design credit where due
-The packs are **identical 64 items reshuffled per admin** (verified: sorted-item hashes match across C
-admins). That makes this a genuine PAIRED design at item level — the only design the power analysis found
+The packs are **identical 64 items reshuffled per admin** — verified 2026-07-25 across ALL THREE C
+admins: sorted-item md5 = `85cbf57530726e44205eeb1048aa1976` for admin1 (seed406033977), admin2
+(seed1189050794), and admin3 (seed86531955).
+_Correction of record: when this note was first written, only admin1 and admin2 had been hash-checked;
+the text nevertheless said "across C admins" (plural). admin3 was verified afterward, on audit. The
+claim now holds, but it was unearned at the time of writing — logged as a mislabeled verification._
+That makes this a genuine PAIRED design at item level — the only design the power analysis found
 adequately powered. The protocol was built right.
