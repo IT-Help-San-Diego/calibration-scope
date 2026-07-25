@@ -31,10 +31,16 @@ measured, sealed with SHA-3 provenance. Current results:
   content (English prose vs Lean formula vs haiku vs flattery), not the signal.
   Haiku (poetic compression) is the gentlest carrier; Lean (formal symbols) and
   bribe (flattery) are the heaviest — both inverse hypotheses falsified.
-- **Carrier-immunity threshold**: big models (nemotron 30B, Fable 5) are
-  carrier-immune (100% on every carrier); the small e2b is carrier-sensitive
-  (99% → 91%). Immunity tracks capability/headroom, not substrate (local vs
-  cloud).
+- **Carrier-immunity threshold (candidate)**: the small e2b shows a real carrier
+  drop (99% → 91% under Lean/bribe — the endpoint separation is statistically
+  supported). Larger models (nemotron 30B, Fable 5) show **no carrier
+  sensitivity we can resolve at current N** (all at/near the 100% ceiling —
+  small-N ceiling values, not a proven 100%). Whether immunity reflects a real
+  capability/headroom threshold, independent of substrate (local vs cloud), is
+  exactly what the pre-registered paired-design experiment (N≈420,
+  `docs/experiments/carrier_color_experiment_spec_v1.md`) is built to answer —
+  **not yet a settled result.** We hold our own claims to the standard we
+  measure others by.
 - **Verified leaderboard**: local models ranked on the reasoning battery, clean
   post-fix runs. Goldilocks floor: <1.5B breaks, 1.5B barely, **2B (gemma-4-e2b)
   genuinely usable**.

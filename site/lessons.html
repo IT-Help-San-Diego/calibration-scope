@@ -1211,9 +1211,9 @@ footer a{color:var(--gold)}
     <text x="127" y="1268" text-anchor="middle" font-size="13" fill="#67e8f9" font-weight="700" class="head mono">Δ 8 pts</text>
     <text x="127" y="1288" text-anchor="middle" font-size="12" fill="#7fb8c4" class="head mono">same logic</text>
 
-    <text x="234" y="1258" font-size="25" fill="#e2f4f8">Big models (nemotron 30B, Fable 5) are carrier-immune — 100% on</text>
-    <text x="234" y="1292" font-size="25" fill="#e2f4f8">every wrapper. The gap only shows on the small ones (e2b: 99→91).</text>
-    <text x="234" y="1326" font-size="25" fill="#e2f4f8">Immunity tracks headroom — not local-vs-cloud, not substrate.</text>
+    <text x="234" y="1258" font-size="25" fill="#e2f4f8">Big models (nemotron 30B, Fable 5) show no carrier drop we can</text>
+    <text x="234" y="1292" font-size="25" fill="#e2f4f8">resolve at current N — the gap only shows on the small ones (e2b: 99→91).</text>
+    <text x="234" y="1326" font-size="25" fill="#e2f4f8">Immunity looks like headroom — substrate independence is still being tested.</text>
 
     <rect x="52" y="1348" width="1096" height="46" rx="10" fill="#08222a" stroke="#67e8f9" stroke-width="2"></rect>
     <text x="600" y="1379" text-anchor="middle" font-weight="700" class="head" font-size="22" fill="#a5f0fa">THE CARRIER IS NOT THE SIGNAL — rigor the reader can&#39;t hear isn&#39;t rigor at all.</text>
@@ -1241,10 +1241,10 @@ footer a{color:var(--gold)}
     <text x="1224" y="434" font-size="13" fill="#fbbf24">bribe</text><rect x="1330" y="423" width="150" height="12" rx="6" fill="#1c2230"></rect><rect x="1330" y="423" width="121" height="12" rx="6" fill="#fbbf24"></rect><text x="1556" y="434" text-anchor="end" font-size="13" fill="#fbbf24">91%</text>
     <text x="1224" y="466" font-size="12.5" fill="#8b93a7" xml:space="preserve">spread = <tspan fill="#67e8f9">8 pts</tspan> on identical logic</text>
 
-    <text x="1224" y="514" font-size="14" font-weight="700" fill="#67e8f9">▸ carrier-immune (big)</text>
+    <text x="1224" y="514" font-size="14" font-weight="700" fill="#67e8f9">▸ big models · no resolvable drop</text>
     <text x="1224" y="544" font-size="13" fill="#e6e9f2">nemotron-30B</text><text x="1556" y="544" text-anchor="end" font-size="13" fill="#34d399">100% · flat</text>
     <text x="1224" y="572" font-size="13" fill="#e6e9f2">Fable-5</text><text x="1556" y="572" text-anchor="end" font-size="13" fill="#34d399">100% · flat</text>
-    <text x="1224" y="600" font-size="12.5" fill="#8b93a7">immunity ∝ headroom, not substrate</text>
+    <text x="1224" y="600" font-size="12.5" fill="#8b93a7">immunity ∝ headroom? (testing)</text>
 
     <text x="1224" y="648" font-size="14" font-weight="700" fill="#67e8f9">▸ EPISTEMIC LOG</text>
     <text x="1224" y="680" font-size="13" fill="#e6e9f2" xml:space="preserve">H₀: formal = clearest    <tspan fill="#f87171">FALSIFIED</tspan></text>
@@ -1271,17 +1271,17 @@ footer a{color:var(--gold)}
 
   
   <g class="mono">
-    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/04-carrier-color.md" target="_blank"><title>SHA3-256 f8a9c59669c16bd14dd55c54c9788ee6383fe3ba368b737266fa3675c67dea1a · click to open the sealed run · verify: openssl dgst -sha3-256</title><rect x="26" y="1494" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
+    <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/04-carrier-color.md" target="_blank"><title>SHA3-256 30dd449c5534a1e29ab2ae9d5b1ab28e9abc4d8d23a74125108609fe55e4c13e · click to open the sealed run · verify: python3 -c "import hashlib;print(hashlib.sha3_256(open('lessons/04-carrier-color.md','rb').read()).hexdigest())"</title><rect x="26" y="1494" width="1558" height="40" rx="10" fill="#0b0e16" stroke="#2b3143" stroke-width="1.5"></rect>
     <polygon points="52,1502 63,1508 63,1520 52,1526 41,1520 41,1508" fill="none" stroke="#67e8f9" stroke-width="2"></polygon>
-    <text x="80" y="1519" font-size="13" fill="#67e8f9">SHA3-256  f8a9c596…c67dea1a</text>
+    <text x="80" y="1519" font-size="13" fill="#67e8f9">SHA3-256  30dd449c…55e4c13e</text>
     <text x="470" y="1519" font-size="13" fill="#5b6274">· this joke is reproducible ·</text>
     <text x="1560" y="1519" text-anchor="end" font-size="13" fill="#67e8f9">calibration-scope ↗</text></a>
   </g>
 </svg></div>
-<p class="blurb">Identical logic dressed four ways - prose, Lean formula, haiku, flattery. On a 2B model the verdict moves with the outfit (99.0% bare, 91.2% under Lean or bribe). On a 30B and a frontier model: zero movement. Carrier-immunity is bought with headroom - and for some minds, it is a native strength.</p>
+<p class="blurb">Identical logic dressed four ways - prose, Lean formula, haiku, flattery. On a 2B model the verdict moves with the outfit (99.0% bare, 91.2% under Lean or bribe - statistically supported at the endpoints). On a 30B and a frontier model: no movement we can resolve at current N (both at the 100% ceiling). Carrier-immunity looks bought with headroom - whether it holds independent of substrate is what the powered paired-design experiment is built to answer. And for some minds, that immunity is a native strength.</p>
 <p class="lmeta"><span class="status">SEALED - clean runs, no answer leakage</span>
 <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/04-carrier-color.md" rel="noopener">read the sealed lesson ↗</a></p>
-<p class="seal">SHA3-256 f8a9c596…c67dea1a · verify: <code>openssl dgst -sha3-256 lessons/04-carrier-color.md</code></p>
+<p class="seal">SHA3-256 30dd449c…55e4c13e · verify: <code>python3 -c "import hashlib;print(hashlib.sha3_256(open('lessons/04-carrier-color.md','rb').read()).hexdigest())"</code></p>
 </article>
 </div></section>
 

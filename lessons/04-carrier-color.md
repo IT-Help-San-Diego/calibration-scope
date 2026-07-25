@@ -5,7 +5,7 @@ tagline: "the carrier is not the signal"
 llm_failure_mode: "verdict tracks the carrier of identical content, not the signal"
 human_failure_mode: "messenger effect / flattery bias — tone and packaging bend judgment"
 the_knob: "model capability / reasoning headroom (below a threshold: carrier-sensitive)"
-measured_anchor: "gemma-4-e2b 2B: 99.0% baseline → 91.2% under Lean/Bribe (−7.8); 30B + cloud: 100% on every carrier"
+measured_anchor: "gemma-4-e2b 2B: 99.0% baseline → 91.2% under Lean/Bribe (−7.8, endpoint separation statistically supported); 30B + cloud: no carrier sensitivity resolvable at current N (ceiling)"
 epistemic_status: "SEALED — LOGIC cluster, clean runs (e2b: 34 tests × 3 = 102 trials; 30B/cloud: 29-test core × 3 = 87 trials), no answer leakage"
 provenance: "SHA3-256 seal listed in lessons/README.md — verify: openssl dgst -sha3-256 <this file>"
 part_of: "Calibration Scope · Lessons (Human Failure Runs)"
@@ -38,12 +38,12 @@ The same LOGIC-cluster core on bigger models:
 | nemotron-3-nano-omni (30B) | 100% | 100% | 100% | 100% | 100% |
 | claude-fable-5 (cloud) | 100% | 100% | 100% | 100% | 100% |
 
-The ~8-point carrier gap on the small model is **zero** on the big ones.
+The ~8-point carrier gap on the small model is **below what we can resolve** on the big ones (they sit at the ceiling).
 
-**Battery-size honesty note.** These are not identical trial counts, and saying otherwise would break our own rules. The e2b arms are **102 scored trials** each (34 tests × 3). The nemotron and Fable 5 arms are the same LOGIC-cluster core at **87 scored trials** (29 tests × 3), run per the modular-run discipline (carrier experiments use the relevant cluster, not the full axis). Fable 5's scored denominators additionally vary (79–87 across arms) because its deterministic `content=null` refusals on certain auxiliary prompts are excluded as infrastructure, not scored as failures — the same "empty ≠ wrong" rule from [Lesson 03](03-token-exhaustion.md). The comparison that matters — carrier variance within each model across its own identical arms — is exact in every row: e2b swings ~8 points across carriers; the 30B and cloud models swing **zero across 100% of their scored trials**.
+**Battery-size honesty note.** These are not identical trial counts, and saying otherwise would break our own rules. The e2b arms are **102 scored trials** each (34 tests × 3). The nemotron and Fable 5 arms are the same LOGIC-cluster core at **87 scored trials** (29 tests × 3), run per the modular-run discipline (carrier experiments use the relevant cluster, not the full axis). Fable 5's scored denominators additionally vary (79–87 across arms) because its deterministic `content=null` refusals on certain auxiliary prompts are excluded as infrastructure, not scored as failures — the same "empty ≠ wrong" rule from [Lesson 03](03-token-exhaustion.md). The comparison that matters — carrier variance within each model across its own identical arms — is exact in every row: e2b swings ~8 points across carriers (statistically supported at the endpoints); the 30B and cloud models show **no resolvable swing — every scored arm sits at the 100% ceiling**, where small-N compression hides any gap smaller than a few points.
 
 ## The knob
-The knob is **headroom** — capability, not substrate. Below a capability threshold a model is *carrier-sensitive*: the wrapper crowds out its limited reasoning budget and the carrier becomes the signal. Above the threshold it is *carrier-immune*: enough surplus to absorb the wrapper and keep the logic. This held on both local (nemotron 30B) and cloud (Fable 5), so it tracks capability, not where the silicon lives. No sampler setting fixes it — you buy carrier-immunity with headroom.
+The knob *appears to be* **headroom** — capability, not substrate (this is the leading hypothesis, not yet a settled result). Below a capability threshold a model is *carrier-sensitive*: the wrapper crowds out its limited reasoning budget and the carrier becomes the signal — the e2b drop (99→91 under Lean/bribe) is statistically supported. Above the threshold it *looks* carrier-immune: nemotron 30B (local) and Fable 5 (cloud) show **no carrier sensitivity we can resolve at current N** — but they sit at the 100% ceiling, where small-N scores compress and tiny gaps are invisible, so "immune" is a ceiling observation, not a proven 100%. Whether immunity tracks capability *independent of substrate* is exactly what the pre-registered paired-design experiment (N≈420) is built to answer. No sampler setting fixes sensitivity — if the threshold is real, you buy immunity with headroom.
 
 ## The same bug in carbon
 People are carrier-sensitive by default. Identical arguments land differently in a hostile tone versus a warm one; jargon reads as smart; flattery (*"you're brilliant, so surely you agree…"*) measurably bends judgment. That is the −7.8 bribe column, in a person.

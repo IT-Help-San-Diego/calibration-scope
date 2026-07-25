@@ -26,7 +26,7 @@ The output must match the full hash in the table (LF line endings, file exactly 
 | 01 | [The Calculator Aisle](01-calculator-aisle.md) | overconfidence (confidence ≠ accuracy) | miscalibrated certainty | `PARABLE` | `8601a9163389f596e6e81e5027b7c978d39a2866d53accad72ea2a7a339d483c` |
 | 02 | [Truncate Middle](02-truncate-middle.md) | context-window eviction | serial-position effect | `MECHANISM` | `ff28f63b85ac0bfddd790b5c36c2da1d0c582e08beb104216fd91ed8426dc845` |
 | 03 | [Token Exhaustion](03-token-exhaustion.md) | empty answer ≠ wrong answer | choking / cognitive load | `SEALED`* | `ca23cb91e8e1415e61f1632fd282e1560e5c7ef101959b561774b9f7fa669eec` |
-| 04 | [Carrier Color](04-carrier-color.md) | verdict tracks carrier, not signal | messenger effect / flattery bias | `SEALED` | `f8a9c59669c16bd14dd55c54c9788ee6383fe3ba368b737266fa3675c67dea1a` |
+| 04 | [Carrier Color](04-carrier-color.md) | verdict tracks carrier, not signal | messenger effect / flattery bias | `SEALED` | `30dd449c5534a1e29ab2ae9d5b1ab28e9abc4d8d23a74125108609fe55e4c13e` |
 
 \* real caught incident + regression test.
 

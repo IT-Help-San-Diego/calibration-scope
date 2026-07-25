@@ -1035,3 +1035,26 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
 - The Witness artifact spec is new work (Claude Code lane, when ready).
 - The wording audit is a live work item: every public surface must be checked against the mission sentence.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
+
+## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
+
+Claude Science's public-repo embarrassment scan (inbox/claude-science/PUBLIC_REPO_embarrassment_scan.md)
+flagged a **stated-vs-actual gap on our own front page**: README asserted as a *result* that "big models
+are carrier-immune (100% on every carrier); immunity tracks capability, not substrate." That directly
+contradicted our own §10.8 statistical audit ("endpoints real, middle unresolved" — near-ceiling
+compression makes small-N 100% scores unresolvable) and §10.9's own confound note ("treat the substrate
+half of the claim as unresolved until §10.14 runs").
+
+Hermes verified the flag first-hand (grep across all public surfaces), then applied the **honest
+downgrade — not deletion** — to every surface carrying the overclaim: README.md, lessons/04-carrier-color.md
+(+ its `measured_anchor` frontmatter), lessons/comic4.svg, site/lessons.html, and the live MCP tool text
+(src/routes/mcp.rs `get_carrier_color`). New wording: "no carrier sensitivity resolvable at current N
+(ceiling); the e2b endpoint drop 99→91 is statistically supported; whether immunity tracks capability
+*independent of substrate* is what the pre-registered paired-design experiment (N≈420) answers — not yet
+a settled result." Lesson 04 was re-sealed (SHA3-256 `f8a9c596…c67dea1a` → `30dd449c…55e4c13e`) and the
+lessons/README hash table + comic footer + site seal were updated to match. The fix turns a liability into
+a demonstration of the method: we hold our own claims to the standard we measure others by.
+
+CS's no-secrets / no-profanity scan was spot-verified clean (the only hit was a mild quote inside an
+internal research doc, not public copy). The CS branch was merged **docs-only** (`-X ours`) to preserve
+the time-estimate endpoint (a65a0d9) and RUN_BUDGET_SECS=5400 which the stale branch would have deleted.
