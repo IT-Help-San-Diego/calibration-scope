@@ -136,6 +136,10 @@ async fn main() {
         .route("/api/runs/complete", post(routes::runs::complete_run))
         .route("/api/runs/{id}", get(routes::runs::get_run_detail))
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
+        .route(
+            "/api/models/{key}/time-estimate",
+            get(routes::time_estimate::time_estimate),
+        )
         .route("/api/runs/{id}/export", get(routes::runs::export_run))
         .route(
             "/api/prompt-check",

@@ -457,7 +457,7 @@ pub async fn execute_run(
 /// Worst case without this: 300s load + 33 trials x 300s timeout ≈ 3 hours
 /// for ONE queued run. With it: the run aborts honestly at the budget,
 /// records whatever trials completed, and frees the machine.
-const RUN_BUDGET_SECS: u64 = 3600; // 60 minutes — raised from 30 when reasoning battery expanded from 60→90 tests
+const RUN_BUDGET_SECS: u64 = 5400; // 90 minutes — raised from 60 for 64-item channel experiment (64 tests × N=3 × ~28s/trial ≈ 90 min)
 
 #[allow(clippy::too_many_arguments)]
 async fn execute_run_inner(

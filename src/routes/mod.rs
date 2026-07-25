@@ -23,3 +23,4 @@ pub mod spec_decode;
 pub mod status;
 pub mod summary;
 pub mod tests;
+pub mod time_estimate;
