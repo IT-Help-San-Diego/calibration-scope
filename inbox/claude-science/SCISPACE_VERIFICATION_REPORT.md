@@ -11,7 +11,7 @@ _Claude Science, 2026-07-24. Source: agent-artifacts-zip_aff4bc9f (SciSpace lit-
   "failures" were arXiv DOIs (prefix 10.48550), which resolve via DataCite, NOT Crossref.
   Testing arXiv preprints against a journal-only registry is the wrong instrument.
 - Corrected check (doi.org content negotiation, covers Crossref + DataCite):
-  **TRUE resolution rate = 383/400 = 95.8%** (95% CI ~[93.8%, 97.8%]).
+  **TRUE resolution rate = 383/400 = 95.8%** (95% CI [93.8%, 97.7%]).
 - Genuinely unresolvable: **17/400 = 4.2%** — an UPPER BOUND. Several are ACM (10.1145),
   OSF (10.17605/osf.io — osf.io was network-blocked this run, so not truly tested), and
   Zenodo (10.5281) that HEAD-request redirect quirks may undercount. True fabrication rate
@@ -30,3 +30,8 @@ treats them as different projects; it is a straight rename. RISK = STALENESS, no
 the 143KB archetype_mesh_literature_audit_final.md advises "the same project under its dead name"
 (e.g. 'Archetype Mesh should adopt MMError's Gaussian oversampling'). Mine it for content, but
 translate recommendations to the current calibration-scope design before acting.
+
+
+## PROVENANCE CAVEAT (added on audit 2026-07-25)
+- **CI corrected:** the 95% CI for 383/400 = 95.8% is **[93.8%, 97.7%]** by the same normal-approximation used elsewhere in this analysis. An earlier draft of this report hardcoded '97.8%' as the upper bound (0.1 pt too high). Conclusion unchanged.
+- **Originating cell status:** the dedup headline figures (16,642 raw rows -> 6,209 unique; 5,565 with DOI; 644 title-only) came from a cell recorded with exit_status='error' (the error was a missing parquet engine AFTER the counts printed). The immediately following cell reused the same in-memory dataframe and reconfirmed DOIs present=5,565 / malformed=0, corroborating every figure. Disclosed here because the original report did not mention it.
