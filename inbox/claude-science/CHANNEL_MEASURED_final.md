@@ -1,6 +1,9 @@
 # Channel Contamination v1 — MEASURED FINAL RESULT (run 953, fixed grader)
 _Claude Science, 2026-07-26. From channel_contamination_v1_results_regraded.csv (640 rows), analysed first-hand._
-_The projection is now a measurement. The experiment is complete._
+_The projection is now a measurement. Data collection is complete; the formal equivalence test is not._
+_CORRECTION 2026-07-26: an earlier version of this document said channel equivalence was 'validated_
+_unconditionally' on the strength of p=0.340. That was the absence-of-evidence-as-evidence-of-absence_
+_error, contradicted by this document's own §5. Downgraded throughout to 'no detectable difference, bounded'._
 
 ## 1. PREDICTION CHECK — confirmed on the substance, with one correction to how it's stated
 My pre-hoc prediction (logged before the data arrived): *residual failures = LIT-12 only, zero adversarial,
@@ -28,7 +31,11 @@ LIT-12 failures are **real scoring failures, not failed calls** — a cleaner me
 - **A vs A' (isolation): +1.6 pts, p = 0.575.** Paired McNemar at item level: **1:0 discordant, p = 1.000.**
   The isolation effect is **fully dissolved** (was 10:0, p=0.002 under the buggy grader). RETRACTION CONFIRMED.
 - **A vs manual (B+C) (channel): p = 0.340.** No channel effect.
-- All four arms' CIs overlap. **Manual Subject Mode is validated as a measurement channel — unconditionally.**
+- All four arms' CIs overlap. **No channel difference is detectable at this N** — which is NOT the same as
+  equivalence (see §5). A non-significant difference test (p=0.340) is absence of evidence, not evidence of
+  absence. Correct statement: **manual chat is usable as a measurement channel, with any channel effect
+  bounded at roughly ±5 pts** — the formal equivalence claim requires A'x3 + TOST against a pre-specified
+  margin and is NOT yet made.
 
 ## 3. NEW FINDING from this run: the API arm is DETERMINISTIC, and that reframes LIT-12
 **62 of 63 items produced byte-identical completion-token counts across all 3 reps** in run 953. (The one
@@ -55,7 +62,8 @@ genuinely interesting mechanism claim and cheap to check.
 counterintuitive and matters for how the instrument sets its own sampling defaults.
 
 ## 4. FINAL DEFENSIBLE FINDINGS (the complete list)
-1. **No channel effect.** API and manual chat agree (p=0.340). Manual Subject Mode validated.
+1. **No DETECTABLE channel difference** (p=0.340) — manual chat is usable as a measurement channel, effect
+   bounded at ~±5 pts. NOT a proven equivalence (§5); do not write 'validated unconditionally'.
 2. **No presentation/isolation effect.** p=0.575, McNemar 1:0. The +15.6 pt effect was a grader artifact — RETRACTED.
 3. **No chunking effect.** B == C (99.5% both).
 4. **No position effects** (measured on the original dataset: B r=+0.03 p=0.73; C r=+0.12 p=0.09).
