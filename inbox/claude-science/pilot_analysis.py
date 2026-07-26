@@ -74,6 +74,27 @@ def design_effect(icc, m):
     return 1 + (m - 1) * icc
 
 
+def stratification_report(rows):
+    """Show what trials/item each reading granularity gives, and which are POWERED.
+    Exists because 'read difficulty per carrier per model' silently returns to 6 trials/item
+    even when the run has 24 — the granularity, not the run size, sets the power."""
+    rows = [r for r in rows if str(r.get("is_infra_error", "0")).strip() not in ("1", "True", "true")]
+    out = []
+    for label, keyf in [("fully pooled", lambda r: ()),
+                        ("per model", lambda r: (r.get("model", ""),)),
+                        ("per carrier", lambda r: (r.get("carrier", ""),)),
+                        ("per carrier x model", lambda r: (r.get("model", ""), r.get("carrier", "")))]:
+        counts = defaultdict(Counter)
+        for r in rows: counts[keyf(r)][r["item_id"].strip()] += 1
+        per = [n for cell in counts.values() for n in cell.values()]
+        if not per: continue
+        med = sorted(per)[len(per)//2]
+        out.append({"granularity": label, "n_cells": len(counts), "median_trials_per_item": med,
+                    "powered_for_ceiling": med >= MIN_TRIALS_FOR_CEILING,
+                    "p_perfect_if_true_p_085": round(0.85 ** med, 4)})
+    return out
+
+
 def analyze(rows):
     """rows: list of dicts. Returns the full pre-registered result dict."""
     # standing rule: infra errors are MISSING, never wrong
@@ -286,6 +307,20 @@ def _self_test():
     except SystemExit:
         print("      FAIL: guard fires on clean data"); ok = False
 
+    # T7: STRATIFICATION report must mark the under-powered granularity
+    print("T7  stratification flags under-powered granularity")
+    # Real design: 2 models x 2 carriers x 6 reps = 24 rows/item. synth() emits `reps` rows per
+    # item TOTAL, so ask for 24 and label them into the four cells, 6 apiece.
+    d = synth(6, 5, 24, 0.80, 0.3, seed=31)
+    for i, r in enumerate(d):
+        cell = i % 4
+        r["model"] = ["e2b", "nemotron"][cell % 2]; r["carrier"] = ["base", "lean"][cell // 2]
+    strat = {s["granularity"]: s for s in stratification_report(d)}
+    for g in ["fully pooled", "per model", "per carrier x model"]:
+        s = strat[g]; print(f"      {g:22s} {s['median_trials_per_item']:2d} trials/item  powered={s['powered_for_ceiling']}")
+    if strat["per carrier x model"]["powered_for_ceiling"]: ok = False; print("      FAIL: finest slice should be flagged")
+    if not strat["fully pooled"]["powered_for_ceiling"]: ok = False; print("      FAIL: pooled should be powered")
+
     # T4: INFRA ERRORS ARE MISSING, NEVER WRONG (standing rule)
     print("T4  infra errors treated as missing")
     d = synth(4, 4, 3, 0.9, 0.3, seed=13)
@@ -309,8 +344,18 @@ def main(argv):
     if "--self-test" in argv: return _self_test()
     if len(argv) < 2: print(__doc__); return 2
     rows = list(csv.DictReader(open(argv[1], encoding="utf-8", errors="replace")))
+    strat = stratification_report(rows)
     res = analyze(rows)
+    res["stratification"] = strat
     go, why = go_no_go(res)
+    bad = [s["granularity"] for s in strat if not s["powered_for_ceiling"]]
+    if bad:
+        why.append("GRANULARITY: ceiling/difficulty may be read at " +
+                   ", ".join(s["granularity"] for s in strat if s["powered_for_ceiling"]) +
+                   f" — but NOT at {', '.join(bad)} (fewer than {MIN_TRIALS_FOR_CEILING} trials/item there; "
+                   f"an item with true p=0.85 reads as perfect "
+                   f"{[s['p_perfect_if_true_p_085'] for s in strat if not s['powered_for_ceiling']][0]:.0%} "
+                   f"of the time). Slicing finer does not add power, it removes it.")
     res["go_no_go"] = {"proceed": go, "reasons": why}
     print(json.dumps(res, indent=2, default=float))
     print("\n" + ("PROCEED" if go else "STOP") + " — pre-registered rule:")
