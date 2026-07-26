@@ -382,7 +382,7 @@ consistent. Any future scaffold work must treat the hint's REGISTER as a
 carrier variable — per this data, a haiku-register hint should beat a formal
 one for carrier-sensitive models.
 
-## 10.9 Carrier-immunity threshold — big models shrug off ALL carrier noise (runs 922-930)
+## 10.9 Carrier-immunity threshold — do big models shrug off carrier noise? (runs 922-930; conclusion scoped by §10.16)
 
 Replication of §10.8 on stronger models. Same LOGIC cluster (29 tests, modular
 `test_ids`), same 5 carriers, on a 30B local model (nemotron-3-nano-omni, 100%
@@ -405,21 +405,30 @@ confound ruled out: max 324 prompt + 764 completion tokens ≪ 131072 context /
 > what the pre-registered paired-design experiment (N≈420) answers — **not yet settled.**
 > Endpoints real; capability-vs-substrate unresolved pending the powered run.
 
-**Original finding (superseded as stated — kept for the record):** carrier-immunity tracks **capability/headroom**, not substrate
-(local vs cloud). The small near-ceiling model (e2b, 99%) is dragged by carrier
-noise — the carrier crowds out its limited reasoning headroom (the user's
-"truncate middle / neutered" complaint). The 30B local and the cloud frontier
-model have enough headroom to absorb the noise AND keep the logic — 100% on
-EVERY carrier including Lean (worst on e2b) and bribe (flattery). **Below a
-capability/headroom threshold, a model is carrier-sensitive; above it,
-carrier-immune.** Confirmed on BOTH local (nemotron) and cloud (Fable 5) —
-immunity is a property of the model's capability, not where it runs.
-
-**Mechanism (the user's intuition, confirmed):** small models are "neutered" by
-carrier noise because the carrier consumes the same limited context/reasoning
-budget the logic needs. Big models have surplus headroom — the noise is
-absorbed without touching the logic. This is Carrier Color's capability
-threshold, measured.
+> **Original finding — QUOTED VERBATIM as the experiment receipt; superseded as
+> stated (the blockquote above is the current claim, §10.16 is the correction
+> record):**
+>
+> "carrier-immunity tracks **capability/headroom**, not substrate
+> (local vs cloud). The small near-ceiling model (e2b, 99%) is dragged by carrier
+> noise — the carrier crowds out its limited reasoning headroom (the user's
+> 'truncate middle / neutered' complaint). The 30B local and the cloud frontier
+> model have enough headroom to absorb the noise AND keep the logic — 100% on
+> EVERY carrier including Lean (worst on e2b) and bribe (flattery). **Below a
+> capability/headroom threshold, a model is carrier-sensitive; above it,
+> carrier-immune.** Confirmed on BOTH local (nemotron) and cloud (Fable 5) —
+> immunity is a property of the model's capability, not where it runs."
+>
+> "**Mechanism (the user's intuition, confirmed):** small models are 'neutered' by
+> carrier noise because the carrier consumes the same limited context/reasoning
+> budget the logic needs. Big models have surplus headroom — the noise is
+> absorbed without touching the logic. This is Carrier Color's capability
+> threshold, measured."
+>
+> Neither paragraph's confidence level survives §10.8's statistical audit: the
+> 100%-ceiling cells are unresolvable at this N, so "confirmed" was never the
+> right word. The endpoints are real; the threshold-and-substrate story awaits
+> the powered paired-design run.
 
 **⚠ Confound note (2026-07-22, see §10.14):** the local-vs-cloud leg of this
 conclusion is ENTANGLED — cloud models differ from local on two axes at once
