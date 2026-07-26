@@ -3,7 +3,27 @@ _Claude Science, 2026-07-26. Two parallel tracks: DOI integrity of the 3 literat
 _claim-extraction from v3 PDF + evaluation + Erdos anchor + DNS Tool doc. Plus an independent simulation of the_
 _"lying progress bar" premise. Full detail: sct_corpus_verification.md, sct_claim_extraction.md._
 
-## 0. BOTTOM LINE
+## 0. STATUS CORRECTION (2026-07-26, after author input) — READ FIRST
+**This audit's original framing was wrong about publication intent, and the error was mine.** The original text
+said the v3 PDF defects were "BLOCKING for SSRN — fix before any further SSRN action." **The author has NOT
+submitted Star-Centric Transport anywhere.** I inferred an in-flight submission from the presence of a directory
+named `ssrn_package/` and a file named `ssrn-submission-form-v3.pdf`. That is reading intent off a filename —
+the same failure class this project exists to catch.
+
+**Verified ground truth (checked against live public surfaces, not assumed):**
+- **The Belief Machine** is the author's ONLY SSRN publication (abstract 6722059, published 2026-05-12). Confirmed
+  in intellectualresistance.com JSON-LD as the sole `ScholarlyArticle`.
+- **Star-Centric Transport and Open Epistemic Packet are UNRELEASED ideas in development.** SCT appears in the
+  site's structured data only as a topic (`Thing`) — no DOI, no article type, no publication claim.
+- **Every public surface already labels SCT honestly as "Proposal"**: intellectualresistance.com card, the site
+  README status table, and dns-tool-intel/static/llms.txt ("Star-Centric Transport (status: Proposal)").
+- Public exposure is limited to: two essentially EMPTY public repos (`star-centric-transport` 26 chars of README,
+  `open-epistemic-packet` 25 chars) + one labeled paragraph on intellectualresistance.com.
+
+**Consequence for everything below:** §2 and §3 are a PRE-FLIGHT CHECKLIST for unreleased drafts, NOT live
+publication defects. Nothing below requires urgent action. The two items worth doing anyway are named in §6.
+
+## 0b. BOTTOM LINE
 The **core idea is sound and the Carrier Color connection is real and load-bearing** (§4 below). The **corpus is
 clean** (98.9% DOI resolution). But the **released v3 PDF has defects that must be fixed before any further SSRN
 action** (§2), and the overstatement pattern is concentrated in exactly one place: **abstracts and executive
@@ -21,7 +41,7 @@ appearing in the author's own paper.
   where due: those numbers are honest. (My own task brief had 385/452/430; those were LINE counts inflated by
   embedded newlines in the quoted Relevance field. My error, not the corpus's.)
 
-## 2. CRITICAL — the released v3 PDF does not contain its own formal model
+## 2. PRE-FLIGHT (not urgent) — the v3 DRAFT PDF does not contain its own formal model
 Verified by glyph count across the full 21-page text layer AND by visually rendering pp. 5/14/15:
 **tau = 0 occurrences. <= = 0 occurrences. c-hat = 0 occurrences.** The pages print
 `[ |_{i,j} - c_i| ]` — **no relational operator, no tolerance symbol, no hat on the reconstructed center.**
@@ -29,7 +49,7 @@ So §7.2, which announces a necessary-and-sufficient condition ("verified **if a
 The intended form survives only in the evaluation markdown.
 **This is a production/LaTeX-rendering defect, not a substantive error — but it is disqualifying for a paper whose
 Abstract advertises "formal foundations."** A reviewer opening the PDF finds the central inequality missing.
-**FIX FIRST, before any SSRN submission proceeds.** Then re-seal and re-hash the package.
+**Fix before this draft is ever distributed** (it is not distributed today — see §0). Then re-seal and re-hash.
 
 Two more that a reviewer will catch:
 - **Abstract contradicts the body on the Erdos result.** Abstract: "125-page proof **of** the Erdos unit-distance
@@ -106,13 +126,36 @@ complaint appearing in a third domain (context windows, benchmark summaries, now
 **Caveat:** this is a simulation of estimator behaviour under an assumed cost profile, NOT a measurement of real
 installers. It shows the mechanism is sufficient to produce the effect; it does not prove real bars fail this way.
 
-## 6. RECOMMENDED ORDER OF WORK
-1. **Fix the v3 PDF rendering** (tau, <=, c-hat missing) — blocking for SSRN. Re-seal after.
-2. **Fix Abstract/body contradiction** (proof of vs disproved) and **drop or re-source the Feng verification claim**.
-3. **Fix the V4 compositionality example** (r∘r = e) or restate what compositionality means here.
-4. **Downgrade the three overstatements** in §3 above to what the sources support. The limitation sections already
-   say the right thing — make the Abstract and Executive Summary agree with them. This is the same last-mile fix as
-   the carrier-immunity caption cleanup: the honest version is already written elsewhere in the same document.
-5. **Then the real scientific move:** state Carrier Color as the empirical arm measuring k_i, and the channel
-   experiment's bound as the first measured tau. That converts SCT from "conceptual proposal" toward "proposal with
-   one measured term" — which is exactly what §8.2 asks for.
+## 6. RECOMMENDED ORDER OF WORK (revised after the §0 correction)
+**Nothing here is urgent — SCT is unreleased and its public label is already honest.** Two items are worth doing
+now anyway, because they would be embarrassing whenever it does ship, and one of them touches PUBLISHED work:
+
+**DO NOW (Hermes):**
+1. **The V4 compositionality error — check whether it leaked into the PUBLISHED Owl Semaphore spec.** This is the
+   only finding that may touch released work: owl-semaphore carries a Zenodo DOI (10.5281/zenodo.19473697) under
+   CC BY 4.0. The error: SCT §5.1 states V4's axiom "every non-identity element is its own inverse", then §5.2
+   illustrates compositionality with "two UNKNOWN chunks remain UNKNOWN" — if UNKNOWN = r then r∘r = e, so two
+   UNKNOWNs compose to KNOWN, not UNKNOWN. **Grep the published Owl spec for the same example.** If it is only in
+   the SCT draft, fix the draft. If it is in the published spec, that is a real erratum and needs a versioned
+   correction, not a silent edit.
+2. **The two empty public repos.** `star-centric-transport` (26-char README) and `open-epistemic-packet` (25-char
+   README) are PUBLIC and empty. Either add a one-line README stating "Status: proposal in development, not
+   published — see intellectualresistance.com" or make them private until there is content. Empty public repos with
+   provocative names invite guessing; the whole point of the status labels is to prevent guessing.
+
+**FILED, NO ACTION (revisit only if SCT moves toward release):**
+3. v3 PDF LaTeX rendering (tau / <= / c-hat missing) — §2.
+4. Abstract vs body on the Erdos result (proof of vs disproved) — §2.
+5. Feng named as verifier beyond what the Nature source supports — §2.
+6. The three overstatements — §3. Note the honest version is ALREADY WRITTEN in the same corpus's limitation
+   sections, and the PUBLIC labels are already correct. This is a draft-internal consistency fix.
+
+**THREAD HYGIENE (author's question: separate thread?)**
+Yes — keep SCT in its own thread, on TIMESTAMP grounds rather than topical ones. `star-centric-transport` last
+pushed 2026-07-03; `calibration-scope` pushed today. One is a live build, the other a dormant idea; merging their
+queues turns a work queue into a wish list.
+**But the connection is real and DIRECTIONAL:** SCT's own notation defines k_i as "carrier effects"; Carrier Color
+measures k_i. So calibration-scope GENERATES the evidence SCT needs (the channel bound, the first measured tau,
+the grader-artifact discipline). SCT feeds calibration-scope nothing yet. Rule: **measurement work here, theory
+work in its own thread.** The only sentence that legitimately crosses into calibration-scope is that its carrier
+measurements are the empirical arm for a transport model still in draft — true, and about THIS project's outputs.
