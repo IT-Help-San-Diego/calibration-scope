@@ -167,8 +167,10 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      run."
      **SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `page-picker` +
      `src/routes/picker.rs` (GET /api/picker/battery serves the STIMULUS
-     only with a SHA3 provenance hash; POST /api/picker/grade holds the key
-     SERVER-side — it never reaches page source; 6 grading unit tests).
+     only with a SHA3 provenance hash; POST /api/picker/grade grades
+     server-side — key out of the page bundle, grading server-authoritative;
+     7 grading unit tests incl. a length guard. Scope corrected same day:
+     no secrecy claim — see the constraints bullet above).
      Battery ported verbatim from MODEL_PICKER_battery_v0.py (6 items: 5
      logic + the 0–2 reframe probe; floors: >=4/5, items 1 and 5
      individually disqualifying, reframe >=1). UI: paste-once stimulus with
@@ -233,8 +235,12 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    - **Rung 2's battery as shipped is 6 items** (5 logic + the 0-2
      reframe/partner probe; floors: >=4/5 logic, items 1 and 5 individually
      disqualifying, reframe >=1; cheapest passer wins). Grade server-side —
-     the answer key must never reach page source. Item 6 is human-graded
-     (0/1/2 rubric rendered inline).
+     the key stays out of the page bundle and grading is server-
+     authoritative. Honest scope (corrected 2026-07-26, Copilot catch):
+     this is NOT secrecy — the battery + key are public in the repo, and
+     binary items mean per-item correctness in the response determines the
+     key anyway. Blindness belongs to the real battery, not the screener.
+     Item 6 is human-graded (0/1/2 rubric rendered inline).
 
 1. **Subject/Channel Wizard** (Oscent item 1 — Rung 3, see 0.5)
 2. **Witness Artifact Generator** (Oscent item 2)

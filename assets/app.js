@@ -4888,7 +4888,7 @@ async function pkGrade() {
   const result = r.data;
   const perItem = result.per_item.map(function (p) {
     return '<div class="pk-band-item">' + (p.correct ? '<span class="pk-ok">✓</span>' : '<span class="pk-bad">✗</span>')
-      + ' Item ' + p.item + ': ' + escHtml(p.given) + (p.correct ? '' : ' (key: ' + escHtml(p.key) + ')')
+      + ' Item ' + p.item + ': ' + escHtml(p.given)
       + ' <span class="ob-data">— ' + escHtml(p.rationale) + '</span></div>';
   }).join('');
   const failed = (result.which_failed || []).map(function (w) { return '<li>' + escHtml(w) + '</li>'; }).join('');

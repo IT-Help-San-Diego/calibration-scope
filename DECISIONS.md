@@ -1087,7 +1087,7 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       step titles are h3s. Reload-persistence in Focused re-verified live.
     - **2026-07-26 (Claude Code, same PR): Rung 2 shipped.** Model Picker
       page + `src/routes/picker.rs`: battery served without the key,
-      grading server-side (key never in page source), 6 unit tests on the
+      grading server-side, 6 unit tests on the
       floors (items 1/5 individually disqualifying verified in code).
       Battery ported verbatim from the CS drop; the UI renders the caveat,
       bands not scores, format failure as its own verdict, and points at
@@ -1096,6 +1096,17 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       mid-file restore → NaN → ladder stuck at "Checking…") caught by
       Copilot review and fixed by moving the onboarding globals above the
       restore point; regression-asserted in the browser test.
+    - **2026-07-26 (Claude Code): Rung 2 secrecy claim corrected — our own
+      stated-vs-actual gap, caught by Copilot review.** The picker docs
+      claimed "the answer key never reaches page source" while the grade
+      response carried a per-item `key` field the UI displayed — and with
+      binary items, per-item correctness determines the key regardless; the
+      battery + key are also public in the repo. Correction applied as the
+      discipline demands: the claim is now scoped to what is true (key not
+      in the page bundle; grading server-authoritative; the picker is a
+      screener, not a blind instrument — blindness lives in the real
+      battery), the redundant `key` field was removed from the response and
+      UI, and grade() gained a length guard + unit test (7 total).
     - **Backend findings from the same pass — RELAY TO HERMES (its lane,
       recorded not patched):** (a) lmstudio_sync's UPDATE path sets
       lmstudio_key but never rewrites `key`, so after a model rename/dedup

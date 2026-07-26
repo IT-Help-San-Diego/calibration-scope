@@ -1033,8 +1033,10 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
 <!-- ============ /PAGE: First-run onboarding ============ -->
 
 <!-- ============ PAGE: Model Picker (Rung 2 — capability band) ============
-     Handoff item 0.5 Rung 2: a screener, not a ranking. Answers are graded
-     SERVER-side (/api/picker/grade) so the key never reaches page source.
+     Handoff item 0.5 Rung 2: a screener, not a ranking. Grading is
+     server-authoritative (/api/picker/grade); the key is not in the page
+     bundle, though the battery itself is public in the repo — blindness
+     belongs to the real battery, not this screener.
      Item 6 is human-graded against the rubric — the instrument records the
      call, it does not fake a grader it doesn't have. -->
 <div class="page" id="page-picker" style="display:none;">

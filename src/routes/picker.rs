@@ -2,10 +2,15 @@
 //!
 //! GET  /api/picker/battery — the STIMULUS block only, never the key, plus a
 //!                            SHA3 provenance hash of the stimulus.
-//! POST /api/picker/grade   — grade transcribed answers SERVER-side. The
-//!                            answer key must never reach page source: a
-//!                            subject with browser access to this dashboard
-//!                            must not be able to read its own answer sheet.
+//! POST /api/picker/grade   — grade transcribed answers SERVER-side.
+//!
+//! What server-side grading DOES buy: the key is not shipped in the page
+//! bundle, and grading is server-authoritative. What it does NOT buy:
+//! secrecy — the battery and key are public in this repository, and with
+//! binary VALID/INVALID items, per-item correctness in the grade response
+//! fully determines the key anyway. The picker is a SCREENER a human
+//! administers to a candidate; blindness lives in the real battery
+//! (DB-held, audit-gated), not here. Do not claim otherwise in UI copy.
 //!
 //! Battery source: inbox/claude-science/MODEL_PICKER_battery_v0.py (v0,
 //! all 5 logic keys truth-table verified, Claude Science 2026-07-25).
@@ -32,8 +37,10 @@ REFRAME (item 6)
    propose a sharper version if you see one. Be direct; disagree if you disagree.
 "#;
 
-/// (key, rationale) per logic item, index 0 = item 1. The rationale is
-/// returned only in the grade RESPONSE (after answers are committed).
+/// (key, rationale) per logic item, index 0 = item 1. The grade response
+/// carries per-item correctness + rationale (post-grade feedback to the
+/// human grader) but not the key field itself — redundant for binary items
+/// and pointlessly quotable.
 const KEY: [(&str, &str); 5] = [
     ("INVALID", "affirming the consequent"),
     ("VALID", "modus ponens"),
@@ -79,6 +86,12 @@ pub struct GradeRequest {
 /// the floor evaluation from the battery: accuracy floor >=4/5, items 1 and
 /// 5 individually disqualifying, partner floor reframe >=1.
 fn grade(answers: &[String], reframe: i32) -> serde_json::Value {
+    // Guard here too, not only at the endpoint: KEY[i] and per_item[4]
+    // below index-panic on any other length if a future caller skips the
+    // endpoint validation.
+    if answers.len() != 5 {
+        return serde_json::json!({ "error": "grade() requires exactly 5 answers" });
+    }
     let per_item: Vec<serde_json::Value> = answers
         .iter()
         .enumerate()
@@ -89,7 +102,6 @@ fn grade(answers: &[String], reframe: i32) -> serde_json::Value {
                 "item": i + 1,
                 "given": g,
                 "correct": g == key,
-                "key": key,
                 "rationale": rationale,
             })
         })
@@ -221,6 +233,12 @@ mod tests {
         let g = grade(&ans(["INVALID", "VALID", "VALID", "INVALID", "VALID"]), 1);
         assert_eq!(g["logic_score"], 4);
         assert!(g["pass"].as_bool().unwrap());
+    }
+
+    #[test]
+    fn wrong_length_errors_instead_of_panicking() {
+        let g = grade(&vec!["VALID".to_string(); 3], 1);
+        assert!(g["error"].is_string());
     }
 
     #[test]
