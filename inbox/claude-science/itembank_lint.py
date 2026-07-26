@@ -167,7 +167,12 @@ def lint(files, keys=None):
                 if kv and len(kv) >= 3:
                     fmt_tail = stem[max(0, stem.lower().rfind("answer")):]
                     body = stem[:max(0, stem.lower().rfind("answer"))] or stem
-                    if re.search(rf"\b{kv}\b", body, re.I):
+                    # Suppress the INTERROGATIVE use: "Is the following equivalence true?" / "Is this
+                    # valid?" is a question FORM, not an assertion of the answer. Evidence it is not a
+                    # leak: among the pilot's 4 "Is ... true?" items, 2 are keyed TRUE and 2 FALSE.
+                    interrogative = re.search(
+                        rf"\b(is|are|does|do|was|were)\b[^.?]{{0,80}}\b{kv}\b\s*\?", body, re.I)
+                    if re.search(rf"\b{kv}\b", body, re.I) and not interrogative:
                         findings.append(("ERROR", ref, "LEAK_VERDICT_TOKEN",
                             f"the keyed verdict {kv!r} appears in the stem BODY (outside the answer-format "
                             f"instruction). The answer is printed in the question."))
