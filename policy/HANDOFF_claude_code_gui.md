@@ -66,7 +66,12 @@ re-runs or data changes you make.
 These three items are the front door and the share layer of the instrument.
 They implement the unified architecture: Measure → Reveal → Witness.
 
-### 1. Subject/Channel Wizard (keystone UI)
+### 1. Subject/Channel Wizard (keystone UI) — now Rung 3 of 3
+
+**Update (2026-07-25, onboarding design):** the wizard is no longer first in
+line. It is Rung 3 of the first-run onboarding flow below. Build Rungs 1–2
+first (section "First-run onboarding" under Open items); the wizard spec here
+is unchanged.
 
 Focused mode's front door is a three-question flow, not a model grid:
 
@@ -116,9 +121,57 @@ index, README, lessons headers, DECISIONS preamble. One voice.
 
 ## Open items (pick in order)
 
-1. **Subject/Channel Wizard** (NEW — Oscent item 1)
-2. **Witness Artifact Generator** (NEW — Oscent item 2)
-3. **Wording Audit** (NEW — Oscent item 3)
+0. **§10.9 prose-block downgrade (LAST unhedged carrier-immune instance).**
+   DECISIONS.md §10.9 still asserts the carrier-immunity claim as confirmed
+   fact — bold "Confirmed on BOTH local (nemotron) and cloud (Fable 5)",
+   "100% on EVERY carrier", "above it, carrier-immune" — while §10.16 (40k
+   chars later) documents that exact claim being downgraded as an overclaim.
+   The file contradicts its own correction section. README/lessons/comic/site/
+   mcp.rs were fixed in commit 56762fe7b4; this block survived. Search
+   `carrier-immune` and `100% on EVERY carrier`. Apply the same honest
+   downgrade — not deletion — used on the other surfaces: keep the experiment
+   receipt, but move the bold conclusion under the scoped reading already
+   sitting above it ("endpoints real; capability-vs-substrate unresolved
+   pending the powered run"). Verify with grep: after the edit, the string
+   "carrier-immune" must appear ONLY inside superseded/quoted context.
+
+0.5. **First-run onboarding (three rungs, ordered by verified-result-first).**
+   Design source: Claude Science, 2026-07-25. Principle: each rung must
+   produce a VERIFIED result before the next asks for a decision — an
+   onboarding flow is a pipeline, and users don't advance on unverified
+   forward progress.
+
+   - **Rung 1 — "does anything work?" (~60 s, no API key required).** ONE
+     known-good item, ends in a green check the user doesn't interpret. Not a
+     benchmark: a continuity test (multimeter beep). Failure states are
+     first-class outputs — "no key", "model not loaded", "wrong port" — each
+     with a specific next action, not an error dialog. The green check must be
+     reachable with zero credentials.
+   - **Rung 2 — Model Picker UI over the existing 5-item battery.** Reports a
+     CAPABILITY BAND, not a score, with the honest caveat rendered in the UI:
+     "5 items can't rank models — this tells you whether one is worth a full
+     run."
+   - **Rung 3 — the subject/channel wizard** (spec above, unchanged). It was
+     never wrong; it was first in line when it should have been third.
+
+   The 2×3 diagram (SILICON/CARBON × LOCAL/CLOUD/MANUAL) is the teaching
+   surface: it must state plainly that the manual channel is a first-class
+   measurement path, not a downgrade — licensed by the channel experiment
+   (p=0.34, bounded ±5 pts, 1,024 trials). This figure is where the
+   golden-ratio commitment actually ships, since the story audit found it
+   asserted on no surface.
+
+   **Starting bot pair: deliberately not named.** No verified data supports a
+   "best" pair (52-run dataset, N=3/cell, non-head-to-head arms). Instead the
+   instrument seeds `verified_configs.json` (append-only; model, quant,
+   channel, N, date, pass rate WITH CI, run hash). One verified row beats six
+   plausible ones; the file earns the recommendation as runs land, and users
+   watch it grow on GitHub. Seeded by Hermes 2026-07-25 with the single
+   honestly-verifiable row (gemma-4-31b, run 953).
+
+1. **Subject/Channel Wizard** (Oscent item 1 — Rung 3, see 0.5)
+2. **Witness Artifact Generator** (Oscent item 2)
+3. **Wording Audit** (Oscent item 3)
 4. ~~Local HTTPS~~ **DONE (Claude Code, 2026-07-22).** Dual-protocol on ONE
    port (8768): first-byte peek routes TLS → rustls, everything else → plain
    HTTP — so no existing http consumer (curl, Python client, Hermes scripts,
