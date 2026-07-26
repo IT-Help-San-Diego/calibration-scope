@@ -36,7 +36,7 @@ discipline is real and holding — these checks defend it at 8× scale.
 | `LEAK_FALLACY_NAME` | stem contains a fallacy name from the answer vocabulary (`ad hominem`, `affirming the consequent`, `undistributed middle`, `post hoc`, …) — **unless** the stem is a multiple-choice item that lists ≥3 options, where naming is the answer format, not a leak |
 | `LEAK_VERDICT_TOKEN` | the item's own keyed verdict appears as a standalone word in the stem (`VALID`/`INVALID`/`FOLLOWS`/…) outside the answer-format instruction |
 | `LEAK_TELL_PHRASE` | evaluative giveaways: "this is fallacious", "the flaw is", "incorrectly concludes", "erroneously", "note that this does not follow" |
-| `LEAK_ASYMMETRIC_LENGTH` | within one family, the correct-answer variant is systematically longer/shorter than distractor variants by >25% — a length tell is a leak a model can exploit without reading |
+| `LEAK_ASYMMETRIC_LENGTH` | mean stem length differs by >25% between ANSWER CLASSES, computed **bank-wide, not within-family** — a length tell a model can exploit without reading. *(Scope note: this policy first specified it as a within-family check; the shipped implementation is bank-wide, because per-family n is too small — 5 items/family in the pilot — for a stable per-class mean. Bank-wide is the weaker but computable check. A within-family variant needs ≥3 items per answer class per family, which the full 500-item bank will have and the pilot will not.)*
 `LEAK_ASYMMETRIC_LENGTH` is the one a human reviewer would never catch and a generator is most likely to create,
 because templating tends to make the "valid" and "invalid" forms differ in a stereotyped way.
 
