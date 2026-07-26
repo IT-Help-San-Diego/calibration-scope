@@ -4741,7 +4741,7 @@ async function pkLoad() {
   const st = document.getElementById('pk-stimulus');
   if (st) st.textContent = pkBattery.stimulus;
   const prov = document.getElementById('pk-provenance');
-  if (prov) prov.textContent = 'stimulus sha3-256 ' + pkBattery.stimulus_sha3.slice(0, 16) + '… · ' + pkBattery.source;
+  if (prov) prov.textContent = 'stimulus sha3-256 ' + pkBattery.stimulus_sha3.replace(/^sha3-256:/, '').slice(0, 16) + '… · ' + pkBattery.source;
   const items = document.getElementById('pk-items');
   if (items && !items.childElementCount) {
     let html = '';

@@ -144,6 +144,22 @@ fn grade(answers: &[String], reframe: i32) -> serde_json::Value {
     })
 }
 
+/// record_line uses " | " as its delimiter and lands in copy-paste exports —
+/// user-provided fields must not be able to smuggle delimiters or newlines
+/// into it (Copilot catch, PR #2).
+fn sanitize_record_field(raw: &str, fallback: &str) -> String {
+    let cleaned: String = raw
+        .trim()
+        .chars()
+        .map(|c| if c == '|' || c.is_control() { '/' } else { c })
+        .collect();
+    if cleaned.is_empty() {
+        fallback.to_string()
+    } else {
+        cleaned
+    }
+}
+
 pub async fn picker_grade(
     axum::extract::Json(req): axum::extract::Json<GradeRequest>,
 ) -> AppResult<Json<serde_json::Value>> {
@@ -166,16 +182,8 @@ pub async fn picker_grade(
         ));
     }
     let mut result = grade(&req.answers, req.reframe);
-    let label = if req.model_label.trim().is_empty() {
-        "unnamed-model"
-    } else {
-        req.model_label.trim()
-    };
-    let credits = if req.credits.trim().is_empty() {
-        "—"
-    } else {
-        req.credits.trim()
-    };
+    let label = sanitize_record_field(&req.model_label, "unnamed-model");
+    let credits = sanitize_record_field(&req.credits, "—");
     let verdict = if result["pass"].as_bool().unwrap_or(false) {
         "PASS"
     } else {
@@ -233,6 +241,13 @@ mod tests {
         let g = grade(&ans(["INVALID", "VALID", "VALID", "INVALID", "VALID"]), 1);
         assert_eq!(g["logic_score"], 4);
         assert!(g["pass"].as_bool().unwrap());
+    }
+
+    #[test]
+    fn record_fields_cannot_smuggle_delimiters() {
+        assert_eq!(sanitize_record_field("a|b\nc", "x"), "a/b/c");
+        assert_eq!(sanitize_record_field("  ", "—"), "—");
+        assert_eq!(sanitize_record_field("gpt-oss-20b", "x"), "gpt-oss-20b");
     }
 
     #[test]
