@@ -138,7 +138,9 @@ fn extract_verdict(s: &str) -> String {
         if trimmed.starts_with(tok) {
             // Word boundary check: the character after the match must not be
             // alphanumeric (prevents "NOT SATISFIABLE" matching "NO").
-            let after = trimmed.strip_prefix(tok).and_then(|rest| rest.chars().next());
+            let after = trimmed
+                .strip_prefix(tok)
+                .and_then(|rest| rest.chars().next());
             if after.is_none() || !after.unwrap().is_ascii_alphanumeric() {
                 return tok.to_string();
             }
@@ -175,7 +177,9 @@ fn verdicts_match(actual: &str, expected: &str) -> bool {
         return true;
     }
     // DOES NOT FOLLOW = DOESNOTFOLLOW (spacing variant)
-    if (a == "DOES NOT FOLLOW" && e == "DOESNOTFOLLOW") || (a == "DOESNOTFOLLOW" && e == "DOES NOT FOLLOW") {
+    if (a == "DOES NOT FOLLOW" && e == "DOESNOTFOLLOW")
+        || (a == "DOESNOTFOLLOW" && e == "DOES NOT FOLLOW")
+    {
         return true;
     }
     // NEVER add NONE=NO — "no fallacy present" and "the argument is invalid"
@@ -453,16 +457,8 @@ mod tests {
             "exact"
         ).passed);
         // LOGIC-01N: confirmed vs Confirmation (the 9th item Claude Science caught).
-        assert!(score_response(
-            "Confirmation",
-            "confirmed",
-            "exact"
-        ).passed);
-        assert!(score_response(
-            "CONFIRMED",
-            "confirmation",
-            "exact"
-        ).passed);
+        assert!(score_response("Confirmation", "confirmed", "exact").passed);
+        assert!(score_response("CONFIRMED", "confirmation", "exact").passed);
         // VALID/INVALID equivalence for validity questions.
         assert!(score_response("NO", "INVALID", "exact").passed);
         assert!(score_response("INVALID", "NO", "exact").passed);
@@ -482,7 +478,7 @@ mod tests {
         assert!(extract_verdict("NOT SATISFIABLE") != "NO");
         // "NO, IT FOLLOWS" must NOT match "NO" (word boundary).
         assert!(extract_verdict("NO, IT FOLLOWS") == "NO"); // comma = boundary, so NO is correct here
-        // NONE must NOT equal NO (opposite claims).
+                                                            // NONE must NOT equal NO (opposite claims).
         assert!(!verdicts_match("NONE", "NO"));
         assert!(!verdicts_match("NO", "NONE"));
     }

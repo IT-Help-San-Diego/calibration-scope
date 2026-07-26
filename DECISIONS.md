@@ -1056,7 +1056,7 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     paragraph, capability demotion ("Runs against local models (LM Studio) and
     cloud endpoints"), and the cognitive-scientist thread line are taken from
     `inbox/claude-science/COPY_founding_thesis_stated_vs_actual.md` (2026-07-25,
-    closes STORY_CONSISTENCY_AUDIT Finding 1 and 2 for the README). The
+    closes STORY_CONSISTENCY_AUDIT Findings 1–2 for the README). The
     crosswalk link anchors to §10.13 (the verified record) because
     `ontology_crosswalk.json` is not committed to this repo. Still open in the
     audit: site index + dashboard landing lead swap (style-hash recompute +
