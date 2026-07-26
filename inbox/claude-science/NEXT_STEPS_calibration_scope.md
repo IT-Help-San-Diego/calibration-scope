@@ -33,11 +33,11 @@ Both item-fragile (23% flip on leave-one-out) — pilot signal only, never the c
 ### Why 15 reps and not 3 — I got this wrong first (SUPERSEDED, retained for the record)
 I initially specced 3 reps (84 calls) and called it adequate. **It isn't:** McNemar power on 18 pairs is **0.49**
 at the decision-relevant effect (0.139 → 0.50) and **0.26** at 0.40. Recomputed:
-| reps | pairs | calls | power @0.50 | power @0.40 |
-|---|---|---|---|---|
-| 3 | 18 | 84 | 0.49 | 0.26 |
-| 6 | 36 | 168 | 0.87 | 0.62 |
-| **15** | **90** | **420** | **1.00** | **0.97** |
+| reps | pairs | calls | power @0.50 | power @0.40 | status |
+|---|---|---|---|---|---|
+| 3 | 18 | 84 | 0.49 | 0.26 | ~~SUPERSEDED~~ |
+| 6 | 36 | 168 | 0.87 | 0.62 | ~~SUPERSEDED~~ |
+| **15** | **90** | **420** | **1.00** | **0.97** | ~~SUPERSEDED~~ |
 420 calls is trivial against the pilot's 1,536. **Reps are the only lever** — we have just 3 `NONE` items, and
 adding items would raise power faster but requires authoring.
 ### Pre-registered stopping rule
