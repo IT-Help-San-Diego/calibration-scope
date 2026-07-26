@@ -1,6 +1,8 @@
 # Item-bank method — LOCKED DECISION for the Carrier Color paired re-run
 _Claude Science, 2026-07-26. Answering Hermes's A/B/C gate before 458 items get authored._
-_All numbers below computed first-hand from the 1,024-row + 640-row trial data and by simulation._
+_All numbers below computed first-hand from the **640-row re-graded dataset (run 953, fixed grader)** and by_
+_simulation. The 1,024-row pre-regrade dataset is **RETRACTED** and fed nothing here — an earlier version of this_
+_header credited it as an input, which would have made a retracted dataset load-bearing for a live decision._
 
 ## 0. VERDICT: **Option C (hybrid) — but the split Hermes proposed is backwards, and a gate comes first.**
 Hermes asked "which option, and what split." The honest answer required checking whether item COUNT is the
@@ -8,16 +10,21 @@ binding constraint at all. **It is not.** Locking the split without fixing what'
 authoring effort on a design that cannot resolve H2 regardless of N.
 
 ## 1. THE FINDING THAT REFRAMES THE QUESTION — this bank is at the ceiling, not short of items
-Measured on the existing bank (channels A-regraded / B / C, 63 items):
-| Family | Pass rate |
-|---|---|
-| LOGIC (126 trials) | **100.0%** |
-| AUX (15) | **100.0%** |
-| ARITH (12) | **100.0%** |
-| TOOL (3) | **100.0%** |
-| LIT (36) | 91.7% |
+Measured on the **channel-A-regraded arm alone** (192 trials, 63 items) — an earlier version of this table
+labelled it "channels A-regraded / B / C", which was wrong: the trial counts below are the single-arm counts.
+The three-channel figures are given alongside so the scope is unambiguous.
+| Family | A-regraded (192 trials) | A+B+C pooled (576 trials) |
+|---|---|---|
+| LOGIC | **100.0%** (126) | **100.0%** (378) |
+| AUX | **100.0%** (15) | **100.0%** (45) |
+| ARITH | **100.0%** (12) | **100.0%** (36) |
+| TOOL | **100.0%** (3) | **100.0%** (9) |
+| LIT | 91.7% (36) | 95.4% (108) |
 
-**62 of 63 items score exactly 1.00 in every arm. ONE item carries variation** (LIT-12).
+**62 of 63 items score exactly 1.00 when pooled across A/B/C, and the single varying item is LIT-12 in every
+arm individually** (verified per-arm: the only item with any failure in A-regraded, in B, and in C is LIT-12).
+The conclusion is unchanged under either scope — that is why the mislabel did not alter the decision, and why it
+still had to be fixed.
 A ceiling item produces **zero discordant pairs**, and McNemar is computed **entirely** from discordant pairs.
 So a ceiling item contributes **exactly zero information** — it is not weak evidence, it is *no* evidence.
 **Consequence: scaling 64 → 500 at the same difficulty yields ~492 items contributing nothing.** You would
