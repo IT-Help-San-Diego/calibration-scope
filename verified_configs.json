@@ -6,7 +6,7 @@
       "model": "google/gemma-4-31b",
       "quant": "GGUF (LM Studio)",
       "channel": "local-api",
-      "battery": "64-item channel-experiment battery (26 VALID/INVALID, 8 YES/NO, 4 FOLLOWS, 4 APPROVE/DENY, named fallacies, math, MCP)",
+      "battery": "64-item channel-experiment battery (63 unique item NAMES — two item_id strings each map to two different items; verified by Claude Science trial-level analysis)",
       "n": 192,
       "passed": 189,
       "pass_rate": 0.9844,
