@@ -3,8 +3,8 @@
  "n_prompts": 14,
  "design": "2 framings x 7 items (3 NONE + 4 fallacy controls, one per mechanism) x 2 models x 15 reps = 420 calls",
  "reps_per_item_per_model": 15,
- "power": "McNemar on 90 NONE pairs: 0.97 to detect a rise 0.139->0.40; 1.00 at 0.139->0.50. At 3 reps (18 pairs) power was only 0.49 at 0.50 \u2014 insufficient.",
- "primary_test": "McNemar on NONE items, framing A vs B, paired within item+model+rep",
+ "power": "CORRECTED: the earlier figure ('McNemar on 90 NONE pairs: 0.97-1.00') treated 15 reps of 3 items as 90 independent observations. Cluster-aware truth: 3 NONE items x 2 models = 6 CLUSTERS; McNemar power at a 0.139->0.50 rise is 0.03 at 15 reps, not 1.00. Reps cannot fix it (cluster count caps power); items can \u2014 10 NONE items x 2 models x 6 reps gives 0.98.",
+ "primary_test": "CORRECTED: McNemar at the (item,model) CELL level \u2014 cell = majority vote over reps. Reps reduce measurement noise WITHIN a cell; they are NOT units. The prior wording 'paired within item+model+rep' pre-registered the trial-level independence error retracted earlier this session.",
  "control_test": "fallacy-item accuracy must NOT drop under B; if it does, B traded one bias for another",
  "stopping_rule": {
   "H_bias": "NONE rate under B >= 0.50 and controls hold -> difficulty is OUR wording; reword stem and re-run the whole sound-arg class",
@@ -125,5 +125,9 @@
    "scoring_method": "exact",
    "prompt_text": "Read this argument:\n\"Everyone on the team already uses this linter, so it must be the right choice for the project.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
   }
- ]
+ ],
+ "STATUS": "SUPERSEDED \u2014 do NOT run as designed. See CORRECTION_framing_test_power.md",
+ "secondary_test": "paired t-test / Wilcoxon on cell PASS RATES (null-calibrated: FP 0.043-0.046 at alpha=0.05)",
+ "required_before_running": "Author 7 additional NONE items (sound arguments; no fallacy to construct) and 6 more mechanism-balanced fallacy controls -> 10 NONE + 10 controls x 2 models x 6 reps = 480 calls, McNemar power 0.98. A 6-cell continuous test at 15 reps (168 calls) is legitimate but ITEM-FRAGILE (23% of significant results flip on leave-one-item-out) \u2014 pilot signal only, never the class verdict. Do NOT run the McNemar form at 3 items.",
+ "report_with_any_positive": "leave-one-item-out sensitivity"
 }
