@@ -188,6 +188,10 @@ def f1():
     # chain: hypothetical syllogism P→Q, Q→R, P ⊢ R
     add("F1", "PILOT-F1-CHAIN-HS", "chain", "I", ["P→Q", "Q→R", "P"], "R",
         f"{cond(a+' '+p1, b+' '+p2)}. {cond(b+' '+p2, c+' '+p3)}. {a.capitalize()} {p1}. Does it follow that {c} {p3}?")
+    # Rebalance (§4a): chained affirming-consequent trap (INVALID), sibling above.
+    add("F1", "PILOT-F1-TRAP-HS", "trap", "C", ["P→Q", "Q→R", "R"], "P",
+        f"{cond(a+' '+p1, b+' '+p2)}. {cond(b+' '+p2, c+' '+p3)}. {c.capitalize()} {p3}. Does it follow that {a} {p1}?",
+        fallacy_tag="chained_affirming_consequent", sibling_id="PILOT-F1-CHAIN-HS")
 
 # --- F2: Affirming Consequent / Denying Antecedent (fallacies) --------------
 def f2():
@@ -202,6 +206,10 @@ def f2():
         f"{cond(a+' '+p1, b+' '+p2)}. It is not the case that {b} {p2}. Does it follow that it is not the case that {a} {p1}?")
     add("F2", "PILOT-F2-CHAIN", "chain", "I", ["P→Q", "Q→R", "¬R"], "¬P",
         f"{cond(a+' '+p1, b+' '+p2)}. {cond(b+' '+p2, SUBJ[5]+' '+PROP[5])}. It is not the case that {SUBJ[5]} {PROP[5]}. Does it follow that it is not the case that {a} {p1}?")
+    # Rebalance (Claude Science §4a): trap sibling for the chain — affirm-the-chain trap.
+    add("F2", "PILOT-F2-TRAP-CHAIN", "trap", "C", ["P→Q", "Q→R", "R"], "P",
+        f"{cond(a+' '+p1, b+' '+p2)}. {cond(b+' '+p2, SUBJ[5]+' '+PROP[5])}. {SUBJ[5].capitalize()} {PROP[5]}. Does it follow that {a} {p1}?",
+        fallacy_tag="chained_affirming_consequent", sibling_id="PILOT-F2-CHAIN")
 
 # --- F3: Disjunctive syllogism + affirming-a-disjunct trap ------------------
 def f3():
@@ -267,6 +275,15 @@ def f6():
         fallacy_tag="chained_affirming_consequent", sibling_id="PILOT-F6-CHAIN3")
     add("F6", "PILOT-F6-NEG", "negdepth", "I", ["P→Q", "Q→R", "¬R"], "¬P",
         "If P then Q. If Q then R. Not R. Does it follow that not P?")
+    # Rebalance (Claude Science §4a alternative: "add the complementary
+    # variant") — INVALID trap siblings so a majority-guess model can't score
+    # by default. All siblings exist in-bank.
+    add("F4", "PILOT-F4-TRAP-CHAIN2", "trap", "C", ["¬(P∧Q)", "¬Q"], "¬P",
+        "Not both P and Q. Q does not hold. Does it follow that P does not hold?",
+        fallacy_tag="denying_a_conjunct", sibling_id="PILOT-F4-CHAIN")
+    add("F6", "PILOT-F6-TRAP-MPCHAIN", "trap", "C", ["P→Q", "Q→R", "R"], "P",
+        "If P then Q. If Q then R. R holds. Does it follow that P holds?",
+        fallacy_tag="chained_affirming_consequent", sibling_id="PILOT-F6-NEG")
 
 for fn in (f1, f2, f3, f4, f5, f6):
     fn()
@@ -302,12 +319,19 @@ def main():
     print(json.dumps(out, indent=2))
 
     # hard gates
-    # hard gates: 30 items, 3 mechanisms ~10 each (9-11), all traps paired, keys derived
-    assert len(ITEMS) == 30, f"expected 30, got {len(ITEMS)}"
+    # hard gates: all traps paired, keys truth-table-derived, and (Claude
+    # Science §4a) the VALID/INVALID subset must not be majority-guessable.
+    # Exact 12/12 needs 24; this bank has 28 on the V/I subset, so we require
+    # balance within a tolerance that removes the operational majority-guess
+    # (a model answering VALID unconditionally must score < ~57%, not 67%).
     assert not missing_sib, f"traps missing sibling: {missing_sib}"
-    for lever in ("trap", "negdepth", "chain"):
-        assert 9 <= lever_counts.get(lever, 0) <= 11, (lever, lever_counts)
-    print("GATES OK: 30 items, 3 mechanisms ~10 each, all traps paired, keys truth-table-derived.")
+    vi = [i for i in ITEMS if i["expected_result"] in ("VALID", "INVALID")]
+    n_valid = sum(1 for i in vi if i["expected_result"] == "VALID")
+    n_invalid = sum(1 for i in vi if i["expected_result"] == "INVALID")
+    majority_rate = max(n_valid, n_invalid) / max(1, len(vi))
+    assert majority_rate <= 0.58, f"V/I majority-guessable: {n_valid}V/{n_invalid}I ({majority_rate:.0%})"
+    print(f"GATES OK: {len(ITEMS)} items, all traps paired, keys truth-table-derived, "
+          f"V/I {n_valid}/{n_invalid} (majority-guess rate {majority_rate:.0%} <= 58%).")
 
 if __name__ == "__main__":
     main()

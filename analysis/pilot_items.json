@@ -60,6 +60,18 @@
     "scoring_method": "exact"
   },
   {
+    "family_id": "F1",
+    "name": "PILOT-F1-TRAP-HS",
+    "difficulty_lever": "trap",
+    "owl_type": "C",
+    "fallacy_tag": "chained_affirming_consequent",
+    "sibling_id": "PILOT-F1-CHAIN-HS",
+    "formal_spec": "P→Q, Q→R, R ⊬ P",
+    "prompt_text": "If the patch is healthy, then the service is reachable. If the service is reachable, then the container is signed. The container is signed. Does it follow that the patch is healthy?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact"
+  },
+  {
     "family_id": "F2",
     "name": "PILOT-F2-MP",
     "difficulty_lever": "negdepth",
@@ -105,6 +117,18 @@
     "formal_spec": "P→Q, Q→R, ¬R ⊢ ¬P",
     "prompt_text": "If the deployment is current, then the node is replicated. If the node is replicated, then the certificate is encrypted. It is not the case that the certificate is encrypted. Does it follow that it is not the case that the deployment is current?\nAnswer with exactly one word: VALID or INVALID.",
     "expected_result": "VALID",
+    "scoring_method": "exact"
+  },
+  {
+    "family_id": "F2",
+    "name": "PILOT-F2-TRAP-CHAIN",
+    "difficulty_lever": "trap",
+    "owl_type": "C",
+    "fallacy_tag": "chained_affirming_consequent",
+    "sibling_id": "PILOT-F2-CHAIN",
+    "formal_spec": "P→Q, Q→R, R ⊬ P",
+    "prompt_text": "If the deployment is current, then the node is replicated. If the node is replicated, then the certificate is encrypted. The certificate is encrypted. Does it follow that the deployment is current?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
     "scoring_method": "exact"
   },
   {
@@ -357,6 +381,30 @@
     "formal_spec": "P→Q, Q→R, ¬R ⊢ ¬P",
     "prompt_text": "If P then Q. If Q then R. Not R. Does it follow that not P?\nAnswer with exactly one word: VALID or INVALID.",
     "expected_result": "VALID",
+    "scoring_method": "exact"
+  },
+  {
+    "family_id": "F4",
+    "name": "PILOT-F4-TRAP-CHAIN2",
+    "difficulty_lever": "trap",
+    "owl_type": "C",
+    "fallacy_tag": "denying_a_conjunct",
+    "sibling_id": "PILOT-F4-CHAIN",
+    "formal_spec": "¬(P∧Q), ¬Q ⊬ ¬P",
+    "prompt_text": "Not both P and Q. Q does not hold. Does it follow that P does not hold?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact"
+  },
+  {
+    "family_id": "F6",
+    "name": "PILOT-F6-TRAP-MPCHAIN",
+    "difficulty_lever": "trap",
+    "owl_type": "C",
+    "fallacy_tag": "chained_affirming_consequent",
+    "sibling_id": "PILOT-F6-NEG",
+    "formal_spec": "P→Q, Q→R, R ⊬ P",
+    "prompt_text": "If P then Q. If Q then R. R holds. Does it follow that P holds?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
     "scoring_method": "exact"
   }
 ]
