@@ -17,11 +17,17 @@ work this session, including four in four consecutive turns. **A prompt cannot c
 | **Carey's pushback** | **2** |
 | unclear (older, terse entries) | 8 |
 **13 of 13 classifiable ones were externally triggered.** Zero came from re-reading my own work unprompted.
-**A correction I owe here:** my first pass reported "0 self-caught by a mechanical control," which was an artifact
-of filtering only on `action=correct`. Re-searched: **13 entries show a control firing before harm** — the item
-linter, the harness self-tests, the null-calibration check, the pre-administration probe audit, the 30/30 key
-re-derivation. **So controls do work — they catch DESIGN errors pre-hoc. They caught nothing post-hoc, because I
-had not written any gate that runs against a finished claim.** That distinction is the whole answer.
+**A correction I owe here — and then a correction TO that correction, caught by audit.** My first pass reported
+"0 self-caught by a mechanical control," an artifact of filtering only on `action=correct`. I re-searched and
+reported **13**. **That 13 was itself a filtering artifact**: 7 of the hits matched only the substring `V3`,
+which fires on ordinary text like "the v3 PDF," and 2 more were externally-triggered post-hoc corrections already
+counted in the "externally triggered" bucket — double-counted. **I fixed a filtering artifact by committing the
+same class of error, and I never printed which token matched each hit.**
+**Hand-classified by reading the entries, the true count is 4 pre-hoc controls:** truth-tabling the Model Picker
+answer key before shipping; writing an independent solver and re-deriving 30/30 generator keys; catching my own
+config-probe false negative before writing it up; linting the probe pack before administration.
+**The distinction survives; the magnitude was inflated ~3x.** All 4 are pre-hoc *design* checks. **None runs
+against a finished claim** — which is exactly the gap, and the reason the four recent failures got through.
 
 ## 2. THE FOUR RECENT FAILURES — every one was gateable, none was motivational
 | Failure | Would a mechanical gate have caught it? |
