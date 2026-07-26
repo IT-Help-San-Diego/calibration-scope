@@ -1,0 +1,133 @@
+{
+ "experiment": "sound-arg framing test (H_bias vs H_deficit)",
+ "n_prompts": 14,
+ "design": "2 framings x 7 items (3 NONE + 4 fallacy controls, one per mechanism) x 2 models x 15 reps = 420 calls",
+ "reps_per_item_per_model": 15,
+ "power": "CORRECTED: the earlier figure ('McNemar on 90 NONE pairs: 0.97-1.00') treated 15 reps of 3 items as 90 independent observations. Cluster-aware truth: 3 NONE items x 2 models = 6 CLUSTERS; McNemar power at a 0.139->0.50 rise is 0.03 at 15 reps, not 1.00. Reps cannot fix it (cluster count caps power); items can \u2014 10 NONE items x 2 models x 6 reps gives 0.98.",
+ "primary_test": "CORRECTED: McNemar at the (item,model) CELL level \u2014 cell = majority vote over reps. Reps reduce measurement noise WITHIN a cell; they are NOT units. The prior wording 'paired within item+model+rep' pre-registered the trial-level independence error retracted earlier this session.",
+ "control_test": "fallacy-item accuracy must NOT drop under B; if it does, B traded one bias for another",
+ "stopping_rule": {
+  "H_bias": "NONE rate under B >= 0.50 and controls hold -> difficulty is OUR wording; reword stem and re-run the whole sound-arg class",
+  "H_deficit": "NONE rate under B < 0.30 and controls hold -> deficit survives; sound-arg graduates with framing effect bounded",
+  "inconclusive": "fallacy controls drop under B -> redesign the neutral stem"
+ },
+ "lint": "both framings pass itembank_lint.py with 0 ERROR 0 WARN",
+ "items": [
+  {
+   "framing": "A_leading",
+   "source_name": "PROBE-C1-01",
+   "db_item_id": 126,
+   "expected_result": "NONE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"The update server logged 4,200 successful installs and zero rollback reports in the first week. Our staged rollout plan called for exactly this signal before widening. The rollout is proceeding as designed.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE."
+  },
+  {
+   "framing": "B_neutral",
+   "source_name": "PROBE-C1-01",
+   "db_item_id": 126,
+   "expected_result": "NONE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"The update server logged 4,200 successful installs and zero rollback reports in the first week. Our staged rollout plan called for exactly this signal before widening. The rollout is proceeding as designed.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
+  },
+  {
+   "framing": "A_leading",
+   "source_name": "PROBE-C1-02",
+   "db_item_id": 127,
+   "expected_result": "NONE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"Two independent reviewers read the same 30 logs and flagged the same 4 as suspicious. We did not tell them which to flag. Their agreement suggests the 4 logs share a detectable property.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE."
+  },
+  {
+   "framing": "B_neutral",
+   "source_name": "PROBE-C1-02",
+   "db_item_id": 127,
+   "expected_result": "NONE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"Two independent reviewers read the same 30 logs and flagged the same 4 as suspicious. We did not tell them which to flag. Their agreement suggests the 4 logs share a detectable property.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
+  },
+  {
+   "framing": "A_leading",
+   "source_name": "PROBE-C1-03",
+   "db_item_id": 128,
+   "expected_result": "NONE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"After we enabled connection pooling, median query latency fell from 180 ms to 40 ms across the same 10,000 queries, holding hardware and query mix constant. Pooling plausibly reduced latency.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE."
+  },
+  {
+   "framing": "B_neutral",
+   "source_name": "PROBE-C1-03",
+   "db_item_id": 128,
+   "expected_result": "NONE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"After we enabled connection pooling, median query latency fell from 180 ms to 40 ms across the same 10,000 queries, holding hardware and query mix constant. Pooling plausibly reduced latency.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
+  },
+  {
+   "framing": "A_leading",
+   "source_name": "PROBE-C1-04",
+   "db_item_id": 129,
+   "expected_result": "FALSECAUSE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"Ever since we hired the new intern, the nightly build has failed three times. Clearly the intern is breaking the build.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE."
+  },
+  {
+   "framing": "B_neutral",
+   "source_name": "PROBE-C1-04",
+   "db_item_id": 129,
+   "expected_result": "FALSECAUSE",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"Ever since we hired the new intern, the nightly build has failed three times. Clearly the intern is breaking the build.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
+  },
+  {
+   "framing": "A_leading",
+   "source_name": "PROBE-C1-06",
+   "db_item_id": 131,
+   "expected_result": "HASTYGEN",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"One user in Oslo reported the app crashed on launch. The app must be broken for all users in Norway.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE."
+  },
+  {
+   "framing": "B_neutral",
+   "source_name": "PROBE-C1-06",
+   "db_item_id": 131,
+   "expected_result": "HASTYGEN",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"One user in Oslo reported the app crashed on launch. The app must be broken for all users in Norway.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
+  },
+  {
+   "framing": "A_leading",
+   "source_name": "PROBE-C1-08",
+   "db_item_id": 133,
+   "expected_result": "CIRCULAR",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"This backup is reliable because it never fails. And we know it never fails because it's a reliable backup.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE."
+  },
+  {
+   "framing": "B_neutral",
+   "source_name": "PROBE-C1-08",
+   "db_item_id": 133,
+   "expected_result": "CIRCULAR",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"This backup is reliable because it never fails. And we know it never fails because it's a reliable backup.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
+  },
+  {
+   "framing": "A_leading",
+   "source_name": "PROBE-C1-09",
+   "db_item_id": 134,
+   "expected_result": "ADPOPULUM",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"Everyone on the team already uses this linter, so it must be the right choice for the project.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE."
+  },
+  {
+   "framing": "B_neutral",
+   "source_name": "PROBE-C1-09",
+   "db_item_id": 134,
+   "expected_result": "ADPOPULUM",
+   "scoring_method": "exact",
+   "prompt_text": "Read this argument:\n\"Everyone on the team already uses this linter, so it must be the right choice for the project.\"\nDoes this argument commit a rhetorical fallacy? Answer with exactly one word: NONE if it commits no fallacy, otherwise FALSECAUSE, HASTYGEN, CIRCULAR, or ADPOPULUM."
+  }
+ ],
+ "STATUS": "SUPERSEDED \u2014 do NOT run as designed. See CORRECTION_framing_test_power.md",
+ "secondary_test": "paired t-test / Wilcoxon on cell PASS RATES (null-calibrated: FP 0.043-0.046 at alpha=0.05)",
+ "required_before_running": "Author 7 additional NONE items (sound arguments; no fallacy to construct) plus 6 more mechanism-balanced controls -> 10 NONE + 10 controls x 2 framings x 2 models x 6 reps = 480 calls, cell-level McNemar power 0.98. RUN-TODAY FALLBACK, budgets derived from this pack (14 prompts x 2 models x reps): 168 calls = 6 reps -> continuous 6-cell test, power 0.82@0.50 / 0.58@0.40; 420 calls = 15 reps -> power 0.99@0.50 / 0.91@0.40. Both item-fragile (23% of significant results flip on leave-one-item-out) \u2014 pilot signal only, never the class verdict. Do NOT run the McNemar form at 3 items under any rep count.",
+ "report_with_any_positive": "leave-one-item-out sensitivity"
+}

@@ -61,7 +61,14 @@ def icc_anova(groups):
     k_bar = (N - sum(len(v)**2 for v in fams.values()) / N) / (a - 1)
     if not math.isfinite(msw) or msb + msw == 0 or k_bar <= 0: return (float("nan"), msb, msw, k_bar)
     icc = (msb - msw) / (msb + (k_bar - 1) * msw)
-    return (min(1.0, max(0.0, icc)), msb, msw, k_bar)
+    # A NEGATIVE raw estimate means MS_between < MS_within: there is no between-family variance to
+    # find, usually because the outcome barely varies at all (a ceiling). Clipping to 0 and reporting
+    # "ICC = 0" invites reading a degenerate estimate as "items are independent" — which would license
+    # n_eff = n for the full bank, the most consequential number in the build plan. Return NaN instead
+    # so downstream must say "not estimable" rather than "zero".
+    if icc < 0:
+        return (float("nan"), msb, msw, k_bar)
+    return (min(1.0, icc), msb, msw, k_bar)
 
 
 def items_per_family(icc):
@@ -72,6 +79,27 @@ def items_per_family(icc):
 
 def design_effect(icc, m):
     return 1 + (m - 1) * icc
+
+
+def stratification_report(rows):
+    """Show what trials/item each reading granularity gives, and which are POWERED.
+    Exists because 'read difficulty per carrier per model' silently returns to 6 trials/item
+    even when the run has 24 — the granularity, not the run size, sets the power."""
+    rows = [r for r in rows if str(r.get("is_infra_error", "0")).strip() not in ("1", "True", "true")]
+    out = []
+    for label, keyf in [("fully pooled", lambda r: ()),
+                        ("per model", lambda r: (r.get("model", ""),)),
+                        ("per carrier", lambda r: (r.get("carrier", ""),)),
+                        ("per carrier x model", lambda r: (r.get("model", ""), r.get("carrier", "")))]:
+        counts = defaultdict(Counter)
+        for r in rows: counts[keyf(r)][r["item_id"].strip()] += 1
+        per = [n for cell in counts.values() for n in cell.values()]
+        if not per: continue
+        med = sorted(per)[len(per)//2]
+        out.append({"granularity": label, "n_cells": len(counts), "median_trials_per_item": med,
+                    "powered_for_ceiling": med >= MIN_TRIALS_FOR_CEILING,
+                    "p_perfect_if_true_p_085": round(0.85 ** med, 4)})
+    return out
 
 
 def analyze(rows):
@@ -191,7 +219,11 @@ def go_no_go(res):
                    f"difficulty may be bimodal (trivial or impossible) rather than graded.")
     icc = res["icc"]["value"]
     if not math.isfinite(icc):
-        r = False; why.append("STOP: ICC not estimable (need >=2 families with >=2 items each).")
+        r = False; why.append(
+            "STOP: family ICC NOT ESTIMABLE. Either fewer than 2 usable families, or MS_between < MS_within "
+            f"(here {res['icc']['ms_between']:.6f} vs {res['icc']['ms_within']:.6f}) — no between-family "
+            "variance exists to partition, typically because the outcome is at a ceiling. This is UNKNOWN, "
+            "NOT ZERO: do not read it as 'items are independent' and do not set an items-per-family cap from it.")
     else:
         why.append(f"OK: family ICC = {icc:.3f} -> cap {res['icc']['recommended_items_per_family']} items/family "
                    f"(design effect {res['icc']['design_effect_at_cap']:.2f}, "
@@ -286,6 +318,46 @@ def _self_test():
     except SystemExit:
         print("      FAIL: guard fires on clean data"); ok = False
 
+    # T7: STRATIFICATION report must mark the under-powered granularity
+    print("T7  stratification flags under-powered granularity")
+    # Real design: 2 models x 2 carriers x 6 reps = 24 rows/item. synth() emits `reps` rows per
+    # item TOTAL, so ask for 24 and label them into the four cells, 6 apiece.
+    d = synth(6, 5, 24, 0.80, 0.3, seed=31)
+    for i, r in enumerate(d):
+        cell = i % 4
+        r["model"] = ["e2b", "nemotron"][cell % 2]; r["carrier"] = ["base", "lean"][cell // 2]
+    strat = {s["granularity"]: s for s in stratification_report(d)}
+    for g in ["fully pooled", "per model", "per carrier x model"]:
+        s = strat[g]; print(f"      {g:22s} {s['median_trials_per_item']:2d} trials/item  powered={s['powered_for_ceiling']}")
+    if strat["per carrier x model"]["powered_for_ceiling"]: ok = False; print("      FAIL: finest slice should be flagged")
+    if not strat["fully pooled"]["powered_for_ceiling"]: ok = False; print("      FAIL: pooled should be powered")
+
+    # T8: when MS_between < MS_within the ICC must be reported NOT ESTIMABLE (NaN), never a clipped
+    #     0 that a reader turns into "items are independent". Constructed directly rather than via
+    #     synth(), because the degenerate case needs between-family variance BELOW within-family
+    #     variance — a plain high-p ceiling does not reliably produce that.
+    print("T8  MS_between < MS_within -> ICC not estimable, not 0")
+    deg = []
+    for f in range(6):
+        for j in range(5):
+            # every family has the same mean; all variance is WITHIN family
+            p = [1.0, 1.0, 1.0, 1.0, 0.75][j]
+            for k in range(24):
+                deg.append({"item_id": f"F{f}-I{j}", "family_id": f"F{f}", "difficulty_lever": "x",
+                            "model": "m", "carrier": "base", "admin": "1",
+                            "pass": 1 if (k / 24) < p else 0, "is_infra_error": "0"})
+    rd = analyze(deg)
+    v = rd["icc"]["value"]
+    print(f"      MS_between {rd['icc']['ms_between']:.6f} vs MS_within {rd['icc']['ms_within']:.6f} -> ICC {v}")
+    if not (isinstance(v, float) and math.isnan(v)): ok = False; print("      FAIL: must be NaN, not a number")
+    _, why8 = go_no_go(rd)
+    named = any("NOT ESTIMABLE" in w and "NOT ZERO" in w for w in why8)
+    print(f"      go/no-go says UNKNOWN not ZERO: {named}")
+    if not named: ok = False; print("      FAIL: verdict must warn against reading it as zero")
+    rv2 = analyze(synth(8, 6, 12, 0.70, 1.5, seed=42))   # real variance -> must still estimate
+    print(f"      varying data ICC = {rv2['icc']['value']:.3f} (finite expected)")
+    if not math.isfinite(rv2["icc"]["value"]): ok = False; print("      FAIL: must still estimate when variance exists")
+
     # T4: INFRA ERRORS ARE MISSING, NEVER WRONG (standing rule)
     print("T4  infra errors treated as missing")
     d = synth(4, 4, 3, 0.9, 0.3, seed=13)
@@ -309,8 +381,18 @@ def main(argv):
     if "--self-test" in argv: return _self_test()
     if len(argv) < 2: print(__doc__); return 2
     rows = list(csv.DictReader(open(argv[1], encoding="utf-8", errors="replace")))
+    strat = stratification_report(rows)
     res = analyze(rows)
+    res["stratification"] = strat
     go, why = go_no_go(res)
+    bad = [s["granularity"] for s in strat if not s["powered_for_ceiling"]]
+    if bad:
+        why.append("GRANULARITY: ceiling/difficulty may be read at " +
+                   ", ".join(s["granularity"] for s in strat if s["powered_for_ceiling"]) +
+                   f" — but NOT at {', '.join(bad)} (fewer than {MIN_TRIALS_FOR_CEILING} trials/item there; "
+                   f"an item with true p=0.85 reads as perfect "
+                   f"{[s['p_perfect_if_true_p_085'] for s in strat if not s['powered_for_ceiling']][0]:.0%} "
+                   f"of the time). Slicing finer does not add power, it removes it.")
     res["go_no_go"] = {"proceed": go, "reasons": why}
     print(json.dumps(res, indent=2, default=float))
     print("\n" + ("PROCEED" if go else "STOP") + " — pre-registered rule:")
