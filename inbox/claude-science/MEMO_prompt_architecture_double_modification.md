@@ -3,7 +3,8 @@ _Claude Science, 2026-07-26. Answering Carey's morning question about the Google
 _"double-scaffolding". Numbers computed first-hand from this project's own channel experiment and epistemic log._
 
 ## 0. SHORT ANSWER
-**No — and this project already ran the experiment.** But the worry is not silly: it is already on the record as
+**The house prompt is on the INSTRUMENT, not the subject, and that distinction holds. But my original claim that
+the data shows double-prompting is harmless is RETRACTED — see §1.** But the worry is not silly: it is already on the record as
 an open confound (**DECISIONS §10.14, double system-prompting**), and it applies to the **SUBJECT** under test,
 not to the **INSTRUMENT** doing the analysis. Those are different machines and the rule for each is opposite.
 
@@ -21,9 +22,16 @@ Paired at item level (n=63): **1 discordant item, exact binomial p = 1.000.**
 **A caution I have to state because I nearly fell into it two turns ago:** a bootstrap on per-item differences
 returns a CI that *excludes* zero — but 62 of 63 items are **exactly tied** and the entire interval is driven by
 one item. That is a degenerate bootstrap, not evidence. Same trap as the clustering artifact.
-**Honest verdict: no detectable difference between singly- and doubly-prompted channels, bounded at roughly
-±2 points.** NOT "double-prompting is harmless" — **"not measurable at this ceiling."** The items were at 98–100%,
-so this test had almost no power to resolve a small effect. The right claim is bounded, not null.
+**CORRECTED VERDICT (2026-07-26, after Carey's pushback — see SPEC_reconciliation_cost.md §0).** My original
+text said "bounded at roughly ±2 points." **That bound was not licensed.** Computed power of this comparison at
+the observed ceiling: **0.21 to detect a 1-pt drop, 0.55 for 2 pts, 0.80 only at 3 pts.** The honest bound is
+**±3 pts at best**, and reaching 80% power for a 2-pt effect would need ~600 items per arm — ~10x what ran.
+**And a larger error: this comparison answers the wrong question.** The recorded outcome is a binary pass/fail
+bit; `format_ok` and `mappable` are 1.0 in all four arms (zero variance) and `tokens_completion`/`latency_ms`
+exist for **exactly one arm**. A model that reconciles conflicting prompts perfectly but burns 3x the tokens
+**scores identically**. So this data is **structurally blind** to reconciliation cost, and citing it as evidence
+about double-prompting was a category error. The question needs process metrics, not accuracy — that design is
+`SPEC_reconciliation_cost.md`, and it is CHEAPER than the pilot (768 calls).
 
 ## 2. WHERE THE GOOGLE ADVICE IS RIGHT, AND WHERE IT INVERTS
 Paste 2 is largely **correct and already implemented here**:
