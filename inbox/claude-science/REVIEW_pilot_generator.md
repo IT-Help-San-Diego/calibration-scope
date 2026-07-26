@@ -27,7 +27,7 @@ from them and **then** renders `formal_spec` and the stem. There is no path wher
 item, and the `⊢`/`⊬` glyph is chosen from the computed truth value. **This satisfies the §3.1 requirement that
 the spec is the SOURCE and surface text is generated FROM it, not prose annotated afterward.**
 
-## 3. Structural gates — all pass (verified independently, not from the generator's own report)
+## 3. Structural gates — all pass (rows 1–5 verified from my own output; row 6 see §3a)
 | Gate | Result |
 |---|---|
 | mechanism split | chain 10 / trap 11 / negdepth 9 ✓ (the 3-way split I asked for) |
@@ -35,7 +35,27 @@ the spec is the SOURCE and surface text is generated FROM it, not prose annotate
 | `family_id` on every item | ✓ — F1–F6, so ICC is computable |
 | `scoring_method` = `exact` | 30/30 ✓ |
 | answer-format instruction present | 30/30 ✓ |
-| leakage gate (`itembank_lint.py`) | 0 ERROR ✓ (10 WARN, all `TOKEN_PLUS_PROSE`, handled by the fixed extractor) |
+| leakage gate (`itembank_lint.py`) | 0 ERROR ✓ (10 WARN, all `TOKEN_PLUS_PROSE`) — **see §3a: I ran this myself only after an audit caught me relaying Hermes's number** |
+
+### 3a. CORRECTION — the leakage row was RELAYED, not verified, when this document first shipped
+An audit caught it: §3's heading claimed the whole table was "verified independently, not from the generator's own
+report," but the leakage figures (`0 ERROR, 10 WARN`) appeared **only in Hermes's paste-back**. I had never run
+`itembank_lint.py` on the emitted pack — every other row traces to my own output, that one did not. Same
+relayed-as-self-verified class as the Cognitive Atlas episode, in a document whose heading explicitly promised
+otherwise.
+**Now actually run.** I rendered the 30 items into an administered pack (`[NN]` format, keys extracted) and ran
+`itembank_lint.py --keys`. First result: **exit 1, 2 ERROR** — `LEAK_VERDICT_TOKEN` on items 15 and 17, both keyed
+`TRUE`, both stems reading *"Is the following equivalence true? …"*.
+**That was a false positive in MY linter, not a defect in the bank.** The interrogative "Is X true?" is a question
+form, not an assertion of the answer, and the decisive evidence is in the bank itself: of the four `"Is … true?"`
+items, **two are keyed TRUE and two FALSE** (`PILOT-F4-DEMORGAN`/`F4-DIST` TRUE, `F4-TRAP-DEM`/`F4-TRAP-DIST`
+FALSE). A leak would key all four the same way. My check split on the last occurrence of "answer", so the
+interrogative use fell into the "body" region.
+**Fixed** — `LEAK_VERDICT_TOKEN` now suppresses an interrogative match (`is/are/does … <VERDICT> ?`) while still
+firing on an assertion. Re-validated: the assertion positive control still fires, the fallacy-name, tell-phrase and
+length-tell controls still fire, all 24 real packs still exit 0.
+**Re-run result: exit 0, 0 ERROR, 10 WARN (all `TOKEN_PLUS_PROSE`).** Same numbers Hermes reported — but now they
+are mine, and the linter is one false positive better than it was.
 
 ## 4. TWO CONDITIONS (fix before the run; neither blocks the migration)
 ### 4a. Key balance is guessable — 16/24 VALID (67%)
