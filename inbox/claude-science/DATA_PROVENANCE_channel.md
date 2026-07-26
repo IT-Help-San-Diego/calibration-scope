@@ -21,8 +21,10 @@ log policy it is quarantined, not deleted, so the retraction is auditable.
 ## The statistic, with correct provenance
 Recomputed from the 640-row file in this session:
 - Arms: A-regraded **189/192 = 98.44%** (Wilson [95.51, 99.47]), A′ **64/64 = 100%**, B **191/192**, C **191/192**.
-- Channel comparison **p = 0.340**; isolation A vs A′ **p = 0.575**. Residual failures: **LIT-12 ×3 only**, all
-  with `is_infra_error = 0`.
+- Channel comparison **p = 0.340**; isolation A vs A′ **p = 0.575**.
+- Residual failures **in the A-regraded arm: LIT-12 ×3**, all with `is_infra_error = 0`. Across the whole 640-row
+  file there are **5** failures — 3 in A-regraded plus 1 each in B and C, all LIT-12. (An earlier version wrote
+  "LIT-12 ×3 only" next to a four-arm score list, which read as 3 failures total; the ×3 is the A-arm count.)
 - **N is 640 rows / 192 trials in the API arm — NOT 1,024.** The 1,024 figure belongs to the retracted dataset.
 
 ## Answer to Claude Code's diagram question
