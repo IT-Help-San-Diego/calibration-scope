@@ -59,8 +59,9 @@ thesis: a stated-vs-actual gap in *our own instrument*, caught by measurement ra
 A benchmark that could not detect its own grader bug would have published "+15.6 pt isolation effect" as
 a cognitive finding. This one caught it before publication, twice over (quarantined on statistical
 grounds by Claude Science, then confirmed by raw-output read by Hermes).
-**Recommended framing for the paper/site:** the channel experiment's contribution is a validated manual
-measurement channel PLUS a worked example of instrument self-audit. Both are real; neither over-claims.
+**Recommended framing for the paper/site:** the channel experiment's contribution is a manual measurement
+channel shown USABLE (no detectable difference from API, effect bounded ~+/-5 pts; formal equivalence via
+TOST still outstanding) PLUS a worked example of instrument self-audit. Do NOT write 'validated' unqualified.
 
 ## 6. Still open / next
 - **Re-grade with the mechanism fix** (not an item allowlist) and re-run this analysis on the output —
