@@ -219,7 +219,7 @@ mod tests {
             provider: "lmstudio".into(),
             location: "local".into(),
             axis: "reasoning".into(),
-            status: "finished".into(),
+            status: "done".into(),
             pass_count: 189,
             total_count: 192,
             load_mode: Some("clean-room".into()),
@@ -228,7 +228,10 @@ mod tests {
                 chrono::NaiveDateTime::parse_from_str("2026-07-26 06:00:00", "%Y-%m-%d %H:%M:%S")
                     .unwrap(),
             ),
-            finished_at: None,
+            finished_at: Some(
+                chrono::NaiveDateTime::parse_from_str("2026-07-26 07:12:00", "%Y-%m-%d %H:%M:%S")
+                    .unwrap(),
+            ),
         }
     }
 
@@ -266,6 +269,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "development aid, not an assertion: run explicitly with --ignored to emit target/witness-sample.html"]
     fn write_sample_for_browser_inspection() {
         // Not an assertion test: emits a sample artifact so the certificate
         // can be opened in a real browser during development/CI artifact
