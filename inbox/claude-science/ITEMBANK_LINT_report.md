@@ -16,7 +16,8 @@ same three defect classes, and the third one already cost a headline.
 | Code | Level | What it catches |
 |---|---|---|
 | `IFF_KEY_INCONSISTENT` | **ERROR** | two items with biconditional cues ("exactly when", "precisely when", "iff") keyed to OPPOSITE readings — **the LOGIC-01N/03N defect exactly** |
-| `ID_COLLISION` | **ERROR** | one item number mapping to different stems across packs — **the 63-vs-64 defect** |
+| `NUM_COLLISION` | **ERROR** | one item number mapping to different stems **WITHIN ONE ADMINISTRATION** (numbers ARE re-randomised across admins by design) |
+| `ITEM_ID_COLLISION` | **ERROR** | (needs `--results <csv>`) one `item_id` carrying a multiple of the modal replicate count → distinct items sharing an id string — **the real 63-vs-64 defect** |
 | `NO_FORMAT` | **ERROR** | no answer-format instruction → exact-match grading fails unpredictably |
 | `MIXED_VOCAB` | **ERROR** | stem offers tokens from 2+ verdict sets; grader cannot disambiguate |
 | `KEY_VOCAB_MISMATCH` | **ERROR** | key's leading token is not in the vocabulary the stem instructs |
@@ -25,14 +26,33 @@ same three defect classes, and the third one already cost a headline.
 | `IFF_CUE` / `IFF_PAIR_UNCHECKED` | WARN | biconditional cue present; re-run with `--keys` to check consistency |
 | `DUP_STEM` | WARN | identical stem under different numbers → paired analysis treats them as independent |
 
-## Validation (4 controls, all pass — this is the part that matters)
+## CORRECTION (2026-07-26) — the first version's collision check was wrong
+**Found by audit, reproduced first-hand.** v1's `ID_COLLISION` keyed on the positional `[NN]` number and compared
+across ALL packs. But item numbers are **re-randomised per administration by design** (`--shuffle`): the
+"exactly when" stem is `[27]` in admin1, `[28]` in admin2, `[29]` in admin3. So the recommended hard-gate
+invocation `packs/*.txt` returned **exit 1 with 64 ERROR / 137 WARN on the very bank I had just declared clean** —
+`ID_COLLISION 64`, `DUP_STEM 64`, every one spurious. Worse, the check **never read `item_id` at all**, so it could
+not possibly have detected the defect it was named for: `item_id` lives in the results CSV, which v1 never opened.
+The v1 claims "no false-positive floor" and "the 63-vs-64 defect exactly" were both false.
+**Fixed two ways:** (a) number-collision is now scoped **within one administration** (`NUM_COLLISION`), parsed from
+the filename's `admin<N>`; (b) a genuine `ITEM_ID_COLLISION` check reads the results CSV via `--results` and flags
+any `item_id` carrying a multiple of the modal replicate count.
+**On the real data it now finds the actual collider:** `AUX-APPROVAL-01 Benign Command Classification`, flagged in
+**every arm** (A, A′, B×3, C×3) — 6 rows where the modal item has 3. And all 24 packs pass at **0 ERROR**.
+
+## Validation (8 controls, all pass — this is the part that matters)
 A linter that cannot demonstrate it catches the bug it was written for is decoration.
-- **V1 positive control** — reconstructed the real LOGIC-01N/03N defect (`exactly when` keyed CONFIRMED +
-  `precisely when` keyed DOESNOTFOLLOW): **exit 1, `IFF_KEY_INCONSISTENT` on `[01],[03]`.** Caught.
-- **V2 negative control** — the SAME two stems keyed CONSISTENTLY: **exit 0**, no inconsistency flagged.
-  So it flags the *inconsistency*, not the mere presence of the cue.
-- **V3 ID collision** — item `[07]` with different stems in two packs: **exit 1, `ID_COLLISION`.** Caught.
-- **V4 clean bank** — two well-formed items: **exit 0, 0 ERROR 0 WARN.** No false-positive floor.
+- **V1 positive control** — real LOGIC-01N/03N defect reconstructed: exit 1, `IFF_KEY_INCONSISTENT`. ✓
+- **V2 negative control** — same stems keyed CONSISTENTLY: exit 0. Flags the *inconsistency*, not the cue. ✓
+- **V3 positive** — `[07]` with different stems in two batches of the SAME admin: exit 1, `NUM_COLLISION`. ✓
+- **V3b shuffle-invariance negative (NEW, this is the one v1 lacked)** — identical stem under `[07]` in admin1 and
+  `[08]` in admin2, i.e. normal `--shuffle` operation: **exit 0.** ✓
+- **V4 negative** — clean two-item bank: exit 0, 0 ERROR 0 WARN. ✓
+- **V5 positive (NEW)** — synthetic results CSV with one id carrying 2× the modal reps: exit 1,
+  `ITEM_ID_COLLISION`. ✓
+- **V6 negative (NEW)** — clean results CSV, uniform reps: exit 0. ✓
+- **V7 negative (NEW, the regression this correction is about)** — **all 24 real packs, every administration:
+  exit 0.** ✓
 
 ## Run against the real 64-item bank (channel B admin1, 8 packs)
 `0 ERROR, 24 WARN` — and the warnings are informative rather than noise:
@@ -53,7 +73,9 @@ false-positive rate is a property of the instrument and belongs in the record**,
 
 ## How to use it on the 500-item bank
 ```
-python3 itembank_lint.py --keys keys.json packs/*.txt     # exit 1 blocks administration
+python3 itembank_lint.py --keys keys.json --results results.csv packs/*.txt   # exit 1 blocks administration
+# --keys enables IFF_KEY_INCONSISTENT; --results enables ITEM_ID_COLLISION (the real 63-vs-64 check).
+# Without --results the id-collision check does not run at all.
 ```
 **Recommendation: make this a hard gate.** Run it before a single item is administered, and again in CI on any
 bank change. The cost of a caught defect here is a text edit; the cost of a missed one is what happened to the
@@ -63,5 +85,5 @@ isolation effect — 1,024 trials and a retracted flagship claim.
 1. It checks *form*, not *logical truth*. It cannot tell you an item's key is wrong — only that the key's
    vocabulary contradicts the stem, or that two cued items disagree with each other. **Truth-table verification
    of new logic items is still manual** (that is what I did for the Model Picker battery and the LOGIC-03N dispute).
-2. `IFF_KEY_INCONSISTENT` needs `--keys`. Without a key file it degrades to a WARN listing the cued items.
+2. `IFF_KEY_INCONSISTENT` needs `--keys`; `ITEM_ID_COLLISION` needs `--results`. Without a key file it degrades to a WARN listing the cued items.
    **Run it with the keys, or the check that matters most is the one you skipped.**
