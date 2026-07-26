@@ -1,4 +1,4 @@
-# HANDOFF to Claude Code — GUI/UX lane (updated 2026-07-22, post-Safari-fix)
+# HANDOFF to Claude Code — GUI/UX lane (updated 2026-07-26)
 
 Your lane is frontend/UX across BOTH surfaces: the local dashboard
 (127.0.0.1:8768) and the public site (calibrationscope.com). State is current
@@ -121,19 +121,13 @@ index, README, lessons headers, DECISIONS preamble. One voice.
 
 ## Open items (pick in order)
 
-0. **§10.9 prose-block downgrade (LAST unhedged carrier-immune instance).**
-   DECISIONS.md §10.9 still asserts the carrier-immunity claim as confirmed
-   fact — bold "Confirmed on BOTH local (nemotron) and cloud (Fable 5)",
-   "100% on EVERY carrier", "above it, carrier-immune" — while §10.16 (40k
-   chars later) documents that exact claim being downgraded as an overclaim.
-   The file contradicts its own correction section. README/lessons/comic/site/
-   mcp.rs were fixed in commit 56762fe7b4; this block survived. Search
-   `carrier-immune` and `100% on EVERY carrier`. Apply the same honest
-   downgrade — not deletion — used on the other surfaces: keep the experiment
-   receipt, but move the bold conclusion under the scoped reading already
-   sitting above it ("endpoints real; capability-vs-substrate unresolved
-   pending the powered run"). Verify with grep: after the edit, the string
-   "carrier-immune" must appear ONLY inside superseded/quoted context.
+0. ~~§10.9 prose-block downgrade~~ **DONE (commit 3c40571, 2026-07-25 —
+   verified by Claude Code 2026-07-26).** §10.9 was retitled from assertion to
+   question, the original paragraphs demoted to a verbatim-quoted blockquote
+   labeled "superseded as stated," and the caveat appended ("'confirmed' was
+   never the right word"). The grep criterion this item set now passes:
+   `carrier-immune` appears only inside superseded/quoted context (the §10.9
+   blockquote and §10.16's quotation of the old README claim). Do not redo.
 
 0.5. **First-run onboarding (three rungs, ordered by verified-result-first).**
    Design source: Claude Science, 2026-07-25. Principle: each rung must
@@ -162,7 +156,7 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    the earlier "p=0.34, ±5 pts, 1,024 trials" figure welded a statistic from
    the re-graded 640-row dataset to the N of the retracted original; that
    citation was wrong and is struck. If a number is needed, derive it from the
-   re-graded CSV and cite that CSV's N and hash.
+   re-graded CSV and cite that CSV's N and hash. This figure is also where the
    golden-ratio commitment actually ships, since the story audit found it
    asserted on no surface.
 
@@ -172,7 +166,35 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    channel, N, date, pass rate WITH CI, run hash). One verified row beats six
    plausible ones; the file earns the recommendation as runs land, and users
    watch it grow on GitHub. Seeded by Hermes 2026-07-25 with the single
-   honestly-verifiable row (gemma-4-31b, run 953).
+   honestly-verifiable row (gemma-4-31b, run 953); row corrected 2026-07-26
+   (commit 3c40571): n=192/189 passed, Wilson 95% CI, runnable verify-SQL,
+   and the naming caveat — 64 distinct test_ids but 63 unique display names
+   (AUX-APPROVAL-01 is two different tests). Use the FILE, not this prose,
+   as the data source for any UI.
+
+   **Binding UI constraints from Claude Science reviews (2026-07-24..26):**
+   - **Key every list/count on test_id, never display name** (64 ids vs 63
+     names). Count what the primary key counts.
+   - **No p-value or trial-count in UI chrome** for the channel claim (see
+     the struck citation above); if a number is needed, derive it from the
+     committed re-graded CSV and cite its N and hash.
+   - **The manual paste pack must be byte-identical to the API item set** for
+     any channel-provenance run — no manual-only "include your thinking
+     block" instruction (REASONING_TRACE_and_JSPACE_design.md: trace
+     availability is itself channel-confounded). Absent reasoning_content on
+     manual runs is an EXPECTED state, not an error; never invite
+     cross-channel trace comparison in run views.
+   - **Manual-mode results render as k/n_mappable** with the mappability
+     fraction and best/worst bounds; format compliance is TWO numbers
+     (map-rate + drift-point). Manual rows stay OUT of paired
+     carrier-analysis views (standing rules, epistemic log 2026-07-24).
+   - **Model lists come from the live endpoint/chooser, never from docs**
+     (Hermes-4 recommendation retracted 2026-07-25).
+   - **Rung 2's battery as shipped is 6 items** (5 logic + the 0-2
+     reframe/partner probe; floors: >=4/5 logic, items 1 and 5 individually
+     disqualifying, reframe >=1; cheapest passer wins). Grade server-side —
+     the answer key must never reach page source. Item 6 is human-graded
+     (0/1/2 rubric rendered inline).
 
 1. **Subject/Channel Wizard** (Oscent item 1 — Rung 3, see 0.5)
 2. **Witness Artifact Generator** (Oscent item 2)
@@ -192,7 +214,7 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    FIPS and it costs cmake/go build friction. Verified live: chain+hostname
    validation (ssl_verify_result=0), IP SAN, SSE over TLS, CSP split, 36 unit
    tests, clippy 0.
-2. **Site polish — owl+brain graphic pass.** BUILT (Claude Code, 2026-07-23,
+5. **Site polish — owl+brain graphic pass.** BUILT (Claude Code, 2026-07-23,
    commit 7ed1af9) — DEPLOY PENDING (`scripts/deploy-site.sh` from a
    credentialed seat; this seat has no AWS creds by design):
    - Canonical LOCAL⇄WEB portal pill on ALL THREE surfaces (site home,
@@ -208,23 +230,23 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      in-browser: CLEAN console, 8 animations, pill pinned across scroll.
    - Remaining for this item: run deploy-site.sh (Hermes/Carey), then a
      final visual pass on the LIVE site; optionally richer brain art later.
-3. **Lessons page polish.** Four comics render inline; design pass on the
+6. **Lessons page polish.** Four comics render inline; design pass on the
    lesson cards, status badges, seal lines. Do NOT change the lesson .md
    files or comic SVGs (sealed — hash-verified).
-4. **Human-calibration UI polish (dashboard).** Backend is DONE (5
+7. **Human-calibration UI polish (dashboard).** Backend is DONE (5
    endpoints, E2E verified). Frontend is functional but basic (4-step flow
    at page-human-cal). Add: per-question timing display, a carrier-variance
    bar chart at results, and a human-vs-model comparison panel (the
    signal_carrier endpoint already returns both subjects in the same shape).
-5. **Architecture diagram.** docs/architecture.excalidraw is stale — add
+8. **Architecture diagram.** docs/architecture.excalidraw is stale — add
    the Focused shell, NeuroVault proxy, signal-carrier view, spec-decode
    panel, human-calibration page, /api/runs/complete endpoint, MCP server.
-6. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
+9. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
    siblings. Template = migration 047/048 pattern (same formal_spec, new
    surface text for N; transform + named owl_flaw for C; resolve roots by
    NAME, never raw id). Oracle: scripts/verify_logic_ground_truth.py
    --check-owl-families.
-7. **MCP server e2e test.** Connect a real bot to POST /mcp, discover the
+10. **MCP server e2e test.** Connect a real bot to POST /mcp, discover the
    11 tools, call run_benchmark + get_run. Untested end-to-end by a client.
 
 ## What's DONE (don't redo)

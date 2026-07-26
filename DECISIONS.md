@@ -1052,6 +1052,18 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
 - Human-cal (043) + Manual Subject Mode (§14) + API executor are three channel implementations of one abstraction.
 - The Witness artifact spec is new work (Claude Code lane, when ready).
 - The wording audit is a live work item: every public surface must be checked against the mission sentence.
+  - **2026-07-26 (Claude Code): README front door installed.** The lead, "why"
+    paragraph, capability demotion ("Runs against local models (LM Studio) and
+    cloud endpoints"), and the cognitive-scientist thread line are taken from
+    `inbox/claude-science/COPY_founding_thesis_stated_vs_actual.md` (2026-07-25,
+    closes STORY_CONSISTENCY_AUDIT Finding 1 and 2 for the README). The
+    crosswalk link anchors to §10.13 (the verified record) because
+    `ontology_crosswalk.json` is not committed to this repo. Still open in the
+    audit: site index + dashboard landing lead swap (style-hash recompute +
+    live-browser verification required), lessons headers, DECISIONS preamble,
+    SCISPACE_PACKAGE.md ("benchmark" voice, unhedged superlatives), and the
+    README's "90-test battery" figure, which needs sealed-run provenance per
+    PUBLIC_REPO_embarrassment_scan SEV3 before it can stay.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
