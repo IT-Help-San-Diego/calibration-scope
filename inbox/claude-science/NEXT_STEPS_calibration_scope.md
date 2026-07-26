@@ -18,7 +18,18 @@ both framings pass `itembank_lint.py` at 0 ERROR / 0 WARN. **Hermes runs it; no 
 - **4 fallacy controls, one per mechanism** (FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM) — **required**: without
   them a `NONE`-rate rise is uninterpretable, because the model might just be saying `NONE` more to everything.
 - **Primary test:** McNemar on the `NONE` items, A vs B, paired within item+model+rep.
-### Why 15 reps and not 3 — I got this wrong first
+### **CORRECTED — the power figures below are WRONG; see `CORRECTION_framing_test_power.md`**
+The reps table treats 15 repetitions of 3 items as 90 independent observations — the trial-level independence
+error I retracted in the pilot earlier this session. Real structure: **3 NONE items x 2 models = 6 CLUSTERS.**
+**Cluster-aware McNemar power at a 0.139->0.50 rise is 0.03, not 1.00.** The 420-call run as designed would have
+returned a null regardless of the truth. **Reps cannot fix it** (cluster count caps power); **items can** —
+10 NONE items gives 0.98. **REVISED: author 7 more NONE items (they are just sound arguments), then run
+10 NONE + 10 mechanism-balanced controls x 2 models x 6 reps = 480 calls**, primary test = McNemar at the
+(item,model) CELL level, secondary = calibrated paired t-test on cell pass rates, plus leave-one-item-out
+sensitivity with any positive. A 6-cell continuous test at 15 reps (168 calls) is legitimate but item-fragile
+(23% of significant results flip on dropping one item) — pilot signal only.
+
+### Why 15 reps and not 3 — I got this wrong first (SUPERSEDED, retained for the record)
 I initially specced 3 reps (84 calls) and called it adequate. **It isn't:** McNemar power on 18 pairs is **0.49**
 at the decision-relevant effect (0.139 → 0.50) and **0.26** at 0.40. Recomputed:
 | reps | pairs | calls | power @0.50 | power @0.40 |
