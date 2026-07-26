@@ -9,8 +9,31 @@ directory named `ssrn_package/` and a file `ssrn-submission-form-v3.pdf` — i.e
 SCT and Open Epistemic Packet are unreleased ideas in development.
 Treat the earlier audit's §2/§3 as a **pre-flight checklist for unreleased drafts**, not live defects.
 
-## 1. GOOD NEWS — no public language needs fixing
-I checked every public surface. **They are already honest and consistent.** No action required:
+## 1. GOOD NEWS — no public language needs fixing (all 11 SCT-bearing public files opened individually)
+**Correction to my own first pass:** I originally wrote this section after reading only 5 of the 11 files a code
+search had returned, and my exposure inventory omitted the `dns-tool-intel` repo entirely. I have now opened all 11.
+The conclusion holds — but the inventory was wrong, and SCT text lives in **THREE** public repos, not two:
+
+| Repo | File | SCT mentions | Label near mention |
+|---|---|---|---|
+| intellectualresistance | README.md | 1 | Proposal |
+| intellectualresistance | index.html | 12 | Proposal |
+| intellectualresistance | llms.txt | 1 | Proposal |
+| intellectualresistance | llms-full.txt | 1 | Proposal |
+| **dns-tool-intel** | static/llms.txt | 1 | "Star-Centric Transport (status: Proposal)" |
+| **dns-tool-intel** | static/llms-full.txt | 1 | "Star-Centric Transport (Proposal)" |
+| **dns-tool-intel** | go-server/static/llms.txt | 1 | "(status: Proposal)" |
+| **dns-tool-intel** | go-server/static/llms-full.txt | 1 | "(Proposal)" |
+| **dns-tool-intel** | go-server/templates/ecosystem.html | 1 | Proposal |
+| star-centric-transport | README.md | 1 | none (26-char stub) |
+| open-epistemic-packet | README.md | 0 | none (25-char stub) |
+
+The four dns-tool-intel LLM files do contain the word "published" — it refers to the theory **site**, not to SCT,
+and each file carries an explicit anti-upgrade clause: *"the framework statuses above are reproduced as published,
+not upgraded"* / *"reproduced exactly as published; only capabilities this site documents as implemented are claimed
+as shipped."* Read in context, not matched by keyword. **All 11 are honest. No public language needs fixing.**
+
+The status table these files reproduce:
 | Framework | Public status label | Where |
 |---|---|---|
 | The Verification Principle | **Proven** (theorem) | site card + README table |
