@@ -1058,9 +1058,17 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     `inbox/claude-science/COPY_founding_thesis_stated_vs_actual.md` (2026-07-25,
     closes STORY_CONSISTENCY_AUDIT Findings 1–2 for the README). The
     crosswalk link anchors to §10.13 (the verified record) because
-    `ontology_crosswalk.json` is not committed to this repo. Still open in the
-    audit: site index + dashboard landing lead swap (style-hash recompute +
-    live-browser verification required), lessons headers, DECISIONS preamble,
+    `ontology_crosswalk.json` is not committed to this repo.
+  - **2026-07-26 (Claude Code, same PR, later commit): site index + dashboard
+    landing installed too.** Site hero sub now leads with the stated-vs-actual
+    copy (text nodes only — style block untouched, hashes unchanged, verified
+    console-clean in a live browser); dashboard hero + meta/og/twitter moved
+    off "benchmarking"/"LLM capability verification" identity. Also removed
+    the site's one console violation (an inert `style="cursor:pointer"`
+    refused by the hash CSP); `site/lessons.html` still carries 26 inert
+    `style=` attributes inside inlined sealed-comic markup — left for the
+    deploy-coordinated pass. Still open in the audit: lessons headers,
+    DECISIONS preamble (checked — no benchmark voice, left as is),
     SCISPACE_PACKAGE.md ("benchmark" voice, unhedged superlatives), and the
     README's "90-test battery" figure, which needs sealed-run provenance per
     PUBLIC_REPO_embarrassment_scan SEV3 before it can stay. Hash-naming
