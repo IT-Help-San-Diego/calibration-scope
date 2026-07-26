@@ -44,6 +44,16 @@ def norm_text(s):
         s = s.replace(a,b)
     return s
 
+def admin_of(path):
+    """Group packs by ADMINISTRATION. Item numbers are re-randomised per admin BY DESIGN
+    (--shuffle), so a number->stem map is only meaningful within one administration.
+    Filename convention: <date>-channel-<X>-admin<N>-batch<NN>-seed<S>.txt"""
+    b = path.split("/")[-1]
+    m = re.search(r"channel-([A-Za-z0-9']+)-admin(\d+)", b)
+    if m: return f"channel-{m.group(1)}/admin{m.group(2)}"
+    m = re.search(r"seed(\d+)", b)
+    return f"seed{m.group(1)}" if m else b   # fall back to seed, then filename
+
 def parse_pack(text):
     """Return [(num, stem)] for [NN] ... items. Multi-line stems are joined."""
     text = norm_text(text)
@@ -75,6 +85,7 @@ def lint(files, keys=None):
         try: raw = open(path, encoding="utf-8", errors="replace").read()
         except OSError as e:
             findings.append(("ERROR", path, "UNREADABLE", str(e))); continue
+        admin_key = admin_of(path)
         items = parse_pack(raw)
         if not items:
             findings.append(("WARN", path, "NO_ITEMS", "no [NN] items parsed - check format"))
@@ -84,8 +95,8 @@ def lint(files, keys=None):
 
             # --- E1: duplicate item id mapping to DIFFERENT text (the 63-vs-64 defect)
             h = hashlib.sha256(stem.encode()).hexdigest()[:16]
-            stems_by_hash[h].append(ref)
-            stems_by_num[num].add(h)
+            stems_by_hash[h].append((admin_key, num, ref))
+            stems_by_num[(admin_key, num)].add(h)
 
             # --- E2: biconditional cue + converse-error key (the LOGIC-01N/03N defect)
             iff = [c for c in IFF_CUES if re.search(c, stem, re.I)]
@@ -138,55 +149,89 @@ def lint(files, keys=None):
                             f"instructs ({sorted(ev)})"))
 
     # --- cross-item checks
-    for num, hashes in stems_by_num.items():
-        if len(hashes) > 1:
-            findings.append(("ERROR", f"[{num}]", "ID_COLLISION",
-                f"item number [{num}] maps to {len(hashes)} DIFFERENT stems across packs. "
-                f"This is the 63-vs-64 defect: trial rows cannot be paired by id."))
-    # --- E9: THE LOGIC-01N/03N DEFECT PROPER -- two items using a biconditional cue whose keys
-    #          expect OPPOSITE readings. Either cue alone is only a WARN; an INCONSISTENT PAIR is
-    #          an ERROR, because then the bank is measuring cue-sensitivity, not the target fallacy.
+    # --- E9: THE LOGIC-01N/03N DEFECT -- two items with biconditional cues keyed to OPPOSITE
+    #          readings. Either cue alone is a WARN; an INCONSISTENT PAIR is an ERROR.
     if len(iff_items) > 1:
         if keys:
             readings = {}
             for ref, num, cue, head in iff_items:
-                k = str(keys.get(num,"")).strip().upper()
+                k = str(keys.get(num, "")).strip().upper()
                 if not k: continue
-                # a key in {FOLLOWS, CONFIRMED, VALID, YES} accepts the biconditional reading;
-                # {DOESNOTFOLLOW, INVALID, NO} treats the conditional as one-directional.
                 lead = re.split(r"[^A-Z]", k, 1)[0]
-                if lead in {"FOLLOWS","CONFIRMED","VALID","YES"}:   readings[ref]=("BICONDITIONAL",num,cue)
-                elif lead in {"DOESNOTFOLLOW","INVALID","NO","NONE"}: readings[ref]=("ONE_WAY",num,cue)
-            kinds = {v[0] for v in readings.values()}
-            if len(kinds) > 1:
+                if lead in {"FOLLOWS","CONFIRMED","VALID","YES"}:     readings[ref] = ("BICONDITIONAL", num, cue)
+                elif lead in {"DOESNOTFOLLOW","INVALID","NO","NONE"}: readings[ref] = ("ONE_WAY", num, cue)
+            if len({v[0] for v in readings.values()}) > 1:
                 detail = "; ".join(f"[{v[1]}] cue={v[2]!r} -> {v[0]}" for v in readings.values())
                 findings.append(("ERROR", ",".join(f"[{v[1]}]" for v in readings.values()),
                     "IFF_KEY_INCONSISTENT",
                     f"items using biconditional cues are keyed to OPPOSITE readings: {detail}. "
-                    f"This is the LOGIC-01N/03N defect exactly: the bank measures sensitivity to the "
-                    f"cue phrase rather than the target fallacy. Make every iff-cued item consistent, "
-                    f"or strip the cue from the items meant to test the converse error."))
+                    f"This is the LOGIC-01N/03N defect: the bank measures sensitivity to the cue phrase "
+                    f"rather than the target fallacy. Make every iff-cued item consistent, or strip the "
+                    f"cue from items meant to test the converse error."))
         else:
-            findings.append(("WARN", ",".join(f"[{n}]" for _,n,_,_ in iff_items), "IFF_PAIR_UNCHECKED",
+            findings.append(("WARN", ",".join(f"[{n}]" for _, n, _, _ in iff_items), "IFF_PAIR_UNCHECKED",
                 f"{len(iff_items)} items carry biconditional cues. Re-run with --keys to check they are "
                 f"keyed CONSISTENTLY -- an inconsistent pair is the LOGIC-01N/03N defect."))
 
-    for h, refs in stems_by_hash.items():
-        nums = {r.split('[')[-1].rstrip(']') for r in refs}
-        if len(nums) > 1:
-            findings.append(("WARN", ",".join(sorted(nums)), "DUP_STEM",
-                f"identical stem administered under {len(nums)} different item numbers {sorted(nums)}; "
-                f"paired analysis will treat them as independent items"))
+    for (adm, num), hashes in stems_by_num.items():
+        if len(hashes) > 1:
+            findings.append(("ERROR", f"{adm}:[{num}]", "NUM_COLLISION",
+                f"WITHIN administration {adm}, item number [{num}] maps to {len(hashes)} DIFFERENT stems. "
+                f"Numbers must be unique inside one administration or responses cannot be scored."))
+    for h, entries in stems_by_hash.items():
+        by_adm = defaultdict(set)
+        for adm, num, _ref in entries: by_adm[adm].add(num)
+        multi = {a: ns for a, ns in by_adm.items() if len(ns) > 1}
+        if multi:
+            findings.append(("WARN", ";".join(f"{a}:{sorted(ns)}" for a, ns in multi.items()), "DUP_STEM",
+                "identical stem appears under MULTIPLE numbers within the same administration; "
+                "paired analysis will treat them as independent items"))
+
     return findings, total
+
+def check_results_csv(path):
+    """THE ACTUAL 63-vs-64 CHECK. The defect was two DISTINCT items sharing one `item_id`
+    STRING -- invisible in the packs (which carry positional numbers, not ids) and only
+    visible in trial-level results. Signature: within one channel x admin, one item_id
+    carries a multiple of the modal replicate count.
+    Stdlib csv only. Expects columns: channel, admin, item_id."""
+    import csv
+    out = []
+    try: rows = list(csv.DictReader(open(path, encoding="utf-8", errors="replace")))
+    except OSError as e: return [("ERROR", path, "CSV_UNREADABLE", str(e))]
+    need = {"channel", "admin", "item_id"}
+    cols = {c.strip() for c in (rows[0].keys() if rows else [])}
+    if not need <= cols:
+        return [("ERROR", path, "CSV_SCHEMA", f"missing column(s) {sorted(need - cols)}; have {sorted(cols)}")]
+    groups = defaultdict(Counter)
+    for r in rows: groups[(r["channel"].strip(), r["admin"].strip())][r["item_id"].strip()] += 1
+    for (ch, adm), counter in sorted(groups.items()):
+        if not counter: continue
+        modal = Counter(counter.values()).most_common(1)[0][0]
+        for iid, n in sorted(counter.items()):
+            if n > modal and modal and n % modal == 0:
+                out.append(("ERROR", f"{ch}/admin{adm}:{iid}", "ITEM_ID_COLLISION",
+                    f"item_id carries {n} rows where the modal item has {modal} "
+                    f"({n // modal}x) -> {n // modal} DISTINCT items share this id string. "
+                    f"THIS IS THE 63-vs-64 DEFECT: paired analysis silently merges them. "
+                    f"Give each item a unique id."))
+            elif n != modal:
+                out.append(("WARN", f"{ch}/admin{adm}:{iid}", "REP_COUNT_ODD",
+                    f"{n} rows vs modal {modal} -- uneven replication, check for dropped trials"))
+    return out
 
 def main(argv):
     keys = None
     if "--keys" in argv:
         i = argv.index("--keys"); keys = json.load(open(argv[i+1])); argv = argv[:i] + argv[i+2:]
+    results = None
+    if "--results" in argv:
+        i = argv.index("--results"); results = argv[i+1]; argv = argv[:i] + argv[i+2:]
     files = [a for a in argv[1:] if not a.startswith("-")]
     if not files:
         print(__doc__); return 2
     findings, total = lint(files, keys)
+    if results: findings += check_results_csv(results)
     errs  = [f for f in findings if f[0] == "ERROR"]
     warns = [f for f in findings if f[0] == "WARN"]
     by_code = Counter(f[2] for f in findings)
