@@ -40,7 +40,29 @@ any `item_id` carrying a multiple of the modal replicate count.
 **On the real data it now finds the actual collider:** `AUX-APPROVAL-01 Benign Command Classification`, flagged in
 **every arm** (A, A′, B×3, C×3) — 6 rows where the modal item has 3. And all 24 packs pass at **0 ERROR**.
 
-## Validation (8 controls, all pass — this is the part that matters)
+
+## v3 — LEAKAGE GATE added (2026-07-26), 14 controls
+Added in response to Hermes's question about whether adversarial trap variants need per-item human review.
+**Answer: no — mechanise it.** A reviewer eyeballing 30 stems is a sampling process with an unmeasured miss
+rate; the project's own LOGIC-01N/03N defect survived human authoring AND human review and was caught by a
+subject, then by a regex.
+| Check | Level | Fires when |
+|---|---|---|
+| `LEAK_FALLACY_NAME` | ERROR | stem names a fallacy from the answer vocabulary in prose — suppressed for multiple-choice items listing ≥3 named options, where naming IS the answer format |
+| `LEAK_TELL_PHRASE` | ERROR | evaluative giveaway ("incorrectly concludes", "the flaw is", "erroneously", …) |
+| `LEAK_VERDICT_TOKEN` | ERROR | the item's own keyed verdict appears in the stem BODY, outside the answer-format instruction (needs `--keys`) |
+| `LEAK_ASYMMETRIC_LENGTH` | ERROR | mean stem length differs >25% between answer classes — a length tell lets a model score above chance without reading the argument (needs `--keys`) |
+`LEAK_ASYMMETRIC_LENGTH` is the one no human reviewer catches and a generator is most likely to create, because
+templating makes "valid" and "invalid" forms differ in stereotyped ways.
+
+**Six new controls, all passing:** fallacy-name-in-prose → ERROR; the same naming inside a ≥3-option
+multiple-choice item → clean (no false positive on the bank's existing format); tell-phrase → ERROR;
+keyed verdict in body → ERROR; length-tell with VALID stems 4× longer → ERROR; balanced lengths → clean.
+**Regression: all 24 real packs still exit 0** with the new checks active.
+**Measured baseline on the current bank: 0 of 52 stems name a fallacy in surface text** — the existing
+no-leakage discipline is real and holding. These checks defend it at 8× scale.
+
+## Validation — structural controls (8, all pass — this is the part that matters)
 A linter that cannot demonstrate it catches the bug it was written for is decoration.
 - **V1 positive control** — real LOGIC-01N/03N defect reconstructed: exit 1, `IFF_KEY_INCONSISTENT`. ✓
 - **V2 negative control** — same stems keyed CONSISTENTLY: exit 0. Flags the *inconsistency*, not the cue. ✓
