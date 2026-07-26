@@ -2,9 +2,10 @@
 //!
 //! GET /api/runs/{id}/witness — a sealed, self-verifying certificate for one
 //! run: a single self-contained HTML file whose body is one inline SVG.
-//! Zero JS, zero external resources, no <style> element and no style
-//! attributes — presentation attributes only, so it renders identically
-//! under any CSP, from file://, or pasted into a mail. Dark scotopic
+//! Zero JS, zero external resources, no <style> element; the ONLY style
+//! attributes are two layout shims (body margin/background, svg sizing) —
+//! everything inside the SVG is presentation attributes, so it renders
+//! identically under any CSP, from file://, or pasted into a mail. Dark scotopic
 //! palette, golden-ratio construction (portrait: 1000×1618, section at
 //! y=618, Fibonacci spacing 13/21/34/55/89 — self-described in the footer
 //! so the claim is verifiable on sight).
@@ -31,7 +32,7 @@ struct WitnessRow {
     total_count: i32,
     load_mode: Option<String>,
     sha3_provenance: Option<String>,
-    created_at: Option<chrono::NaiveDateTime>,
+    started_at: Option<chrono::NaiveDateTime>,
     finished_at: Option<chrono::NaiveDateTime>,
 }
 
@@ -65,8 +66,10 @@ fn render_certificate(r: &WitnessRow, seal: &str) -> String {
         format!("cloud API via {}", r.provider)
     };
     let load_mode = r.load_mode.as_deref().unwrap_or("clean-room");
+    // started_at is stamped when execution actually begins (executor sets it
+    // with status='loading') — created_at would misstate queue time as start.
     let started = r
-        .created_at
+        .started_at
         .map(|t| t.format("%Y-%m-%d %H:%M UTC").to_string())
         .unwrap_or_else(|| "—".to_string());
     let finished = r
@@ -158,7 +161,7 @@ fn render_certificate(r: &WitnessRow, seal: &str) -> String {
   <text x="89" y="1458" font-size="14" fill="#a0a0a0">Export the run's evidence bundle — GET /api/runs/{id}/export on the instrument that</text>
   <text x="89" y="1482" font-size="14" fill="#a0a0a0">sealed it — and recompute. The seal above must match. No trust required.</text>
   <text x="89" y="1546" font-size="12" fill="#7d8590">Golden-ratio construction: 1000×1618 canvas, section at y=618 (1618 = 1000 + 618), Fibonacci spacing 13·21·34·55·89.</text>
-  <text x="89" y="1572" font-size="12" fill="#7d8590">Zero JS · no external resources · presentation attributes only — this file is complete as it stands.</text>
+  <text x="89" y="1572" font-size="12" fill="#7d8590">Zero JS · no external resources · the SVG uses presentation attributes only — this file is complete as it stands.</text>
 </svg>
 </body></html>
 "##,
@@ -179,7 +182,7 @@ pub async fn run_witness(
     let row: Option<WitnessRow> = sqlx::query_as(
         r#"SELECT r.id, m.key, m.provider, m.location, r.axis, r.status,
                   r.pass_count, r.total_count, r.load_mode, r.sha3_provenance,
-                  r.created_at, r.finished_at
+                  r.started_at, r.finished_at
            FROM test_runs r JOIN models m ON m.id = r.model_id
            WHERE r.id = $1"#,
     )
@@ -221,7 +224,7 @@ mod tests {
             total_count: 192,
             load_mode: Some("clean-room".into()),
             sha3_provenance: Some(format!("sha3-512:{}", "ab".repeat(64))),
-            created_at: Some(
+            started_at: Some(
                 chrono::NaiveDateTime::parse_from_str("2026-07-26 06:00:00", "%Y-%m-%d %H:%M:%S")
                     .unwrap(),
             ),
