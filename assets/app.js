@@ -3769,7 +3769,12 @@ async function focusedRun(mode) {
   const JSON_HEADERS = { 'Content-Type': 'application/json' };
   try {
     let res;
-    const unwrap = (r) => (r && r.data !== undefined ? r.data : r);
+    const unwrap = (r) => {
+      // apiFetch envelope: a 400's plain-text body lands in r.data, which
+      // used to render as 'run(s) []' success — fail loudly instead.
+      if (r && r.ok === false) throw new Error(r.error || ('HTTP ' + r.status));
+      return (r && r.data !== undefined ? r.data : r);
+    };
     if (loadMode === 'paired') {
       // Paired design: every selected axis runs twice (baseline, then
       // scaffolded) — same endpoint Deep mode uses. 'missing'/'just' don't
@@ -3989,6 +3994,12 @@ async function focusedPickSubject() {
     showPage('wizard');
     return;
   }
+  return focusedPickSubjectViaGrid();
+}
+
+// The grid path, callable directly — the wizard offers it as an escape
+// hatch so grid-first flows (multi-select, spec pairs) don't cost a run.
+async function focusedPickSubjectViaGrid() {
   const picks = await showSubjectPicker();
   if (!picks || !picks.length) return;
   const input = document.getElementById('focused-subject-pick');
@@ -4968,16 +4979,18 @@ function wzLoad() {
 function wzSubject(subj) {
   wzState.subject = subj;
   wzState.channel = null;
-  document.getElementById('wz-subj-silicon').classList.toggle('wz-on', subj === 'silicon');
-  document.getElementById('wz-subj-carbon').classList.toggle('wz-on', subj === 'carbon');
+  ['silicon', 'carbon'].forEach(function (x) {
+    const el = document.getElementById('wz-subj-' + x);
+    if (el) { el.classList.toggle('wz-on', subj === x); el.setAttribute('aria-pressed', String(subj === x)); }
+  });
   const q2 = document.getElementById('wz-q2');
   const opts = document.getElementById('wz-q2-opts');
   const mk = function (id, big, sub) {
-    return '<button class="wz-opt" id="wz-ch-' + id + '" onclick="wzChannel(\'' + id + '\')"><span class="wz-opt-big">' + big + '</span><span class="wz-opt-sub">' + sub + '</span></button>';
+    return '<button class="wz-opt" id="wz-ch-' + id + '" aria-pressed="false" onclick="wzChannel(\'' + id + '\')"><span class="wz-opt-big">' + big + '</span><span class="wz-opt-sub">' + sub + '</span></button>';
   };
   if (subj === 'silicon') {
     opts.innerHTML = mk('local', 'LOCAL API', 'Local model (LM Studio)')
-      + mk('cloud', 'CLOUD API', 'Cloud endpoint, your key')
+      + mk('cloud', 'CLOUD API', 'Cloud API — your key')
       + mk('manual', 'MANUAL', 'Web chat (paste)');
   } else {
     opts.innerHTML = mk('local', 'AT THIS INSTRUMENT', 'the human-cal page, same battery')
@@ -4993,7 +5006,7 @@ async function wzChannel(ch) {
   wzState.channel = ch;
   ['local', 'cloud', 'manual'].forEach(function (c) {
     const el = document.getElementById('wz-ch-' + c);
-    if (el) el.classList.toggle('wz-on', c === ch);
+    if (el) { el.classList.toggle('wz-on', c === ch); el.setAttribute('aria-pressed', String(c === ch)); }
   });
   const q3 = document.getElementById('wz-q3');
   const body = document.getElementById('wz-q3-body');
@@ -5005,34 +5018,48 @@ async function wzChannel(ch) {
       body.innerHTML = '<div class="ob-step-main">A human takes the same sealed battery at this instrument — the 4-step human-cal flow administers it and scores with the same discipline.</div>'
         + '<button class="btn btn-primary" onclick="showPage(\'human-cal\')">Open Human Calibration →</button>';
     } else if (ch === 'cloud') {
-      body.innerHTML = '<div class="ob-step-main">Schema-ready, not yet administered: the run schema already carries subject and channel provenance for a remote human session, but no remote session path has shipped. Nothing here pretends otherwise.</div>'
+      body.innerHTML = '<div class="ob-step-main">Designed, not yet built: subject provenance (participant identity) is live in the schema today; a remote-session path and the channel column (§14 design) are not. Nothing here pretends otherwise.</div>'
         + '<div class="ob-data">When it ships, it lands in the same schema — that is the whole point of the door.</div>';
     } else {
-      body.innerHTML = '<div class="ob-step-main">Schema-ready, not yet administered: paper administration with transcription afterwards — same items, same seals, channel recorded as manual. The transcription path exists in the schema; the intake UI is not built yet.</div>';
+      body.innerHTML = '<div class="ob-step-main">Designed, not yet built: paper administration with transcription afterwards — same items, same seals. The channel column and intake UI are §14 design work that has not landed; only subject provenance is in the schema today.</div>';
     }
     return;
   }
   // SILICON
   if (ch === 'manual') {
     title.textContent = '3 · THE PASTE CHANNEL';
-    body.innerHTML = '<div class="ob-step-main">Manual is a first-class measurement path — same items, same scoring, channel recorded in provenance. Two honest options today:</div>'
+    body.innerHTML = '<div class="ob-step-main">Manual is a first-class measurement path — same items, same scoring. Two honest options today:</div>'
       + '<ul class="ob-next"><li><b>Screen a candidate now:</b> the Model Picker is a working paste-once screener — <button class="btn-link" onclick="showPage(\'picker\')">open it</button>.</li>'
-      + '<li><b>Full battery by paste:</b> packs are generated by the manual-mode tooling and ingested with channel=manual provenance; the in-dashboard pack UI is schema-ready, not yet built.</li></ul>';
+      + '<li><b>Full battery by paste:</b> §14 design — pack generation, channel-tagged ingest, and the pack UI have not landed in this dashboard yet; the runs schema carries no channel column today.</li></ul>';
     return;
   }
   title.textContent = '3 · BATTERY — pick, then Run';
   body.innerHTML = '<div class="ob-data">reading the live registry…</div>';
-  const r = await apiFetch('/api/models');
+  let r;
+  try {
+    r = await apiFetch('/api/models');
+  } catch (e) {
+    r = { ok: false, error: String((e && e.message) || e) };
+  }
   if (gen !== wzGen) return;
-  const models = (r.ok && Array.isArray(r.data)) ? r.data : [];
+  if (!r.ok) {
+    // Instrument down is NOT "no key" / "no model" — misdiagnosing it would
+    // hand out next actions that cannot work while the backend is dark.
+    body.innerHTML = '<div class="ob-step-main">The instrument did not answer when reading the registry — a connection problem, not a key or model problem.</div>'
+      + '<div class="ob-data">' + escHtml(r.error || '') + '</div>'
+      + '<ul class="ob-next"><li>Diagnose with the <button class="btn-link" onclick="showPage(\'onboard\')">First Run continuity test</button>, then come back.</li></ul>';
+    return;
+  }
+  const models = Array.isArray(r.data) ? r.data : ((r.data && Array.isArray(r.data.models)) ? r.data.models : []);
   const rows = models.filter(function (m) {
     const isLocal = m.provider === 'lmstudio' || m.location === 'local';
     return (ch === 'local' ? isLocal : !isLocal) && m.runnable !== false;
   });
   if (!rows.length) {
     if (ch === 'cloud') {
-      body.innerHTML = '<div class="ob-step-main">No cloud model is reachable yet — that usually means no API key is configured. A first-class state, not an error.</div>'
-        + '<ul class="ob-next"><li>Add a key on the <button class="btn-link" onclick="showPage(\'setup\')">Setup page</button>, then Sync Cloud in the top bar.</li></ul>';
+      body.innerHTML = '<div class="ob-step-main">No cloud model is marked runnable yet. A first-class state, not an error.</div>'
+        + '<ul class="ob-next"><li>No key yet? Add one on the <button class="btn-link" onclick="showPage(\'setup\')">Setup page</button>, then Sync Cloud in the top bar.</li>'
+        + '<li>Key already added and synced? A known registry limitation currently marks only Nous-keyed rows runnable — flagged to the backend lane. The Deep grid still lists every registered model.</li></ul>';
     } else {
       body.innerHTML = '<div class="ob-step-main">No local model is registered yet.</div>'
         + '<ul class="ob-next"><li>Run the <button class="btn-link" onclick="showPage(\'onboard\')">First Run continuity test</button> to diagnose, or click Sync Local in the top bar.</li></ul>';
@@ -5062,8 +5089,8 @@ function wzRun() {
   const axesChecked = Array.from(document.querySelectorAll('#wz-axes input:checked')).map(function (i) { return i.value; });
   const note = document.getElementById('wz-run-note');
   if (!axesChecked.length) { if (note) note.textContent = 'pick at least one battery axis'; return; }
-  // Arm the Focused workspace exactly as focusedPickSubject would, then fire
-  // the same run path — one schema, one run machinery, honest provenance.
+  // Arm the Focused workspace exactly as focusedPickSubject would — including
+  // its spec-pair reset, so no stale ⚡ reading survives against a new subject.
   const input = document.getElementById('focused-subject-pick');
   const label = document.getElementById('focused-subject-label');
   if (input) input.value = sel.value;
@@ -5072,6 +5099,23 @@ function wzRun() {
   document.querySelectorAll('#focused-axes input').forEach(function (i) {
     i.checked = axesChecked.includes(i.value);
   });
+  const specBtn = document.getElementById('focused-run-spec');
+  const specBox = document.getElementById('focused-spec-result');
+  if (specBtn) specBtn.style.display = 'none';
+  if (specBox) specBox.innerHTML = '';
+  // The button PROMISES clean-room — enforce it; the workspace MODE select
+  // persists and focusedRun reads it (scaffolded/paired stay in the shell).
+  const lm = document.getElementById('focused-load-mode');
+  if (lm && lm.value !== 'clean-room') { lm.value = 'clean-room'; focusedLoadModeChanged(); }
+  // Finish in Focused: firing from Deep would write every runlog message —
+  // including errors — into the hidden focused shell. The wizard IS
+  // Focused's front door; Deep users got here via an explicit link.
+  if (document.documentElement.getAttribute('data-mode') !== 'focused') {
+    document.documentElement.setAttribute('data-mode', 'focused');
+    try { localStorage.setItem('calibration-mode', 'focused'); } catch (e) {}
+    const mb = document.getElementById('mode-toggle');
+    if (mb) mb.textContent = 'Mode: Focused';
+  }
   showPage('benchmark');
   focusedEnsure();
   focusedRun('all');

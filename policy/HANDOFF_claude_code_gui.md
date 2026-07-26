@@ -194,7 +194,9 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      subject×channel cells resolve honestly: silicon×local/cloud → live
      registry list (never a hardcoded model), battery axes, then Run — arms
      the Focused workspace and fires the exact same /api/runs path the
-     workspace Run button fires (one run machinery, one schema);
+     workspace Run button fires (one run machinery, one schema — subject
+     provenance live today; channel provenance is §14 design, not yet in
+     the runs schema, and the wizard says so);
      silicon×manual → the Model Picker paste screener today + an honest
      "pack UI schema-ready, not built" note; carbon×local → the human-cal
      door; carbon×cloud/manual → schema-ready cards matching the 2×3
@@ -206,6 +208,22 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      verified end-to-end against a mocked backend incl. a real POST
      /api/runs with correct body. Scaffolded/paired designs stay in the
      workspace MODE control (stated in the wizard's run note).
+     **Hardened same day after a 3-verifier adversarial pass:** channel-
+     provenance copy corrected (the runs schema has NO channel column —
+     §14's migration is unbuilt; four surfaces claimed it in present
+     tense); wzRun now FORCES clean-room before firing (the button's
+     promise was at the mercy of the workspace MODE select), performs the
+     spec-pair reset, and finishes in Focused when reached from Deep (the
+     runlog lives in the focused shell — a Deep-mode run fired with zero
+     visible feedback); focusedRun now fails loudly on 400s (plain-text
+     error bodies used to render as 'run(s) []' success — pre-existing,
+     but the wizard made it the front-door path); instrument-down is its
+     own card, no longer misdiagnosed as 'no key'; aria-pressed +
+     check-mark selection (was color-only), aria-live on dynamic regions;
+     'open the full grid instead' escape hatch (picking there costs no
+     run). Backend relay added: annotate_runnable can only ever mark
+     Nous-keyed cloud rows runnable, making the wizard's cloud path a
+     dead end for openrouter/openai/gemini — see DECISIONS relay list.
 
    The 2×3 diagram (SILICON/CARBON × LOCAL/CLOUD/MANUAL) is the teaching
    surface: it must state plainly that the manual channel is a first-class

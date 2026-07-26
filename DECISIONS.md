@@ -1107,6 +1107,20 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       replaces the picker as Focused's default entry); Deep keeps the grid.
       Onboarding is now Rung 1 ✓ Rung 2 ✓ Rung 3 ✓ — the three-rung
       first-run flow designed by Claude Science 2026-07-25 is fully built.
+    - **2026-07-26 (Claude Code): Rung 3 hardened; channel-provenance
+      overclaim corrected — our own stated-vs-actual gap again, caught by
+      the adversarial pass.** The wizard's copy claimed channel provenance
+      in present tense on four surfaces, but the runs schema has NO channel
+      column — §14's migration/ingest (Hermes lane) are unbuilt; only
+      subject provenance (participant_id, migration 043) is live. All four
+      surfaces now say "designed (§14), not yet built." Also fixed:
+      clean-room enforcement in wzRun (the MODE select could silently turn
+      the wizard's run scaffolded/paired), Deep-mode silent-run (wizard now
+      finishes in Focused), focusedRun 400s rendering as empty success
+      (pre-existing, now fails loudly), instrument-down misdiagnosed as
+      no-key, color-only selection (aria-pressed + check mark), missing
+      aria-live, spec-pair stale reset, and a no-run grid escape hatch.
+      All re-verified in a live browser incl. MODE-tamper test.
     - **2026-07-26 (Claude Code): Rung 2 secrecy claim corrected — our own
       stated-vs-actual gap, caught by Copilot review.** The picker docs
       claimed "the answer key never reaches page source" while the grade
@@ -1131,7 +1145,15 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       indistinguishable from an unsynced registry. (d) Migration 008 seeds
       an active location='local' row (hermes-3-llama-3.1-8b,
       lmstudio_key NULL) that the deactivation loop never touches, so
-      fresh installs permanently carry a phantom local model.
+      fresh installs permanently carry a phantom local model. (e)
+      annotate_runnable (events.rs) calls resolve_api_key with config
+      hardwired to None, and resolve_api_key has no env/config fallback
+      for any provider except nous — so openrouter/openai/gemini rows are
+      permanently runnable=false even when the key IS configured and the
+      real run path would succeed. The events.rs comment claims it asks
+      "the EXACT function the executor calls"; it doesn't. This makes any
+      runnable-filtered cloud list (the wizard's silicon×cloud path, the
+      old picker) a dead end for non-Nous providers.
   - **2026-07-26 (Claude Code, same PR, later commit): site index + dashboard
     landing installed too.** Site hero sub now leads with the stated-vs-actual
     copy (text nodes only — style block untouched, hashes unchanged, verified

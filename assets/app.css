@@ -1512,3 +1512,7 @@
 .wz-axes { display: flex; flex-wrap: wrap; gap: var(--fib-3); margin: var(--fib-3) 0; font-size: 14px; }
 .wz-axes label { display: flex; align-items: center; gap: var(--fib-1); cursor: pointer; }
 #wz-model { min-width: 320px; padding: var(--fib-2) var(--fib-3); background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+/* Selection must not be color-only (WCAG 1.4.1): chosen wizard options get a
+   check prefix alongside the gold border, and aria-pressed carries the state
+   programmatically. */
+.wz-opt.wz-on .wz-opt-big::before { content: "✓ "; color: var(--safe); }
