@@ -1,4 +1,11 @@
-# BLOCKING ISSUE in the live framing test — item PROBE-C1-03 differs by MORE than the framing
+# ~~BLOCKING ISSUE~~ **RETRACTED 2026-07-27 — see `RETRACTION_item03_and_repro_gap.md`**
+Hermes verified the LIVE DATABASE: all 20 A-vs-B bodies byte-identical, 0 mismatches. The A-arm executor reads
+`prompt_text` from the DB, which already carries the reword. **No exclusion, full 0.98 power, no re-run.**
+The recommendation below is withdrawn. What survives is a REPRODUCIBILITY GAP: the reword exists in the DB but
+in no migration, so a database rebuilt from `migrations/001…052` WOULD reproduce this confound. Fix is one
+idempotent migration. Original analysis retained below as the record.
+
+# ~~BLOCKING ISSUE in the live framing test — item PROBE-C1-03 differs by MORE than the framing~~
 _Claude Science, 2026-07-27. Found while the runs are in flight (962 complete, 963-969 queued)._
 _Do not stop the run. One item must be excluded at analysis; the fix costs 0.02 of power._
 
