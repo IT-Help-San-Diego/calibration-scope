@@ -128,6 +128,40 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    never the right word"). The grep criterion this item set now passes:
    `carrier-immune` appears only inside superseded/quoted context (the §10.9
    blockquote and §10.16's quotation of the old README claim). Do not redo.
+   (Re-verified 2026-07-26 on origin/main after Claude Science re-flagged it:
+   the strings its grep found all sit INSIDE the labeled superseded
+   blockquote — the criterion passes. Its log cites "main head e404451",
+   which is not in origin/main's history; likely a stale local-clone read.
+   If it re-flags again, compare against origin/main with context lines.)
+
+0.1. **Citation registry port (Claude Science ask, 2026-07-26 — added here
+   after its item audit found it was never written into this handoff).**
+   Port `go-server/internal/citation/registry.yaml` from dns-tool-intel
+   (62 registered citations, existing format — zero invention) and register
+   at minimum: odni:icd-203, nasa:std-7009a, grade, iso:25012. Source docs:
+   inbox/claude-science/MEMO_prior_art_evidence_frameworks.md + the
+   2026-07-26T21:10/21:11Z epistemic-log entries. Constraints: (a)
+   dns-tool-intel is a SEPARATE repo — a remote session needs it added to
+   scope, or Carey drops the file into the drop zone; (b) NASA-STD-7009A and
+   the CoLD paper were read from search excerpts, not primary PDFs — fetch
+   the primaries before building anything ON their content (the port itself
+   is format-only); (c) the NASA anti-badge rule stands: no document says
+   "ICD 203 compliant" — levels are determined and reported, never scored.
+
+0.2. **provenance_tier/channel migration (Claude Science ask, 2026-07-26 —
+   same audit, second missing item).** Spec:
+   inbox/claude-science/SPEC_prompt_provenance.md §3a — add to test_runs:
+   `subject_prompt_declared` (text), `subject_prompt_sha256` (text),
+   `subject_prompt_source` (enum: authored_by_us | operator_declared |
+   vendor_unknown | undeclared), and the missing `channel` column;
+   `vendor_unknown`/`undeclared` are first-class values, not failures.
+   Extend quarantine vocabulary with `prompt_provenance_unknown` (§3c).
+   LANE NOTE, flagged for cross-lane agreement: the spec itself marks §3a
+   "schema, Hermes's lane" while Claude Science's item audit assigns it to
+   Claude Code — whoever lands it, this migration unblocks the wizard's
+   channel-provenance copy (currently honestly scoped to "designed, not
+   built"), the §14 manual-mode ingest, and detector work (§3b) that stays
+   in Claude Science's lane.
 
 0.5. **First-run onboarding (three rungs, ordered by verified-result-first).**
    Design source: Claude Science, 2026-07-25. Principle: each rung must
