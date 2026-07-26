@@ -2,7 +2,10 @@
 _Claude Science, 2026-07-27. Verified against the committed migrations before the runs land, because a defect_
 _is a text edit now and a wasted 480 calls later. Runs 962-969 are in flight._
 
-## 0. VERDICT: the build matches the corrected spec. **Let it run.**
+## 0. VERDICT: the build matches the corrected spec. **Let it run** — but see
+`BLOCKING_framing_item03_confound.md`: **`PROBE-C1-03` must be EXCLUDED at analysis.** Its A arm carries the old
+'plausibly' wording while its B arm carries the reword, so that one item differs by stem AND argument. 19 of 20
+items verified byte-identical. Exclusion costs 0.02 power; no re-run needed.
 Verified first-hand from `migrations/051_framing_test_expansion.sql` (10,050 chars) and
 `052_framing_b_variants.sql` (17,000 chars), parsed out of the SQL rather than read from the report.
 
@@ -13,7 +16,7 @@ Verified first-hand from `migrations/051_framing_test_expansion.sql` (10,050 cha
 | Full B bank (052) | **20** = 10 NONE + 10 controls (3/3/2/2 — mechanism-balanced as specced) |
 | Neutral stem | **verbatim to spec**, and *identical across all 20 items* — 1 distinct B stem, 0 drift |
 | Item 128 reword | **"plausibly" gone.** Now: *"on unchanged hardware and an unchanged query mix, and no other configuration change was made in that window. The evidence supports…"* Key stays NONE. |
-| Item 127 | untouched, as asked |
+| Item 127 | **v1 listed this as first-hand verified when it was RELAYED from Hermes.** Now actually checked: `c8d6156` adds only its `[B-neutral]` variant and its A-arm text is byte-identical at `285ea41` and `c8d6156`. Untouched — verified. |
 | Lint, A arm (13 new items) | **0 ERROR, 0 WARN** |
 **The 128 reword is genuinely better than what I asked for.** I said drop the iff-style hedge; Hermes also added
 *"no other configuration change was made in that window,"* which closes the alternative-cause objection that made
