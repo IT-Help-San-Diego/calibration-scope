@@ -153,10 +153,11 @@ fn grade(answers: &[String], reframe: i32) -> serde_json::Value {
 /// record_line uses " | " as its delimiter and lands in copy-paste exports —
 /// user-provided fields must not be able to smuggle delimiters or newlines
 /// into it (Copilot catch, PR #2).
-fn sanitize_record_field(raw: &str, fallback: &str) -> String {
+fn sanitize_record_field(raw: &str, fallback: &str, max_len: usize) -> String {
     let cleaned: String = raw
         .trim()
         .chars()
+        .take(max_len)
         .map(|c| if c == '|' || c.is_control() { '/' } else { c })
         .collect();
     if cleaned.is_empty() {
@@ -175,6 +176,14 @@ pub async fn picker_grade(
         ));
     }
     for a in &req.answers {
+        // Bound before normalizing: one word from a two-token set can never
+        // legitimately exceed this, and the endpoint is reachable outside
+        // the UI.
+        if a.len() > 32 {
+            return Ok(Json(serde_json::json!({
+                "error": "Answer too long — transcribe the model's one-word answer (VALID or INVALID)"
+            })));
+        }
         let up = a.trim().to_uppercase();
         if up != "VALID" && up != "INVALID" {
             // Echo a sanitized, truncated variant — the raw string is
@@ -196,8 +205,10 @@ pub async fn picker_grade(
         ));
     }
     let mut result = grade(&req.answers, req.reframe);
-    let label = sanitize_record_field(&req.model_label, "unnamed-model");
-    let credits = sanitize_record_field(&req.credits, "—");
+    // Caps mirror the UI maxlengths (model 120, credits 40) — this endpoint
+    // is public, so the bounds live server-side too.
+    let label = sanitize_record_field(&req.model_label, "unnamed-model", 120);
+    let credits = sanitize_record_field(&req.credits, "—", 40);
     let verdict = if result["pass"].as_bool().unwrap_or(false) {
         "PASS"
     } else {
@@ -259,9 +270,18 @@ mod tests {
 
     #[test]
     fn record_fields_cannot_smuggle_delimiters() {
-        assert_eq!(sanitize_record_field("a|b\nc", "x"), "a/b/c");
-        assert_eq!(sanitize_record_field("  ", "—"), "—");
-        assert_eq!(sanitize_record_field("gpt-oss-20b", "x"), "gpt-oss-20b");
+        assert_eq!(sanitize_record_field("a|b\nc", "x", 120), "a/b/c");
+        assert_eq!(sanitize_record_field("  ", "—", 120), "—");
+        assert_eq!(
+            sanitize_record_field("gpt-oss-20b", "x", 120),
+            "gpt-oss-20b"
+        );
+        assert_eq!(
+            sanitize_record_field(&"x".repeat(500), "f", 40)
+                .chars()
+                .count(),
+            40
+        );
     }
 
     #[test]
