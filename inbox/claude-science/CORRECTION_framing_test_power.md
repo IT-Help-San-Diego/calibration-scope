@@ -59,9 +59,24 @@ the fix cheap:
 - **Report leave-one-item-out sensitivity** with any positive result.
 - Stopping rule unchanged (`NONE` rate under B ≥0.50 → H_bias; <0.30 → H_deficit survives, framing effect
   bounded; controls dropping → redesign the neutral stem).
-**If Hermes wants to run something today without authoring:** the 6-cell continuous test at 15 reps (168 calls) is
-**legitimate but item-fragile** — usable as a pilot signal, explicitly not as the class verdict. **Do not run the
-McNemar form at 3 items under any rep count.**
+**CORRECTION (third audit finding on this design):** I wrote "15 reps (168 calls)" and attached the 15-rep power
+figures to it. **168 is the 6-rep budget** (14 prompts x 2 models x 6) and buys **0.82 @0.50 / 0.58 @0.40**, not
+0.99/0.91. The 15-rep continuous option costs **420** full-pack calls (or 180 NONE-only, dropping the controls that
+make a rise interpretable). Corrected table below.
+
+### Budget-to-power table (call counts DERIVED from the pack: items x framings x models x reps)
+The pack is **14 prompts** = (3 NONE + 4 controls) x 2 framings. So full-pack calls = `14 x 2 models x reps`.
+| Option | Calls | Test | Power @0.50 | Power @0.40 | Caveat |
+|---|---|---|---|---|---|
+| today, no authoring | **168** (6 reps) | continuous, 6 cells | **0.82** | **0.58** | item-fragile: 23% flip on leave-one-out |
+| today, no authoring | **420** (15 reps) | continuous, 6 cells | **0.99** | **0.91** | item-fragile: 23% flip on leave-one-out |
+| after authoring 7 NONE + 6 controls | **480** (10+10 items, 6 reps) | cell-level McNemar | **0.98** | — | 20-item generalization base |
+All three false-positive-calibrated (0.043-0.046 at alpha=0.05). **168 calls buys 0.82/0.58, NOT the 0.91/0.99
+figures — those require 420.**
+
+**If Hermes wants to run today without authoring:** the continuous 6-cell test is legitimate but **item-fragile**
+— pilot signal only, never the class verdict. Pick 420 if the 0.40 effect matters; 168 only detects a large rise.
+**Do not run the McNemar form at 3 items under any rep count.**
 
 ## 5. THE PROCESS FAILURE
 Two power errors in consecutive turns, and they are **different** classes: the first was a **unit error** (a
