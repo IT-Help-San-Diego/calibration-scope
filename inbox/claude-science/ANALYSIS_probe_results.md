@@ -69,6 +69,13 @@ Off-ceiling yield measured, per class:
 | defeasible | 0.725 [0.639, 0.797] | **5/10** | 0.25, 0.25, 0.50, 0.50, 0.75 |
 | sound-arg | 0.742 [0.657, 0.812] | 3/10 | 0.00, 0.00, 0.42 |
 | distractor | 0.900 [0.833, 0.942] | 2/10 | (does not graduate) |
+**CORRECTION 2026-07-26 — the sizing below is WRONG; see `CORRECTION_powered_run_sizing.md`.** The
+"~25 items at d=0.8, ~63 at d=0.5" figure was a two-sample t-test sizing for a CONTINUOUS token outcome (per
+arm), transplanted into a paired-binary design. Proper McNemar simulation at the probe's measured p0=0.40 gives
+**power 0.16 at d=0.10 for 60 informative items**, not 0.80. Revised: ~128 authored items at 3 reps supports a
+LARGE-effect test only (d>=0.20); locating the immunity threshold (d~0.10) needs **~320 items at 6 reps**;
+d=0.05 is out of reach at any feasible size. The "~120-130" floor is not wrong, but it buys far less than I said.
+
 **Only off-ceiling items can produce discordant pairs**, so they are the only ones that supply McNemar power.
 Earlier this session: **~25 items at d=0.8, ~63 at d=0.5.** At the measured ~50% off-ceiling yield, **a bank of
 ~120–130 items across the 3 graduating classes yields ~60 informative ones.** Option (b)'s 8–12 per family gives
