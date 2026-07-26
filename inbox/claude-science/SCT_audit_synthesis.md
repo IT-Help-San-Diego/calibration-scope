@@ -17,17 +17,36 @@ the same failure class this project exists to catch.
   site's structured data only as a topic (`Thing`) — no DOI, no article type, no publication claim.
 - **Every public surface already labels SCT honestly as "Proposal"**: intellectualresistance.com card, the site
   README status table, and dns-tool-intel/static/llms.txt ("Star-Centric Transport (status: Proposal)").
-- Public exposure is limited to: two essentially EMPTY public repos (`star-centric-transport` 26 chars of README,
-  `open-epistemic-packet` 25 chars) + one labeled paragraph on intellectualresistance.com.
+- **Complete public exposure inventory — all 11 SCT-bearing files opened and read individually** (an earlier
+  version of this list omitted dns-tool-intel entirely and was written after reading only 5 of 11; corrected):
+  | Repo | File | SCT mentions | Status label near mention |
+  |---|---|---|---|
+  | intellectualresistance | README.md | 1 | Proposal |
+  | intellectualresistance | index.html | 12 | Proposal |
+  | intellectualresistance | llms.txt | 1 | Proposal |
+  | intellectualresistance | llms-full.txt | 1 | Proposal |
+  | **dns-tool-intel** | static/llms.txt | 1 | "Star-Centric Transport (status: Proposal)" |
+  | **dns-tool-intel** | static/llms-full.txt | 1 | "Star-Centric Transport (Proposal)" |
+  | **dns-tool-intel** | go-server/static/llms.txt | 1 | "(status: Proposal)" |
+  | **dns-tool-intel** | go-server/static/llms-full.txt | 1 | "(Proposal)" |
+  | **dns-tool-intel** | go-server/templates/ecosystem.html | 1 | Proposal |
+  | star-centric-transport | README.md | 1 | none (26-char stub) |
+  | open-epistemic-packet | README.md | 0 | none (25-char stub) |
+  So SCT text lives in **THREE** public repos, not two. The word "published" does appear in the four dns-tool-intel
+  LLM files, but it refers to the theory **site**, not to SCT: each file also carries an explicit anti-upgrade
+  clause — "the framework statuses above are reproduced as published, not upgraded" / "reproduced exactly as
+  published; only capabilities this site documents as implemented are claimed as shipped." Checked in context, not
+  by keyword. **All 11 files are honest. No public language requires correction.**
 
 **Consequence for everything below:** §2 and §3 are a PRE-FLIGHT CHECKLIST for unreleased drafts, NOT live
 publication defects. Nothing below requires urgent action. The two items worth doing anyway are named in §6.
 
 ## 0b. BOTTOM LINE
 The **core idea is sound and the Carrier Color connection is real and load-bearing** (§4 below). The **corpus is
-clean** (98.9% DOI resolution). But the **released v3 PDF has defects that must be fixed before any further SSRN
-action** (§2), and the overstatement pattern is concentrated in exactly one place: **abstracts and executive
-summaries, not limitation sections** (§3). That last pattern is this project's own thesis — stated vs actual —
+clean** (98.9% DOI resolution). The **unreleased v3 DRAFT PDF has defects to fix before it is ever distributed**
+(§2 — it is NOT distributed today; see §0), and the overstatement pattern is concentrated in exactly one place:
+**abstracts and executive summaries, not limitation sections** (§3) — and only in the DRAFT: the PUBLIC status
+labels are already correct (§0, verified across all 11 SCT-bearing public files). That last pattern is this project's own thesis — stated vs actual —
 appearing in the author's own paper.
 
 ## 1. CORPUS: CLEAN (and the evaluation's own counts are accurate)
