@@ -91,6 +91,28 @@ def analyze(rows):
     item_rate = {i: sum(v)/len(v) for i, v in per_item.items()}
     item_n = {i: len(v) for i, v in per_item.items()}
 
+    # ---- INTEGRITY GUARD: refuse a name-keyed CSV that silently merges distinct tests.
+    # This is the 63-vs-64 defect, which cost 1,024 trials before it was found in post-hoc
+    # analysis. It presents two ways, both detected here:
+    #   (a) one item_id carrying conflicting metadata  -> two different tests share a display name
+    #   (b) one item_id carrying a MULTIPLE of the modal trial count -> same, seen only in the counts
+    conflicts = defaultdict(set)
+    for r in rows:
+        iid = r["item_id"].strip()
+        conflicts[iid].add((r.get("family_id", "").strip(), r.get("difficulty_lever", "").strip()))
+    merged_meta = {i: sorted(s) for i, s in conflicts.items() if len(s) > 1}
+    modal_n = Counter(item_n.values()).most_common(1)[0][0] if item_n else 0
+    merged_count = {i: n for i, n in item_n.items()
+                    if modal_n and n > modal_n and n % modal_n == 0}
+    if merged_meta or merged_count:
+        raise SystemExit(
+            "FATAL: item_id collision — the CSV is keyed on a NON-UNIQUE identifier (display name?).\n"
+            f"  conflicting metadata under one id: {merged_meta or 'none'}\n"
+            f"  id(s) carrying a multiple of the modal {modal_n} trials: {merged_count or 'none'}\n"
+            "  This is the 63-vs-64 defect: distinct tests merge into one pseudo-item, inflating\n"
+            "  trials/item, corrupting the per-item pass rate, and giving ICC a phantom item.\n"
+            "  FIX: emit the CSV keyed on test_id (the primary key), never the display name.")
+
     # (1) difficulty distribution
     rates = sorted(item_rate.values())
     n_items = len(rates)
@@ -247,6 +269,22 @@ def _self_test():
     order = sorted(res["mechanisms"].items(), key=lambda kv: kv[1]["pass_rate"])
     print("      " + " < ".join(f"{k} {v['pass_rate']:.2f}" for k, v in order))
     if order[0][0] != "trap": ok = False; print("      FAIL: injected-hardest mechanism not recovered")
+
+    # T6: NAME-JOIN COLLISION must be FATAL, not silently merged (the 63-vs-64 defect)
+    print("T6  item_id collision is fatal")
+    d = synth(4, 4, 6, 0.75, 0.3, seed=23)
+    for r in d:
+        if r["item_id"] == "F1-I1": r["item_id"] = "F0-I0"   # two distinct tests, one id
+    try:
+        analyze(d); print("      FAIL: collision not detected"); ok = False
+    except SystemExit as e:
+        good = "63-vs-64" in str(e); print(f"      raised SystemExit, names the defect: {good}")
+        if not good: ok = False
+    d2 = synth(4, 4, 6, 0.75, 0.3, seed=24)   # clean control
+    try:
+        analyze(d2); print("      clean data passes the guard: True")
+    except SystemExit:
+        print("      FAIL: guard fires on clean data"); ok = False
 
     # T4: INFRA ERRORS ARE MISSING, NEVER WRONG (standing rule)
     print("T4  infra errors treated as missing")
