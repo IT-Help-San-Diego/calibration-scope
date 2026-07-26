@@ -44,7 +44,14 @@ Pacing: sequential requests, ~0.25 s spacing (≈3.5 req/s including latency), 3
 |---|---|---|
 | Crossref (`api.crossref.org`) | 156 | 1 |
 | DataCite (`data.crosscite.org`) | 21 | 0 |
-| — | **177** | **2** |
+| **No registry** (handle itself unresolved) | 0 | 1 |
+| **Total** | **177** | **2** |
+
+**Table note (corrected).** An earlier version of this table listed only the two registry rows and then a total of
+2 in the 404 column, which did not sum — the column showed 1. The reason: a DOI can only be attributed to a
+registry *via its redirect target*, and one of the two failures (`10.32628/cseit21857`, §4b) never redirected at
+all — the handle itself does not resolve, so no registry owns it. It now has its own row. The Crossref 404
+(`10.1109/ICCI.2004.30`, §4a) redirected to Crossref and 404'd there, which is why it is attributable.
 
 **All 5 arXiv DOIs (`10.48550`) resolved**, as did all 7 Zenodo (`10.5281`) — both DataCite-registered. This is the failure mode from the earlier SciSpace audit, and it did not recur here: a Crossref-only check would have falsely flagged up to 21 valid DOIs (11.7% of the corpus) as fabricated, reporting ~87% instead of ~99%.
 
