@@ -37,10 +37,10 @@ and it is the opposite of what I told Hermes ("reps are the only lever").
 
 ## 3. THE ONE ALTERNATIVE THAT WORKS AT n=6 — and why I am NOT recommending it alone
 Treating each cell's **pass rate** as continuous and running a paired t-test on 6 cells:
-| reps | power @0.40 | @0.50 | false-positive rate |
-|---|---|---|---|
-| 6 | 0.58 | 0.82 | 0.043 |
-| **15** | **0.91** | **0.99** | **0.045** |
+| reps | **full-pack calls** | power @0.40 | @0.50 | false-positive rate |
+|---|---|---|---|---|
+| 6 | **168** | 0.58 | 0.82 | 0.043 |
+| **15** | **420** | **0.91** | **0.99** | **0.045** |
 **Calibration checked** (null control at α=0.05 → 0.043–0.046, correctly sized) — this is a legitimate test, and
 Wilcoxon at n=6 also works (power 0.90, FP 0.005; min attainable p=0.031, so 0.05 is reachable).
 **But the item-level generalization is still n=3.** Leave-one-out sensitivity: **23% of "significant" results flip
