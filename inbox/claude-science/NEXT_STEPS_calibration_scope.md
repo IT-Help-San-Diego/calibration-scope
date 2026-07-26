@@ -46,9 +46,14 @@ adding items would raise power faster but requires authoring.
 3. **Adjudicate the quant-scope and defeasible off-ceiling items for key correctness** (11 items at 0.25–0.50).
    **This is unblocked and it is the highest-value thing not yet done** — 0.25–0.50 is exactly where a keying
    defect hides, and these two classes carry the powered run.
-4. **Then build the expanded bank at ~120–130 items**, weighted toward quant-scope (best yield 6/10, failures
-   mid-range at 0.25–0.50). **Not 8–12 per family** — that yields ~15 informative items against a 25–63
-   requirement. Lint before administering.
+4. **Then build the expanded bank — size REVISED, see `CORRECTION_powered_run_sizing.md`.** My earlier
+   "~120–130 items" rested on a power figure transplanted from a continuous-outcome t-test; the proper McNemar
+   simulation at the probe's measured p0=0.40 says 60 informative items gives power **0.16** at d=0.10.
+   **~128 authored items at 3 reps buys a LARGE-effect test only (d>=0.20, power 0.82).** To locate the
+   immunity threshold — §10.9's actual question, needing ~10-point resolution — the requirement is
+   **~320 authored items at 6 reps** (power 0.90). d=0.05 is not reachable at any feasible size; state that as
+   out of scope. **Repeated scoring is cheaper than authoring**: 6 reps at 150 informative items beats 1 rep at
+   400. Still weight toward quant-scope (best yield 6/10, failures mid-range 0.25–0.50). Lint before administering.
 5. **Add a `test_id`↔`name` column to result CSVs.** I aligned db ids 126–165 to items by inferring contiguous
    class-block ordering. It was correct, but it is an inference, and a column removes it.
 
