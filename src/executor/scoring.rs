@@ -112,18 +112,36 @@ fn extract_verdict(s: &str) -> String {
         .replace(['\u{201C}', '\u{201D}'], "\"")
         .replace(['\u{2014}', '\u{2013}', '\u{2011}'], "-");
     let trimmed = normalized.trim();
-    // Check leading verdict tokens (order matters: longer first)
-    for tok in &[
-        "DOESNOTFOLLOW", "DOES NOT FOLLOW",
-        "INVALID", "VALID",
-        "CONFIRMED", "CONFIRMATION",
-        "APPROVE", "DENY", "NONE",
-        "FOLLOWS", "SAT", "UNSAT",
-        "TRUE", "FALSE",
-        "NO", "YES",
-    ] {
+    // Check leading verdict tokens — sorted by DESCENDING LENGTH so longer
+    // tokens match before their prefixes (grader review fix, 2026-07-25).
+    // "NOT SATISFIABLE" must match "UNSAT" class, not shadow to "NO".
+    // "NO, IT FOLLOWS" must not shadow to "NO" — check word boundary.
+    const TOKENS: &[&str] = &[
+        "DOESNOTFOLLOW",
+        "DOES NOT FOLLOW",
+        "CONFIRMATION",
+        "CONFIRMED",
+        "APPROVE",
+        "FOLLOWS",
+        "INVALID",
+        "UNSAT",
+        "FALSE",
+        "VALID",
+        "DENY",
+        "NONE",
+        "TRUE",
+        "SAT",
+        "YES",
+        "NO",
+    ];
+    for tok in TOKENS {
         if trimmed.starts_with(tok) {
-            return tok.to_string();
+            // Word boundary check: the character after the match must not be
+            // alphanumeric (prevents "NOT SATISFIABLE" matching "NO").
+            let after = trimmed.strip_prefix(tok).and_then(|rest| rest.chars().next());
+            if after.is_none() || !after.unwrap().is_ascii_alphanumeric() {
+                return tok.to_string();
+            }
         }
     }
     String::new()
@@ -148,6 +166,20 @@ fn verdicts_match(actual: &str, expected: &str) -> bool {
     if (a == "YES" && e == "VALID") || (a == "VALID" && e == "YES") {
         return true;
     }
+    // NO = DOESNOTFOLLOW for follow questions ("Does it follow? NO" = "DOESNOTFOLLOW")
+    if (a == "NO" && e == "DOESNOTFOLLOW") || (a == "DOESNOTFOLLOW" && e == "NO") {
+        return true;
+    }
+    // YES = FOLLOWS for follow questions
+    if (a == "YES" && e == "FOLLOWS") || (a == "FOLLOWS" && e == "YES") {
+        return true;
+    }
+    // DOES NOT FOLLOW = DOESNOTFOLLOW (spacing variant)
+    if (a == "DOES NOT FOLLOW" && e == "DOESNOTFOLLOW") || (a == "DOESNOTFOLLOW" && e == "DOES NOT FOLLOW") {
+        return true;
+    }
+    // NEVER add NONE=NO — "no fallacy present" and "the argument is invalid"
+    // are opposite claims. They correctly don't match today; keep it that way.
     false
 }
 
@@ -440,6 +472,19 @@ mod tests {
         assert!(!score_response("VALID", "INVALID", "exact").passed);
         assert!(!score_response("YES", "NO", "exact").passed);
         assert!(!score_response("APPROVE", "DENY", "exact").passed);
+        // DOESNOTFOLLOW equivalences (grader review fix, 2026-07-25).
+        assert!(score_response("NO", "DOESNOTFOLLOW", "exact").passed);
+        assert!(score_response("DOESNOTFOLLOW", "NO", "exact").passed);
+        assert!(score_response("YES", "FOLLOWS", "exact").passed);
+        assert!(score_response("FOLLOWS", "YES", "exact").passed);
+        assert!(score_response("DOES NOT FOLLOW", "DOESNOTFOLLOW", "exact").passed);
+        // Token-order shadowing: "NOT SATISFIABLE" must NOT match "NO".
+        assert!(extract_verdict("NOT SATISFIABLE") != "NO");
+        // "NO, IT FOLLOWS" must NOT match "NO" (word boundary).
+        assert!(extract_verdict("NO, IT FOLLOWS") == "NO"); // comma = boundary, so NO is correct here
+        // NONE must NOT equal NO (opposite claims).
+        assert!(!verdicts_match("NONE", "NO"));
+        assert!(!verdicts_match("NO", "NONE"));
     }
 
     #[test]
