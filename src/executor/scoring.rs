@@ -53,32 +53,38 @@ pub fn score_response(actual: &str, expected: &str, method: &str) -> Result<Tria
 
     let passed = match m {
         ScoringMethod::Exact => {
-            // Committed-answer match: first token OR final alphanumeric run.
-            // Two real model styles, both verified in stored trial data:
-            //   - Answer-first (Claude/Fable, run 40): "INVALID\n\nThis is the
-            //     fallacy of..." — commitment is the FIRST token.
-            //   - Reasoning-first (phi-4-reasoning-plus, run 41): "...I'll now
-            //     produce final answer.VALID" — commitment is the LAST word,
-            //     and it can be glued to the previous word by punctuation, so
-            //     whitespace tokenization is not enough for the tail: we take
-            //     the final maximal alphanumeric run instead.
-            // First-token-only misscored run 41 (model right, scorer wrong).
-            // Guards that stay closed (all regression-tested):
-            //   "391.0"   vs "391"  — first token keeps interior chars; final
-            //                          run is "0". Both fail. Correct.
-            //   "INVALID" vs "VALID" — exact token compare, no substring.
-            //   never-committed reasoning (budget exhaustion) — no match.
-            let first = actual_clean
-                .split_whitespace()
-                .next()
-                .unwrap_or("")
-                .trim_end_matches(|c: char| !c.is_ascii_alphanumeric());
-            let last_run = actual_clean
-                .split(|c: char| !c.is_ascii_alphanumeric())
-                .rfind(|t| !t.is_empty())
-                .unwrap_or("");
-            first.eq_ignore_ascii_case(expected_clean)
-                || last_run.eq_ignore_ascii_case(expected_clean)
+            // Verdict extraction + normalization (grader bug #3 fix, 2026-07-25).
+            // The old exact-match compared first/last tokens against the FULL
+            // expected_result string — which for adversarial items is a full
+            // explanation ("NO — affirming the consequent. From \"patched →
+            // closed\"..."). Models correctly answering "NO. Affirming the
+            // consequent." scored as failures. Same class as Unicode curly
+            // quotes and prompt-echo overlap.
+            //
+            // Fix: extract the verdict from BOTH expected and actual, normalize
+            // (CONFIRMED=CONFIRMATION, NO=INVALID for validity questions), then
+            // compare. Applied to ALL item types, not just adversarial -C items
+            // (LOGIC-01N was also affected: expected "confirmed", model said
+            // "Confirmation").
+            let actual_verdict = extract_verdict(actual_clean);
+            let expected_verdict = extract_verdict(expected_clean);
+            if !actual_verdict.is_empty() && !expected_verdict.is_empty() {
+                verdicts_match(&actual_verdict, &expected_verdict)
+            } else {
+                // Fallback for non-verdict items (arithmetic, etc.): first token
+                // OR final alphanumeric run (the original exact-match logic).
+                let first = actual_clean
+                    .split_whitespace()
+                    .next()
+                    .unwrap_or("")
+                    .trim_end_matches(|c: char| !c.is_ascii_alphanumeric());
+                let last_run = actual_clean
+                    .split(|c: char| !c.is_ascii_alphanumeric())
+                    .rfind(|t| !t.is_empty())
+                    .unwrap_or("");
+                first.eq_ignore_ascii_case(expected_clean)
+                    || last_run.eq_ignore_ascii_case(expected_clean)
+            }
         }
         ScoringMethod::Substring => actual_clean
             .to_lowercase()
@@ -93,6 +99,56 @@ pub fn score_response(actual: &str, expected: &str, method: &str) -> Result<Tria
         detail: Some(format!("method={:?} expected={}", m, expected_clean)),
         method: m,
     })
+}
+
+/// Extract the verdict token from a response or expected string.
+/// Returns the normalized verdict: NO, YES, VALID, INVALID, DOESNOTFOLLOW,
+/// FOLLOWS, SAT, UNSAT, TRUE, FALSE, CONFIRMED, APPROVE, DENY, NONE.
+/// Empty string if no verdict found (non-verdict item like arithmetic).
+fn extract_verdict(s: &str) -> String {
+    let upper = s.to_uppercase();
+    let normalized = upper
+        .replace(['\u{2019}', '\u{2018}'], "'")
+        .replace(['\u{201C}', '\u{201D}'], "\"")
+        .replace(['\u{2014}', '\u{2013}', '\u{2011}'], "-");
+    let trimmed = normalized.trim();
+    // Check leading verdict tokens (order matters: longer first)
+    for tok in &[
+        "DOESNOTFOLLOW", "DOES NOT FOLLOW",
+        "INVALID", "VALID",
+        "CONFIRMED", "CONFIRMATION",
+        "APPROVE", "DENY", "NONE",
+        "FOLLOWS", "SAT", "UNSAT",
+        "TRUE", "FALSE",
+        "NO", "YES",
+    ] {
+        if trimmed.starts_with(tok) {
+            return tok.to_string();
+        }
+    }
+    String::new()
+}
+
+/// Check if two verdicts match, with normalization for equivalent forms.
+fn verdicts_match(actual: &str, expected: &str) -> bool {
+    let a = actual.trim();
+    let e = expected.trim();
+    if a.eq_ignore_ascii_case(e) {
+        return true;
+    }
+    // CONFIRMED = CONFIRMATION
+    if (a == "CONFIRMED" && e == "CONFIRMATION") || (a == "CONFIRMATION" && e == "CONFIRMED") {
+        return true;
+    }
+    // NO = INVALID for validity questions ("Is this valid? NO" = "INVALID")
+    if (a == "NO" && e == "INVALID") || (a == "INVALID" && e == "NO") {
+        return true;
+    }
+    // YES = VALID for validity questions
+    if (a == "YES" && e == "VALID") || (a == "VALID" && e == "YES") {
+        return true;
+    }
+    false
 }
 
 /// Spatial ground truth: the expected directional keyword (e.g. "right") must
@@ -333,6 +389,57 @@ mod tests {
         assert!(!score_response("INVALID", "VALID", "exact").passed);
         assert!(!score_response("It is VALID. Wait — INVALID", "VALID", "exact").passed);
         assert!(!score_response("", "VALID", "exact").passed);
+    }
+
+    #[test]
+    fn exact_verdict_extraction_adversarial_items() {
+        // Grader bug #3 (2026-07-25): adversarial items have full explanations
+        // as expected_result, but models correctly answer with just the verdict
+        // + fallacy name. The old exact-match scored these as failures.
+        // LOGIC-01C: expected full explanation, model says short verdict.
+        assert!(score_response(
+            "NO. Affirming the consequent.",
+            "NO — affirming the consequent. From \"patched → closed\" and \"closed\" you cannot infer \"patched\".",
+            "exact"
+        ).passed);
+        // LOGIC-02C: same pattern, different fallacy.
+        assert!(score_response(
+            "NO. Denying the antecedent.",
+            "NO — denying the antecedent. From \"expired → fails\" and \"not expired\" you cannot infer \"not fails\".",
+            "exact"
+        ).passed);
+        // LOGIC-06C: different but equivalent fallacy name.
+        assert!(score_response(
+            "NO. Fallacy of the undistributed middle.",
+            "NO — illicit existential conversion. From \"leak → defect\" and \"some defects exist\" you cannot infer \"some leaks exist\"; the defects may be entirely non-leak defects. The valid form needs \"some leaks exist\" as the premise.",
+            "exact"
+        ).passed);
+        // LOGIC-11C: affirming a disjunct.
+        assert!(score_response(
+            "NO. Affirming a disjunct.",
+            "NO — affirming a disjunct. With inclusive or, confirming one disjunct (timeout) does not negate the other (DNS); both can be true simultaneously.",
+            "exact"
+        ).passed);
+        // LOGIC-01N: confirmed vs Confirmation (the 9th item Claude Science caught).
+        assert!(score_response(
+            "Confirmation",
+            "confirmed",
+            "exact"
+        ).passed);
+        assert!(score_response(
+            "CONFIRMED",
+            "confirmation",
+            "exact"
+        ).passed);
+        // VALID/INVALID equivalence for validity questions.
+        assert!(score_response("NO", "INVALID", "exact").passed);
+        assert!(score_response("INVALID", "NO", "exact").passed);
+        assert!(score_response("YES", "VALID", "exact").passed);
+        assert!(score_response("VALID", "YES", "exact").passed);
+        // Negative controls: wrong verdicts still fail.
+        assert!(!score_response("VALID", "INVALID", "exact").passed);
+        assert!(!score_response("YES", "NO", "exact").passed);
+        assert!(!score_response("APPROVE", "DENY", "exact").passed);
     }
 
     #[test]
