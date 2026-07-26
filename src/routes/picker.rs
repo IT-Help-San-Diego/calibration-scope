@@ -1,7 +1,8 @@
 //! Model Picker (onboarding Rung 2) — the 6-item everyday-model screener.
 //!
 //! GET  /api/picker/battery — the STIMULUS block only, never the key, plus a
-//!                            SHA3 provenance hash of the stimulus.
+//!                            SHA3-256 provenance hash of the stimulus
+//!                            (`sha3-256:<hex>`, matching provenance.rs).
 //! POST /api/picker/grade   — grade transcribed answers SERVER-side.
 //!
 //! What server-side grading DOES buy: the key is not shipped in the page
