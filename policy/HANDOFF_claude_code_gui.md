@@ -165,6 +165,26 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      CAPABILITY BAND, not a score, with the honest caveat rendered in the UI:
      "5 items can't rank models — this tells you whether one is worth a full
      run."
+     **SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `page-picker` +
+     `src/routes/picker.rs` (GET /api/picker/battery serves the STIMULUS
+     only with a SHA3 provenance hash; POST /api/picker/grade holds the key
+     SERVER-side — it never reaches page source; 6 grading unit tests).
+     Battery ported verbatim from MODEL_PICKER_battery_v0.py (6 items: 5
+     logic + the 0–2 reframe probe; floors: >=4/5, items 1 and 5
+     individually disqualifying, reframe >=1). UI: paste-once stimulus with
+     copy button OR send-to-loaded-local-model (same no-fallback mapping
+     rule as Rung 1), reply kept as the evidence record, human transcription
+     of items 1–5 ("no one-word answer" = a first-class FORMAT failure,
+     never graded against the key), human-graded item 6 with the rubric
+     inline, band card naming which floor failed, record line in the
+     battery's format, session-local list with cheapest-passer highlight
+     (the battery's decision rule, labeled as such — not a ranking), and a
+     verified_configs.json pointer ("one verified row beats six plausible
+     ones"; the screener never writes there). No named model
+     recommendation anywhere. Entry: link on the First Run page + green-CTA
+     flow; Focused-whitelisted; mode restore preserves it. Browser-verified
+     against a mocked backend: PASS band, floor-failure band naming item 1 +
+     partner floor, format-failure card, cheapest-passer highlight.
    - **Rung 3 — the subject/channel wizard** (spec above, unchanged). It was
      never wrong; it was first in line when it should have been third.
 

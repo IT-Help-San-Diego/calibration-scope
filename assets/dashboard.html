@@ -1016,6 +1016,7 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
     <div class="setup-hero">
       <div class="setup-hero-title">🔌 First run — continuity test</div>
       <div class="setup-hero-sub">Sixty seconds, zero credentials. A multimeter beep, not a benchmark: it proves the instrument, the channel, and one round trip. The green check needs no interpretation.</div>
+      <div style="margin-top:var(--fib-2)"><button class="btn-link" onclick="showPage('picker')">Rung 2: Model Picker — worth a full run? →</button></div>
     </div>
     <div id="ob-ladder" aria-live="polite">
       <div class="ob-step" id="ob-step-1"></div>
@@ -1030,6 +1031,55 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
   </div>
 </div>
 <!-- ============ /PAGE: First-run onboarding ============ -->
+
+<!-- ============ PAGE: Model Picker (Rung 2 — capability band) ============
+     Handoff item 0.5 Rung 2: a screener, not a ranking. Answers are graded
+     SERVER-side (/api/picker/grade) so the key never reaches page source.
+     Item 6 is human-graded against the rubric — the instrument records the
+     call, it does not fake a grader it doesn't have. -->
+<div class="page" id="page-picker" style="display:none;">
+  <div class="ob-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🎚️ Model Picker — worth a full run?</div>
+      <div class="setup-hero-sub" id="pk-caveat">5 items can't rank models — this tells you whether one is worth a full run.</div>
+    </div>
+    <div class="ob-step" id="pk-candidate">
+      <h3 class="ob-step-title">CANDIDATE</h3>
+      <div class="pk-form-row">
+        <label>Model <input type="text" id="pk-model" placeholder="as named in your portal / LM Studio" maxlength="120"></label>
+        <label>Credits this run <input type="text" id="pk-credits" placeholder="from your portal billing — blank for local" maxlength="40"></label>
+      </div>
+    </div>
+    <div class="ob-step" id="pk-stimulus-card">
+      <h3 class="ob-step-title">STIMULUS — paste once to the candidate</h3>
+      <pre class="pk-stimulus" id="pk-stimulus">loading battery…</pre>
+      <div class="ob-data" id="pk-provenance"></div>
+      <button class="btn btn-primary" onclick="pkCopy()">Copy stimulus</button>
+      <button class="btn" id="pk-send-local" onclick="pkSendLocal()">Send to loaded local model</button>
+      <span class="ob-data" id="pk-send-status"></span>
+    </div>
+    <div class="ob-step">
+      <h3 class="ob-step-title">THE MODEL'S REPLY — the evidence record</h3>
+      <textarea id="pk-reply" class="pk-reply" rows="8" placeholder="Paste the candidate's full reply here (auto-filled when sent to the local model). Kept as the record; grading reads your transcription below, not this text."></textarea>
+    </div>
+    <div class="ob-step">
+      <h3 class="ob-step-title">TRANSCRIBE ITEMS 1–5 — exactly as the model answered</h3>
+      <div id="pk-items"></div>
+    </div>
+    <div class="ob-step">
+      <h3 class="ob-step-title">GRADE ITEM 6 — you are the grader; the rubric is the instrument</h3>
+      <div id="pk-rubric"></div>
+    </div>
+    <button class="btn btn-primary" onclick="pkGrade()">Grade against the server-held key</button>
+    <div id="pk-band"></div>
+    <div class="ob-step" id="pk-session-card" style="margin-top:var(--fib-4)">
+      <h3 class="ob-step-title">THIS SESSION — screener results, not verified rows</h3>
+      <div id="pk-session"></div>
+      <div class="ob-data" style="margin-top:var(--fib-2)">Verified rows live in <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/verified_configs.json" rel="noopener" target="_blank">verified_configs.json</a> — N, pass rate with CI, run hash. One verified row beats six plausible ones; this screener never writes there.</div>
+    </div>
+  </div>
+</div>
+<!-- ============ /PAGE: Model Picker ============ -->
 
 <div class="page" id="page-lmstudio" style="display:none;">
   <div class="setup-wrap">

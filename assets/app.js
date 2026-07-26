@@ -1871,10 +1871,27 @@ document.getElementById('model-grid').addEventListener('click', function(e) {
   if (badge) badge.textContent = (count + (document.querySelector('.model-card.selected, .model-row.selected') ? 1 : 0)) + ' selected';
 });
 // ============ Tab navigation — makes the top-nav tabs actually work ============
+// First-run onboarding globals (Rung 1). These MUST initialize BEFORE the
+// saved-page restore below can call obLoad() — declared later, the restore
+// would run with obGen undefined, ++undefined = NaN would poison the
+// generation check, and the later initializer would overwrite it: ladder
+// permanently stuck at "Checking..." on reload (Copilot catch, PR #2).
+// The ob* FUNCTIONS live at the end of the file; declarations hoist.
+var OB_STIMULUS = 'Continuity check. Reply with exactly one word: OHM';
+var obLoadedIds = [];
+var obBeepTimer = null;
+// Generation counter: every (re)entry to the ladder invalidates in-flight
+// async work, so a stale beep or channel probe can never overwrite a newer
+// ladder state (green verdict under a red channel card) or double-fire.
+var obGen = 0;
+// Model Picker (Rung 2) globals — same placement rule as the ob* block.
+var pkBattery = null;
+var pkGen = 0;
+
 // 'human-cal' was missing here even though its tab calls showPage('human-cal') —
 // the click hid every page and revealed nothing. Same list gates the
 // localStorage page restore, so it also could never survive a reload.
-const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard'];
+const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker'];
 function showPage(name) {
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -1890,6 +1907,7 @@ function showPage(name) {
   if (name === 'lmstudio') loadLmStudioPage();
   if (name === 'prompt-builder') loadPromptBuilderPage();
   if (name === 'onboard') obLoad();
+  if (name === 'picker') pkLoad();
 }
 // Restore last-viewed page on load (defaults to benchmark).
 const savedPage = localStorage.getItem('amb-active-page');
@@ -4086,7 +4104,7 @@ function toggleMode() {
   // Focused forces the benchmark workspace active (it is the only page) —
   // except first-run onboarding, which is whitelisted in Focused and must
   // survive the mode flip or the first-run flow dies mid-ladder.
-  if (focused) showPage(localStorage.getItem('amb-active-page') === 'onboard' ? 'onboard' : 'benchmark');
+  if (focused) showPage(['onboard', 'picker'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
   focusedEnsure();
 }
 (function restoreMode() {
@@ -4105,7 +4123,7 @@ function toggleMode() {
       if (btn) btn.textContent = 'Mode: Focused';
       // Preserve a restored onboarding page — it is Focused-whitelisted;
       // forcing benchmark here made first-run unreachable on reload.
-      showPage(localStorage.getItem('amb-active-page') === 'onboard' ? 'onboard' : 'benchmark');
+      showPage(['onboard', 'picker'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
       focusedEnsure();
     }
   } catch(e) {}
@@ -4513,16 +4531,6 @@ function hcReset() {
 // an error dialog, never a spinner (elapsed seconds are real data).
 // The stimulus is continuity-only, NOT a battery item: no leakage, and the
 // green check needs no interpretation (multimeter beep, not a benchmark).
-// var, not let: the saved-page restore (line ~1892) can call obLoad() while
-// top-level execution is still mid-file — a `let` here is in its temporal
-// dead zone at that moment and throws. var hoists as undefined.
-var OB_STIMULUS = 'Continuity check. Reply with exactly one word: OHM';
-var obLoadedIds = [];
-var obBeepTimer = null;
-// Generation counter: every (re)entry to the ladder invalidates in-flight
-// async work, so a stale beep or channel probe can never overwrite a newer
-// ladder state (green verdict under a red channel card) or double-fire.
-var obGen = 0;
 
 function obSetStep(n, cls, main, data, next) {
   const titles = ['1 · INSTRUMENT — this dashboard', '2 · CHANNEL — LM Studio', '3 · SIGNAL — one round trip'];
@@ -4701,4 +4709,236 @@ async function obBeep() {
       'model ' + escHtml(pick.key) + ' · latency ' + secs + 's', obRetryBeep());
     if (res) res.innerHTML = '<div class="ob-reply">' + escHtml(reply.slice(0, 2000)) + '</div>';
   }
+}
+
+// ═══ Model Picker — Rung 2, the capability band (2026-07-26) ═══
+// Handoff item 0.5 Rung 2 + binding constraints: a BAND, not a ranking;
+// answers graded server-side (the key never reaches page source); item 6 is
+// human-graded against the rubric; no named model recommendation anywhere —
+// candidates come from the user's own portal/LM Studio.
+async function pkLoad() {
+  const gen = ++pkGen;
+  if (!pkBattery) {
+    const r = await apiFetch('/api/picker/battery');
+    if (gen !== pkGen) return;
+    if (!r.ok || !r.data || !r.data.stimulus) {
+      const el = document.getElementById('pk-stimulus');
+      if (el) el.textContent = 'Could not load the battery: ' + (r.error || 'unknown error');
+      return;
+    }
+    pkBattery = r.data;
+  }
+  const st = document.getElementById('pk-stimulus');
+  if (st) st.textContent = pkBattery.stimulus;
+  const prov = document.getElementById('pk-provenance');
+  if (prov) prov.textContent = 'stimulus sha3-256 ' + pkBattery.stimulus_sha3.slice(0, 16) + '… · ' + pkBattery.source;
+  const items = document.getElementById('pk-items');
+  if (items && !items.childElementCount) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      html += '<div class="pk-item-row"><span class="pk-item-n">Item ' + i + '</span>'
+        + '<label><input type="radio" name="pk-a' + i + '" value="VALID"> VALID</label>'
+        + '<label><input type="radio" name="pk-a' + i + '" value="INVALID"> INVALID</label>'
+        + '<label class="pk-noanswer"><input type="radio" name="pk-a' + i + '" value=""> no one-word answer given</label>'
+        + '</div>';
+    }
+    items.innerHTML = html;
+  }
+  const rub = document.getElementById('pk-rubric');
+  if (rub && !rub.childElementCount) {
+    rub.innerHTML = pkBattery.reframe_rubric.map(function (line, i) {
+      return '<label class="pk-rubric-row"><input type="radio" name="pk-reframe" value="' + i + '"> ' + escHtml(line) + '</label>';
+    }).join('');
+  }
+  pkRenderSession();
+}
+
+function pkCopy() {
+  if (!pkBattery) return;
+  const status = document.getElementById('pk-send-status');
+  navigator.clipboard.writeText(pkBattery.stimulus).then(function () {
+    if (status) status.textContent = 'copied — paste it to the candidate in your portal';
+  }, function () {
+    // Clipboard can be denied on plain-http origins other than localhost —
+    // select the text so manual copy still works.
+    const st = document.getElementById('pk-stimulus');
+    if (st && window.getSelection) {
+      const range = document.createRange();
+      range.selectNodeContents(st);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      if (status) status.textContent = 'clipboard blocked — text selected, press Ctrl/Cmd-C';
+    }
+  });
+}
+
+async function pkSendLocal() {
+  const gen = ++pkGen;
+  const status = document.getElementById('pk-send-status');
+  const btn = document.getElementById('pk-send-local');
+  if (btn) btn.disabled = true;
+  const set = function (t) { if (status) status.textContent = t; };
+  try {
+    const ls = await apiFetch('/api/lmstudio/status');
+    if (gen !== pkGen) return;
+    if (!ls.ok || !ls.data || !ls.data.connected) {
+      set('LM Studio not reachable — use the First Run page to diagnose, or paste manually.');
+      return;
+    }
+    const loaded = (ls.data.loaded || []).map(function (m) { return m.id; });
+    if (!loaded.length) {
+      set('No model loaded in LM Studio — load one, or paste manually.');
+      return;
+    }
+    const mr = await apiFetch('/api/models');
+    if (gen !== pkGen) return;
+    const locals = (mr.ok && Array.isArray(mr.data)) ? mr.data.filter(function (m) { return m.location === 'local'; }) : [];
+    let pick = null;
+    for (const id of loaded) {
+      const hit = locals.find(function (m) { return m.key === id; });
+      if (hit) { pick = hit; break; }
+    }
+    if (!pick) {
+      // Same rule as Rung 1: no silent fallback — a wrong pick can 404 or
+      // JIT-load a model the user never chose.
+      set('No registry match for a loaded model — run Sync Local, or paste manually.');
+      return;
+    }
+    const model = document.getElementById('pk-model');
+    if (model && !model.value.trim()) model.value = pick.key;
+    const started = Date.now();
+    const tick = setInterval(function () {
+      set('battery in flight to ' + pick.key + ' — ' + ((Date.now() - started) / 1000).toFixed(1) + 's elapsed');
+    }, 100);
+    let r;
+    try {
+      r = await apiFetch('/api/prompt-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model_key: pick.key, prompt: pkBattery.stimulus }),
+      });
+    } finally {
+      clearInterval(tick);
+    }
+    if (gen !== pkGen) return;
+    if (!r.ok || !r.data || r.data.error) {
+      set('round trip failed: ' + ((r.data && r.data.error) || r.error || 'unknown'));
+      return;
+    }
+    if (r.data.no_final_answer) {
+      set('empty final answer (finish_reason ' + (r.data.finish_reason || '?') + ') — the budget went to reasoning; try again or paste manually.');
+      return;
+    }
+    const reply = document.getElementById('pk-reply');
+    if (reply) reply.value = String(r.data.response || '');
+    set('reply captured from ' + pick.key + ' in ' + ((Date.now() - started) / 1000).toFixed(1) + 's — now transcribe items 1–5 below and grade item 6.');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function pkRadio(name) {
+  const el = document.querySelector('input[name="' + name + '"]:checked');
+  return el ? el.value : null;
+}
+
+async function pkGrade() {
+  const band = document.getElementById('pk-band');
+  const answers = [];
+  for (let i = 1; i <= 5; i++) {
+    const v = pkRadio('pk-a' + i);
+    if (v === null) {
+      if (band) band.innerHTML = '<div class="ob-step warn"><div class="ob-step-main">Item ' + i + ' is not transcribed yet — pick VALID, INVALID, or “no one-word answer given”.</div></div>';
+      return;
+    }
+    answers.push(v);
+  }
+  const reframe = pkRadio('pk-reframe');
+  if (reframe === null) {
+    if (band) band.innerHTML = '<div class="ob-step warn"><div class="ob-step-main">Item 6 is ungraded — you are the grader; pick the rubric line that fits.</div></div>';
+    return;
+  }
+  // "No one-word answer given" is transcribed honestly as a miss: an empty
+  // string is not in the allowed set, so the server rejects it — convert to
+  // an explicit wrong-format record client-side instead.
+  const noAnswer = answers.map(function (a, i) { return a === '' ? i + 1 : null; }).filter(Boolean);
+  if (noAnswer.length) {
+    // A non-answer is a FORMAT failure, not a wrong logic answer — grading
+    // it against the key would fake a datum that doesn't exist.
+    if (band) band.innerHTML = '<div class="ob-step fail"><h3 class="ob-step-title">FORMAT</h3><div class="ob-step-main">Item(s) ' + noAnswer.join(', ') + ' got no one-word answer from the allowed set — that is a format failure, and this screener does not paper over it. Record the run as FAIL (format) or re-run the candidate.</div><div class="ob-data">A model that cannot follow “answer with exactly one word” on 5 items is telling you something the logic score can’t.</div></div>';
+    pkSessionAdd({ label: (document.getElementById('pk-model') || {}).value || 'unnamed-model', logic: 'fmt', reframe: reframe + '/2', credits: (document.getElementById('pk-credits') || {}).value || '—', verdict: 'FAIL (format)' });
+    pkRenderSession();
+    return;
+  }
+  const r = await apiFetch('/api/picker/grade', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      answers: answers,
+      reframe: parseInt(reframe, 10),
+      model_label: (document.getElementById('pk-model') || {}).value || '',
+      credits: (document.getElementById('pk-credits') || {}).value || '',
+    }),
+  });
+  if (!r.ok || !r.data || r.data.error) {
+    if (band) band.innerHTML = '<div class="ob-step fail"><div class="ob-step-main">Grading failed.</div><div class="ob-data">' + escHtml((r.data && r.data.error) || r.error || 'unknown error') + '</div></div>';
+    return;
+  }
+  const result = r.data;
+  const perItem = result.per_item.map(function (p) {
+    return '<div class="pk-band-item">' + (p.correct ? '<span class="pk-ok">✓</span>' : '<span class="pk-bad">✗</span>')
+      + ' Item ' + p.item + ': ' + escHtml(p.given) + (p.correct ? '' : ' (key: ' + escHtml(p.key) + ')')
+      + ' <span class="ob-data">— ' + escHtml(p.rationale) + '</span></div>';
+  }).join('');
+  const failed = (result.which_failed || []).map(function (w) { return '<li>' + escHtml(w) + '</li>'; }).join('');
+  if (band) band.innerHTML =
+    '<div class="ob-step ' + (result.pass ? 'ok' : 'fail') + '">'
+    + '<h3 class="ob-step-title">CAPABILITY BAND — screener, not a ranking</h3>'
+    + '<div class="pk-band-verdict ' + (result.pass ? 'pk-pass' : 'pk-fail') + '">' + (result.pass ? 'WORTH A FULL RUN' : 'NOT WORTH A FULL RUN YET') + '</div>'
+    + '<div class="ob-step-main">logic ' + result.logic_score + '/5 · reframe ' + result.reframe + '/2</div>'
+    + perItem
+    + (failed ? '<ul class="ob-next">' + failed + '</ul>' : '')
+    + '<div class="ob-data" style="margin-top:var(--fib-2)">record: <span id="pk-record">' + escHtml(result.record_line) + '</span> <button class="btn-link" onclick="pkCopyRecord()">copy</button></div>'
+    + '<div class="ob-data" style="margin-top:var(--fib-2)">' + escHtml(pkBattery ? pkBattery.caveat : '') + '</div>'
+    + '</div>';
+  pkSessionAdd({ label: (document.getElementById('pk-model') || {}).value || 'unnamed-model', logic: result.logic_score + '/5', reframe: result.reframe + '/2', credits: (document.getElementById('pk-credits') || {}).value || '—', verdict: result.pass ? 'PASS' : 'FAIL' });
+  pkRenderSession();
+}
+
+function pkCopyRecord() {
+  const el = document.getElementById('pk-record');
+  if (el) navigator.clipboard.writeText(el.textContent);
+}
+
+function pkSessionAdd(row) {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('amb-picker-session') || '[]'); } catch (e) { list = []; }
+  row.ts = new Date().toISOString();
+  list.push(row);
+  localStorage.setItem('amb-picker-session', JSON.stringify(list.slice(-30)));
+}
+
+function pkRenderSession() {
+  const el = document.getElementById('pk-session');
+  if (!el) return;
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('amb-picker-session') || '[]'); } catch (e) { list = []; }
+  if (!list.length) { el.innerHTML = '<div class="ob-data">No candidates screened yet this session.</div>'; return; }
+  // Cheapest passer: only among PASS rows whose credits parse as a number.
+  // This is the battery's decision rule, not a ranking of models.
+  let cheapest = null;
+  list.forEach(function (r) {
+    const c = parseFloat(String(r.credits).replace(/[^0-9.]/g, ''));
+    if (r.verdict === 'PASS' && !isNaN(c)) {
+      if (!cheapest || c < cheapest.c) cheapest = { row: r, c: c };
+    }
+  });
+  el.innerHTML = list.map(function (r) {
+    const isCheapest = cheapest && r === cheapest.row;
+    return '<div class="pk-session-row' + (isCheapest ? ' pk-cheapest' : '') + '">'
+      + escHtml(r.label) + ' | logic ' + escHtml(String(r.logic)) + ' | reframe ' + escHtml(String(r.reframe))
+      + ' | credits ' + escHtml(String(r.credits)) + ' | ' + escHtml(r.verdict)
+      + (isCheapest ? ' — cheapest passer (the battery’s decision rule)' : '') + '</div>';
+  }).join('');
 }

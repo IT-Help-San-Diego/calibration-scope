@@ -145,6 +145,8 @@ async fn main() {
             "/api/prompt-check",
             get(routes::prompt_check::prompt_check).post(routes::prompt_check::prompt_check_post),
         )
+        .route("/api/picker/battery", get(routes::picker::picker_battery))
+        .route("/api/picker/grade", post(routes::picker::picker_grade))
         .route(
             "/api/prompt-history",
             get(routes::prompt_check::prompt_history),

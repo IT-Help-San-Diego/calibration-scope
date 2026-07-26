@@ -14,6 +14,7 @@ pub mod mcp;
 pub mod models;
 pub mod neurovault;
 pub mod participants;
+pub mod picker;
 pub mod prompt_check;
 pub mod quarantine;
 pub mod router;

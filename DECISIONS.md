@@ -1085,6 +1085,17 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       (5) OHM grading tolerates symmetric wrappers ("**OHM**", quotes).
       (6) aria-live on ladder/result, retry links are real buttons,
       step titles are h3s. Reload-persistence in Focused re-verified live.
+    - **2026-07-26 (Claude Code, same PR): Rung 2 shipped.** Model Picker
+      page + `src/routes/picker.rs`: battery served without the key,
+      grading server-side (key never in page source), 6 unit tests on the
+      floors (items 1/5 individually disqualifying verified in code).
+      Battery ported verbatim from the CS drop; the UI renders the caveat,
+      bands not scores, format failure as its own verdict, and points at
+      verified_configs.json instead of recommending any model. Reload-
+      restore bug in the Rung 1 generation counter (obGen undefined at
+      mid-file restore → NaN → ladder stuck at "Checking…") caught by
+      Copilot review and fixed by moving the onboarding globals above the
+      restore point; regression-asserted in the browser test.
     - **Backend findings from the same pass — RELAY TO HERMES (its lane,
       recorded not patched):** (a) lmstudio_sync's UPDATE path sets
       lmstudio_key but never rewrites `key`, so after a model rename/dedup

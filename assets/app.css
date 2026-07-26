@@ -627,7 +627,7 @@
      every capability still reachable by flipping back to Deep. */
   html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark):not(#tab-human-cal):not(#tab-onboard),
   html[data-mode="focused"] .top-nav .nav-arrow { display: none; }
-  html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal):not(#page-onboard) { display: none !important; }
+  html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal):not(#page-onboard):not(#page-picker) { display: none !important; }
 
   /* FOCUSED MODE — a genuinely different ARRANGEMENT of the workspace, not
      just fewer tabs. Design goal (Hawking-accessibility + "the brain is the
@@ -1478,3 +1478,25 @@
 .ob-diagram { margin-top: var(--fib-5); }
 .ob-diagram img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--border); }
 .ob-diagram-cap { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: var(--fib-2); }
+
+/* ── Model Picker (Rung 2 — capability band, 2026-07-26) ────────────────── */
+.pk-form-row { display: flex; flex-wrap: wrap; gap: var(--fib-4); }
+.pk-form-row label { display: flex; flex-direction: column; gap: var(--fib-1); font-size: 13px; color: var(--text-muted); }
+.pk-form-row input { min-width: 280px; padding: var(--fib-2) var(--fib-3); background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+.pk-stimulus { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: var(--fib-3); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.pk-reply { width: 100%; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; padding: var(--fib-2) var(--fib-3); font-family: var(--font-mono); font-size: 13px; resize: vertical; }
+.pk-item-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--fib-4); padding: var(--fib-2) 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.pk-item-row:last-child { border-bottom: none; }
+.pk-item-n { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); min-width: 55px; }
+.pk-item-row label { display: flex; align-items: center; gap: var(--fib-1); cursor: pointer; }
+.pk-noanswer { color: var(--text-muted); font-size: 13px; }
+.pk-rubric-row { display: flex; align-items: baseline; gap: var(--fib-2); padding: var(--fib-1) 0; font-size: 13.5px; line-height: 1.55; cursor: pointer; }
+.pk-band-verdict { font-family: var(--font-mono); font-size: 19px; letter-spacing: 1px; margin-bottom: var(--fib-2); }
+.pk-pass { color: var(--safe); }
+.pk-fail { color: var(--unsafe); }
+.pk-band-item { font-size: 13.5px; padding: 2px 0; }
+.pk-ok { color: var(--safe); }
+.pk-bad { color: var(--unsafe); }
+.pk-session-row { font-family: var(--font-mono); font-size: 12.5px; padding: var(--fib-1) 0; border-bottom: 1px dashed var(--border); word-break: break-word; }
+.pk-session-row:last-child { border-bottom: none; }
+.pk-cheapest { color: var(--safe); }
