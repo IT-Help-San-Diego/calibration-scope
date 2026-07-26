@@ -156,8 +156,13 @@ index, README, lessons headers, DECISIONS preamble. One voice.
 
    The 2×3 diagram (SILICON/CARBON × LOCAL/CLOUD/MANUAL) is the teaching
    surface: it must state plainly that the manual channel is a first-class
-   measurement path, not a downgrade — licensed by the channel experiment
-   (p=0.34, bounded ±5 pts, 1,024 trials). This figure is where the
+   measurement path, not a downgrade. Evidence: the channel experiment showed
+   channel effect ≈ 0 across all four arms (A/A′/B/C agree at ~98.4–100% after
+   the grader fix). Do NOT cite a specific p-value or trial count in UI copy —
+   the earlier "p=0.34, ±5 pts, 1,024 trials" figure welded a statistic from
+   the re-graded 640-row dataset to the N of the retracted original; that
+   citation was wrong and is struck. If a number is needed, derive it from the
+   re-graded CSV and cite that CSV's N and hash.
    golden-ratio commitment actually ships, since the story audit found it
    asserted on no surface.
 
