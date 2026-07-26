@@ -131,19 +131,25 @@ pair. It is the first measured tau in the whole SCT program. Worth saying explic
 
 ## 5. INDEPENDENT CORROBORATION of the "lying progress bar" premise (my simulation)
 I simulated the mechanism rather than take it on faith. Result: **the premise is right, the usual explanation is not.**
-- **Variance alone does NOT produce the effect.** With randomly varying item costs, naive extrapolation error decays
-  smoothly as 1/sqrt(n): 14% at 5% done, 9% at 10%, 3% at 50%. Noisy early, no halfway cliff.
-- **Non-stationarity DOES, decisively.** If late work is heavier (finalize/index/flush/verify — how real installs
-  behave), the estimator is not noisy but **BIASED**, and biased in one direction the entire way:
-  -68% at 5% done, -54% at 25%, **-36% at halfway**, -18% at 75%, -4% at 95%. Negative = **over-promises**.
-- **So the bar does not "lie until halfway then tell the truth." It lies in the SAME direction the whole way**, and
+**Stated with the correct statistic (a v1 version of this section conflated two different quantities — see note):**
+- **Variance alone does NOT bias the estimate.** With randomly varying item costs, the naive extrapolator is
+  **UNBIASED**: mean SIGNED bias is ~0 at every completion point (+0.1% at 5% done, -0.2% at 50%, -0.02% at 95%).
+  Its mean *absolute* error is large early (14% at 5% done, 9% at 10%, 3% at 50%) and decays as 1/sqrt(n) — that is
+  **noise, not lying**: it is equally likely to over- or under-promise, and it converges on the truth.
+- **Non-stationarity DOES bias it, decisively.** If late work is heavier (finalize/index/flush/verify — how real
+  installs behave), the estimator is **BIASED in one direction the entire way**: -68% at 5% done, -54% at 25%,
+  **-36% at halfway**, -18% at 75%, -4% at 95%. Negative = **systematically over-promises**.
+- **So the bar does not "lie until halfway then tell the truth." It lies in the SAME direction throughout**, and
   halfway is merely where the lie shrinks below the annoyance threshold. Root cause: **the estimator assumes the
-  middle looks like the beginning.** It does not track the middle — it *assumes* it.
-This is an independent, quantitative statement of the gap SCT targets ("data present != data trustworthy"), and it
-supports the design goal without touching the unproven mechanism. It also happens to be the truncate-middle
-complaint appearing in a third domain (context windows, benchmark summaries, now ETA estimators).
-**Caveat:** this is a simulation of estimator behaviour under an assumed cost profile, NOT a measurement of real
-installers. It shows the mechanism is sufficient to produce the effect; it does not prove real bars fail this way.
+  middle looks like the beginning.** It does not track the middle — it *assumes* it. And note what makes the
+  non-stationary error shrink: not learning, just the job running out of room to be wrong in.
+**METHODOLOGICAL NOTE (correction).** The first version of this figure plotted the variance-only case's mean
+ABSOLUTE error as a negative quantity on an axis labelled "negative = over-promises." That was wrong: it made an
+unbiased estimator look systematically deceptive. The corrected figure separates the two panels — signed bias
+(where variance sits flat at zero) and error magnitude (where the 1/sqrt(n) decay actually lives). The distinction is
+the whole finding, so getting the statistic wrong would have inverted it.
+**Caveat:** this is a simulation of estimator behaviour under an ASSUMED cost profile, NOT a measurement of real
+installers. It shows the mechanism is *sufficient* to produce the effect; it does not prove real bars fail this way.
 
 ## 6. RECOMMENDED ORDER OF WORK (revised after the §0 correction)
 **Nothing here is urgent — SCT is unreleased and its public label is already honest.** Two items are worth doing
