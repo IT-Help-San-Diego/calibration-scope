@@ -26,8 +26,9 @@ returned a null regardless of the truth. **Reps cannot fix it** (cluster count c
 10 NONE items gives 0.98. **REVISED: author 7 more NONE items (they are just sound arguments), then run
 10 NONE + 10 mechanism-balanced controls x 2 models x 6 reps = 480 calls**, primary test = McNemar at the
 (item,model) CELL level, secondary = calibrated paired t-test on cell pass rates, plus leave-one-item-out
-sensitivity with any positive. A 6-cell continuous test at 15 reps (168 calls) is legitimate but item-fragile
-(23% of significant results flip on dropping one item) — pilot signal only.
+sensitivity with any positive. RUN-TODAY FALLBACK with budgets derived from the pack (14 prompts x 2 models x reps): **168 calls = 6 reps**,
+continuous 6-cell test, power **0.82 @0.50 / 0.58 @0.40**; **420 calls = 15 reps**, power **0.99 / 0.91**.
+Both item-fragile (23% flip on leave-one-out) — pilot signal only, never the class verdict.
 
 ### Why 15 reps and not 3 — I got this wrong first (SUPERSEDED, retained for the record)
 I initially specced 3 reps (84 calls) and called it adequate. **It isn't:** McNemar power on 18 pairs is **0.49**
