@@ -1059,6 +1059,19 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     closes STORY_CONSISTENCY_AUDIT Findings 1–2 for the README). The
     crosswalk link anchors to §10.13 (the verified record) because
     `ontology_crosswalk.json` is not committed to this repo.
+  - **2026-07-26 (Claude Code, same PR): Rung 1 shipped.** `page-onboard`
+    (first-run continuity test) on the dashboard: three-step ladder over
+    existing endpoints only (`/api/status`, `/api/lmstudio/status`,
+    `POST /api/prompt-check`), non-battery OHM stimulus, failure states as
+    first-class cards with next actions, zero credentials. The 2×3
+    SILICON/CARBON × LOCAL/CLOUD/MANUAL diagram ships inline there — the
+    golden-ratio commitment is now built on a real surface (public copy may
+    scope a phi claim to it once merged/deployed, per story-audit Finding 3).
+    Browser-verified against a mocked backend: green path + LM-Studio-down +
+    no-model-loaded, console clean. Bug found by the restore path during
+    verification (TDZ on a mid-file showPage call) fixed at the source. Side
+    fix: 'human-cal' was absent from the PAGES array — its tab hid every
+    page and displayed nothing; added.
   - **2026-07-26 (Claude Code, same PR, later commit): site index + dashboard
     landing installed too.** Site hero sub now leads with the stated-vs-actual
     copy (text nodes only — style block untouched, hashes unchanged, verified

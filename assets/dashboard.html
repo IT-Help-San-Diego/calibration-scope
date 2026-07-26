@@ -280,6 +280,9 @@
     <div style="margin-top:var(--fib-3);position:relative">
       <span class="reality-badge" id="landing-reality-badge">Checking your hardware...</span>
     </div>
+    <div style="margin-top:var(--fib-4);position:relative">
+      <button class="btn btn-primary" id="landing-firstrun-btn" onclick="showPage('onboard')">First run? 60-second continuity test →</button>
+    </div>
     <div style="margin-top:var(--fib-3);font-size:11px;color:var(--text-muted);position:relative">
       <span style="font-family:var(--font-mono)">local.calibrationscope.com:8768</span>
       <span style="opacity:.6"> — bookmark this URL for direct access.</span>
@@ -1001,6 +1004,30 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
   </div>
 </div>
 <!-- ============ /PAGE: Human Calibration ============ -->
+
+<!-- ============ PAGE: First-run onboarding (Rung 1 — continuity test) ============
+     Handoff item 0.5: ONE known-good round trip, ~60 s, zero credentials.
+     Failure states are first-class outputs with a specific next action.
+     The ladder renders entirely from obLoad() so every state shows live data. -->
+<div class="page" id="page-onboard" style="display:none;">
+  <div class="ob-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🔌 First run — continuity test</div>
+      <div class="setup-hero-sub">Sixty seconds, zero credentials. A multimeter beep, not a benchmark: it proves the instrument, the channel, and one round trip. The green check needs no interpretation.</div>
+    </div>
+    <div id="ob-ladder">
+      <div class="ob-step" id="ob-step-1"></div>
+      <div class="ob-step" id="ob-step-2"></div>
+      <div class="ob-step" id="ob-step-3"></div>
+    </div>
+    <div id="ob-result"></div>
+    <div class="ob-diagram">
+      <img src="/assets/onboarding-2x3.svg" alt="One instrument, six doors — a 2×3 grid of Subject (SILICON, CARBON) by Channel (LOCAL API, CLOUD API, MANUAL web-chat paste). Four cells are live today; two carbon cells are schema-ready. The manual channel is a first-class measurement path.">
+      <div class="ob-diagram-cap">Where this leads: pick a subject, pick a channel, run the same sealed battery. The wizard for this grid is the next rung.</div>
+    </div>
+  </div>
+</div>
+<!-- ============ /PAGE: First-run onboarding ============ -->
 
 <div class="page" id="page-lmstudio" style="display:none;">
   <div class="setup-wrap">

@@ -135,12 +135,23 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    onboarding flow is a pipeline, and users don't advance on unverified
    forward progress.
 
-   - **Rung 1 — "does anything work?" (~60 s, no API key required).** ONE
-     known-good item, ends in a green check the user doesn't interpret. Not a
-     benchmark: a continuity test (multimeter beep). Failure states are
-     first-class outputs — "no key", "model not loaded", "wrong port" — each
-     with a specific next action, not an error dialog. The green check must be
-     reachable with zero credentials.
+   - **Rung 1 — "does anything work?" (~60 s, no API key required).**
+     **SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `page-onboard` on the
+     dashboard: a three-step ladder (INSTRUMENT `/api/status` → CHANNEL
+     `/api/lmstudio/status`, names exactly WHICH model is loaded → SIGNAL, one
+     `POST /api/prompt-check` round trip). Continuity stimulus is
+     deliberately NOT a battery item (reply-with-OHM; no leakage, no
+     interpretation). Failure states are first-class cards with next actions:
+     LM Studio unreachable (wrong-port note), no model loaded (granite
+     auto-load gotcha → ~/.hermes/config.yaml), registry unsynced, empty
+     final answer (finish_reason surfaced), reply mismatch (shown verbatim).
+     Zero new backend. The 2×3 diagram ships inline on this page — the
+     golden-ratio commitment is now BUILT on a real surface. Entry: landing
+     hero button; page whitelisted in Focused mode. Verified in a live
+     browser against a mocked backend (green + both failure states, console
+     clean); real-hardware pass with LM Studio still worthwhile. Side fix:
+     'human-cal' was missing from the PAGES array, so its tab hid every page
+     and showed nothing — added (one word) along with 'onboard'.
    - **Rung 2 — Model Picker UI over the existing 5-item battery.** Reports a
      CAPABILITY BAND, not a score, with the honest caveat rendered in the UI:
      "5 items can't rank models — this tells you whether one is worth a full

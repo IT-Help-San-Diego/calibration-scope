@@ -627,7 +627,7 @@
      every capability still reachable by flipping back to Deep. */
   html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark):not(#tab-human-cal),
   html[data-mode="focused"] .top-nav .nav-arrow { display: none; }
-  html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal) { display: none !important; }
+  html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal):not(#page-onboard) { display: none !important; }
 
   /* FOCUSED MODE — a genuinely different ARRANGEMENT of the workspace, not
      just fewer tabs. Design goal (Hawking-accessibility + "the brain is the
@@ -1454,3 +1454,25 @@
 #focused-load-mode:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
 #focused-scaffold-supplement { display: none; flex-basis: 100%; margin-top: 6px; min-height: 56px; resize: vertical; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; padding: 8px 10px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; }
 #focused-scaffold-supplement:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+
+/* ── First-run onboarding (Rung 1 — continuity test, 2026-07-26) ──────────
+   Verified-result-first (handoff item 0.5): each step shows real data or a
+   specific next action — never a spinner (elapsed seconds are real data, a
+   spinner is not). Status via the safe/gold/unsafe tokens; spacing on the
+   Fibonacci scale. */
+#page-onboard .ob-wrap { max-width: 880px; margin: 0 auto; padding: var(--fib-5) var(--fib-4); }
+.ob-step { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--text-muted); border-radius: 8px; padding: var(--fib-4); margin-bottom: var(--fib-3); }
+.ob-step.ok { border-left-color: var(--safe); }
+.ob-step.warn { border-left-color: var(--accent-gold); }
+.ob-step.fail { border-left-color: var(--unsafe); }
+.ob-step-title { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: var(--fib-2); }
+.ob-step-main { font-size: 15px; line-height: 1.55; margin-bottom: var(--fib-2); }
+.ob-data { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); word-break: break-word; }
+.ob-next { margin: var(--fib-2) 0 0; padding-left: var(--fib-4); font-size: 13px; line-height: 1.6; }
+.ob-next li { margin-bottom: var(--fib-1); }
+.ob-step .btn { margin-top: var(--fib-3); }
+.ob-verdict { font-family: var(--font-mono); font-size: 21px; letter-spacing: 1px; color: var(--safe); padding: var(--fib-4); text-align: center; border: 1px solid var(--safe); border-radius: 8px; margin: var(--fib-3) 0; background: rgba(63,185,80,0.06); }
+.ob-reply { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: var(--fib-2) var(--fib-3); font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; word-break: break-word; max-height: 144px; overflow-y: auto; margin-top: var(--fib-3); }
+.ob-diagram { margin-top: var(--fib-5); }
+.ob-diagram img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--border); }
+.ob-diagram-cap { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: var(--fib-2); }

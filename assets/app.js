@@ -1871,7 +1871,10 @@ document.getElementById('model-grid').addEventListener('click', function(e) {
   if (badge) badge.textContent = (count + (document.querySelector('.model-card.selected, .model-row.selected') ? 1 : 0)) + ' selected';
 });
 // ============ Tab navigation — makes the top-nav tabs actually work ============
-const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio'];
+// 'human-cal' was missing here even though its tab calls showPage('human-cal') —
+// the click hid every page and revealed nothing. Same list gates the
+// localStorage page restore, so it also could never survive a reload.
+const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard'];
 function showPage(name) {
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -1886,6 +1889,7 @@ function showPage(name) {
   if (name === 'runs-page') loadRunsPage();
   if (name === 'lmstudio') loadLmStudioPage();
   if (name === 'prompt-builder') loadPromptBuilderPage();
+  if (name === 'onboard') obLoad();
 }
 // Restore last-viewed page on load (defaults to benchmark).
 const savedPage = localStorage.getItem('amb-active-page');
@@ -4497,4 +4501,158 @@ function hcReset() {
     document.getElementById("hc-step-setup").style.display = "";
     document.getElementById("hc-name").value = "";
     document.getElementById("hc-existing").innerHTML = "";
+}
+
+// ═══ First-run onboarding — Rung 1, the continuity test (2026-07-26) ═══
+// Handoff item 0.5: ONE known-good round trip, ~60 s, zero credentials.
+// Failure states are first-class outputs with a specific next action — never
+// an error dialog, never a spinner (elapsed seconds are real data).
+// The stimulus is continuity-only, NOT a battery item: no leakage, and the
+// green check needs no interpretation (multimeter beep, not a benchmark).
+// var, not let: the saved-page restore (line ~1892) can call obLoad() while
+// top-level execution is still mid-file — a `let` here is in its temporal
+// dead zone at that moment and throws. var hoists as undefined, which the
+// guards below handle.
+var OB_STIMULUS = 'Continuity check. Reply with exactly one word: OHM';
+var obLoadedIds = [];
+var obBeepTimer = null;
+
+function obSetStep(n, cls, main, data, next) {
+  const titles = ['1 · INSTRUMENT — this dashboard', '2 · CHANNEL — LM Studio', '3 · SIGNAL — one round trip'];
+  const el = document.getElementById('ob-step-' + n);
+  if (!el) return;
+  el.className = 'ob-step' + (cls ? ' ' + cls : '');
+  el.innerHTML = '<div class="ob-step-title">' + titles[n - 1] + '</div>'
+    + '<div class="ob-step-main">' + main + '</div>'
+    + (data ? '<div class="ob-data">' + data + '</div>' : '')
+    + (next ? '<ul class="ob-next">' + next + '</ul>' : '');
+}
+
+async function obLoad() {
+  const res = document.getElementById('ob-result');
+  if (res) res.innerHTML = '';
+  if (obBeepTimer) { clearInterval(obBeepTimer); obBeepTimer = null; }
+  obSetStep(1, '', 'Checking…', '', '');
+  obSetStep(2, '', 'Waiting on step 1…', '', '');
+  obSetStep(3, '', 'Unlocks when the channel is green.', '', '');
+  const s = await apiFetch('/api/status');
+  if (!s.ok) {
+    obSetStep(1, 'fail', 'The dashboard server did not answer.', escHtml(s.error || ''),
+      '<li>Is calibration-scope running on this machine? Restart it, then <a href="#" onclick="obLoad();return false">re-check</a>.</li>');
+    obSetStep(2, '', 'Blocked — step 1 must pass first.', '', '');
+    return;
+  }
+  const v = (s.data && s.data.version) ? s.data.version : '?';
+  obSetStep(1, 'ok', 'Instrument responding.',
+    'status ' + escHtml(String(s.data && s.data.status || '?')) + ' · version ' + escHtml(String(v)) + ' · this origin', '');
+  await obCheckChannel();
+}
+
+async function obCheckChannel() {
+  obSetStep(2, '', 'Checking LM Studio…', '', '');
+  const r = await apiFetch('/api/lmstudio/status');
+  if (!r.ok || !r.data) {
+    obSetStep(2, 'fail', 'Could not query LM Studio status.', escHtml(r.error || ''),
+      '<li><a href="#" onclick="obCheckChannel();return false">Re-check</a> once the dashboard can reach it.</li>');
+    return;
+  }
+  const d = r.data;
+  if (!d.connected) {
+    obSetStep(2, 'fail',
+      'LM Studio is not reachable at <span style="font-family:var(--font-mono)">' + escHtml(d.base_url || 'its configured address') + '</span>.', '',
+      '<li>Open LM Studio → <b>Developer</b> tab → <b>Start Server</b>.</li>'
+      + '<li>Wrong port is the classic miss: the server must listen where the address above points (default <span style="font-family:var(--font-mono)">:1234</span>).</li>'
+      + '<li>Then <a href="#" onclick="obCheckChannel();return false">re-check</a>. This path needs zero credentials.</li>');
+    return;
+  }
+  const loaded = d.loaded || [];
+  if (!loaded.length) {
+    obSetStep(2, 'warn', 'LM Studio is reachable — but no model is loaded.',
+      escHtml(String(d.total_models || 0)) + ' model(s) installed · 0 loaded',
+      '<li>Load any model in LM Studio, then <a href="#" onclick="obCheckChannel();return false">re-check</a>.</li>'
+      + '<li>If a model you didn’t choose shows up loaded here later (granite-3.2-8b is the known case), Hermes Desktop auxiliary tasks can auto-load models — check <span style="font-family:var(--font-mono)">~/.hermes/config.yaml</span>.</li>');
+    return;
+  }
+  obLoadedIds = loaded.map(function (m) { return m.id; });
+  obSetStep(2, 'ok',
+    'LM Studio connected — ' + loaded.length + ' model' + (loaded.length > 1 ? 's' : '') + ' loaded. This names exactly which:',
+    loaded.map(function (m) { return escHtml(m.id); }).join(' · '), '');
+  obSetStep(3, '',
+    'Ready. One prompt to <span style="font-family:var(--font-mono)">' + escHtml(loaded[0].id) + '</span> asking for the single word <b>OHM</b>. Exact match = beep.',
+    'temperature 0 · max_tokens 2048 · one prompt, nothing stored beyond prompt history', '');
+  const el = document.getElementById('ob-step-3');
+  if (el) el.innerHTML += '<button class="btn btn-primary" id="ob-beep-btn" onclick="obBeep()">Send the beep</button>';
+}
+
+function obRetryBeep() {
+  return '<li><a href="#" onclick="obCheckChannel();return false">Re-check the channel and try the beep again</a>.</li>';
+}
+
+async function obBeep() {
+  const btn = document.getElementById('ob-beep-btn');
+  if (btn) btn.disabled = true;
+  // Map the loaded LM Studio id to a registry key. The sync writes key = id
+  // for LM Studio rows, so exact match is the normal case; if none matches,
+  // fall back to any local registry row and SAY so on the card.
+  const mr = await apiFetch('/api/models');
+  const locals = (mr.ok && Array.isArray(mr.data)) ? mr.data.filter(function (m) { return m.location === 'local'; }) : [];
+  let pick = null, exact = true;
+  for (const id of obLoadedIds) {
+    const hit = locals.find(function (m) { return m.key === id; });
+    if (hit) { pick = hit; break; }
+  }
+  if (!pick && locals.length) { pick = locals[0]; exact = false; }
+  if (!pick) {
+    obSetStep(3, 'fail', 'No local model is registered with the instrument yet.', '',
+      '<li>Click <b>Sync Local</b> in the top bar so the registry learns what LM Studio has, then <a href="#" onclick="obCheckChannel();return false">re-check</a>.</li>');
+    return;
+  }
+  const started = Date.now();
+  obSetStep(3, '',
+    'Beep in flight to <span style="font-family:var(--font-mono)">' + escHtml(pick.key) + '</span>'
+    + (exact ? '' : ' <b>(registry fallback — the loaded id had no exact registry match; Sync Local fixes this)</b>') + '.',
+    'one prompt · temperature 0 · <span id="ob-elapsed">0.0</span>s elapsed', '');
+  obBeepTimer = setInterval(function () {
+    const el = document.getElementById('ob-elapsed');
+    if (el) el.textContent = ((Date.now() - started) / 1000).toFixed(1);
+  }, 100);
+  const r = await apiFetch('/api/prompt-check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model_key: pick.key, prompt: OB_STIMULUS }),
+  });
+  clearInterval(obBeepTimer);
+  obBeepTimer = null;
+  const secs = ((Date.now() - started) / 1000).toFixed(1);
+  const res = document.getElementById('ob-result');
+  if (!r.ok || !r.data || r.data.error) {
+    obSetStep(3, 'fail', 'The round trip failed.',
+      escHtml(String((r.data && r.data.error) || r.error || 'unknown error')), obRetryBeep());
+    return;
+  }
+  const d = r.data;
+  const reply = String(d.response || '');
+  if (d.no_final_answer) {
+    obSetStep(3, 'warn',
+      'The model returned an empty final message (finish_reason: ' + escHtml(String(d.finish_reason || '?')) + ') — the budget went to reasoning. The wire works; a reply didn’t arrive.',
+      'model ' + escHtml(pick.key) + ' · latency ' + secs + 's', obRetryBeep());
+    return;
+  }
+  // Continuity grading is deliberately trivial: trim, drop trailing
+  // punctuation, case-fold, compare to the one requested word.
+  const norm = reply.trim().replace(/[.!,;:"']+$/, '').toUpperCase();
+  if (norm === 'OHM') {
+    obSetStep(3, 'ok', 'Round trip complete — exact match.',
+      'model ' + escHtml(pick.key) + ' · latency ' + secs + 's · reply “' + escHtml(reply.trim()) + '”', '');
+    localStorage.setItem('amb-onboard-green', new Date().toISOString());
+    if (res) res.innerHTML =
+      '<div class="ob-verdict">● CONTINUITY CONFIRMED</div>'
+      + '<div style="text-align:center;font-size:13px;color:var(--text-muted);margin-bottom:var(--fib-3)">Instrument, channel, and one model round trip — live. This ranks nothing; that’s the battery’s job.</div>'
+      + '<div style="text-align:center"><button class="btn btn-primary" onclick="showPage(\'benchmark\')">Run the real battery →</button></div>';
+  } else {
+    obSetStep(3, 'warn',
+      'Round trip complete — the reply didn’t match the requested word. The channel works; the mismatch is data, shown verbatim below.',
+      'model ' + escHtml(pick.key) + ' · latency ' + secs + 's', obRetryBeep());
+    if (res) res.innerHTML = '<div class="ob-reply">' + escHtml(reply.slice(0, 2000)) + '</div>';
+  }
 }
