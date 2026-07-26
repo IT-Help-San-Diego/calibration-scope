@@ -1016,7 +1016,7 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
     <div class="setup-hero">
       <div class="setup-hero-title">🔌 First run — continuity test</div>
       <div class="setup-hero-sub">Sixty seconds, zero credentials. A multimeter beep, not a benchmark: it proves the instrument, the channel, and one round trip. The green check needs no interpretation.</div>
-      <div style="margin-top:var(--fib-2)"><button class="btn-link" onclick="showPage('picker')">Rung 2: Model Picker — worth a full run? →</button></div>
+      <div style="margin-top:var(--fib-2)"><button class="btn-link" onclick="showPage('picker')">Rung 2: Model Picker — worth a full run? →</button> · <button class="btn-link" onclick="showPage('wizard')">Rung 3: set up a real run →</button></div>
     </div>
     <div id="ob-ladder" aria-live="polite">
       <div class="ob-step" id="ob-step-1"></div>
@@ -1082,6 +1082,39 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
   </div>
 </div>
 <!-- ============ /PAGE: Model Picker ============ -->
+
+<!-- ============ PAGE: Subject/Channel Wizard (Rung 3 — the keystone UI) ============
+     DECISIONS §15: Focused mode's front door is a three-question flow, not a
+     model grid. Subject → Channel → Battery, then Run. Single page, no modal
+     stack. Every path lands in the same schema with honest channel
+     provenance. Constraint from REASONING_TRACE_and_JSPACE_design.md: if this
+     page ever generates a manual paste pack, the pack must be byte-identical
+     to the API item set — no manual-only "include your thinking" instruction. -->
+<div class="page" id="page-wizard" style="display:none;">
+  <div class="ob-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🚪 Set up a run — three questions</div>
+      <div class="setup-hero-sub">Subject. Channel. Battery. Every path lands in the same schema with honest channel provenance — a kid with LM Studio, a security researcher with a locked-down bot, and a human-cal participant all walk this same door.</div>
+    </div>
+    <div class="ob-step" id="wz-q1">
+      <h3 class="ob-step-title">1 · SUBJECT — what is being measured?</h3>
+      <div class="wz-opts">
+        <button class="wz-opt" id="wz-subj-silicon" onclick="wzSubject('silicon')"><span class="wz-opt-big">SILICON</span><span class="wz-opt-sub">a model — local or cloud</span></button>
+        <button class="wz-opt" id="wz-subj-carbon" onclick="wzSubject('carbon')"><span class="wz-opt-big">CARBON</span><span class="wz-opt-sub">a human — same battery, same seals</span></button>
+      </div>
+    </div>
+    <div class="ob-step" id="wz-q2" style="display:none">
+      <h3 class="ob-step-title">2 · CHANNEL — how does the stimulus reach it?</h3>
+      <div class="wz-opts" id="wz-q2-opts"></div>
+    </div>
+    <div class="ob-step" id="wz-q3" style="display:none">
+      <h3 class="ob-step-title" id="wz-q3-title">3 · BATTERY — pick, then Run</h3>
+      <div id="wz-q3-body"></div>
+    </div>
+    <div class="ob-data" style="margin-top:var(--fib-3)">The six doors of this grid are drawn on the <button class="btn-link" onclick="showPage('onboard')">First Run page</button>. Deep mode keeps the full model grid.</div>
+  </div>
+</div>
+<!-- ============ /PAGE: Subject/Channel Wizard ============ -->
 
 <div class="page" id="page-lmstudio" style="display:none;">
   <div class="setup-wrap">

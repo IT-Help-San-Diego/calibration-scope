@@ -1887,11 +1887,14 @@ var obGen = 0;
 // Model Picker (Rung 2) globals — same placement rule as the ob* block.
 var pkBattery = null;
 var pkGen = 0;
+// Subject/Channel wizard (Rung 3) state — same placement rule.
+var wzState = { subject: null, channel: null };
+var wzGen = 0;
 
 // 'human-cal' was missing here even though its tab calls showPage('human-cal') —
 // the click hid every page and revealed nothing. Same list gates the
 // localStorage page restore, so it also could never survive a reload.
-const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker'];
+const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker', 'wizard'];
 function showPage(name) {
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -1908,6 +1911,7 @@ function showPage(name) {
   if (name === 'prompt-builder') loadPromptBuilderPage();
   if (name === 'onboard') obLoad();
   if (name === 'picker') pkLoad();
+  if (name === 'wizard') wzLoad();
 }
 // Restore last-viewed page on load (defaults to benchmark).
 const savedPage = localStorage.getItem('amb-active-page');
@@ -3977,8 +3981,14 @@ function focusedEnsure() {
   }
 }
 
-// Subject picker — opens the modal, updates the hidden input + label.
+// Subject picker — the wizard is the DEFAULT Focused entry (DECISIONS §15):
+// with no subject picked yet, the button walks the three-question wizard;
+// once a subject exists, it opens the full-grid modal for change/compare.
 async function focusedPickSubject() {
+  if (!window._focusedSubjects || !window._focusedSubjects.length) {
+    showPage('wizard');
+    return;
+  }
   const picks = await showSubjectPicker();
   if (!picks || !picks.length) return;
   const input = document.getElementById('focused-subject-pick');
@@ -4104,7 +4114,7 @@ function toggleMode() {
   // Focused forces the benchmark workspace active (it is the only page) —
   // except first-run onboarding, which is whitelisted in Focused and must
   // survive the mode flip or the first-run flow dies mid-ladder.
-  if (focused) showPage(['onboard', 'picker'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
+  if (focused) showPage(['onboard', 'picker', 'wizard'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
   focusedEnsure();
 }
 (function restoreMode() {
@@ -4123,7 +4133,7 @@ function toggleMode() {
       if (btn) btn.textContent = 'Mode: Focused';
       // Preserve a restored onboarding page — it is Focused-whitelisted;
       // forcing benchmark here made first-run unreachable on reload.
-      showPage(['onboard', 'picker'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
+      showPage(['onboard', 'picker', 'wizard'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
       focusedEnsure();
     }
   } catch(e) {}
@@ -4941,4 +4951,128 @@ function pkRenderSession() {
       + ' | credits ' + escHtml(String(r.credits)) + ' | ' + escHtml(r.verdict)
       + (isCheapest ? ' — cheapest passer (the battery’s decision rule)' : '') + '</div>';
   }).join('');
+}
+
+// ═══ Subject/Channel Wizard — Rung 3, the keystone UI (2026-07-26) ═══
+// DECISIONS §15: three questions, one page, honest channel provenance.
+// Model lists come from the live registry only (Hermes-4 retraction rule);
+// "no cloud key" and "schema-ready" are first-class states, not errors.
+function wzLoad() {
+  wzState = { subject: null, channel: null };
+  document.getElementById('wz-subj-silicon').classList.remove('wz-on');
+  document.getElementById('wz-subj-carbon').classList.remove('wz-on');
+  document.getElementById('wz-q2').style.display = 'none';
+  document.getElementById('wz-q3').style.display = 'none';
+}
+
+function wzSubject(subj) {
+  wzState.subject = subj;
+  wzState.channel = null;
+  document.getElementById('wz-subj-silicon').classList.toggle('wz-on', subj === 'silicon');
+  document.getElementById('wz-subj-carbon').classList.toggle('wz-on', subj === 'carbon');
+  const q2 = document.getElementById('wz-q2');
+  const opts = document.getElementById('wz-q2-opts');
+  const mk = function (id, big, sub) {
+    return '<button class="wz-opt" id="wz-ch-' + id + '" onclick="wzChannel(\'' + id + '\')"><span class="wz-opt-big">' + big + '</span><span class="wz-opt-sub">' + sub + '</span></button>';
+  };
+  if (subj === 'silicon') {
+    opts.innerHTML = mk('local', 'LOCAL API', 'Local model (LM Studio)')
+      + mk('cloud', 'CLOUD API', 'Cloud endpoint, your key')
+      + mk('manual', 'MANUAL', 'Web chat (paste)');
+  } else {
+    opts.innerHTML = mk('local', 'AT THIS INSTRUMENT', 'the human-cal page, same battery')
+      + mk('cloud', 'REMOTE SESSION', 'schema-ready, not yet administered')
+      + mk('manual', 'ON PAPER', 'transcribed after — schema-ready');
+  }
+  q2.style.display = '';
+  document.getElementById('wz-q3').style.display = 'none';
+}
+
+async function wzChannel(ch) {
+  const gen = ++wzGen;
+  wzState.channel = ch;
+  ['local', 'cloud', 'manual'].forEach(function (c) {
+    const el = document.getElementById('wz-ch-' + c);
+    if (el) el.classList.toggle('wz-on', c === ch);
+  });
+  const q3 = document.getElementById('wz-q3');
+  const body = document.getElementById('wz-q3-body');
+  const title = document.getElementById('wz-q3-title');
+  q3.style.display = '';
+  if (wzState.subject === 'carbon') {
+    title.textContent = '3 · THE DOOR';
+    if (ch === 'local') {
+      body.innerHTML = '<div class="ob-step-main">A human takes the same sealed battery at this instrument — the 4-step human-cal flow administers it and scores with the same discipline.</div>'
+        + '<button class="btn btn-primary" onclick="showPage(\'human-cal\')">Open Human Calibration →</button>';
+    } else if (ch === 'cloud') {
+      body.innerHTML = '<div class="ob-step-main">Schema-ready, not yet administered: the run schema already carries subject and channel provenance for a remote human session, but no remote session path has shipped. Nothing here pretends otherwise.</div>'
+        + '<div class="ob-data">When it ships, it lands in the same schema — that is the whole point of the door.</div>';
+    } else {
+      body.innerHTML = '<div class="ob-step-main">Schema-ready, not yet administered: paper administration with transcription afterwards — same items, same seals, channel recorded as manual. The transcription path exists in the schema; the intake UI is not built yet.</div>';
+    }
+    return;
+  }
+  // SILICON
+  if (ch === 'manual') {
+    title.textContent = '3 · THE PASTE CHANNEL';
+    body.innerHTML = '<div class="ob-step-main">Manual is a first-class measurement path — same items, same scoring, channel recorded in provenance. Two honest options today:</div>'
+      + '<ul class="ob-next"><li><b>Screen a candidate now:</b> the Model Picker is a working paste-once screener — <button class="btn-link" onclick="showPage(\'picker\')">open it</button>.</li>'
+      + '<li><b>Full battery by paste:</b> packs are generated by the manual-mode tooling and ingested with channel=manual provenance; the in-dashboard pack UI is schema-ready, not yet built.</li></ul>';
+    return;
+  }
+  title.textContent = '3 · BATTERY — pick, then Run';
+  body.innerHTML = '<div class="ob-data">reading the live registry…</div>';
+  const r = await apiFetch('/api/models');
+  if (gen !== wzGen) return;
+  const models = (r.ok && Array.isArray(r.data)) ? r.data : [];
+  const rows = models.filter(function (m) {
+    const isLocal = m.provider === 'lmstudio' || m.location === 'local';
+    return (ch === 'local' ? isLocal : !isLocal) && m.runnable !== false;
+  });
+  if (!rows.length) {
+    if (ch === 'cloud') {
+      body.innerHTML = '<div class="ob-step-main">No cloud model is reachable yet — that usually means no API key is configured. A first-class state, not an error.</div>'
+        + '<ul class="ob-next"><li>Add a key on the <button class="btn-link" onclick="showPage(\'setup\')">Setup page</button>, then Sync Cloud in the top bar.</li></ul>';
+    } else {
+      body.innerHTML = '<div class="ob-step-main">No local model is registered yet.</div>'
+        + '<ul class="ob-next"><li>Run the <button class="btn-link" onclick="showPage(\'onboard\')">First Run continuity test</button> to diagnose, or click Sync Local in the top bar.</li></ul>';
+    }
+    return;
+  }
+  const axes = ['reasoning', 'vision', 'tools', 'security', 'literary'];
+  const axDefaults = { reasoning: true, vision: true, tools: true, security: true, literary: false };
+  body.innerHTML =
+    '<div class="pk-form-row"><label>Subject model <select id="wz-model">'
+    + rows.map(function (m) {
+      const prov = m.provider || (m.location === 'local' ? 'lmstudio' : 'cloud');
+      return '<option value="' + escHtml(m.key) + '" data-provider="' + escHtml(prov) + '">' + escHtml(m.key) + (m.size_gb != null ? ' · ' + Number(m.size_gb).toFixed(1) + 'GB' : '') + '</option>';
+    }).join('')
+    + '</select></label></div>'
+    + '<div class="wz-axes" id="wz-axes">' + axes.map(function (a) {
+      return '<label><input type="checkbox" value="' + a + '"' + (axDefaults[a] ? ' checked' : '') + '> ' + a + '</label>';
+    }).join('') + '</div>'
+    + '<button class="btn btn-primary" onclick="wzRun()">Run — clean-room, N=3, sealed</button>'
+    + '<div class="ob-data" id="wz-run-note" style="margin-top:var(--fib-2)">Arms the Focused workspace with this subject and fires the same run the workspace Run button fires. Scaffolded and paired designs live in the workspace MODE control.</div>';
+}
+
+function wzRun() {
+  const sel = document.getElementById('wz-model');
+  if (!sel || !sel.value) return;
+  const provider = sel.selectedOptions[0].getAttribute('data-provider') || 'lmstudio';
+  const axesChecked = Array.from(document.querySelectorAll('#wz-axes input:checked')).map(function (i) { return i.value; });
+  const note = document.getElementById('wz-run-note');
+  if (!axesChecked.length) { if (note) note.textContent = 'pick at least one battery axis'; return; }
+  // Arm the Focused workspace exactly as focusedPickSubject would, then fire
+  // the same run path — one schema, one run machinery, honest provenance.
+  const input = document.getElementById('focused-subject-pick');
+  const label = document.getElementById('focused-subject-label');
+  if (input) input.value = sel.value;
+  if (label) label.textContent = sel.value;
+  window._focusedSubjects = [{ key: sel.value, provider: provider }];
+  document.querySelectorAll('#focused-axes input').forEach(function (i) {
+    i.checked = axesChecked.includes(i.value);
+  });
+  showPage('benchmark');
+  focusedEnsure();
+  focusedRun('all');
 }

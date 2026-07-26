@@ -1096,6 +1096,17 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       mid-file restore → NaN → ladder stuck at "Checking…") caught by
       Copilot review and fixed by moving the onboarding globals above the
       restore point; regression-asserted in the browser test.
+    - **2026-07-26 (Claude Code, same PR): Rung 3 shipped — the keystone
+      wizard.** `page-wizard`, three questions on one page; all six
+      subject×channel cells resolve honestly (live-registry model lists,
+      no-key and schema-ready as first-class states, carbon×local routes to
+      human-cal); Run arms the Focused workspace and fires the same
+      /api/runs path as the workspace button — one run machinery, one
+      schema, honest channel provenance. focusedPickSubject with no prior
+      pick now walks the wizard instead of the model grid (§15: the wizard
+      replaces the picker as Focused's default entry); Deep keeps the grid.
+      Onboarding is now Rung 1 ✓ Rung 2 ✓ Rung 3 ✓ — the three-rung
+      first-run flow designed by Claude Science 2026-07-25 is fully built.
     - **2026-07-26 (Claude Code): Rung 2 secrecy claim corrected — our own
       stated-vs-actual gap, caught by Copilot review.** The picker docs
       claimed "the answer key never reaches page source" while the grade

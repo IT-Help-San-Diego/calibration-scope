@@ -189,6 +189,23 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      partner floor, format-failure card, cheapest-passer highlight.
    - **Rung 3 — the subject/channel wizard** (spec above, unchanged). It was
      never wrong; it was first in line when it should have been third.
+     **SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `page-wizard`: three
+     questions on one page (no modal stack), progressive disclosure. All six
+     subject×channel cells resolve honestly: silicon×local/cloud → live
+     registry list (never a hardcoded model), battery axes, then Run — arms
+     the Focused workspace and fires the exact same /api/runs path the
+     workspace Run button fires (one run machinery, one schema);
+     silicon×manual → the Model Picker paste screener today + an honest
+     "pack UI schema-ready, not built" note; carbon×local → the human-cal
+     door; carbon×cloud/manual → schema-ready cards matching the 2×3
+     diagram. "No cloud key" is a first-class state pointing at Setup. THE
+     FRONT-DOOR REPLACEMENT: focusedPickSubject with no subject picked now
+     walks the wizard instead of the grid modal (§15 mandate); once a
+     subject exists, the button opens the full-grid modal for
+     change/compare, and Deep mode keeps the grid untouched. Browser-
+     verified end-to-end against a mocked backend incl. a real POST
+     /api/runs with correct body. Scaffolded/paired designs stay in the
+     workspace MODE control (stated in the wizard's run note).
 
    The 2×3 diagram (SILICON/CARBON × LOCAL/CLOUD/MANUAL) is the teaching
    surface: it must state plainly that the manual channel is a first-class
