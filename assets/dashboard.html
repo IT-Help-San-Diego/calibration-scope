@@ -70,7 +70,7 @@
 
   <div class="tab" onclick="showPage('setup')" id="tab-setup">Setup</div>
   <span class="nav-arrow">→</span>
-  <div class="tab" onclick="showPage('onboard')" id="tab-onboard" title="60-second continuity test — zero credentials, nothing to interpret">First Run</div>
+  <div class="tab" onclick="showPage('onboard')" id="tab-onboard" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('onboard')}" title="60-second continuity test — zero credentials, nothing to interpret">First Run</div>
   <span class="nav-arrow">→</span>
   <div class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">Benchmark</div>
   <span class="nav-arrow">→</span>

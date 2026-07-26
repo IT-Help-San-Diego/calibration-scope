@@ -177,8 +177,16 @@ pub async fn picker_grade(
     for a in &req.answers {
         let up = a.trim().to_uppercase();
         if up != "VALID" && up != "INVALID" {
+            // Echo a sanitized, truncated variant — the raw string is
+            // user-provided and unbounded (Copilot catch).
+            let shown: String = a
+                .trim()
+                .chars()
+                .take(40)
+                .map(|c| if c.is_control() { '/' } else { c })
+                .collect();
             return Ok(Json(serde_json::json!({
-                "error": format!("Answer '{}' is not in the allowed set VALID/INVALID — transcribe the model's one-word answer exactly", a)
+                "error": format!("Answer '{}' is not in the allowed set VALID/INVALID — transcribe the model's one-word answer exactly", shown)
             })));
         }
     }

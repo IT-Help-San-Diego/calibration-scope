@@ -1120,7 +1120,11 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       (pre-existing, now fails loudly), instrument-down misdiagnosed as
       no-key, color-only selection (aria-pressed + check mark), missing
       aria-live, spec-pair stale reset, and a no-run grid escape hatch.
-      All re-verified in a live browser incl. MODE-tamper test.
+      All re-verified in a live browser incl. MODE-tamper test. Follow-up
+      a11y note for the sweep: ALL top-nav tabs are clickable divs without
+      keyboard focus — the new First Run tab got role/tabindex/keydown
+      (it is the new-user entry point); the other nine tabs share the gap
+      and should be fixed together (Hawking standard).
     - **2026-07-26 (Claude Code): Rung 2 secrecy claim corrected — our own
       stated-vs-actual gap, caught by Copilot review.** The picker docs
       claimed "the answer key never reaches page source" while the grade
