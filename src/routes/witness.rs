@@ -15,7 +15,8 @@
 //! `channel` is DERIVED from the model's location/provider and labeled as
 //! derived — the schema's channel column is §14 design, not yet built.
 use axum::extract::{Path, State};
-use axum::response::{Html, IntoResponse, Json};
+use axum::http::StatusCode;
+use axum::response::{Html, IntoResponse};
 
 use crate::error::AppResult;
 use crate::state::AppState;
@@ -70,11 +71,11 @@ fn render_certificate(r: &WitnessRow, seal: &str) -> String {
     // with status='loading') — created_at would misstate queue time as start.
     let started = r
         .started_at
-        .map(|t| t.format("%Y-%m-%d %H:%M UTC").to_string())
+        .map(|t| t.format("%Y-%m-%d %H:%M").to_string())
         .unwrap_or_else(|| "—".to_string());
     let finished = r
         .finished_at
-        .map(|t| t.format("%Y-%m-%d %H:%M UTC").to_string())
+        .map(|t| t.format("%Y-%m-%d %H:%M").to_string())
         .unwrap_or_else(|| "—".to_string());
     // Seal wrapped into fixed-width mono lines so the full value is visible.
     let seal_lines: Vec<String> = seal
@@ -175,6 +176,34 @@ fn render_certificate(r: &WitnessRow, seal: &str) -> String {
     )
 }
 
+/// A refusal is a first-class output, not an error dump: the Witness link
+/// opens in a browser tab, so the refusal must be a readable page in the
+/// certificate's own voice — with an honest status code.
+fn refusal_page(title: &str, detail: &str, next_action: &str) -> String {
+    format!(
+        r##"<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title_esc} · Calibration Scope</title></head>
+<body style="margin:0;background:#0a0a0a">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" role="img"
+     aria-label="{title_esc}: {detail_esc}"
+     font-family="ui-monospace, Menlo, Consolas, monospace" style="display:block;max-width:1000px;margin:0 auto;width:100%;height:auto">
+  <rect x="0" y="0" width="1000" height="400" fill="#0a0a0a"/>
+  <rect x="21" y="21" width="958" height="358" fill="none" stroke="#2b3143" stroke-width="1.5" rx="8"/>
+  <text x="89" y="123" font-size="34" font-weight="700" fill="#e0e0e0" letter-spacing="3">{title_esc}</text>
+  <text x="89" y="187" font-size="17" fill="#a0a0a0">{detail_esc}</text>
+  <text x="89" y="242" font-size="15" fill="#d4a853">{next_esc}</text>
+  <text x="89" y="331" font-size="12" fill="#7d8590">A certificate demonstrates; it does not pretend. Refusals are part of the instrument.</text>
+</svg>
+</body></html>
+"##,
+        title_esc = esc(title),
+        detail_esc = esc(detail),
+        next_esc = esc(next_action),
+    )
+}
+
 pub async fn run_witness(
     State(state): State<AppState>,
     Path(run_id): Path<i32>,
@@ -190,20 +219,27 @@ pub async fn run_witness(
     .fetch_optional(&state.db)
     .await?;
     let Some(row) = row else {
-        return Ok(
-            Json(serde_json::json!({ "error": format!("No run with id {run_id}") }))
-                .into_response(),
-        );
+        return Ok((
+            StatusCode::NOT_FOUND,
+            Html(refusal_page(
+                "NO SUCH RUN",
+                &format!("No run with id {run_id} exists on this instrument."),
+                "Check the run id on the Runs page.",
+            )),
+        )
+            .into_response());
     };
     // No witness without a seal — an unsealed certificate would be theater.
     let Some(seal) = row.sha3_provenance.clone().filter(|s| !s.is_empty()) else {
-        return Ok(Json(serde_json::json!({
-            "error": format!(
-                "Run {} is not sealed (status: {}) — no witness without a seal",
-                run_id, row.status
-            )
-        }))
-        .into_response());
+        return Ok((
+            StatusCode::CONFLICT,
+            Html(refusal_page(
+                "NO WITNESS WITHOUT A SEAL",
+                &format!("Run {} is not sealed (status: {}).", run_id, row.status),
+                "Wait for the run to finish and seal, then reopen this link.",
+            )),
+        )
+            .into_response());
     };
     Ok(Html(render_certificate(&row, &seal)).into_response())
 }
@@ -257,6 +293,14 @@ mod tests {
         assert!(!html.contains("<script"));
         // Self-containment: only the two sizing style attrs on body/svg.
         assert!(html.matches("style=\"").count() <= 2);
+    }
+
+    #[test]
+    fn refusal_page_escapes_its_inputs() {
+        let html = refusal_page("T", "status: <script>x</script>", "next");
+        assert!(!html.contains("<script>x"));
+        assert!(html.contains("&lt;script&gt;"));
+        assert!(!html.contains("{\""));
     }
 
     #[test]
