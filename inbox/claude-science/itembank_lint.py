@@ -32,6 +32,14 @@ ALL_TOKENS = sorted({t for s in VERDICT_SETS for t in s}, key=len, reverse=True)
 
 # Phrases that make a conditional BIDIRECTIONAL. If a stem contains one of these and the key
 # expects the converse-error answer, the item is ambiguous -- this is the LOGIC-01N/03N defect.
+FALLACY_NAMES = (r"\b(ad ?hominem|straw ?man|false dilemma|affirming the consequent|"
+                 r"denying the antecedent|undistributed middle|hasty general\w*|circular reasoning|"
+                 r"appeal to (authority|pity|fear|emotion)|post hoc|false cause|slippery slope|"
+                 r"begging the question|equivocation)\b")
+TELL_PHRASES = (r"\b(this is fallacious|the flaw is|incorrectly concludes|erroneously|"
+                r"does not actually follow|note that this does not follow|is invalid because|"
+                r"mistakenly assumes|the error here)\b")
+
 IFF_CUES = [r"\bexactly when\b", r"\bprecisely when\b", r"\bif and only if\b", r"\biff\b",
             r"\bjust in case\b", r"\bwhen and only when\b", r"\bexactly if\b"]
 ONEWAY_CUES = [r"\bif\b", r"\bwhen\b", r"\bwhenever\b", r"\bonly if\b"]
@@ -78,6 +86,7 @@ def lint(files, keys=None):
     findings = []       # (level, item_ref, code, message)
     stems_by_hash = defaultdict(list)
     iff_items = []      # (ref, num, cue, stem_head) -- for the cross-item consistency check
+    stem_lens = defaultdict(list)   # (admin, num) -> [len(stem)] for the length-tell check
     stems_by_num  = defaultdict(set)
     total = 0
 
@@ -97,6 +106,7 @@ def lint(files, keys=None):
             h = hashlib.sha256(stem.encode()).hexdigest()[:16]
             stems_by_hash[h].append((admin_key, num, ref))
             stems_by_num[(admin_key, num)].add(h)
+            stem_lens[(admin_key, num)].append(len(stem))
 
             # --- E2: biconditional cue + converse-error key (the LOGIC-01N/03N defect)
             iff = [c for c in IFF_CUES if re.search(c, stem, re.I)]
@@ -138,6 +148,30 @@ def lint(files, keys=None):
                     "(exact-match-on-explanation): the grader must extract the LEADING token, "
                     "not compare whole strings. Verify extract_verdict() handles it."))
 
+            # --- E10..E13: LEAKAGE GATE. A trap that reveals its own answer measures nothing.
+            #     Baseline measured on the current 52-stem bank: 0 fallacy names in surface text.
+            n_opts = len(re.findall(r"\b[A-Z]{4,}\b(?=\s*(?:,|or\b))", stem))
+            mc = n_opts >= 3   # multiple-choice: naming fallacies IS the answer format, not a leak
+            fn = re.search(FALLACY_NAMES, stem, re.I)
+            if fn and not mc:
+                findings.append(("ERROR", ref, "LEAK_FALLACY_NAME",
+                    f"stem names a fallacy from the answer vocabulary ({fn.group(0)!r}) in prose, and is not a "
+                    f"multiple-choice item. The subject can answer without reasoning."))
+            tell = re.search(TELL_PHRASES, stem, re.I)
+            if tell:
+                findings.append(("ERROR", ref, "LEAK_TELL_PHRASE",
+                    f"stem contains an evaluative giveaway ({tell.group(0)!r}); it states the verdict the item "
+                    f"is supposed to elicit."))
+            if keys and num in keys:
+                kv = re.split(r"[^A-Za-z]", str(keys[num]).strip().upper(), 1)[0]
+                if kv and len(kv) >= 3:
+                    fmt_tail = stem[max(0, stem.lower().rfind("answer")):]
+                    body = stem[:max(0, stem.lower().rfind("answer"))] or stem
+                    if re.search(rf"\b{kv}\b", body, re.I):
+                        findings.append(("ERROR", ref, "LEAK_VERDICT_TOKEN",
+                            f"the keyed verdict {kv!r} appears in the stem BODY (outside the answer-format "
+                            f"instruction). The answer is printed in the question."))
+
             # --- E8: key cross-check
             if keys and num in keys:
                 exp = str(keys[num]).strip().upper()
@@ -172,6 +206,24 @@ def lint(files, keys=None):
             findings.append(("WARN", ",".join(f"[{n}]" for _, n, _, _ in iff_items), "IFF_PAIR_UNCHECKED",
                 f"{len(iff_items)} items carry biconditional cues. Re-run with --keys to check they are "
                 f"keyed CONSISTENTLY -- an inconsistent pair is the LOGIC-01N/03N defect."))
+
+    # --- E13: LENGTH TELL. If, within a family, one answer class is systematically longer, a model
+    #          can score above chance without reading the logic. A human reviewer never catches this.
+    if keys:
+        by_class = defaultdict(list)
+        for (adm, num), lens in stem_lens.items():
+            k = str(keys.get(num, "")).strip().upper()
+            if not k: continue
+            lead = re.split(r"[^A-Z]", k, 1)[0]
+            if lead: by_class[lead].extend(lens)
+        means = {k: sum(v)/len(v) for k, v in by_class.items() if len(v) >= 3}
+        if len(means) >= 2:
+            hi, lo = max(means.values()), min(means.values())
+            if lo > 0 and (hi - lo) / lo > 0.25:
+                detail = ", ".join(f"{k}={v:.0f} chars (n={len(by_class[k])})" for k, v in sorted(means.items()))
+                findings.append(("ERROR", "bank-wide", "LEAK_ASYMMETRIC_LENGTH",
+                    f"answer classes differ in mean stem length by {(hi-lo)/lo*100:.0f}% (>25%): {detail}. "
+                    f"A length tell lets a model score above chance without reading the argument."))
 
     for (adm, num), hashes in stems_by_num.items():
         if len(hashes) > 1:
