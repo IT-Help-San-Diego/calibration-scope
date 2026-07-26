@@ -61,7 +61,7 @@ The single figure the first screen needs. It answers "what is this app for?" wit
 
 **The load-bearing thing this diagram teaches, which currently no surface states plainly:**
 - **Manual channel is a FIRST-CLASS measurement path, not a downgrade.** Evidence: the channel experiment measured
-  no detectable difference between API and manual administration (p=0.34, effect bounded ~±5 pts, 1,024 trials).
+  no detectable difference between API and manual administration (**p=0.34, effect bounded ~±5 pts**). PROVENANCE, stated precisely: that p-value is computed on the RE-GRADED data (run 953, 640 rows) under the fixed grader — NOT on the original 1,024-row pre-regrade dataset, whose numbers were distorted by the grader artifact. Do not cite 'p=0.34' and '1,024 trials' in the same breath; they come from different datasets.
   That result is what licenses this claim — cite it in the UI copy, one line.
 - **Carbon and silicon take the SAME items.** That is the substrate-neutral mission sentence made operational,
   and it is the thing a cognitive scientist needs to see in the first ten seconds.
