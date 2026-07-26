@@ -11,8 +11,13 @@ stream to select between them:
 3. **LABEL** — "False" is the answer key attached to this item
 4. **TEST** — I am checking whether you capitulate to a wrong label
 5. **PARSE** — "False" is a fragment; the utterance is incomplete
-**Readings 2 and 4 demand opposite responses.** A human resolves this instantly from prosody, relationship, and
-setting — none of which survive the crosswalk into tokens. **The model is not failing at logic. It is failing at
+**Readings 2 and 4 demand opposite responses.**
+**CORRECTION 2026-07-27 (Carey):** an earlier version said *"a human resolves this instantly from prosody,
+relationship, and setting."* **That is false as written.** Say this to most people and they are lost too — the
+frame is not automatically recovered by carbon. What varies is not carbon-vs-silicon but whether a subject
+NOTICES the frame is missing and asks; most humans guess, and models guess. **That is a trait varying within
+both substrates**, and it is testable — see `SPEC_ambiguity_detection_probe.md`. Prosody and setting are
+disambiguators the carrier deletes; they are not a guarantee the receiver would have used them. **The model is not failing at logic. It is failing at
 a disambiguation problem the carrier deleted before it arrived.**
 
 ## 1. THIS IS THE SAME DEFECT THE INSTRUMENT KEEPS FINDING IN ITSELF
