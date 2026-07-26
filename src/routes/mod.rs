@@ -25,3 +25,4 @@ pub mod status;
 pub mod summary;
 pub mod tests;
 pub mod time_estimate;
+pub mod witness;

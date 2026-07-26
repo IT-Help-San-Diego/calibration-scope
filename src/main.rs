@@ -141,6 +141,7 @@ async fn main() {
             get(routes::time_estimate::time_estimate),
         )
         .route("/api/runs/{id}/export", get(routes::runs::export_run))
+        .route("/api/runs/{id}/witness", get(routes::witness::run_witness))
         .route(
             "/api/prompt-check",
             get(routes::prompt_check::prompt_check).post(routes::prompt_check::prompt_check_post),

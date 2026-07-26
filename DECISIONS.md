@@ -1136,6 +1136,14 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       screener, not a blind instrument — blindness lives in the real
       battery), the redundant `key` field was removed from the response and
       UI, and grade() gained a length guard + unit test (7 total).
+    - **2026-07-26 (Claude Code, same PR): Witness Artifact Generator
+      shipped (§15 Oscent item 2).** GET /api/runs/:id/witness renders a
+      sealed run as a self-contained zero-JS certificate — one inline SVG,
+      presentation attributes only (CSP-proof anywhere, file:// included),
+      portrait golden-ratio construction self-described in its footer (the
+      second shipped φ surface). No witness without a seal; counts raw;
+      "demonstrates; does not rank"; channel labeled derived pending §14.
+      Witness link added beside the evidence-bundle export in run detail.
     - **Backend findings from the same pass — RELAY TO HERMES (its lane,
       recorded not patched):** (a) lmstudio_sync's UPDATE path sets
       lmstudio_key but never rewrites `key`, so after a model rename/dedup
