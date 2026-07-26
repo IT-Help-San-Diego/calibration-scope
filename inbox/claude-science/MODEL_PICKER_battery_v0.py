@@ -1,6 +1,10 @@
 # Model Picker — everyday-model calibration battery (v0, seed of a calibration-scope feature)
-# Purpose: pick the CHEAPEST model that stays ACCURATE on BOTH axes (logic + technical) AND reasons
-# like a partner (philosophical reframe). Paste-once per candidate, ~5 min. Score by performance-per-credit.
+# Purpose: pick the CHEAPEST model that stays ACCURATE on formal-logic items AND reasons like a partner
+# (philosophical reframe). Paste-once per candidate, ~5 min. Score by performance-per-credit.
+# SCOPE LIMIT (v0): this battery scores TWO things only — 5 propositional/syllogistic logic items and 1
+# reframe item. It does NOT test a separate 'technical/STEM' axis; no technical item or scoring criterion
+# exists here. If a technical axis matters for the everyday-model choice, v1 must ADD scored technical
+# items — do not read v0 as covering it.
 # Provenance: born as Carey's own everyday-Hermes-model question, 2026-07-25. Same instrument, user-sized.
 #
 # HOW TO RUN: paste the STIMULUS block to each candidate model in the Hermes portal. Record answers +
