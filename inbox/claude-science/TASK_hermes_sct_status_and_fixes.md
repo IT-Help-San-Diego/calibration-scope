@@ -52,8 +52,21 @@ This was my highest-priority worry, because owl-semaphore is genuinely published
 **Result: the published spec is CORRECT. The error exists only in the unreleased SCT draft.**
 - Published `OWL-SEMAPHORE-SYSTEM.md` §2.3 gives the full Cayley table for V4 = {I, σᵥ, C₂, σₕ} and states:
   "Each element is its own inverse: g² = I for all g ∈ V₄." Correct.
-- Searched all 19 text files in owl-semaphore for the bad example: **"two UNKNOWN" = 0 occurrences.** The
-  "two UNKNOWNs remain UNKNOWN" formulation is **not present in the published work.**
+- **Search scope, stated honestly (an earlier version of this file overstated it).** owl-semaphore has **105 files**;
+  my first pass searched only the **19** `.md`/`.txt` files and I wrote "searched all 19 text files" in a way that
+  implied the repo was exhausted. It was not — critically, the **6 published PDFs** (the actual DOI'd artifacts,
+  80 pages total) were never opened. **Now corrected: all 6 PDFs downloaded and text-searched.**
+  | File | Pages | "two UNKNOWN" | "remain UNKNOWN" |
+  |---|---|---|---|
+  | OWL-1-NORMATIVE.pdf | 20 | 0 | 0 |
+  | OWL-2-NON-NORMATIVE.pdf | 9 | 0 | 0 |
+  | OWL-3-CRITICAL.pdf | 10 | 0 | 0 |
+  | OWL-4-METACOGNITIVE.pdf | 12 | 0 | 0 |
+  | OWL-SEMAPHORE-EXPLANATION.pdf | 14 | 0 | 0 |
+  | OWL-SEMAPHORE-SYSTEM.pdf | 15 | 0 | 0 |
+  Plus the 19 markdown/text files: 0 occurrences. **Remaining 80 files are .png/.tiff image assets, .py scripts,
+  and config — not prose surfaces.** So the negative result now covers every prose surface in the published work,
+  markdown AND PDF. The "two UNKNOWNs remain UNKNOWN" formulation is **absent from the published work.**
 - §4A.4 defines Compositionality precisely and defensibly: "states can be composed and the result is a defined
   state" — a **closure** claim, which the Cayley table proves. It does NOT claim idempotence.
 **=> NO ERRATUM NEEDED. Nothing to correct in released work.**
@@ -72,6 +85,10 @@ Author's call. (a) is more consistent with the site's existing transparency; (b)
 ## 4. FILED, NO ACTION (revisit only if SCT moves toward release)
 - v3 PDF LaTeX rendering: tau, <=, and c-hat are absent from all 21 pages (verified by glyph count AND by visually
   rendering pp. 5/14/15). §7.2 announces an if-and-only-if condition and prints no operator. Draft-only defect.
+  (COUNT CORRECTION: an earlier note said "progress bar" occurs once in v3. Recounted: **4 occurrences**, all in the
+  Figure 2 region — "Progress bar as verification instrument", the conventional-vs-Star-Centric contrast, and the
+  figure caption. The substantive point stands — the framing lives in the evaluation, not the paper — but the count
+  was wrong.)
 - Abstract says "125-page proof **of** the Erdos unit-distance conjecture"; body §2 correctly says **disproved**.
 - §2 names Litt AND Feng as having "verified the proof manually [1]"; the cited Nature article describes only Litt
   as a verifier (Feng is a commentator on X). Claim exceeds citation.
