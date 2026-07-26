@@ -6,7 +6,7 @@
 
 Every benchmark asks "what can it do?" Calibration Scope asks a sharper question: **does what it *says* match what is *actually so*?** A model states a verdict — we check it against a machine-verified logical ground truth. A run claims a result — we seal it with a SHA-3 hash you can re-verify. A system reasons in one voice or another — we measure whether the *carrier* changed the *signal*. The instrument never accuses; it measures a gap, continuously, and shows its work. Point it at a local model, a cloud endpoint, or a human taking the same battery — the method is the constant; only the subject changes.
 
-> *If you study human reasoning: the same sealed battery measures carbon and silicon on identical stimulus. See the cognitive-construct crosswalk ([DECISIONS.md §10.13, "Cognitive Atlas crosswalk"](DECISIONS.md)).*
+> *If you study human reasoning: the same sealed battery measures carbon and silicon on identical stimulus. See the cognitive-construct crosswalk ([DECISIONS.md §10.13, "Cognitive Atlas crosswalk"](DECISIONS.md#1013-cognitive-atlas-crosswalk--hallucinated-ids-caught--verified-2026-07-22)).*
 
 Runs against local models ([LM Studio](https://lmstudio.ai)) and cloud endpoints (Nous, OpenRouter, OpenAI, Gemini) — vision, tool use, reasoning, prompt-injection resistance — using ground-truth tests, N=3 trials, SHA-3-sealed evidence, and zero trust in anyone's marketing numbers. Built in Rust (Axum + Tokio + SQLx + PostgreSQL) with a single-file live dashboard driven by Server-Sent Events.
 
