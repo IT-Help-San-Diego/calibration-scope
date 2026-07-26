@@ -37,7 +37,11 @@ Optional future hardening: match negation-prefixed forms explicitly (`NOT SATISF
 `NOT VALID` -> `INVALID`) rather than letting them fall through. Add only if a real item needs it.
 
 ## Regression fixtures
-`NOT SATISFIABLE`/`UNSAT`, `NO`/`DOESNOTFOLLOW`, and `NONE≠NO` added; 13/13 passing, clippy 0.
+`NOT SATISFIABLE`/`UNSAT`, `NO`/`DOESNOTFOLLOW`, and `NONE≠NO` added per Hermes's report.
+**"13/13 passing, clippy 0" is RELAYED from Hermes, not verified by me** — I read the committed source and
+simulated the logic, but I did not run `cargo test`/`clippy` (no Rust toolchain in this environment, and the
+box was not up). Treat the test-suite status as Hermes's claim; my verification covers the CODE, not the
+test run.
 The `NONE≠NO` negative fixture is the most valuable one in the suite — it locks in the equivalence the
 grader must NOT make.
 
