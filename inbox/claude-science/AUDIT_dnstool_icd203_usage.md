@@ -19,7 +19,13 @@ information. That is a statement about **whom the directive binds**, not about w
 Nothing in it claims exclusivity, and nothing prohibits external adoption. **Using it as a library is sound; the
 only illegitimate move would be claiming to be bound by it or certified under it — and you don't.** (§2.)
 
-## 1. THE VOCABULARY CHECK — clean, verified across the whole repo
+## 1. THE VOCABULARY CHECK — **v1 WAS UNEARNED; SEE CORRECTION_dnstool_audit_scan.md**
+**CORRECTION 2026-07-26:** the scan behind this section never ran — `git clone` is not permitted in this sandbox
+and failed silently, so the grep read my own workspace (no `go-server/...` path appeared in its output). Re-run
+via the GitHub API over **753 in-scope files**: the badge check holds (**0 compliance claims**), but v1's "no row
+mixing" was **WRONG** — `remediation.go` carries the row-2 label `"Probable No-Mail Domain"` while every other
+judgment uses row 1 (`"Likely — ..."`, `"Unlikely — ..."`). One word fixes it: `Probable` -> `Likely`.
+Only `posture.go` (read directly) was genuinely verified in v1.
 ICD-203 mandates: *"For expressions of likelihood or probability, an analytic product **must** use one of the
 following sets of terms"* — a **seven-band** table (01-05, 05-20, 20-45, 45-55, 55-80, 80-95, 95-99%) with two
 interchangeable rows, and *"Analysts are strongly encouraged not to mix terms from different rows."*
