@@ -476,9 +476,10 @@ mod tests {
         assert!(score_response("DOES NOT FOLLOW", "DOESNOTFOLLOW", "exact").passed);
         // Token-order shadowing: "NOT SATISFIABLE" must NOT match "NO".
         assert!(extract_verdict("NOT SATISFIABLE") != "NO");
-        // "NO, IT FOLLOWS" must NOT match "NO" (word boundary).
-        assert!(extract_verdict("NO, IT FOLLOWS") == "NO"); // comma = boundary, so NO is correct here
-                                                            // NONE must NOT equal NO (opposite claims).
+        // "NO, IT FOLLOWS": the comma IS a word boundary, so extracting "NO" is correct here
+        // (unlike "NOT SATISFIABLE" above, where the next char is alphanumeric).
+        assert!(extract_verdict("NO, IT FOLLOWS") == "NO");
+        // NONE must NOT equal NO (opposite claims).
         assert!(!verdicts_match("NONE", "NO"));
         assert!(!verdicts_match("NO", "NONE"));
     }

@@ -1063,7 +1063,12 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     live-browser verification required), lessons headers, DECISIONS preamble,
     SCISPACE_PACKAGE.md ("benchmark" voice, unhedged superlatives), and the
     README's "90-test battery" figure, which needs sealed-run provenance per
-    PUBLIC_REPO_embarrassment_scan SEV3 before it can stay.
+    PUBLIC_REPO_embarrassment_scan SEV3 before it can stay. Hash-naming
+    convention for the sweep (set 2026-07-26, README first): the family in
+    prose is **SHA-3** (NIST spelling); concrete algorithm identifiers stay
+    **SHA3-512 / SHA3-256** because they match the literal sealed hash
+    strings (`sha3-512:...`). Sealed surfaces (lessons, comics) are exempt
+    until a re-seal is otherwise required.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
