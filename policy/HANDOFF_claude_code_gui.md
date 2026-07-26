@@ -146,10 +146,19 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      auto-load gotcha → ~/.hermes/config.yaml), registry unsynced, empty
      final answer (finish_reason surfaced), reply mismatch (shown verbatim).
      Zero new backend. The 2×3 diagram ships inline on this page — the
-     golden-ratio commitment is now BUILT on a real surface. Entry: landing
-     hero button; page whitelisted in Focused mode. Verified in a live
-     browser against a mocked backend (green + both failure states, console
-     clean); real-hardware pass with LM Studio still worthwhile. Side fix:
+     golden-ratio commitment is now BUILT on a real surface. Entry: a
+     "First Run" tab visible in BOTH modes (Focused is the first-visit
+     default and hides the landing hero, so a hero-only button was
+     unreachable — adversarial-verification catch) plus the landing hero
+     button in Deep; mode restore preserves the page. Hardened after a
+     3-verifier adversarial pass: generation guard (stale async can't
+     overwrite a newer ladder state or double-fire the beep), timer leak
+     fixed via try/finally, NO silent model fallback (no registry match is
+     a first-class state — a wrong pick could 404 or JIT-load a multi-GB
+     model), wrapper-tolerant OHM grading, aria-live + real buttons for
+     retry actions. Verified in a live browser against a mocked backend
+     (green + both failure states + reload persistence, console clean);
+     real-hardware pass with LM Studio still worthwhile. Side fix:
      'human-cal' was missing from the PAGES array, so its tab hid every page
      and showed nothing — added (one word) along with 'onboard'.
    - **Rung 2 — Model Picker UI over the existing 5-item battery.** Reports a

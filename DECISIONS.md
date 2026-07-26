@@ -1072,6 +1072,33 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     verification (TDZ on a mid-file showPage call) fixed at the source. Side
     fix: 'human-cal' was absent from the PAGES array — its tab hid every
     page and displayed nothing; added.
+    - **Adversarial verification round (3 independent verifiers), fixes
+      applied same day:** (1) the page was UNREACHABLE in Focused mode —
+      the first-visit default — because the only entry lived inside the
+      hero that Focused hides, and mode restore force-switched to
+      benchmark; fixed with a "First Run" tab (both modes) + restore
+      exemption. (2) Generation counter so stale in-flight async (beep or
+      channel probe) can never overwrite a newer ladder state or
+      double-fire. (3) Beep timer leak on body-read failure — try/finally.
+      (4) Silent registry fallback REMOVED: a wrong pick could 404 or
+      JIT-load a multi-GB model; no-match is now a first-class state.
+      (5) OHM grading tolerates symmetric wrappers ("**OHM**", quotes).
+      (6) aria-live on ladder/result, retry links are real buttons,
+      step titles are h3s. Reload-persistence in Focused re-verified live.
+    - **Backend findings from the same pass — RELAY TO HERMES (its lane,
+      recorded not patched):** (a) lmstudio_sync's UPDATE path sets
+      lmstudio_key but never rewrites `key`, so after a model rename/dedup
+      the registry key permanently differs from the loaded id and Sync
+      Local cannot restore an exact match; fetch_unique_models also does
+      not serialize lmstudio_key, so no client can match on it (the
+      existing filter at app.js:~3426 is already dead code). (b) The sync
+      canonicalization branch is a no-op (the gguf-filename candidate can
+      never contain '/'), so key = loaded-id holds today only by accident.
+      (c) models_handler swallows DB errors into a 200 empty list —
+      indistinguishable from an unsynced registry. (d) Migration 008 seeds
+      an active location='local' row (hermes-3-llama-3.1-8b,
+      lmstudio_key NULL) that the deactivation loop never touches, so
+      fresh installs permanently carry a phantom local model.
   - **2026-07-26 (Claude Code, same PR, later commit): site index + dashboard
     landing installed too.** Site hero sub now leads with the stated-vs-actual
     copy (text nodes only — style block untouched, hashes unchanged, verified

@@ -625,7 +625,7 @@
      leaves the viewport: rail (select/run) | center (brain + stream) |
      stream. Nothing is REMOVED (full power) — the other tabs are hidden,
      every capability still reachable by flipping back to Deep. */
-  html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark):not(#tab-human-cal),
+  html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark):not(#tab-human-cal):not(#tab-onboard),
   html[data-mode="focused"] .top-nav .nav-arrow { display: none; }
   html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal):not(#page-onboard) { display: none !important; }
 
@@ -1465,7 +1465,9 @@
 .ob-step.ok { border-left-color: var(--safe); }
 .ob-step.warn { border-left-color: var(--accent-gold); }
 .ob-step.fail { border-left-color: var(--unsafe); }
-.ob-step-title { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: var(--fib-2); }
+.ob-step-title { font-family: var(--font-mono); font-size: 12px; font-weight: 400; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin: 0 0 var(--fib-2); }
+.btn-link { background: none; border: none; padding: 0; color: var(--accent-cyan, #58a6ff); text-decoration: underline; cursor: pointer; font: inherit; }
+.btn-link:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
 .ob-step-main { font-size: 15px; line-height: 1.55; margin-bottom: var(--fib-2); }
 .ob-data { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); word-break: break-word; }
 .ob-next { margin: var(--fib-2) 0 0; padding-left: var(--fib-4); font-size: 13px; line-height: 1.6; }

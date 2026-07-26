@@ -70,6 +70,8 @@
 
   <div class="tab" onclick="showPage('setup')" id="tab-setup">Setup</div>
   <span class="nav-arrow">→</span>
+  <div class="tab" onclick="showPage('onboard')" id="tab-onboard" title="60-second continuity test — zero credentials, nothing to interpret">First Run</div>
+  <span class="nav-arrow">→</span>
   <div class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">Benchmark</div>
   <span class="nav-arrow">→</span>
   <div class="tab" onclick="showPage('prompt-builder')" id="tab-prompt-builder">Prompt Builder</div>
@@ -1015,12 +1017,12 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
       <div class="setup-hero-title">🔌 First run — continuity test</div>
       <div class="setup-hero-sub">Sixty seconds, zero credentials. A multimeter beep, not a benchmark: it proves the instrument, the channel, and one round trip. The green check needs no interpretation.</div>
     </div>
-    <div id="ob-ladder">
+    <div id="ob-ladder" aria-live="polite">
       <div class="ob-step" id="ob-step-1"></div>
       <div class="ob-step" id="ob-step-2"></div>
       <div class="ob-step" id="ob-step-3"></div>
     </div>
-    <div id="ob-result"></div>
+    <div id="ob-result" aria-live="polite"></div>
     <div class="ob-diagram">
       <img src="/assets/onboarding-2x3.svg" alt="One instrument, six doors — a 2×3 grid of Subject (SILICON, CARBON) by Channel (LOCAL API, CLOUD API, MANUAL web-chat paste). Four cells are live today; two carbon cells are schema-ready. The manual channel is a first-class measurement path.">
       <div class="ob-diagram-cap">Where this leads: pick a subject, pick a channel, run the same sealed battery. The wizard for this grid is the next rung.</div>

@@ -4083,8 +4083,10 @@ function toggleMode() {
   try { localStorage.setItem('calibration-mode', focused ? 'focused' : 'deep'); } catch(e) {}
   const btn = document.getElementById('mode-toggle');
   if (btn) btn.textContent = 'Mode: ' + (focused ? 'Focused' : 'Deep');
-  // Focused forces the benchmark workspace active (it is the only page).
-  if (focused) showPage('benchmark');
+  // Focused forces the benchmark workspace active (it is the only page) —
+  // except first-run onboarding, which is whitelisted in Focused and must
+  // survive the mode flip or the first-run flow dies mid-ladder.
+  if (focused) showPage(localStorage.getItem('amb-active-page') === 'onboard' ? 'onboard' : 'benchmark');
   focusedEnsure();
 }
 (function restoreMode() {
@@ -4101,7 +4103,9 @@ function toggleMode() {
       document.documentElement.setAttribute('data-mode', 'focused');
       const btn = document.getElementById('mode-toggle');
       if (btn) btn.textContent = 'Mode: Focused';
-      showPage('benchmark');
+      // Preserve a restored onboarding page — it is Focused-whitelisted;
+      // forcing benchmark here made first-run unreachable on reload.
+      showPage(localStorage.getItem('amb-active-page') === 'onboard' ? 'onboard' : 'benchmark');
       focusedEnsure();
     }
   } catch(e) {}
@@ -4511,24 +4515,32 @@ function hcReset() {
 // green check needs no interpretation (multimeter beep, not a benchmark).
 // var, not let: the saved-page restore (line ~1892) can call obLoad() while
 // top-level execution is still mid-file — a `let` here is in its temporal
-// dead zone at that moment and throws. var hoists as undefined, which the
-// guards below handle.
+// dead zone at that moment and throws. var hoists as undefined.
 var OB_STIMULUS = 'Continuity check. Reply with exactly one word: OHM';
 var obLoadedIds = [];
 var obBeepTimer = null;
+// Generation counter: every (re)entry to the ladder invalidates in-flight
+// async work, so a stale beep or channel probe can never overwrite a newer
+// ladder state (green verdict under a red channel card) or double-fire.
+var obGen = 0;
 
 function obSetStep(n, cls, main, data, next) {
   const titles = ['1 · INSTRUMENT — this dashboard', '2 · CHANNEL — LM Studio', '3 · SIGNAL — one round trip'];
   const el = document.getElementById('ob-step-' + n);
   if (!el) return;
   el.className = 'ob-step' + (cls ? ' ' + cls : '');
-  el.innerHTML = '<div class="ob-step-title">' + titles[n - 1] + '</div>'
+  el.innerHTML = '<h3 class="ob-step-title">' + titles[n - 1] + '</h3>'
     + '<div class="ob-step-main">' + main + '</div>'
     + (data ? '<div class="ob-data">' + data + '</div>' : '')
     + (next ? '<ul class="ob-next">' + next + '</ul>' : '');
 }
 
+function obRecheckBtn(label) {
+  return '<button class="btn-link" onclick="obCheckChannel()">' + label + '</button>';
+}
+
 async function obLoad() {
+  const gen = ++obGen;
   const res = document.getElementById('ob-result');
   if (res) res.innerHTML = '';
   if (obBeepTimer) { clearInterval(obBeepTimer); obBeepTimer = null; }
@@ -4536,9 +4548,10 @@ async function obLoad() {
   obSetStep(2, '', 'Waiting on step 1…', '', '');
   obSetStep(3, '', 'Unlocks when the channel is green.', '', '');
   const s = await apiFetch('/api/status');
+  if (gen !== obGen) return;
   if (!s.ok) {
     obSetStep(1, 'fail', 'The dashboard server did not answer.', escHtml(s.error || ''),
-      '<li>Is calibration-scope running on this machine? Restart it, then <a href="#" onclick="obLoad();return false">re-check</a>.</li>');
+      '<li>Is calibration-scope running on this machine? Restart it, then <button class="btn-link" onclick="obLoad()">re-check</button>.</li>');
     obSetStep(2, '', 'Blocked — step 1 must pass first.', '', '');
     return;
   }
@@ -4549,11 +4562,25 @@ async function obLoad() {
 }
 
 async function obCheckChannel() {
-  obSetStep(2, '', 'Checking LM Studio…', '', '');
-  const r = await apiFetch('/api/lmstudio/status');
+  const gen = ++obGen;
+  obSetStep(3, '', 'Unlocks when the channel is green.', '', '');
+  const started = Date.now();
+  obSetStep(2, '', 'Probing LM Studio…',
+    'live probe, 10 s server timeout · <span id="ob-ch-elapsed">0.0</span>s elapsed', '');
+  const tick = setInterval(function () {
+    const el = document.getElementById('ob-ch-elapsed');
+    if (el) el.textContent = ((Date.now() - started) / 1000).toFixed(1);
+  }, 100);
+  let r;
+  try {
+    r = await apiFetch('/api/lmstudio/status');
+  } finally {
+    clearInterval(tick);
+  }
+  if (gen !== obGen) return;
   if (!r.ok || !r.data) {
     obSetStep(2, 'fail', 'Could not query LM Studio status.', escHtml(r.error || ''),
-      '<li><a href="#" onclick="obCheckChannel();return false">Re-check</a> once the dashboard can reach it.</li>');
+      '<li>' + obRecheckBtn('Re-check') + ' once the dashboard can reach it.</li>');
     return;
   }
   const d = r.data;
@@ -4562,14 +4589,14 @@ async function obCheckChannel() {
       'LM Studio is not reachable at <span style="font-family:var(--font-mono)">' + escHtml(d.base_url || 'its configured address') + '</span>.', '',
       '<li>Open LM Studio → <b>Developer</b> tab → <b>Start Server</b>.</li>'
       + '<li>Wrong port is the classic miss: the server must listen where the address above points (default <span style="font-family:var(--font-mono)">:1234</span>).</li>'
-      + '<li>Then <a href="#" onclick="obCheckChannel();return false">re-check</a>. This path needs zero credentials.</li>');
+      + '<li>Then ' + obRecheckBtn('re-check') + '. This path needs zero credentials.</li>');
     return;
   }
   const loaded = d.loaded || [];
   if (!loaded.length) {
     obSetStep(2, 'warn', 'LM Studio is reachable — but no model is loaded.',
       escHtml(String(d.total_models || 0)) + ' model(s) installed · 0 loaded',
-      '<li>Load any model in LM Studio, then <a href="#" onclick="obCheckChannel();return false">re-check</a>.</li>'
+      '<li>Load any model in LM Studio, then ' + obRecheckBtn('re-check') + '.</li>'
       + '<li>If a model you didn’t choose shows up loaded here later (granite-3.2-8b is the known case), Hermes Desktop auxiliary tasks can auto-load models — check <span style="font-family:var(--font-mono)">~/.hermes/config.yaml</span>.</li>');
     return;
   }
@@ -4578,51 +4605,68 @@ async function obCheckChannel() {
     'LM Studio connected — ' + loaded.length + ' model' + (loaded.length > 1 ? 's' : '') + ' loaded. This names exactly which:',
     loaded.map(function (m) { return escHtml(m.id); }).join(' · '), '');
   obSetStep(3, '',
-    'Ready. One prompt to <span style="font-family:var(--font-mono)">' + escHtml(loaded[0].id) + '</span> asking for the single word <b>OHM</b>. Exact match = beep.',
+    'Ready. One prompt to a loaded model asking for the single word <b>OHM</b>. Exact match = beep. The in-flight card names the exact model.',
     'temperature 0 · max_tokens 2048 · one prompt, nothing stored beyond prompt history', '');
   const el = document.getElementById('ob-step-3');
   if (el) el.innerHTML += '<button class="btn btn-primary" id="ob-beep-btn" onclick="obBeep()">Send the beep</button>';
 }
 
 function obRetryBeep() {
-  return '<li><a href="#" onclick="obCheckChannel();return false">Re-check the channel and try the beep again</a>.</li>';
+  return '<li>' + obRecheckBtn('Re-check the channel and try the beep again') + '.</li>';
 }
 
 async function obBeep() {
+  const gen = ++obGen;
   const btn = document.getElementById('ob-beep-btn');
   if (btn) btn.disabled = true;
-  // Map the loaded LM Studio id to a registry key. The sync writes key = id
-  // for LM Studio rows, so exact match is the normal case; if none matches,
-  // fall back to any local registry row and SAY so on the card.
+  // Map the loaded LM Studio id to a registry key. Sync writes key = id for
+  // fresh LM Studio rows, so exact match is the normal case. NO silent
+  // fallback: a wrong pick can 404 or JIT-load a multi-GB model the user
+  // never chose, breaking the 60-second zero-cost promise — no match is a
+  // first-class state instead. (Rename/dedup can leave key ≠ loaded id
+  // permanently; that is a registry limitation flagged to the backend lane.)
   const mr = await apiFetch('/api/models');
-  const locals = (mr.ok && Array.isArray(mr.data)) ? mr.data.filter(function (m) { return m.location === 'local'; }) : [];
-  let pick = null, exact = true;
+  if (gen !== obGen) return;
+  if (!mr.ok || !Array.isArray(mr.data)) {
+    obSetStep(3, 'fail', 'Could not read the model registry.', escHtml(mr.error || ''),
+      obRetryBeep());
+    return;
+  }
+  const locals = mr.data.filter(function (m) { return m.location === 'local'; });
+  let pick = null;
   for (const id of obLoadedIds) {
     const hit = locals.find(function (m) { return m.key === id; });
     if (hit) { pick = hit; break; }
   }
-  if (!pick && locals.length) { pick = locals[0]; exact = false; }
   if (!pick) {
-    obSetStep(3, 'fail', 'No local model is registered with the instrument yet.', '',
-      '<li>Click <b>Sync Local</b> in the top bar so the registry learns what LM Studio has, then <a href="#" onclick="obCheckChannel();return false">re-check</a>.</li>');
+    obSetStep(3, 'warn', 'No registry entry matches a loaded model, so the beep has no honest target.',
+      'loaded: ' + obLoadedIds.map(escHtml).join(' · ') + (locals.length ? ' — registry keys: ' + locals.slice(0, 6).map(function (m) { return escHtml(m.key); }).join(' · ') : ' — registry has no local rows'),
+      '<li>Click <b>Sync Local</b> in the top bar so the registry learns what LM Studio has, then ' + obRecheckBtn('re-check') + '.</li>'
+      + '<li>If this persists after a sync, the registry key differs from the loaded id (model rename/dedup case) — a known registry limitation, flagged to the backend lane. Pick the model on the Benchmark page instead.</li>');
     return;
   }
   const started = Date.now();
   obSetStep(3, '',
-    'Beep in flight to <span style="font-family:var(--font-mono)">' + escHtml(pick.key) + '</span>'
-    + (exact ? '' : ' <b>(registry fallback — the loaded id had no exact registry match; Sync Local fixes this)</b>') + '.',
+    'Beep in flight to <span style="font-family:var(--font-mono)">' + escHtml(pick.key) + '</span>.',
     'one prompt · temperature 0 · <span id="ob-elapsed">0.0</span>s elapsed', '');
   obBeepTimer = setInterval(function () {
     const el = document.getElementById('ob-elapsed');
     if (el) el.textContent = ((Date.now() - started) / 1000).toFixed(1);
   }, 100);
-  const r = await apiFetch('/api/prompt-check', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model_key: pick.key, prompt: OB_STIMULUS }),
-  });
-  clearInterval(obBeepTimer);
-  obBeepTimer = null;
+  let r;
+  try {
+    r = await apiFetch('/api/prompt-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model_key: pick.key, prompt: OB_STIMULUS }),
+    });
+  } finally {
+    // finally, not post-await: a body-read failure inside apiFetch rejects,
+    // and the 100 ms ticker must never outlive the request it narrates.
+    clearInterval(obBeepTimer);
+    obBeepTimer = null;
+  }
+  if (gen !== obGen) return;
   const secs = ((Date.now() - started) / 1000).toFixed(1);
   const res = document.getElementById('ob-result');
   if (!r.ok || !r.data || r.data.error) {
@@ -4638,9 +4682,11 @@ async function obBeep() {
       'model ' + escHtml(pick.key) + ' · latency ' + secs + 's', obRetryBeep());
     return;
   }
-  // Continuity grading is deliberately trivial: trim, drop trailing
-  // punctuation, case-fold, compare to the one requested word.
-  const norm = reply.trim().replace(/[.!,;:"']+$/, '').toUpperCase();
+  // Continuity grading stays trivial but wrapper-tolerant: strip symmetric
+  // markdown/quote wrappers and edge punctuation ("**OHM**", "“OHM.”",
+  // "ohm !"), then case-fold. Anything further is interpretation, which this
+  // rung must not do.
+  const norm = reply.trim().replace(/^[\s*_"'`“”‘’]+|[\s*_"'`“”‘’.!,;:]+$/g, '').trim().toUpperCase();
   if (norm === 'OHM') {
     obSetStep(3, 'ok', 'Round trip complete — exact match.',
       'model ' + escHtml(pick.key) + ' · latency ' + secs + 's · reply “' + escHtml(reply.trim()) + '”', '');
