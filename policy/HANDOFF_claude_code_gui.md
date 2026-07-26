@@ -107,6 +107,21 @@ certificate.
 Backend endpoint: GET /api/runs/:id/witness → generates the artifact HTML.
 Frontend: a "Witness" button on the run detail view (both Focused and Deep).
 
+**SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `src/routes/witness.rs`:
+the certificate is one HTML file whose body is a single inline SVG —
+presentation attributes only, no <style> element, zero JS, zero external
+resources (the 411KB raster owl is replaced by a light geometric owl mark
+to keep self-containment; the φ construction is portrait 1000×1618,
+section at y=618, Fibonacci spacing, self-described in the footer — the
+SECOND shipped golden-ratio surface). Honesty gates: no witness without a
+seal (unsealed runs get a refusal, not a mock-up); counts shown raw with
+"demonstrates; does not rank"; channel labeled DERIVED pending the §14
+column; hostile model keys escaped and clipped (3 unit tests + a
+browser-inspection sample emitter; rendered sample verified in Chromium).
+Frontend: 🪶 Witness link beside the evidence-bundle export on the run
+detail panel (sealed runs only, new tab). v2 when §14 lands: real channel
+field.
+
 ### 3. Wording Audit
 
 Sweep all public surfaces against the mission sentence:
@@ -130,9 +145,11 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    blockquote and §10.16's quotation of the old README claim). Do not redo.
    (Re-verified 2026-07-26 on origin/main after Claude Science re-flagged it:
    the strings its grep found all sit INSIDE the labeled superseded
-   blockquote — the criterion passes. Its log cites "main head e404451",
-   which is not in origin/main's history; likely a stale local-clone read.
-   If it re-flags again, compare against origin/main with context lines.)
+   blockquote — the criterion passes. Its log cites "main head e404451" —
+   Actions history shows that WAS a real main head at 11:41Z, later
+   rewritten away (main history was force-updated). Whatever the clone
+   state, at current origin/main the criterion passes. If it re-flags,
+   compare against origin/main with context lines, not bare grep.)
 
 0.1. **Citation registry port (Claude Science ask, 2026-07-26 — added here
    after its item audit found it was never written into this handoff).**
