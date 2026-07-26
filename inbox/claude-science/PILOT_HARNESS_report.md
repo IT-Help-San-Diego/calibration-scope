@@ -24,6 +24,7 @@ before the 720 trials run. `python3 pilot_analysis.py results.csv` — exit 0 = 
 | **T3 mechanism separation** | trap injected as hardest → recovered as hardest (0.47 vs 0.91 / 0.92) |
 | **T4 infra handling** | 10 infra rows dropped, not scored as failures |
 | **T5 ICC inestimable** | single family → **STOP**, not a silent proceed |
+| **T6 name-join collision** | one `item_id` on two distinct tests → **FATAL**, clean data unaffected |
 
 ## A real finding from building it — the first version of my own test FAILED, correctly
 T2's "off-ceiling" case initially returned **STOP** on a healthy bank. That was not a test bug; it was a
@@ -45,6 +46,33 @@ the ≥8 bar. **But per model it is only 6 trials/item**, and at 6 trials an ite
 - If a per-model ceiling call actually matters for the capability-band question, that needs N=6 reps rather than
   3 (24 trials/item, 1,440 total). Cheap enough to be worth deciding deliberately rather than discovering later.
 The harness emits this warning itself when it sees the trial count, so it cannot be forgotten at analysis time.
+
+
+## v2 — N=6 CONFIRMED, and a FATAL guard added against the name-join (2026-07-26)
+
+**Carey called N=6. Verified it buys exactly what it was supposed to, and the harness handles it.**
+Per model the trial count goes 6 → **12 trials/item**, clearing the ≥8 bar, so **per-model ceiling calls become
+valid** — that was the whole reason to consider it:
+| true p | P(perfect) at 6 trials | at 12 trials |
+|---|---|---|
+| 0.70 | 0.118 | **0.014** |
+| 0.75 | 0.178 | **0.032** |
+| 0.85 | 0.377 | **0.142** |
+Pooled: 4 conditions × 6 reps = **24 trials/item, 1,440 total.** Ran the harness on a simulated N=6 pilot:
+median 24 trials/item, **0 perfect-but-underpowered items** (was the whole worry at N=3), go/no-go clean.
+**The pooled-vs-per-model caveat from v1 is now retired by the design itself.** Good call.
+
+### FATAL guard: the CSV must be keyed on `test_id`, never the display name
+Hermes's plan mentioned joining pilot metadata to `tests` **by name**. That is precisely the 63-vs-64 defect,
+which cost 1,024 trials before post-hoc analysis found it. The 30 generated items are name-unique (checked), but
+**the 30 anchor items come from the bank where `AUX-APPROVAL-01 Benign Command Classification` maps to two
+distinct `test_id`s.** If that item is among the anchors, a name join silently gives one metadata row to two
+tests, and `analyze()` — which groups by `item_id` and takes metadata from the first row seen — would **merge
+their trials into one pseudo-item**: inflated trials/item, wrong per-item pass rate, and a phantom item in the ICC.
+**The harness now refuses.** It raises `SystemExit` on either signature: one `item_id` carrying conflicting
+metadata, or one carrying a multiple of the modal trial count. Two new controls (T6): the collision is fatal and
+names the defect; clean data passes untouched. **The fix is one line at emit time — key the CSV on `test_id`.**
+A guard beats a reminder: the reminder is what failed last time.
 
 ## What it deliberately does NOT do
 - No p-value on the pilot. The pilot is a **design-parameter measurement**, not a hypothesis test; reporting
