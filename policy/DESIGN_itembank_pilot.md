@@ -74,3 +74,13 @@ Option C at ~8 items/family across ~55–60 families at 70–85% difficulty.
 - Whether difficulty tagging feeds the mixed model as a covariate (tag it, but
   per Claude Science nobody cites it as a power lever — pairing already
   differences item difficulty out).
+
+## STANDING AUTHORING CONSTRAINT (Claude Science, VERIFY_framing_build_c8d6156)
+The length tell is bank-wide and separable: sound (NONE) items run long
+(369-495 chars) because detail is what makes an argument sound; fallacy items
+run short (267-319). Zero overlap -> a length rule scores 20/20 blind. The
+framing test is structurally immune (within-item paired contrast, +32 chars
+both arms), and the probe falsified exploitation (0.139 measured vs 1.00 a
+length rule would give). For the ~320-item powered bank: fix ADDITIVELY —
+write fallacy items at 330-400 chars so the ranges overlap; do NOT trim NONE
+items (the detail is the point). Gate on 0 lint ERRORs before administering.
