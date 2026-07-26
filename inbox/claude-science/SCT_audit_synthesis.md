@@ -143,6 +143,12 @@ I simulated the mechanism rather than take it on faith. Result: **the premise is
   halfway is merely where the lie shrinks below the annoyance threshold. Root cause: **the estimator assumes the
   middle looks like the beginning.** It does not track the middle — it *assumes* it. And note what makes the
   non-stationary error shrink: not learning, just the job running out of room to be wrong in.
+**PANEL-B NOTE (second correction).** The first corrected figure plotted `|mean signed bias|` for the
+non-stationary series against `mean|error|` for the variance series, under one axis label. Those are different
+quantities. Numerically it made no difference HERE — the non-stationary error is negative in 200/200 replicates,
+so |mean| equals mean|.| exactly — but the label was wrong in principle and would mislead on any series that
+changes sign. Panel b now plots the true E|error| for BOTH series, computed per-replicate before averaging.
+
 **METHODOLOGICAL NOTE (correction).** The first version of this figure plotted the variance-only case's mean
 ABSOLUTE error as a negative quantity on an axis labelled "negative = over-promises." That was wrong: it made an
 unbiased estimator look systematically deceptive. The corrected figure separates the two panels — signed bias
