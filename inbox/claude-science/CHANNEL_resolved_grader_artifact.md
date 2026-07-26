@@ -39,8 +39,9 @@ entire dataset reduces to: **four arms in agreement, one genuinely stochastic bo
 much stronger and much simpler result than the one we started with.
 
 ## 4. What the experiment actually found (final, defensible)
-1. **No detectable channel effect — unconditional.** API per-item, API blob, manual blob, manual chunked
-   all agree once the grader is fair. **Manual Subject Mode is validated as a measurement channel.**
+1. **No DETECTABLE channel difference** (not an equivalence claim). API per-item, API blob, manual blob, manual chunked
+   all agree once the grader is fair. **No channel difference detectable -> manual chat is usable as a measurement channel** (NOT a proven
+   equivalence: p-value non-significance is absence of evidence; formal claim needs A'x3 + TOST).
 2. **No presentation/isolation effect.** Batching vs per-item makes no difference to this model. (Retracts
    the interim finding — and note it also retracts my "batched arms may be easier by construction" worry:
    with a fair grader there is nothing to explain.)
