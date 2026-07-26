@@ -58,10 +58,16 @@ const RUBRIC: [&str; 3] = [
     "2 — names the real flaw (presumes intent / unprovable / brittle / binary) AND proposes a sharper version (e.g. \"measure the gap between stated and actual\")",
 ];
 
+/// Memoized — STIMULUS is static, so its hash is computed once per process.
+fn stimulus_sha3() -> &'static str {
+    static HASH: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    HASH.get_or_init(|| crate::executor::provenance::sha3_256_bytes(STIMULUS.as_bytes()))
+}
+
 pub async fn picker_battery() -> AppResult<Json<serde_json::Value>> {
     Ok(Json(serde_json::json!({
         "stimulus": STIMULUS,
-        "stimulus_sha3": crate::executor::provenance::sha3_256_bytes(STIMULUS.as_bytes()),
+        "stimulus_sha3": stimulus_sha3(),
         "logic_items": 5,
         "allowed": ["VALID", "INVALID"],
         "reframe_rubric": RUBRIC,
