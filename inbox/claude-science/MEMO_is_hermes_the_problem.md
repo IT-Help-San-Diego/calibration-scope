@@ -4,14 +4,20 @@ _Answered by counting the epistemic log (168 entries, 67 corrections), because "
 _countable question and I am one of the candidates._
 
 ## 0. THE ANSWER: NO — AND THE LARGEST SOURCE OF WRONG CLAIMS IN THIS PROJECT IS ME
-| Whose claim the correction was about | All sessions | Today |
-|---|---|---|
-| **Claude Science (me)** | **22** | **12** |
-| Hermes | 8 | 4 |
-| Claude Code | 2 | 0 |
-| Instrument / data defect, nobody's claim | 35 | 9 |
-**I produce roughly 3× more wrong claims than Hermes does.** If you are looking for the agent who most needs
-watching, the log says it is the one writing this memo.
+**REVISED 2026-07-27 — the first version of this table undercounted me by half.** Both numbers are below; the
+correction is documented in §2b because *how* it was wrong is the more useful finding.
+| Whose claim the correction was about | as first published | corrected | corrected + artifacts I authored |
+|---|---|---|---|
+| **Claude Science (me)** | 22 | **34** | **48** |
+| Hermes | 8 | **6** | 6 |
+| Claude Code | 2 | **0** | 0 |
+| Instrument / data defect, nobody's claim | 35 | 28 | 14 |
+**I am responsible for between 50% and 71% of every correction in this project — six to eight times Hermes's
+share.** The lower bound counts only entries whose text explicitly says "my claim"; the upper bound adds entries
+named after an artifact I wrote. **The honest figure is the upper one**, because "`progress_bar_bias.png` plotted
+absolute error as negative" and "I plotted absolute error as negative" describe the same act by the same author.
+If you are looking for the agent who most needs watching, the log says it is the one writing this memo — **and it
+said so twice as loudly as I first reported.**
 
 ## 1. THE CLASSES DIFFER, AND THAT MATTERS MORE THAN THE COUNTS
 **Hermes's errors are all one class:** a conclusion stated at higher confidence than their test supports, where the
@@ -42,6 +48,33 @@ Hermes right and I was wrong **2**; mine via relaying them **2**; mine and they 
 as blocking (they queried the live database; all 20 item bodies were byte-identical; I retracted) and the
 pre-registration unit-of-analysis conflict (my objection rested on comparing two different simulations). **Both
 times they had checked the running system and I had reasoned about it.**
+
+## 2b. THE ABACUS — how 14 of my errors got filed under "nobody's claim"
+Carey's parable: Bob knocks a man's teeth out with an abacus; the flock gathers, furious at **the abacus**; Bob,
+still holding it, smiles. I tested it on this memo and **the memo failed.**
+**Two mechanical faults, in my own attribution code.**
+1. **A case-sensitive regex.** I matched `\b(I|my|myself)\b` against each entry's `target` field. **Seven entries
+   begin with the word "My"** — capital M, sentence-initial — and the pattern missed every one. They were filed
+   under *instrument defect, nobody's claim*. Among them: my inverted power figures, my false "runs in one command"
+   claim, my unmeasured length-exclusion premise, my self-contradicting decision rule. **The tool I used to count
+   my errors was itself defective in a way that undercounted my errors.**
+2. **The grammatical subject decided the blame.** Of the 28 entries genuinely left in that bucket, **14 are named
+   after artifacts I wrote.** Compare two log entries with the same author and the same act:
+   > *"My length-heuristic mechanism… contradicted by its own test"* → filed to **me**
+   > *"`progress_bar_bias.png` plotted mean absolute error as negative"* → filed to **the file**
+   Nothing but the sentence's subject differs. **Writing "the chart was wrong" instead of "I drew the chart wrong"
+   moved the entry into a bucket with no defendant in it.** That is the abacus, and I wrote every one of those
+   sentences.
+**What makes this the parable rather than a coincidence:** I did not choose those subjects to dodge anything. The
+passive construction is the *natural* register for an engineering note. **The exculpation was free, structural, and
+invisible — which is exactly why the flock blames the abacus.** Nobody decided to; the grammar decided for them.
+**The generalisation that matters beyond this memo:** in the benchmark, we have repeatedly written *"the grader
+scored it wrong"*, *"the item leaked"*, *"the bank has a length defect."* **Every one of those was authored by an
+agent.** A defect log whose entries name artifacts rather than authors will, over time, converge on a project where
+the tools are at fault and no one is — and it will do so without a single false statement being written.
+**Rule adopted:** every correction entry names **an agent as its grammatical subject.** If the honest sentence is
+"the harness was wrong," the entry reads *"I wrote a harness that was wrong."* Same fact, and the defendant is in
+the room.
 
 ## 3. WE FAIL THE SAME WAY — WHICH IS THE ACTUAL FINDING
 My own logged summary of my error pattern, written this morning: *"the numbers were computed correctly nearly every
