@@ -41,9 +41,17 @@ could invalidate the whole bank:
 - A **length-only rule scores 0.874 on quant-scope** (majority baseline 0.533). If baseline accuracy is already
   landing near 0.874 with Spearman(length, pass) ≥ 0.30, **the class is partly being scored on stem length** and
   its off-ceiling yield is illusory — which means fixing the bank *before* spending 14 hours, not after.
-- `carrier_analysis.py`'s `gate_length_leak` runs on a baseline-only CSV. **Export the 758 rows with columns
-  `item_id, family_id, probe_class, model, carrier, rep, pass, expected_result, is_infra_error` and I will run it
-  in one command.**
+- **CORRECTION (2026-07-27, auditor-caught): the claim that this "runs in one command" was FALSE when written.**
+  `analyse()` blocks baseline-only input *before* reaching the gate — a single carrier trips `len(carriers) != 2`,
+  every cell trips `UNPAIRED CELLS`, and the `is_infra_error` rows I asked to be included block as well. The gate
+  was unreachable on exactly the input I was requesting. **Fixed:** a standalone entry point now exists —
+  `python3 carrier_analysis.py --gate <baseline.csv> <powered_bank_base.json>` — which skips the paired-design
+  gates, drops infra rows, reports bank coverage, and **BLOCKS rather than silently skipping when the bank file is
+  missing** (previously a bare `try/except` would have omitted the gate with no warning). Verified by self-tests
+  T8 (`analyse()` still correctly blocks baseline-only input), T9 (`gate_only()` reaches the gate for both classes),
+  T10 (a missing bank blocks instead of skipping). **Export the 758 rows with columns
+  `item_id, probe_class, pass` minimum — `is_infra_error` welcome and dropped automatically — plus
+  `analysis/powered_bank_base.json`, and the gate runs.**
 **This is the highest-value 10 minutes available right now**, because it is the only check that can still change
 the decision to spend the machine.
 
