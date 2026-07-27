@@ -1,0 +1,675 @@
+citations:
+  # ── Email Authentication & Security RFCs ──
+  - id: "rfc:7208"
+    type: rfc
+    title: "Sender Policy Framework (SPF) for Authorizing Use of Domains in Email, Version 1"
+    url: "https://www.rfc-editor.org/rfc/rfc7208.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2014-04"
+    text_fragments:
+      "3": "text=An%20SPF%20record%20is%20published%20as%20a%20DNS%20TXT"
+      "3.2": "text=A%20domain%20name%20MUST%20NOT%20have%20multiple%20records"
+      "4": "text=After%20receiving%20the%20MAIL%20FROM,check_host()%20function"
+      "4.6": "text=If%20the%20resultant%20record%20is%20not%20syntactically%20valid,the%20check_host()%20returns%20%22permerror%22"
+      "4.6.4": "text=SPF%0A%20%20%20implementations%20MUST%20limit%20the%20total%20number%20of%20those%20terms%20to%2010,the%20implementation%20MUST%20return%20%22permerror%22."
+      "5": "text=This%20section%20defines%20two%20types%20of%20mechanisms"
+      "5.1": "text=The%20%22all%22%20mechanism%20is%20a%20test%20that%20always%20matches"
+      "5.2": "text=the%20check_host()%20function%20is%20evaluated%20with%20the%20given%20arguments"
+      "8.3": "text=A%20%22pass%22%20result%20means%20the%20client%20is%20authorized%20to%20inject%20mail"
+      "A": "text=Sender%20ID%20experiment,not%20deploy%20its%20use"
+
+  - id: "rfc:6376"
+    type: rfc
+    title: "DomainKeys Identified Mail (DKIM) Signatures"
+    url: "https://www.rfc-editor.org/rfc/rfc6376.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2011-09"
+    text_fragments:
+      "3.6": "text=DKIM%20key%20records%20are%20stored%20as%20DNS%20TXT%20records"
+      "3.6.1": "text=An%20empty%20value%20means%20that%20this%20public%20key%20has%20been%20revoked"
+      "3.6.2.1": "text=Signers%20MUST%20use%20RSA%20keys%20of%20at%20least%201024%20bits"
+
+  - id: "rfc:7489"
+    type: rfc
+    title: "Domain-based Message Authentication, Reporting, and Conformance (DMARC)"
+    url: "https://www.rfc-editor.org/rfc/rfc7489.html"
+    status: informational
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2015-03"
+    text_fragments:
+      "6.1": "text=DMARC%20policy%20is%20published,_dmarc"
+      "6.3": "text=DMARC%20records%20follow%20the%20extensible%20%22tag-value%22%20syntax"
+      "6.6.3": "text=the%20remaining%20set%20contains%20multiple%20records%20or%20no%20records,DMARC%20processing%20is%20not%20applied"
+      "7": "text=Aggregate%20reports%20are%20reports%20that%20are,that%20did%20not"
+      "7.1": "text=A%20Mail%20Receiver%20is%20able%20to,aggregate%20report"
+      "7.3": "text=Forensic%20reports,personally%20identifiable%20information"
+      "10.1": "text=some%20implementations%20short-circuit,reject%20messages"
+
+  - id: "rfc:8301"
+    type: rfc
+    title: "Cryptographic Algorithm and Key Usage Update to DomainKeys Identified Mail (DKIM)"
+    url: "https://www.rfc-editor.org/rfc/rfc8301.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2018-01"
+    text_fragments:
+      "3.2": "text=Signers%20MUST%20use%20RSA%20keys%20of%20at%20least%202048%20bits"
+
+  - id: "rfc:8463"
+    type: rfc
+    title: "A New Cryptographic Signature Method for DomainKeys Identified Mail (DKIM)"
+    url: "https://www.rfc-editor.org/rfc/rfc8463.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2018-09"
+    text_fragments:
+      "3": "text=Ed25519-SHA256,a%3Ded25519-sha256"
+
+  - id: "rfc:8461"
+    type: rfc
+    title: "SMTP MTA Strict Transport Security (MTA-STS)"
+    url: "https://www.rfc-editor.org/rfc/rfc8461.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2018-09"
+    text_fragments:
+      "3": "text=MTA-STS%20is%20a%20mechanism%20enabling%20mail%20service%20providers"
+      "3.1": "text=MTA-STS%20Policy%20Mode,mode%3A%20enforce"
+      "3.2": "text=The%20policy%20is%20fetched%20via%20HTTPS"
+      "5": "text=a%20Sender%20wishing%20to%20send,MUST%20NOT"
+
+  - id: "rfc:8460"
+    type: rfc
+    title: "SMTP TLS Reporting"
+    url: "https://www.rfc-editor.org/rfc/rfc8460.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2018-09"
+    text_fragments:
+      "3": "text=A%20domain%20that%20wishes%20to%20receive%20TLS%20reports"
+
+  - id: "rfc:5321"
+    type: rfc
+    title: "Simple Mail Transfer Protocol"
+    url: "https://www.rfc-editor.org/rfc/rfc5321.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2008-10"
+    text_fragments:
+      "5": "text=The%20lookup%20first%20attempts%20to%20locate%20an%20MX%20record"
+
+  - id: "rfc:7505"
+    type: rfc
+    title: "A \"Null MX\" No Service Resource Record for Domains That Accept No Mail"
+    url: "https://www.rfc-editor.org/rfc/rfc7505.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2015-06"
+    text_fragments:
+      "3": "text=When%20a%20sending%20MTA,SHOULD%20NOT%20attempt%20to%20deliver"
+
+  - id: "rfc:6698"
+    type: rfc
+    title: "The DNS-Based Authentication of Named Entities (DANE) Transport Layer Security (TLS) Protocol: TLSA"
+    url: "https://www.rfc-editor.org/rfc/rfc6698.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2012-08"
+    text_fragments:
+      "2.1": "text=The%20TLSA%20resource%20record,certificate%20association"
+
+  - id: "rfc:7672"
+    type: rfc
+    title: "SMTP Security via Opportunistic DNS-Based Authentication of Named Entities (DANE) Transport Layer Security (TLS)"
+    url: "https://www.rfc-editor.org/rfc/rfc7672.html"
+    status: standards-track
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2015-10"
+    text_fragments:
+      "1.3": "text=DANE%20is%20designed%20to%20leverage,DNSSEC"
+      "2.1": "text=DANE%20for%20SMTP,opportunistic%20DANE%20TLS"
+      "2.2": "text=a%20client%20MUST%20use%20the%20TLSA%20records"
+      "3": "text=DANE%20TLS%20is%20a%20channel%20security%20protocol"
+      "3.1": "text=TLSA%20Certificate%20Usages,DANE-EE"
+
+  - id: "rfc:9495"
+    type: rfc
+    title: "Brand Indicators for Message Identification (BIMI)"
+    url: "https://www.rfc-editor.org/rfc/rfc9495.html"
+    status: experimental
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2023-12"
+    text_fragments:
+      "3": "text=BIMI%20assertion%20record,v%3DBIMI1"
+
+  # ── DNS & Infrastructure RFCs ──
+  - id: "rfc:1034"
+    type: rfc
+    title: "Domain Names — Concepts and Facilities"
+    url: "https://www.rfc-editor.org/rfc/rfc1034.html"
+    status: internet-standard
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "1987-11"
+    text_fragments:
+      "3.1": "text=The%20domain%20name%20space%20is%20a%20tree%20structure"
+      "3.6": "text=Each%20node%20has%20a%20set%20of%20resource%20information"
+
+  - id: "rfc:1035"
+    type: rfc
+    title: "Domain Names — Implementation and Specification"
+    url: "https://www.rfc-editor.org/rfc/rfc1035.html"
+    status: internet-standard
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "1987-11"
+    text_fragments:
+      "2.2": "text=The%20following%20syntax,domain%20name%20space"
+      "3.2.1": "text=TTL%20is%20the%20time%20to%20live%20of%20the%20RR"
+
+  - id: "rfc:4033"
+    type: rfc
+    title: "DNS Security Introduction and Requirements"
+    url: "https://www.rfc-editor.org/rfc/rfc4033.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2005-03"
+    text_fragments:
+      "2": "text=DNSSEC%20provides%20origin%20authentication%20and%20integrity%20protection"
+
+  - id: "rfc:4034"
+    type: rfc
+    title: "Resource Records for the DNS Security Extensions"
+    url: "https://www.rfc-editor.org/rfc/rfc4034.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2005-03"
+    text_fragments:
+      "2": "text=The%20DNSKEY%20resource%20record,zone%20signing%20key"
+      "5": "text=The%20DS%20Resource%20Record%20refers%20to%20a%20DNSKEY%20RR"
+
+  - id: "rfc:4035"
+    type: rfc
+    title: "Protocol Modifications for the DNS Security Extensions"
+    url: "https://www.rfc-editor.org/rfc/rfc4035.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2005-03"
+    text_fragments:
+      "2.4": "text=A%20DS%20RR%20SHOULD%20be%20present"
+      "3.1": "text=A%20security-aware%20resolver,RRSIG%20records"
+      "3.2.3": "text=A%20name%20server%20MUST%20NOT%20set%20the%20AD%20bit,all%20RRsets%20in%20the%20Answer"
+
+  - id: "rfc:8624"
+    type: rfc
+    title: "Algorithm Implementation Requirements and Usage Guidance for DNSSEC"
+    url: "https://www.rfc-editor.org/rfc/rfc8624.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2019-06"
+    obsoleted_by: "rfc:9904"
+    text_fragments:
+      "3.1": "text=Implementations%20MUST%20support%20the%20use%20of%20RSASHA256"
+      "3.3": "text=ECDSAP256SHA256%20and%20Ed25519"
+
+  - id: "rfc:9904"
+    type: rfc
+    title: "A Carved-Out Specification for the DNSSEC Algorithm Recommendation Update Process"
+    url: "https://www.rfc-editor.org/rfc/rfc9904.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2025-11"
+    obsoletes: "rfc:8624"
+    text_fragments:
+      "3": "text=algorithm%20implementation%20requirements,MUST%20implement"
+
+  - id: "rfc:8078"
+    type: rfc
+    title: "Managing DS Records from the Parent via CDS/CDNSKEY"
+    url: "https://www.rfc-editor.org/rfc/rfc8078.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2017-03"
+    text_fragments:
+      "3": "text=The%20CDS%20and%20CDNSKEY%20resource%20records"
+      "4": "text=algorithm%200,delete%20the%20DS,at%20the%20parent"
+
+  - id: "rfc:8659"
+    type: rfc
+    title: "DNS Certification Authority Authorization (CAA) Resource Record"
+    url: "https://www.rfc-editor.org/rfc/rfc8659.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2019-11"
+    text_fragments:
+      "4": "text=The%20following%20property%20tags%20are%20defined,issue%20and%20issuewild"
+      "4.2": "text=issuewild,authorization%20to%20issue%20wildcard%20certificates"
+      "4.3": "text=iodef,report%20certificate%20issue%20requests"
+      "4.4": "text=Property%20tags%20with,SHALL%20be%20silently%20ignored"
+
+  - id: "rfc:8162"
+    type: rfc
+    title: "Using Secure DNS to Associate Certificates with Domain Names for S/MIME"
+    url: "https://www.rfc-editor.org/rfc/rfc8162.html"
+    status: experimental
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2017-05"
+    text_fragments:
+      "2": "text=The%20SMIMEA%20RR,associate%20a%20certificate"
+
+  - id: "rfc:7929"
+    type: rfc
+    title: "DNS-Based Authentication of Named Entities (DANE) Bindings for OpenPGP"
+    url: "https://www.rfc-editor.org/rfc/rfc7929.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2016-08"
+    text_fragments:
+      "2": "text=The%20OPENPGPKEY%20DNS%20resource%20record"
+
+  - id: "rfc:9460"
+    type: rfc
+    title: "Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)"
+    url: "https://www.rfc-editor.org/rfc/rfc9460.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2023-11"
+    text_fragments:
+      "2": "text=The%20SVCB%20DNS%20RR%20type,service%20binding"
+      "9": "text=The%20HTTPS%20RR,SVCB-compatible%20RR%20type"
+
+  - id: "rfc:9461"
+    type: rfc
+    title: "Service Binding Mapping for DNS Servers"
+    url: "https://www.rfc-editor.org/rfc/rfc9461.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2023-11"
+    text_fragments:
+      "2": "text=DNS%20server%20operators,SVCB%20records"
+
+  - id: "rfc:6962"
+    type: rfc
+    title: "Certificate Transparency"
+    url: "https://www.rfc-editor.org/rfc/rfc6962.html"
+    status: experimental
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2013-06"
+    text_fragments:
+      "": "text=Certificate%20Transparency%20aims%20to%20mitigate,publicly%20auditable"
+
+  - id: "rfc:7483"
+    type: rfc
+    title: "JSON Responses for the Registration Data Access Protocol (RDAP)"
+    url: "https://www.rfc-editor.org/rfc/rfc7483.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2015-03"
+    text_fragments:
+      "3": "text=JSON%20data%20structures,Registration%20Data"
+
+  - id: "rfc:1912"
+    type: rfc
+    title: "Common DNS Operational and Configuration Errors"
+    url: "https://www.rfc-editor.org/rfc/rfc1912.html"
+    status: informational
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "1996-02"
+    text_fragments:
+      "2.2": "text=The%20SOA%20record,expire%20interval"
+
+  - id: "rfc:2181"
+    type: rfc
+    title: "Clarifications to the DNS Specification"
+    url: "https://www.rfc-editor.org/rfc/rfc2181.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "1997-07"
+    text_fragments:
+      "5.2": "text=It%20is%20however%20possible,multiple%20RRsets"
+      "8": "text=TTLs%20of%20all%20RRs%20in%20an%20RRSet%20must%20be%20the%20same"
+
+  - id: "rfc:2308"
+    type: rfc
+    title: "Negative Caching of DNS Queries (DNS NCACHE)"
+    url: "https://www.rfc-editor.org/rfc/rfc2308.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "1998-03"
+    text_fragments:
+      "5": "text=negative%20caching,reduce%20the%20DNS%20traffic"
+
+  # ── Web & AI Governance RFCs ──
+  - id: "rfc:9309"
+    type: rfc
+    title: "Robots Exclusion Protocol"
+    url: "https://www.rfc-editor.org/rfc/rfc9309.html"
+    status: standards-track
+    functional_area: web-governance
+    publisher: IETF
+    date: "2022-09"
+    text_fragments:
+      "2": "text=A%20robots.txt%20file,crawlers%20and%20other%20automated%20agents"
+
+  - id: "rfc:8615"
+    type: rfc
+    title: "Well-Known Uniform Resource Identifiers (URIs)"
+    url: "https://www.rfc-editor.org/rfc/rfc8615.html"
+    status: standards-track
+    functional_area: web-governance
+    publisher: IETF
+    date: "2019-05"
+    text_fragments:
+      "3": "text=well-known%20URIs,/.well-known/"
+
+  # ── Miscellaneous RFCs ──
+  - id: "rfc:9116"
+    type: rfc
+    title: "A File Format to Aid in Security Vulnerability Disclosure"
+    url: "https://www.rfc-editor.org/rfc/rfc9116.html"
+    status: standards-track
+    functional_area: miscellaneous
+    publisher: IETF
+    date: "2022-04"
+    text_fragments:
+      "2": "text=security.txt,well-known%20URI"
+
+  - id: "rfc:1392"
+    type: rfc
+    title: "Internet Users' Glossary"
+    url: "https://www.rfc-editor.org/rfc/rfc1392.html"
+    status: informational
+    functional_area: miscellaneous
+    publisher: IETF
+    date: "1993-01"
+    text_fragments:
+      "": "text=Internet%20Users%27%20Glossary"
+
+  - id: "rfc:8767"
+    type: rfc
+    title: "Serving Stale Data to Improve DNS Resiliency"
+    url: "https://www.rfc-editor.org/rfc/rfc8767.html"
+    status: standards-track
+    functional_area: dns-infrastructure
+    publisher: IETF
+    date: "2020-03"
+    text_fragments:
+      "4": "text=serve%20stale%20data,improve%20DNS%20resiliency"
+
+  # ── IETF Active Drafts ──
+  - id: "draft:dmarcbis"
+    type: draft
+    title: "DMARC Protocol Updates"
+    url: "https://datatracker.ietf.org/doc/draft-ietf-dmarc-dmarcbis/"
+    status: active-draft
+    functional_area: email-authentication
+    publisher: IETF
+    date: "2024"
+
+  - id: "draft:aipref-attach"
+    type: draft
+    title: "Content-Usage Directive"
+    url: "https://datatracker.ietf.org/doc/draft-ietf-aipref-attach/"
+    status: active-draft
+    functional_area: web-governance
+    publisher: IETF
+    date: "2024"
+
+  # ── NIST Standards ──
+  - id: "nist:800-177"
+    type: standard
+    title: "Trustworthy Email (Rev 1)"
+    url: "https://csrc.nist.gov/publications/detail/sp/800-177/rev-1/final"
+    status: final
+    functional_area: email-authentication
+    publisher: NIST
+    date: "2019-02"
+
+  - id: "nist:800-53"
+    type: standard
+    title: "Security and Privacy Controls for Information Systems and Organizations (Rev 5)"
+    url: "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final"
+    status: final
+    functional_area: security
+    publisher: NIST
+    date: "2020-09"
+
+  - id: "nist:fips-202"
+    type: standard
+    title: "SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions"
+    url: "https://csrc.nist.gov/publications/detail/fips/202/final"
+    status: final
+    functional_area: cryptography
+    publisher: NIST
+    date: "2015-08"
+
+  # ── ODNI Directives ──
+  - id: "odni:icd-203"
+    type: directive
+    title: "Analytic Standards (Intelligence Community Directive 203)"
+    url: "https://www.dni.gov/files/documents/ICD/ICD-203-Analytic-Standards.pdf"
+    status: active
+    functional_area: intelligence
+    publisher: ODNI
+    date: "2015-01"
+
+  # ── ISO Standards ──
+  - id: "iso:25012"
+    type: standard
+    title: "ISO/IEC 25012:2008 — Data Quality Model"
+    url: "https://www.iso.org/standard/35749.html"
+    status: published
+    functional_area: data-quality
+    publisher: ISO
+    date: "2008"
+
+  # ── CISA Directives ──
+  - id: "cisa:bod-18-01"
+    type: directive
+    title: "Binding Operational Directive 18-01: Enhance Email and Web Security"
+    url: "https://www.cisa.gov/news-events/directives/bod-18-01-enhance-email-and-web-security"
+    status: active
+    functional_area: compliance
+    publisher: CISA
+    date: "2017-10"
+
+  # ── FIRST Standards ──
+  - id: "first:tlp-2.0"
+    type: standard
+    title: "Traffic Light Protocol (TLP) Version 2.0"
+    url: "https://www.first.org/tlp/"
+    status: active
+    functional_area: information-sharing
+    publisher: FIRST
+    date: "2022"
+
+  - id: "first:cvss-3.1"
+    type: standard
+    title: "Common Vulnerability Scoring System Version 3.1"
+    url: "https://www.first.org/cvss/v3.1/specification-document"
+    status: active
+    functional_area: vulnerability-scoring
+    publisher: FIRST
+    date: "2019"
+
+  # ── CA/Browser Forum ──
+  - id: "cabforum:sc-067"
+    type: standard
+    title: "Ballot SC-067: Multi-Perspective Issuance Corroboration (MPIC)"
+    url: "https://cabforum.org/working-groups/server/ballot-sc-067/"
+    status: adopted
+    functional_area: certificate-issuance
+    publisher: CA/Browser Forum
+    date: "2024"
+
+  # ── Quality Gate Authorities ──
+  - id: "google:lighthouse"
+    type: tool
+    title: "Google Lighthouse"
+    url: "https://pagespeed.web.dev"
+    status: active
+    functional_area: quality-gate
+    publisher: Google
+
+  - id: "mozilla:observatory"
+    type: tool
+    title: "Mozilla Observatory"
+    url: "https://observatory.mozilla.org"
+    status: active
+    functional_area: quality-gate
+    publisher: Mozilla
+
+  # ── Data Sources ──
+  - id: "source:team-cymru"
+    type: data-source
+    title: "Team Cymru IP-to-ASN Mapping"
+    url: "https://www.team-cymru.com"
+    status: active
+    functional_area: infrastructure
+    publisher: Team Cymru
+
+  - id: "source:openphish"
+    type: data-source
+    title: "OpenPhish Phishing Feed"
+    url: "https://openphish.com"
+    status: active
+    functional_area: threat-intelligence
+    publisher: OpenPhish
+
+  - id: "source:securitytrails"
+    type: data-source
+    title: "SecurityTrails Historical DNS"
+    url: "https://securitytrails.com"
+    status: active
+    functional_area: historical-dns
+    publisher: SecurityTrails
+
+  - id: "source:crt-sh"
+    type: data-source
+    title: "crt.sh Certificate Transparency Log Search"
+    url: "https://crt.sh"
+    status: active
+    functional_area: certificate-transparency
+    publisher: Sectigo
+
+  - id: "source:iana-rdap"
+    type: data-source
+    title: "IANA RDAP (Registration Data Access Protocol)"
+    url: "https://rdap.org"
+    status: active
+    functional_area: domain-registration
+    publisher: IANA
+
+  - id: "source:ip-api"
+    type: data-source
+    title: "ip-api.com Geolocation"
+    url: "https://ip-api.com"
+    status: active
+    functional_area: geolocation
+    publisher: ip-api.com
+
+  - id: "source:farsight-dnsdb"
+    type: data-source
+    title: "Farsight DNSDB Passive DNS"
+    url: "https://www.farsightsecurity.com/solutions/dnsdb/"
+    status: active
+    functional_area: passive-dns
+    publisher: Farsight Security
+
+  - id: "source:openintel"
+    type: data-source
+    title: "OpenINTEL DNS Measurement Dataset"
+    url: "https://openintel.nl"
+    status: active
+    functional_area: dns-measurement
+    publisher: University of Twente / SIDN
+
+  - id: "source:dnsperf"
+    type: data-source
+    title: "DNSPerf Resolver Performance Testing"
+    url: "https://www.dnsperf.com"
+    status: active
+    functional_area: dns-performance
+    publisher: DNSPerf
+
+  - id: "source:ietf-datatracker"
+    type: data-source
+    title: "IETF Datatracker RFC Metadata"
+    url: "https://datatracker.ietf.org/"
+    status: active
+    functional_area: standards-metadata
+    publisher: IETF
+
+  - id: "source:cisa-ncats"
+    type: data-source
+    title: "CISA NCATS Cyber Hygiene IP List"
+    url: "https://rules.ncats.cyber.dhs.gov/all.txt"
+    status: active
+    functional_area: scanner-detection
+    publisher: CISA
+
+  # ── Proprietary/Community Directives ──
+  - id: "community:llmstxt"
+    type: community-spec
+    title: "llms.txt — LLM Access Specification"
+    url: "https://llmstxt.org"
+    status: community-convention
+    functional_area: web-governance
+    publisher: llmstxt.org
+
+  - id: "vendor:content-signal"
+    type: proprietary
+    title: "Content-Signal (Cloudflare)"
+    url: "https://contentsignals.org"
+    status: proprietary
+    functional_area: web-governance
+    publisher: Cloudflare
+
+  # ── Added on port to calibration-scope (2026-07-26; see CITATIONS.md) ──
+  - id: "nasa:std-7009a"
+    type: standard
+    title: "NASA-STD-7009A — Standard for Models and Simulations"
+    url: "https://standards.nasa.gov/standard/NASA/NASA-STD-7009"
+    status: active
+    functional_area: quality-gate
+    publisher: NASA
+    date: "2016-12"
+
+  - id: "grade"
+    type: framework
+    title: "GRADE — Grading of Recommendations, Assessment, Development and Evaluations"
+    url: "https://www.gradeworkinggroup.org/"
+    status: active
+    functional_area: quality-gate
+    publisher: "GRADE Working Group"
+    date: "2004"
