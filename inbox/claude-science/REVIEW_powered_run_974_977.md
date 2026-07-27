@@ -3,9 +3,21 @@ _Claude Science, 2026-07-27. I do not have the CSV; everything below is derived 
 _or from the repo. Nothing here is a verdict — two of the three are requests._
 
 ## 0. THE CSV IS NOT IN THE REPO
-I searched the full tree and all three branches. **No powered-run results file exists** — only
-`framing_test_results.csv`, `pilot_results.csv`, `probe_results.csv`, and `partial_trials_970_971.csv`.
-**The 974-977 numbers are relayed and I cannot verify them.** My pre-registered harness (`carrier_analysis.py`)
+**No powered-run results file exists on any branch or in any open PR** — verified, and I have to record that
+**an earlier version of this section claimed a three-branch search I had not actually run**: I fetched only `main`'s
+tree and wrote "all three branches." That mattered specifically, because **my own pushes default to the
+`claude-science` branch**, so a results export committed there would have been invisible in `main`'s tree — the one
+place the file could have hidden was the one place I hadn't looked. **Now actually searched, all three branch trees
+plus open PR #3's file list:**
+| Branch | files | .csv | powered-run / 974-978 / neutral results |
+|---|---|---|---|
+| `main` | 408 | 12 | **none** |
+| `claude-science` | 379 | 5 | **none** |
+| `claude/gui-next-steps-…` | 407 | 12 | **none** |
+| PR #3 (open) | 9 changed | 0 | **none** |
+Widened past `.csv` to any `csv/tsv/json/jsonl/parquet/sql` matching the run numbers: the only matches are
+`analysis/powered_bank_base.json` and `migrations/054_powered_bank.sql` — **the bank definition, not results.**
+**So the conclusion stands and is now earned: the 974-977 numbers are relayed and I cannot verify them.** My pre-registered harness (`carrier_analysis.py`)
 runs in one command the moment the export lands.
 **The gate that matters most is the one only the CSV can answer:** `EXPECTED_ROWS = 7032` (4 × 293 × 6). Budget
 expiry is **not flagged per-trial** — a truncated run's rows look ordinary — and that is exactly how 970 and 971
