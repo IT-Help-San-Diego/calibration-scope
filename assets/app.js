@@ -4653,7 +4653,10 @@ function hcRenderScience(rows) {
     // Comparison: same families, every subject that attempted them — one
     // schema, both subject kinds; that is the whole point of the view.
     if (cmpSec && cmpEl) {
-        const famKey = x => `${x.family_name}|${x.axis}`;
+        // Group on family_root_id — the binding key — never the display
+        // name (review catch: NULL/colliding family_name mis-groups; same
+        // rule as test_id vs test name, and subject_id vs subject_name).
+        const famKey = x => (x.family_root_id != null ? "id:" + x.family_root_id : "name:" + (x.family_name || "?")) + "|" + (x.axis || "");
         const famSet = new Set(mine.map(famKey));
         const models = rows.filter(x => x.subject_kind === "model" && famSet.has(famKey(x)));
         if (!models.length) {

@@ -169,6 +169,45 @@ pub async fn start_session(
     }))
 }
 
+// ── Run-ownership guard ───────────────────────────────────────────────────
+
+/// The run must exist and belong to this participant. With
+/// `must_be_running`, it must also not be sealed yet. Errors name the real
+/// condition — "not found", "belongs to another subject", "already sealed" —
+/// because a wrong 404 here would be the instrument stating a falsehood.
+async fn verify_run_owner(
+    state: &AppState,
+    run_id: i32,
+    participant_id: i32,
+    must_be_running: bool,
+) -> AppResult<()> {
+    #[derive(sqlx::FromRow)]
+    struct RunOwner {
+        participant_id: Option<i32>,
+        status: String,
+    }
+    let run: Option<RunOwner> =
+        sqlx::query_as(r#"SELECT participant_id, status FROM test_runs WHERE id = $1"#)
+            .bind(run_id)
+            .fetch_optional(&state.db)
+            .await?;
+    let Some(run) = run else {
+        return Err(AppError::Executor(format!("run {run_id} not found")));
+    };
+    if run.participant_id != Some(participant_id) {
+        return Err(AppError::Executor(format!(
+            "run {run_id} does not belong to participant {participant_id}"
+        )));
+    }
+    if must_be_running && run.status != "running" {
+        return Err(AppError::Executor(format!(
+            "run {run_id} is not accepting answers (status: {})",
+            run.status
+        )));
+    }
+    Ok(())
+}
+
 // ── Submit a single answer ────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]
@@ -195,9 +234,15 @@ pub struct AnswerResult {
 
 pub async fn submit_answer(
     State(state): State<AppState>,
-    Path(_participant_id): Path<i32>,
+    Path(participant_id): Path<i32>,
     Json(req): Json<SubmitAnswer>,
 ) -> AppResult<Json<AnswerResult>> {
+    // The run must belong to the participant in the path and still be
+    // running — a guessed run_id must not write trials into another
+    // participant's run or a model run (review catch), and answers must
+    // not append after the seal.
+    verify_run_owner(&state, req.run_id, participant_id, true).await?;
+
     // Fetch the test to get expected_result + scoring_method + name
     #[derive(sqlx::FromRow)]
     struct TestRow {
@@ -278,9 +323,16 @@ pub struct SessionResult {
 
 pub async fn finish_session(
     State(state): State<AppState>,
-    Path(_participant_id): Path<i32>,
+    Path(participant_id): Path<i32>,
     Json(req): Json<FinishSession>,
 ) -> AppResult<Json<SessionResult>> {
+    // Same ownership guard as submit_answer — without it a stray run_id
+    // would recompute and RESEAL an arbitrary run, including a model run.
+    // Re-finishing an already-sealed participant run is allowed (the
+    // recompute is deterministic, the reseal identical), so a client retry
+    // after a dropped response does not error.
+    verify_run_owner(&state, req.run_id, participant_id, false).await?;
+
     // Recompute pass_count / total_count from the trial_results.
     #[derive(sqlx::FromRow)]
     struct Counts {
