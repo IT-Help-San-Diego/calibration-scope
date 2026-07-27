@@ -30,8 +30,15 @@ machine — which is a real result and is not the human-attribution claim the th
 > Temperature was fixed at 0 and speculative decoding was off in both arms.
 > **What this does and does not establish.** It is evidence that a carrier can change a verdict on identical
 > content in an artificial reasoner. It is **not** a test of the prediction stated above — that anonymized versus
-> attributed evaluations diverge in *humans* — which remains unrun. One model, one item bank, one truncated run,
-> and a residual mechanical alternative not yet excluded (see the repository log). The status above is unchanged.
+> attributed evaluations diverge in *humans* — which remains unrun. One model, one item bank, one truncated run.
+> The status above is unchanged.
+> **On the obvious objection — that the carrier is simply *longer* text.** An earlier run measured the same
+> arguments under four different carriers and the effect does not order by length: a deliberately compressed
+> poetic carrier produced the *least* distortion (97.1%) while a flattery carrier produced the *most*
+> (91.2%, tied with a formal-notation carrier). A mechanism driven by token count cannot produce that ordering.
+> **The variance result specifically — that one carrier removed the model's uncertainty rather than merely
+> shifting its accuracy — is reported here as a single-carrier observation**; whether every carrier does this is
+> a separate question and is not claimed.
 
 ## 2. PROPOSED `DECISIONS.md` EDIT — `DRAFT_10_8_update.md` as written, with §D intact
 The §10.8 draft already carries the full bound list. **Do not trim §D for the repo copy.** The two items most
