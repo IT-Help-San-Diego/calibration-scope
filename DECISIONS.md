@@ -1052,6 +1052,150 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
 - Human-cal (043) + Manual Subject Mode (§14) + API executor are three channel implementations of one abstraction.
 - The Witness artifact spec is new work (Claude Code lane, when ready).
 - The wording audit is a live work item: every public surface must be checked against the mission sentence.
+  - **2026-07-26 (Claude Code): README front door installed.** The lead, "why"
+    paragraph, capability demotion ("Runs against local models (LM Studio) and
+    cloud endpoints"), and the cognitive-scientist thread line are taken from
+    `inbox/claude-science/COPY_founding_thesis_stated_vs_actual.md` (2026-07-25,
+    closes STORY_CONSISTENCY_AUDIT Findings 1–2 for the README). The
+    crosswalk link anchors to §10.13 (the verified record) because
+    `ontology_crosswalk.json` is not committed to this repo.
+  - **2026-07-26 (Claude Code, same PR): Rung 1 shipped.** `page-onboard`
+    (first-run continuity test) on the dashboard: three-step ladder over
+    existing endpoints only (`/api/status`, `/api/lmstudio/status`,
+    `POST /api/prompt-check`), non-battery OHM stimulus, failure states as
+    first-class cards with next actions, zero credentials. The 2×3
+    SILICON/CARBON × LOCAL/CLOUD/MANUAL diagram ships inline there — the
+    golden-ratio commitment is now built on a real surface (public copy may
+    scope a phi claim to it once merged/deployed, per story-audit Finding 3).
+    Browser-verified against a mocked backend: green path + LM-Studio-down +
+    no-model-loaded, console clean. Bug found by the restore path during
+    verification (TDZ on a mid-file showPage call) fixed at the source. Side
+    fix: 'human-cal' was absent from the PAGES array — its tab hid every
+    page and displayed nothing; added.
+    - **Adversarial verification round (3 independent verifiers), fixes
+      applied same day:** (1) the page was UNREACHABLE in Focused mode —
+      the first-visit default — because the only entry lived inside the
+      hero that Focused hides, and mode restore force-switched to
+      benchmark; fixed with a "First Run" tab (both modes) + restore
+      exemption. (2) Generation counter so stale in-flight async (beep or
+      channel probe) can never overwrite a newer ladder state or
+      double-fire. (3) Beep timer leak on body-read failure — try/finally.
+      (4) Silent registry fallback REMOVED: a wrong pick could 404 or
+      JIT-load a multi-GB model; no-match is now a first-class state.
+      (5) OHM grading tolerates symmetric wrappers ("**OHM**", quotes).
+      (6) aria-live on ladder/result, retry links are real buttons,
+      step titles are h3s. Reload-persistence in Focused re-verified live.
+    - **2026-07-26 (Claude Code, same PR): Rung 2 shipped.** Model Picker
+      page + `src/routes/picker.rs`: battery served without the key,
+      grading server-side, 6 unit tests on the
+      floors (items 1/5 individually disqualifying verified in code).
+      Battery ported verbatim from the CS drop; the UI renders the caveat,
+      bands not scores, format failure as its own verdict, and points at
+      verified_configs.json instead of recommending any model. Reload-
+      restore bug in the Rung 1 generation counter (obGen undefined at
+      mid-file restore → NaN → ladder stuck at "Checking…") caught by
+      Copilot review and fixed by moving the onboarding globals above the
+      restore point; regression-asserted in the browser test.
+    - **2026-07-26 (Claude Code, same PR): Rung 3 shipped — the keystone
+      wizard.** `page-wizard`, three questions on one page; all six
+      subject×channel cells resolve honestly (live-registry model lists,
+      no-key and schema-ready as first-class states, carbon×local routes to
+      human-cal); Run arms the Focused workspace and fires the same
+      /api/runs path as the workspace button — one run machinery, one
+      schema, honest channel provenance. focusedPickSubject with no prior
+      pick now walks the wizard instead of the model grid (§15: the wizard
+      replaces the picker as Focused's default entry); Deep keeps the grid.
+      Onboarding is now Rung 1 ✓ Rung 2 ✓ Rung 3 ✓ — the three-rung
+      first-run flow designed by Claude Science 2026-07-25 is fully built.
+    - **2026-07-26 (Claude Code): Rung 3 hardened; channel-provenance
+      overclaim corrected — our own stated-vs-actual gap again, caught by
+      the adversarial pass.** The wizard's copy claimed channel provenance
+      in present tense on four surfaces, but the runs schema has NO channel
+      column — §14's migration/ingest (Hermes lane) are unbuilt; only
+      subject provenance (participant_id, migration 043) is live. All four
+      surfaces now say "designed (§14), not yet built." Also fixed:
+      clean-room enforcement in wzRun (the MODE select could silently turn
+      the wizard's run scaffolded/paired), Deep-mode silent-run (wizard now
+      finishes in Focused), focusedRun 400s rendering as empty success
+      (pre-existing, now fails loudly), instrument-down misdiagnosed as
+      no-key, color-only selection (aria-pressed + check mark), missing
+      aria-live, spec-pair stale reset, and a no-run grid escape hatch.
+      All re-verified in a live browser incl. MODE-tamper test. Follow-up
+      a11y note for the sweep: ALL top-nav tabs are clickable divs without
+      keyboard focus — the new First Run tab got role/tabindex/keydown
+      (it is the new-user entry point); the other nine tabs share the gap
+      and should be fixed together (Hawking standard).
+    - **2026-07-26 (Claude Code): Rung 2 secrecy claim corrected — our own
+      stated-vs-actual gap, caught by Copilot review.** The picker docs
+      claimed "the answer key never reaches page source" while the grade
+      response carried a per-item `key` field the UI displayed — and with
+      binary items, per-item correctness determines the key regardless; the
+      battery + key are also public in the repo. Correction applied as the
+      discipline demands: the claim is now scoped to what is true (key not
+      in the page bundle; grading server-authoritative; the picker is a
+      screener, not a blind instrument — blindness lives in the real
+      battery), the redundant `key` field was removed from the response and
+      UI, and grade() gained a length guard + unit test (7 total).
+    - **2026-07-26 (Claude Code, same PR): Witness Artifact Generator
+      shipped (§15 Oscent item 2).** GET /api/runs/:id/witness renders a
+      sealed run as a self-contained zero-JS certificate — one inline SVG,
+      presentation attributes only (CSP-proof anywhere, file:// included),
+      portrait golden-ratio construction self-described in its footer (the
+      second shipped φ surface). No witness without a seal; counts raw;
+      "demonstrates; does not rank"; channel labeled derived pending §14.
+      Witness link added beside the evidence-bundle export in run detail.
+    - **2026-07-26/27 (Claude Code): RELAY TO HERMES (f) — the CI Lighthouse
+      perf gate is the project's own small-N lesson applied to itself.** The
+      dashboard job gates performance at 85 from ONE Lighthouse run on an
+      SSE page. Observed readings across near-identical code in one day:
+      64 (fail), several ≥85 passes, 78 (fail) — including a red on a
+      commit whose only change was a one-line div→button swap. The page's
+      true score straddles the threshold and a single run cannot resolve
+      it — the same reason the pilot's ceiling classifier moved to ≥8
+      trials. Suggested fix (ci.yml, Hermes lane): median of 3 Lighthouse
+      runs, or gate on the median with the spread printed. Until then,
+      isolated perf-gate reds on doc-only or one-line commits should be
+      re-measured, not chased.
+    - **Backend findings from the same pass — RELAY TO HERMES (its lane,
+      recorded not patched):** (a) lmstudio_sync's UPDATE path sets
+      lmstudio_key but never rewrites `key`, so after a model rename/dedup
+      the registry key permanently differs from the loaded id and Sync
+      Local cannot restore an exact match; fetch_unique_models also does
+      not serialize lmstudio_key, so no client can match on it (the
+      existing filter at app.js:~3426 is already dead code). (b) The sync
+      canonicalization branch is a no-op (the gguf-filename candidate can
+      never contain '/'), so key = loaded-id holds today only by accident.
+      (c) models_handler swallows DB errors into a 200 empty list —
+      indistinguishable from an unsynced registry. (d) Migration 008 seeds
+      an active location='local' row (hermes-3-llama-3.1-8b,
+      lmstudio_key NULL) that the deactivation loop never touches, so
+      fresh installs permanently carry a phantom local model. (e)
+      annotate_runnable (events.rs) calls resolve_api_key with config
+      hardwired to None, and resolve_api_key has no env/config fallback
+      for any provider except nous — so openrouter/openai/gemini rows are
+      permanently runnable=false even when the key IS configured and the
+      real run path would succeed. The events.rs comment claims it asks
+      "the EXACT function the executor calls"; it doesn't. This makes any
+      runnable-filtered cloud list (the wizard's silicon×cloud path, the
+      old picker) a dead end for non-Nous providers.
+  - **2026-07-26 (Claude Code, same PR, later commit): site index + dashboard
+    landing installed too.** Site hero sub now leads with the stated-vs-actual
+    copy (text nodes only — style block untouched, hashes unchanged, verified
+    console-clean in a live browser); dashboard hero + meta/og/twitter moved
+    off "benchmarking"/"LLM capability verification" identity. Also removed
+    the site's one console violation (an inert `style="cursor:pointer"`
+    refused by the hash CSP); `site/lessons.html` still carries 26 inert
+    `style=` attributes inside inlined sealed-comic markup — left for the
+    deploy-coordinated pass. Still open in the audit: lessons headers,
+    DECISIONS preamble (checked — no benchmark voice, left as is),
+    SCISPACE_PACKAGE.md ("benchmark" voice, unhedged superlatives), and the
+    README's "90-test battery" figure, which needs sealed-run provenance per
+    PUBLIC_REPO_embarrassment_scan SEV3 before it can stay. Hash-naming
+    convention for the sweep (set 2026-07-26, README first): the family in
+    prose is **SHA-3** (NIST spelling); concrete algorithm identifiers stay
+    **SHA3-512 / SHA3-256** because they match the literal sealed hash
+    strings (`sha3-512:...`). Sealed surfaces (lessons, comics) are exempt
+    until a re-seal is otherwise required.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)

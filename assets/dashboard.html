@@ -21,17 +21,17 @@
 <meta charset="UTF-8">
 <title>Calibration Scope — Intelligence Topology</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Calibration Scope: a local-first benchmarking instrument that measures what AI models actually do — reasoning, vision, tool use, prompt-injection resistance — with ground-truth tests, N=3 trials, and SHA3-sealed evidence. Local and cloud models verified against identical stimuli, then matched back and forth. Made by IT Help San Diego Inc. / the Intellectual Resistance.">
+<meta name="description" content="Calibration Scope: a local-first instrument that measures the gap between what a system states and what is actually true — reasoning, vision, tool use, prompt-injection resistance — with ground-truth tests, N=3 trials, and SHA-3-sealed evidence. Local and cloud models verified against identical stimuli, then matched back and forth. Made by IT Help San Diego Inc. / the Intellectual Resistance.">
 <meta name="author" content="IT Help San Diego Inc. — Carey James Balboa">
 <meta name="keywords" content="AI benchmark, local LLM, LM Studio, model evaluation, reasoning test, vision test, Carrier Color, Owl Semaphore, Verification Principle, Intellectual Resistance, IT Help San Diego">
 <!-- Open Graph — structured honest self-description for any indexer (web or AI) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Calibration Scope — Intelligence Topology">
-<meta property="og:description" content="Local-first AI benchmarking: measure what models actually do (reasoning, vision, tools, security) with ground-truth tests and SHA3-sealed evidence. Local + cloud, identical stimuli, cross-referenced.">
+<meta property="og:description" content="Local-first measurement: what does the system state, and what is actually true? Reasoning, vision, tools, security — ground-truth tests, SHA-3-sealed evidence. Local + cloud, identical stimuli, cross-referenced.">
 <meta property="og:site_name" content="Calibration Scope">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Calibration Scope — Intelligence Topology">
-<meta name="twitter:description" content="Local-first AI benchmarking: measure what models actually do with ground-truth tests and SHA3-sealed evidence.">
+<meta name="twitter:description" content="Local-first measurement: the gap between what a system states and what is actually true — ground-truth tests, SHA-3-sealed evidence.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23d4af37'/%3E%3C/svg%3E">
 <link rel="preload" as="image" href="/assets/brain/hero-brain-realistic.webp" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="/assets/app.min.css">
@@ -69,6 +69,8 @@
   <button id="a11y-toggle" class="tab" onclick="toggleA11y()" title="High-contrast / large-text mode" style="cursor:pointer;">Readable: Off</button>
 
   <div class="tab" onclick="showPage('setup')" id="tab-setup">Setup</div>
+  <span class="nav-arrow">→</span>
+  <button class="tab" onclick="showPage('onboard')" id="tab-onboard" title="60-second continuity test — zero credentials, nothing to interpret">First Run</button>
   <span class="nav-arrow">→</span>
   <div class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">Benchmark</div>
   <span class="nav-arrow">→</span>
@@ -276,9 +278,12 @@
   <div class="landing-hero" id="landing-hero">
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:96px;margin-bottom:var(--fib-4);position:relative;filter:drop-shadow(0 0 20px rgba(212,168,83,0.3)) drop-shadow(0 0 40px rgba(212,168,83,0.15));animation:owlPulse 4s ease-in-out infinite" onerror="this.style.display='none'">
     <div class="landing-hero-title">Calibration Scope</div>
-    <div class="landing-hero-sub">Scientific LLM capability verification — test what your models can actually do, on your hardware, with evidence you can audit. Blind testing, clean-room execution, SHA-3 provenance.</div>
+    <div class="landing-hero-sub">Measure the gap between what a system <em>states</em> and what is <em>actually</em> true — any subject, any substrate, on your hardware, with evidence you can audit. Blind testing, clean-room execution, SHA-3 provenance.</div>
     <div style="margin-top:var(--fib-3);position:relative">
       <span class="reality-badge" id="landing-reality-badge">Checking your hardware...</span>
+    </div>
+    <div style="margin-top:var(--fib-4);position:relative">
+      <button class="btn btn-primary" id="landing-firstrun-btn" onclick="showPage('onboard')">First run? 60-second continuity test →</button>
     </div>
     <div style="margin-top:var(--fib-3);font-size:11px;color:var(--text-muted);position:relative">
       <span style="font-family:var(--font-mono)">local.calibrationscope.com:8768</span>
@@ -309,7 +314,7 @@
      open and double-clicked Run" communication gap. -->
 <div id="run-active-banner" style="display:none;position:sticky;top:0;z-index:50;background:linear-gradient(90deg,rgba(56,189,248,0.16),rgba(212,168,83,0.10));border-bottom:1px solid var(--accent-cyan);color:var(--text-primary);font:12px/1.4 var(--font-mono);padding:7px 24px;align-items:center;gap:8px;">
   <span style="color:var(--accent-cyan);font-weight:800;">● RUN ACTIVE</span>
-  <span id="run-active-text">A benchmark run is in progress — streaming to all open dashboards. Starting another run queues behind it (no conflict).</span>
+  <span id="run-active-text">A measurement run is in progress — streaming to all open dashboards. Starting another run queues behind it (no conflict).</span>
 </div>
 
 <!-- ═══ Resident roster — what is LOADED in RAM right now (silicon presence).
@@ -1001,6 +1006,115 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
   </div>
 </div>
 <!-- ============ /PAGE: Human Calibration ============ -->
+
+<!-- ============ PAGE: First-run onboarding (Rung 1 — continuity test) ============
+     Handoff item 0.5: ONE known-good round trip, ~60 s, zero credentials.
+     Failure states are first-class outputs with a specific next action.
+     The ladder renders entirely from obLoad() so every state shows live data. -->
+<div class="page" id="page-onboard" style="display:none;">
+  <div class="ob-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🔌 First run — continuity test</div>
+      <div class="setup-hero-sub">Sixty seconds, zero credentials. A multimeter beep, not a benchmark: it proves the instrument, the channel, and one round trip. The green check needs no interpretation.</div>
+      <div style="margin-top:var(--fib-2)"><button class="btn-link" onclick="showPage('picker')">Rung 2: Model Picker — worth a full run? →</button> · <button class="btn-link" onclick="showPage('wizard')">Rung 3: set up a real run →</button></div>
+    </div>
+    <div id="ob-ladder" aria-live="polite">
+      <div class="ob-step" id="ob-step-1"></div>
+      <div class="ob-step" id="ob-step-2"></div>
+      <div class="ob-step" id="ob-step-3"></div>
+    </div>
+    <div id="ob-result" aria-live="polite"></div>
+    <div class="ob-diagram">
+      <img src="/assets/onboarding-2x3.svg" alt="One instrument, six doors — a 2×3 grid of Subject (SILICON, CARBON) by Channel (LOCAL API, CLOUD API, MANUAL web-chat paste). Four cells are live today; two carbon cells are schema-ready. The manual channel is a first-class measurement path.">
+      <div class="ob-diagram-cap">Where this leads: pick a subject, pick a channel, run the same sealed battery. The wizard for this grid is the next rung.</div>
+    </div>
+  </div>
+</div>
+<!-- ============ /PAGE: First-run onboarding ============ -->
+
+<!-- ============ PAGE: Model Picker (Rung 2 — capability band) ============
+     Handoff item 0.5 Rung 2: a screener, not a ranking. Grading is
+     server-authoritative (/api/picker/grade); the key is not in the page
+     bundle, though the battery itself is public in the repo — blindness
+     belongs to the real battery, not this screener.
+     Item 6 is human-graded against the rubric — the instrument records the
+     call, it does not fake a grader it doesn't have. -->
+<div class="page" id="page-picker" style="display:none;">
+  <div class="ob-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🎚️ Model Picker — worth a full run?</div>
+      <div class="setup-hero-sub" id="pk-caveat">5 items can't rank models — this tells you whether one is worth a full run.</div>
+    </div>
+    <div class="ob-step" id="pk-candidate">
+      <h3 class="ob-step-title">CANDIDATE</h3>
+      <div class="pk-form-row">
+        <label>Model <input type="text" id="pk-model" placeholder="as named in your portal / LM Studio" maxlength="120"></label>
+        <label>Credits this run <input type="text" id="pk-credits" placeholder="from your portal billing — blank for local" maxlength="40"></label>
+      </div>
+    </div>
+    <div class="ob-step" id="pk-stimulus-card">
+      <h3 class="ob-step-title">STIMULUS — paste once to the candidate</h3>
+      <pre class="pk-stimulus" id="pk-stimulus">loading battery…</pre>
+      <div class="ob-data" id="pk-provenance"></div>
+      <button class="btn btn-primary" onclick="pkCopy()">Copy stimulus</button>
+      <button class="btn" id="pk-send-local" onclick="pkSendLocal()">Send to loaded local model</button>
+      <span class="ob-data" id="pk-send-status"></span>
+    </div>
+    <div class="ob-step">
+      <h3 class="ob-step-title">THE MODEL'S REPLY — the evidence record</h3>
+      <textarea id="pk-reply" class="pk-reply" rows="8" placeholder="Paste the candidate's full reply here (auto-filled when sent to the local model). Kept as the record; grading reads your transcription below, not this text."></textarea>
+    </div>
+    <div class="ob-step">
+      <h3 class="ob-step-title">TRANSCRIBE ITEMS 1–5 — exactly as the model answered</h3>
+      <div id="pk-items"></div>
+    </div>
+    <div class="ob-step">
+      <h3 class="ob-step-title">GRADE ITEM 6 — you are the grader; the rubric is the instrument</h3>
+      <div id="pk-rubric"></div>
+    </div>
+    <button class="btn btn-primary" onclick="pkGrade()">Grade against the server-held key</button>
+    <div id="pk-band"></div>
+    <div class="ob-step" id="pk-session-card" style="margin-top:var(--fib-4)">
+      <h3 class="ob-step-title">THIS SESSION — screener results, not verified rows</h3>
+      <div id="pk-session"></div>
+      <div class="ob-data" style="margin-top:var(--fib-2)">Verified rows live in <a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/verified_configs.json" rel="noopener" target="_blank">verified_configs.json</a> — N, pass rate with CI, run hash. One verified row beats six plausible ones; this screener never writes there.</div>
+    </div>
+  </div>
+</div>
+<!-- ============ /PAGE: Model Picker ============ -->
+
+<!-- ============ PAGE: Subject/Channel Wizard (Rung 3 — the keystone UI) ============
+     DECISIONS §15: Focused mode's front door is a three-question flow, not a
+     model grid. Subject → Channel → Battery, then Run. Single page, no modal
+     stack. Every path lands in the same schema with honest channel
+     provenance. Constraint from REASONING_TRACE_and_JSPACE_design.md: if this
+     page ever generates a manual paste pack, the pack must be byte-identical
+     to the API item set — no manual-only "include your thinking" instruction. -->
+<div class="page" id="page-wizard" style="display:none;">
+  <div class="ob-wrap">
+    <div class="setup-hero">
+      <div class="setup-hero-title">🚪 Set up a run — three questions</div>
+      <div class="setup-hero-sub">Subject. Channel. Battery. Every path lands in the same schema — subject provenance is live today; channel provenance is §14 design that lands with the manual-mode build. A kid with LM Studio, a security researcher with a locked-down bot, and a human-cal participant all walk this same door.</div>
+    </div>
+    <div class="ob-step" id="wz-q1">
+      <h3 class="ob-step-title">1 · SUBJECT — what is being measured?</h3>
+      <div class="wz-opts">
+        <button class="wz-opt" id="wz-subj-silicon" onclick="wzSubject('silicon')"><span class="wz-opt-big">SILICON</span><span class="wz-opt-sub">a model — local or cloud</span></button>
+        <button class="wz-opt" id="wz-subj-carbon" onclick="wzSubject('carbon')"><span class="wz-opt-big">CARBON</span><span class="wz-opt-sub">a human — same battery, same seals</span></button>
+      </div>
+    </div>
+    <div class="ob-step" id="wz-q2" style="display:none">
+      <h3 class="ob-step-title">2 · CHANNEL — how does the stimulus reach it?</h3>
+      <div class="wz-opts" id="wz-q2-opts" aria-live="polite"></div>
+    </div>
+    <div class="ob-step" id="wz-q3" style="display:none">
+      <h3 class="ob-step-title" id="wz-q3-title">3 · BATTERY — pick, then Run</h3>
+      <div id="wz-q3-body" aria-live="polite"></div>
+    </div>
+    <div class="ob-data" style="margin-top:var(--fib-3)">The six doors of this grid are drawn on the <button class="btn-link" onclick="showPage('onboard')">First Run page</button>. Prefer the full model grid (multi-select, ⚡ spec pairs)? <button class="btn-link" onclick="showPage('benchmark');focusedPickSubjectViaGrid()">Open it instead</button> — picking there costs no run. Deep mode keeps the grid untouched.</div>
+  </div>
+</div>
+<!-- ============ /PAGE: Subject/Channel Wizard ============ -->
 
 <div class="page" id="page-lmstudio" style="display:none;">
   <div class="setup-wrap">

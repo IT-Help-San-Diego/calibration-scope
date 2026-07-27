@@ -1,4 +1,4 @@
-# HANDOFF to Claude Code — GUI/UX lane (updated 2026-07-22, post-Safari-fix)
+# HANDOFF to Claude Code — GUI/UX lane (updated 2026-07-26)
 
 Your lane is frontend/UX across BOTH surfaces: the local dashboard
 (127.0.0.1:8768) and the public site (calibrationscope.com). State is current
@@ -107,6 +107,21 @@ certificate.
 Backend endpoint: GET /api/runs/:id/witness → generates the artifact HTML.
 Frontend: a "Witness" button on the run detail view (both Focused and Deep).
 
+**SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `src/routes/witness.rs`:
+the certificate is one HTML file whose body is a single inline SVG —
+presentation attributes only, no <style> element, zero JS, zero external
+resources (the 411KB raster owl is replaced by a light geometric owl mark
+to keep self-containment; the φ construction is portrait 1000×1618,
+section at y=618, Fibonacci spacing, self-described in the footer — the
+SECOND shipped golden-ratio surface). Honesty gates: no witness without a
+seal (unsealed runs get a refusal, not a mock-up); counts shown raw with
+"demonstrates; does not rank"; channel labeled DERIVED pending the §14
+column; hostile model keys escaped and clipped (3 unit tests + a
+browser-inspection sample emitter; rendered sample verified in Chromium).
+Frontend: 🪶 Witness link beside the evidence-bundle export on the run
+detail panel (sealed runs only, new tab). v2 when §14 lands: real channel
+field.
+
 ### 3. Wording Audit
 
 Sweep all public surfaces against the mission sentence:
@@ -121,19 +136,62 @@ index, README, lessons headers, DECISIONS preamble. One voice.
 
 ## Open items (pick in order)
 
-0. **§10.9 prose-block downgrade (LAST unhedged carrier-immune instance).**
-   DECISIONS.md §10.9 still asserts the carrier-immunity claim as confirmed
-   fact — bold "Confirmed on BOTH local (nemotron) and cloud (Fable 5)",
-   "100% on EVERY carrier", "above it, carrier-immune" — while §10.16 (40k
-   chars later) documents that exact claim being downgraded as an overclaim.
-   The file contradicts its own correction section. README/lessons/comic/site/
-   mcp.rs were fixed in commit 56762fe7b4; this block survived. Search
-   `carrier-immune` and `100% on EVERY carrier`. Apply the same honest
-   downgrade — not deletion — used on the other surfaces: keep the experiment
-   receipt, but move the bold conclusion under the scoped reading already
-   sitting above it ("endpoints real; capability-vs-substrate unresolved
-   pending the powered run"). Verify with grep: after the edit, the string
-   "carrier-immune" must appear ONLY inside superseded/quoted context.
+**NEXT BUILD for this lane (agreed with Carey 2026-07-26): item 7,
+human-cal UI polish** — per-question timing in the quiz step, a
+carrier-variance bar chart at results, and a human-vs-model comparison
+panel from /api/signal-carrier (returns both subjects in one shape). The
+mock-verification rig for browser-testing dashboard pages lives in the PR
+record (python mock server + Playwright against the real assets).
+
+
+0. ~~§10.9 prose-block downgrade~~ **DONE (commit 3c40571, 2026-07-25 —
+   verified by Claude Code 2026-07-26).** §10.9 was retitled from assertion to
+   question, the original paragraphs demoted to a verbatim-quoted blockquote
+   labeled "superseded as stated," and the caveat appended ("'confirmed' was
+   never the right word"). The grep criterion this item set now passes:
+   `carrier-immune` appears only inside superseded/quoted context (the §10.9
+   blockquote and §10.16's quotation of the old README claim). Do not redo.
+   (Re-verified 2026-07-26 on origin/main after Claude Science re-flagged it:
+   the strings its grep found all sit INSIDE the labeled superseded
+   blockquote — the criterion passes. Its log cites "main head e404451" —
+   Actions history shows that WAS a real main head at 11:41Z, later
+   rewritten away (main history was force-updated). Whatever the clone
+   state, at current origin/main the criterion passes. If it re-flags,
+   compare against origin/main with context lines, not bare grep.)
+
+0.1. ~~Citation registry port~~ **DONE (Claude Code, 2026-07-26, PR #2).**
+   dns-tool-intel added to the session and cloned; registry ported verbatim
+   to `citation/registry.yaml` (61 entries measured — the memo said 62) plus
+   `nasa:std-7009a` and `grade` added in the source format; root
+   `CITATIONS.md` records provenance, the NASA anti-badge rule, and the
+   primary-source caveat. YAML validated: 63 entries, unique ids, all four
+   required registrations present. Original ask (for the record):
+   Port `go-server/internal/citation/registry.yaml` from dns-tool-intel
+   (62 registered citations, existing format — zero invention) and register
+   at minimum: odni:icd-203, nasa:std-7009a, grade, iso:25012. Source docs:
+   inbox/claude-science/MEMO_prior_art_evidence_frameworks.md + the
+   2026-07-26T21:10/21:11Z epistemic-log entries. Constraints: (a)
+   dns-tool-intel is a SEPARATE repo — a remote session needs it added to
+   scope, or Carey drops the file into the drop zone; (b) NASA-STD-7009A and
+   the CoLD paper were read from search excerpts, not primary PDFs — fetch
+   the primaries before building anything ON their content (the port itself
+   is format-only); (c) the NASA anti-badge rule stands: no document says
+   "ICD 203 compliant" — levels are determined and reported, never scored.
+
+0.2. **provenance_tier/channel migration (Claude Science ask, 2026-07-26 —
+   same audit, second missing item).** Spec:
+   inbox/claude-science/SPEC_prompt_provenance.md §3a — add to test_runs:
+   `subject_prompt_declared` (text), `subject_prompt_sha256` (text),
+   `subject_prompt_source` (enum: authored_by_us | operator_declared |
+   vendor_unknown | undeclared), and the missing `channel` column;
+   `vendor_unknown`/`undeclared` are first-class values, not failures.
+   Extend quarantine vocabulary with `prompt_provenance_unknown` (§3c).
+   LANE NOTE, flagged for cross-lane agreement: the spec itself marks §3a
+   "schema, Hermes's lane" while Claude Science's item audit assigns it to
+   Claude Code — whoever lands it, this migration unblocks the wizard's
+   channel-provenance copy (currently honestly scoped to "designed, not
+   built"), the §14 manual-mode ingest, and detector work (§3b) that stays
+   in Claude Science's lane.
 
 0.5. **First-run onboarding (three rungs, ordered by verified-result-first).**
    Design source: Claude Science, 2026-07-25. Principle: each rung must
@@ -141,18 +199,95 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    onboarding flow is a pipeline, and users don't advance on unverified
    forward progress.
 
-   - **Rung 1 — "does anything work?" (~60 s, no API key required).** ONE
-     known-good item, ends in a green check the user doesn't interpret. Not a
-     benchmark: a continuity test (multimeter beep). Failure states are
-     first-class outputs — "no key", "model not loaded", "wrong port" — each
-     with a specific next action, not an error dialog. The green check must be
-     reachable with zero credentials.
+   - **Rung 1 — "does anything work?" (~60 s, no API key required).**
+     **SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `page-onboard` on the
+     dashboard: a three-step ladder (INSTRUMENT `/api/status` → CHANNEL
+     `/api/lmstudio/status`, names exactly WHICH model is loaded → SIGNAL, one
+     `POST /api/prompt-check` round trip). Continuity stimulus is
+     deliberately NOT a battery item (reply-with-OHM; no leakage, no
+     interpretation). Failure states are first-class cards with next actions:
+     LM Studio unreachable (wrong-port note), no model loaded (granite
+     auto-load gotcha → ~/.hermes/config.yaml), registry unsynced, empty
+     final answer (finish_reason surfaced), reply mismatch (shown verbatim).
+     Zero new backend. The 2×3 diagram ships inline on this page — the
+     golden-ratio commitment is now BUILT on a real surface. Entry: a
+     "First Run" tab visible in BOTH modes (Focused is the first-visit
+     default and hides the landing hero, so a hero-only button was
+     unreachable — adversarial-verification catch) plus the landing hero
+     button in Deep; mode restore preserves the page. Hardened after a
+     3-verifier adversarial pass: generation guard (stale async can't
+     overwrite a newer ladder state or double-fire the beep), timer leak
+     fixed via try/finally, NO silent model fallback (no registry match is
+     a first-class state — a wrong pick could 404 or JIT-load a multi-GB
+     model), wrapper-tolerant OHM grading, aria-live + real buttons for
+     retry actions. Verified in a live browser against a mocked backend
+     (green + both failure states + reload persistence, console clean);
+     real-hardware pass with LM Studio still worthwhile. Side fix:
+     'human-cal' was missing from the PAGES array, so its tab hid every page
+     and showed nothing — added (one word) along with 'onboard'.
    - **Rung 2 — Model Picker UI over the existing 5-item battery.** Reports a
      CAPABILITY BAND, not a score, with the honest caveat rendered in the UI:
      "5 items can't rank models — this tells you whether one is worth a full
      run."
+     **SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `page-picker` +
+     `src/routes/picker.rs` (GET /api/picker/battery serves the STIMULUS
+     only with a SHA3 provenance hash; POST /api/picker/grade grades
+     server-side — key out of the page bundle, grading server-authoritative;
+     7 grading unit tests incl. a length guard. Scope corrected same day:
+     no secrecy claim — see the constraints bullet above).
+     Battery ported verbatim from MODEL_PICKER_battery_v0.py (6 items: 5
+     logic + the 0–2 reframe probe; floors: >=4/5, items 1 and 5
+     individually disqualifying, reframe >=1). UI: paste-once stimulus with
+     copy button OR send-to-loaded-local-model (same no-fallback mapping
+     rule as Rung 1), reply kept as the evidence record, human transcription
+     of items 1–5 ("no one-word answer" = a first-class FORMAT failure,
+     never graded against the key), human-graded item 6 with the rubric
+     inline, band card naming which floor failed, record line in the
+     battery's format, session-local list with cheapest-passer highlight
+     (the battery's decision rule, labeled as such — not a ranking), and a
+     verified_configs.json pointer ("one verified row beats six plausible
+     ones"; the screener never writes there). No named model
+     recommendation anywhere. Entry: link on the First Run page + green-CTA
+     flow; Focused-whitelisted; mode restore preserves it. Browser-verified
+     against a mocked backend: PASS band, floor-failure band naming item 1 +
+     partner floor, format-failure card, cheapest-passer highlight.
    - **Rung 3 — the subject/channel wizard** (spec above, unchanged). It was
      never wrong; it was first in line when it should have been third.
+     **SHIPPED v1 (Claude Code, 2026-07-26, PR #2).** `page-wizard`: three
+     questions on one page (no modal stack), progressive disclosure. All six
+     subject×channel cells resolve honestly: silicon×local/cloud → live
+     registry list (never a hardcoded model), battery axes, then Run — arms
+     the Focused workspace and fires the exact same /api/runs path the
+     workspace Run button fires (one run machinery, one schema — subject
+     provenance live today; channel provenance is §14 design, not yet in
+     the runs schema, and the wizard says so);
+     silicon×manual → the Model Picker paste screener today + an honest
+     "pack UI schema-ready, not built" note; carbon×local → the human-cal
+     door; carbon×cloud/manual → schema-ready cards matching the 2×3
+     diagram. "No cloud key" is a first-class state pointing at Setup. THE
+     FRONT-DOOR REPLACEMENT: focusedPickSubject with no subject picked now
+     walks the wizard instead of the grid modal (§15 mandate); once a
+     subject exists, the button opens the full-grid modal for
+     change/compare, and Deep mode keeps the grid untouched. Browser-
+     verified end-to-end against a mocked backend incl. a real POST
+     /api/runs with correct body. Scaffolded/paired designs stay in the
+     workspace MODE control (stated in the wizard's run note).
+     **Hardened same day after a 3-verifier adversarial pass:** channel-
+     provenance copy corrected (the runs schema has NO channel column —
+     §14's migration is unbuilt; four surfaces claimed it in present
+     tense); wzRun now FORCES clean-room before firing (the button's
+     promise was at the mercy of the workspace MODE select), performs the
+     spec-pair reset, and finishes in Focused when reached from Deep (the
+     runlog lives in the focused shell — a Deep-mode run fired with zero
+     visible feedback); focusedRun now fails loudly on 400s (plain-text
+     error bodies used to render as 'run(s) []' success — pre-existing,
+     but the wizard made it the front-door path); instrument-down is its
+     own card, no longer misdiagnosed as 'no key'; aria-pressed +
+     check-mark selection (was color-only), aria-live on dynamic regions;
+     'open the full grid instead' escape hatch (picking there costs no
+     run). Backend relay added: annotate_runnable can only ever mark
+     Nous-keyed cloud rows runnable, making the wizard's cloud path a
+     dead end for openrouter/openai/gemini — see DECISIONS relay list.
 
    The 2×3 diagram (SILICON/CARBON × LOCAL/CLOUD/MANUAL) is the teaching
    surface: it must state plainly that the manual channel is a first-class
@@ -162,7 +297,7 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    the earlier "p=0.34, ±5 pts, 1,024 trials" figure welded a statistic from
    the re-graded 640-row dataset to the N of the retracted original; that
    citation was wrong and is struck. If a number is needed, derive it from the
-   re-graded CSV and cite that CSV's N and hash.
+   re-graded CSV and cite that CSV's N and hash. This figure is also where the
    golden-ratio commitment actually ships, since the story audit found it
    asserted on no surface.
 
@@ -172,7 +307,39 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    channel, N, date, pass rate WITH CI, run hash). One verified row beats six
    plausible ones; the file earns the recommendation as runs land, and users
    watch it grow on GitHub. Seeded by Hermes 2026-07-25 with the single
-   honestly-verifiable row (gemma-4-31b, run 953).
+   honestly-verifiable row (gemma-4-31b, run 953); row corrected 2026-07-26
+   (commit 3c40571): n=192/189 passed, Wilson 95% CI, runnable verify-SQL,
+   and the naming caveat — 64 distinct test_ids but 63 unique display names
+   (AUX-APPROVAL-01 is two different tests). Use the FILE, not this prose,
+   as the data source for any UI.
+
+   **Binding UI constraints from Claude Science reviews (2026-07-24..26):**
+   - **Key every list/count on test_id, never display name** (64 ids vs 63
+     names). Count what the primary key counts.
+   - **No p-value or trial-count in UI chrome** for the channel claim (see
+     the struck citation above); if a number is needed, derive it from the
+     committed re-graded CSV and cite its N and hash.
+   - **The manual paste pack must be byte-identical to the API item set** for
+     any channel-provenance run — no manual-only "include your thinking
+     block" instruction (REASONING_TRACE_and_JSPACE_design.md: trace
+     availability is itself channel-confounded). Absent reasoning_content on
+     manual runs is an EXPECTED state, not an error; never invite
+     cross-channel trace comparison in run views.
+   - **Manual-mode results render as k/n_mappable** with the mappability
+     fraction and best/worst bounds; format compliance is TWO numbers
+     (map-rate + drift-point). Manual rows stay OUT of paired
+     carrier-analysis views (standing rules, epistemic log 2026-07-24).
+   - **Model lists come from the live endpoint/chooser, never from docs**
+     (Hermes-4 recommendation retracted 2026-07-25).
+   - **Rung 2's battery as shipped is 6 items** (5 logic + the 0-2
+     reframe/partner probe; floors: >=4/5 logic, items 1 and 5 individually
+     disqualifying, reframe >=1; cheapest passer wins). Grade server-side —
+     the key stays out of the page bundle and grading is server-
+     authoritative. Honest scope (corrected 2026-07-26, Copilot catch):
+     this is NOT secrecy — the battery + key are public in the repo, and
+     binary items mean per-item correctness in the response determines the
+     key anyway. Blindness belongs to the real battery, not the screener.
+     Item 6 is human-graded (0/1/2 rubric rendered inline).
 
 1. **Subject/Channel Wizard** (Oscent item 1 — Rung 3, see 0.5)
 2. **Witness Artifact Generator** (Oscent item 2)
@@ -192,7 +359,7 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    FIPS and it costs cmake/go build friction. Verified live: chain+hostname
    validation (ssl_verify_result=0), IP SAN, SSE over TLS, CSP split, 36 unit
    tests, clippy 0.
-2. **Site polish — owl+brain graphic pass.** BUILT (Claude Code, 2026-07-23,
+5. **Site polish — owl+brain graphic pass.** BUILT (Claude Code, 2026-07-23,
    commit 7ed1af9) — DEPLOY PENDING (`scripts/deploy-site.sh` from a
    credentialed seat; this seat has no AWS creds by design):
    - Canonical LOCAL⇄WEB portal pill on ALL THREE surfaces (site home,
@@ -208,23 +375,23 @@ index, README, lessons headers, DECISIONS preamble. One voice.
      in-browser: CLEAN console, 8 animations, pill pinned across scroll.
    - Remaining for this item: run deploy-site.sh (Hermes/Carey), then a
      final visual pass on the LIVE site; optionally richer brain art later.
-3. **Lessons page polish.** Four comics render inline; design pass on the
+6. **Lessons page polish.** Four comics render inline; design pass on the
    lesson cards, status badges, seal lines. Do NOT change the lesson .md
    files or comic SVGs (sealed — hash-verified).
-4. **Human-calibration UI polish (dashboard).** Backend is DONE (5
+7. **Human-calibration UI polish (dashboard).** Backend is DONE (5
    endpoints, E2E verified). Frontend is functional but basic (4-step flow
    at page-human-cal). Add: per-question timing display, a carrier-variance
    bar chart at results, and a human-vs-model comparison panel (the
    signal_carrier endpoint already returns both subjects in the same shape).
-5. **Architecture diagram.** docs/architecture.excalidraw is stale — add
+8. **Architecture diagram.** docs/architecture.excalidraw is stale — add
    the Focused shell, NeuroVault proxy, signal-carrier view, spec-decode
    panel, human-calibration page, /api/runs/complete endpoint, MCP server.
-6. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
+9. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
    siblings. Template = migration 047/048 pattern (same formal_spec, new
    surface text for N; transform + named owl_flaw for C; resolve roots by
    NAME, never raw id). Oracle: scripts/verify_logic_ground_truth.py
    --check-owl-families.
-7. **MCP server e2e test.** Connect a real bot to POST /mcp, discover the
+10. **MCP server e2e test.** Connect a real bot to POST /mcp, discover the
    11 tools, call run_benchmark + get_run. Untested end-to-end by a client.
 
 ## What's DONE (don't redo)
