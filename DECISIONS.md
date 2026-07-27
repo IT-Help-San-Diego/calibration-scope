@@ -1077,12 +1077,6 @@ CS's no-secrets / no-profanity scan was spot-verified clean (the only hit was a 
 internal research doc, not public copy). The CS branch was merged **docs-only** (`-X ours`) to preserve
 the time-estimate endpoint (a65a0d9) and RUN_BUDGET_SECS=5400 which the stale branch would have deleted.
 
-
-# §10.8 update — DRAFT for DECISIONS.md, written by Claude Science
-_2026-07-27. Framing is the analysis lane, not the executor's. Hermes offered to draft this; the standing_
-_division is that whoever ran the numbers writes the words about them. Carey to approve before it lands._
-_Status: PREVIEW from a truncated arm. Every claim below is bounded by §D._
-
 ## 10.8x Carrier Color measured in a paired within-item test (PREVIEW, runs 970/971 partials)
 
 **Design.** 53 quant-scope items administered to `gemma-4-e2b` under two carriers — baseline and Lean —
@@ -1141,25 +1135,27 @@ of items under baseline, certain on all of them under Lean — sometimes certain
    direction is perfectly asymmetric, but **2.4 × 10⁻⁴ is the number that may appear in print; 3.6 × 10⁻⁵ was
    anti-conservative.** (This is the same independence-versus-pairing error class retracted earlier in this
    session; it recurred in a cell whose own header said "paired.")
-4. **The prompt-length alternative — resolved from existing evidence, not by the test that was run for it.**
-   I raised this: at temperature 0 with no draft model, residual nondeterminism comes from float
-   non-associativity in batched matmuls, which is **sequence-length dependent**, and the Lean wrapper adds
-   ~121 tokens (71 → 192), so the arms may sit in different numerical regimes.
-   **The check performed in response does not answer it.** It compared prompt lengths of stochastic vs
-   deterministic items *within* the baseline arm (72.7 vs 68.7 tokens, null) — a test of sensitivity across a
-   **4-token spread at one regime**, which does not bound behaviour across a **121-token, 2.7× regime change**;
-   the relationship need not be linear or monotone.
-   **What does answer it is §10.8's own carrier spectrum**, and I should have looked there before proposing a new
-   arm. Four carriers, same logic, same model: baseline 99.0%, **Haiku (poetic compression — deliberately
-   short) 97.1%**, English prose 94.1%, Lean 91.2%, **Bribe (flattery prose) 91.2%**. The least-distorting carrier
-   is the shortest and the most-distorting is a non-technical prose carrier tied with a formal one. **A
-   token-count mechanism cannot produce that ordering.** Length is excluded for the *accuracy* effect.
-5. **The variance claim specifically is narrower than the accuracy claim.** §10.8 reports accuracy by carrier,
-   **not per-item rep variability**, so it does not establish that every carrier collapses variance — only that
-   accuracy distortion is not length-driven. **One query on already-sealed data settles it: per-item pass counts
-   for runs 919 / 917 / 918 / 920.** If Haiku (short) also collapses variance, length is dead for variance too;
-   if only Lean does, the variance mechanism remains open and the claim must stay single-carrier. **No new run,
-   no machine time.** Until then, state the variance result as an observation under *one* carrier.
+4. **The prompt-length alternative is NOT excluded.** At temperature 0 with no draft model, residual
+   nondeterminism comes from float non-associativity in batched matmuls, which is **sequence-length dependent**,
+   and the Lean wrapper takes the prompt from ~71 to ~192 tokens. **"Longer prompts land in a more stable
+   numerical regime" would produce the determinism difference with no carrier effect on reasoning.**
+   **Two attempts to close it have failed, and both failures are recorded rather than buried:**
+   - *The within-arm test.* Prompt lengths of stochastic vs deterministic items inside the baseline arm are
+     indistinguishable (72.7 vs 68.7 tokens). That measures sensitivity across a **4-token spread at one regime**
+     and cannot bound behaviour across a **121-token, 2.7× regime change**; the relationship need not be monotone.
+   - *My §10.8 spectrum argument — retracted.* I argued the four-carrier ordering (baseline 99.0%, Haiku 97.1%,
+     English prose 94.1%, Lean 91.2%, Bribe 91.2%) excluded a token-count mechanism because the least-distorting
+     carrier was the shortest. **I never measured any carrier's length.** "Haiku is short" and "Bribe is longer"
+     were inferred from labels; the carrier texts live in `test_runs.scaffold_supplement` (runtime data, absent
+     from committed source), and the one scaffold quoted in this file — *"you're brilliant, I'd love it, make the
+     user happy"* — is short, which **contradicts** the ordering my argument required. **Withdrawn.**
+   **What would actually close it:** the four carriers' token counts (one query on sealed data), or a
+   length-matched control carrier — same token count as Lean, neutral content. If a neutral filler of equal length
+   also collapses variance, the effect is numerical; if it does not, the effect is content-driven.
+5. **The variance claim is narrower than the accuracy claim.** §10.8 reports accuracy by carrier, **not per-item
+   rep variability**, so nothing establishes that carriers in general collapse variance. **One query on sealed
+   data would test it: per-item pass counts for runs 919 / 917 / 918 / 920.** Until then the variance result is an
+   observation under **one** carrier.
 6. **No mechanism is established.** An earlier reading — that the carrier pushed the model onto a stem-length
    heuristic — is **retracted**: among TRUE-keyed items, flipped and unflipped stems are indistinguishable in
    length (269 vs 272 characters, Mann-Whitney *p* = 0.369). Length is confounded with the answer key across the
@@ -1180,6 +1176,6 @@ May assert: *in a controlled paired test where the carrier was the only variable
 verdict on identical logical content, and under one carrier the model's answers became fully deterministic where
 they had been stochastic.*
 May **not** assert: that the mechanism is known, that the effect is a directional degradation, that it holds
-beyond this model and bank, or that variance collapse is a property of carriers in general rather than of this one carrier (temperature, speculative decoding, and — via §10.8's non-monotone carrier ordering — prompt length are excluded for the accuracy effect).
+beyond this model and bank, or that the variance collapse reflects the carrier's content rather than its length. **Temperature and speculative decoding ARE excluded (both verified); prompt length is NOT** — see §D.4, where my own attempt to exclude it via §10.8's carrier ordering is retracted because that ordering's decisive premise, the carriers' relative lengths, was never measured.
 **The phrase "carrier-immune" remains retired** (§10.16). Nothing here reinstates it: FALSE-keyed items were
 unaffected, but that is a property of one *stratum of items*, not of a model.
