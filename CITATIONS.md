@@ -8,11 +8,10 @@ standard/RFC/framework the project's claims lean on.
 commit `0e3a4d2` — 61 entries, measured on port and confirmed by the
 validator (63 total = 61 ported + 2 added). Claude Science's memo said 62;
 that count was *also* correct when written: dns-tool-intel PR #218 landed on
-main later the same day (2026-07-26, squashed as `0e3a4d2`) and deleted
-`sonar:sonarcloud` from the source registry — an 8-line deletion inside a
-commit titled as a branch merge, unmentioned in the SonarCloud-decouple
-evolution doc (which explicitly preserved SonarCloud references as
-historical record), and flagged upstream as likely accidental. Both counts
+main later the same day (2026-07-26, squashed as `0e3a4d2`) and removed
+`sonar:sonarcloud` from the source registry — deliberate, owner-confirmed
+(SonarCloud was decoupled for cost in April 2026; the registry lists what
+the project's claims lean on, and nothing leans on it anymore). Both counts
 were honest measurements of different same-day states of main; count what
 the file counts — and say which commit. The existing pattern, existing
 format, zero invention; see
