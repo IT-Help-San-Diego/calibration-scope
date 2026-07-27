@@ -143,13 +143,19 @@ below. The mock-verification rig for browser-testing dashboard pages
 lives in the PR record (python mock server + Playwright against the real
 assets).
 
-**Witness v2 scope (from Claude Science, relayed via Carey 2026-07-27):**
-artifacts must show claim status BY CLAIM ID, never prose restatement.
-The v1 certificate renders axis-level measurement rows; v2 adds per-test
-rows keyed on test_id (the binding key — never display name) from
-trial_results. Their brief argued Witness should be built — it already
-is, on the branch they hadn't pulled; the claim-ID constraint is the part
-that's genuinely new, so it's banked here.
+**Witness v2 — SHIPPED 2026-07-27 (design constraint from Claude Science,
+relayed via Carey): claim status BY CLAIM ID, never prose restatement.**
+A second SVG below the certificate lists every claim as `#test_id name
+k/n` — keyed on test_id (the binding key; names are labels), counts raw,
+imperfect rows in gold, three-column column-major layout with height
+computed from the claim count (a 293-claim battery and a 3-claim human
+session both render completely; unit test pins the no-overlap math).
+Pre-migration-021 trials (test_id NULL) render as one gray "unlinked
+trials" line — honestly not one claim, not silently dropped. Same pass:
+human-participant runs now get certificates (the v1 INNER JOIN answered
+"no run exists" about runs that exist) — carbon subject kind, load mode
+"not applicable to a human subject", channel "dashboard quiz — same
+items, same grader as model runs".
 
 
 0. ~~§10.9 prose-block downgrade~~ **DONE (commit 3c40571, 2026-07-25 —

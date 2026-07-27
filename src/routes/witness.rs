@@ -14,6 +14,15 @@
 //! unsealed or unfinished runs get an honest refusal, not a mock-up.
 //! `channel` is DERIVED from the model's location/provider and labeled as
 //! derived — the schema's channel column is §14 design, not yet built.
+//!
+//! v2 (2026-07-27, design constraint from Claude Science): claim status is
+//! shown BY CLAIM ID, never prose restatement — a second SVG below the
+//! certificate lists every claim as `#test_id  name  k/n`, keyed on test_id
+//! (the binding key; names are labels and are not unique). Human-participant
+//! runs (model_id NULL, participant_id set) now get a certificate too — the
+//! old INNER JOIN made the instrument claim "no run exists" about runs that
+//! exist, which is exactly the kind of false statement this page exists to
+//! prevent.
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse};
@@ -24,9 +33,10 @@ use crate::state::AppState;
 #[derive(sqlx::FromRow)]
 struct WitnessRow {
     id: i32,
-    key: String,
-    provider: String,
-    location: String,
+    key: Option<String>,
+    provider: Option<String>,
+    location: Option<String>,
+    participant: Option<String>,
     axis: String,
     status: String,
     pass_count: i32,
@@ -35,6 +45,19 @@ struct WitnessRow {
     sha3_provenance: Option<String>,
     started_at: Option<chrono::NaiveDateTime>,
     finished_at: Option<chrono::NaiveDateTime>,
+}
+
+/// One ledger row: the claim id and its raw pass count. `name` is a label;
+/// test_id is the key (64 ids vs 63 names in the live bank — names collide).
+/// test_id is None for trials recorded before migration 021 linked trials to
+/// tests — those group into one "unlinked" line that is honestly NOT one
+/// claim, rather than being silently dropped.
+#[derive(sqlx::FromRow)]
+struct ClaimRow {
+    test_id: Option<i32>,
+    name: Option<String>,
+    k: i32,
+    n: i32,
 }
 
 /// XML-escape for text nodes and attribute values in the SVG.
@@ -57,16 +80,40 @@ fn clip(s: &str, max: usize) -> String {
 }
 
 /// The certificate body. Pure function of the row — unit-tested below.
-fn render_certificate(r: &WitnessRow, seal: &str) -> String {
-    let subject = clip(&r.key, 44);
+fn render_certificate(r: &WitnessRow, seal: &str, claims: &[ClaimRow]) -> String {
+    let is_human = r.participant.is_some();
+    let subject = clip(
+        r.participant
+            .as_deref()
+            .or(r.key.as_deref())
+            .unwrap_or("(subject unrecorded)"),
+        44,
+    );
     let passed = r.pass_count;
     let total = r.total_count;
-    let channel = if r.location == "local" {
-        format!("local API via {}", r.provider)
+    let kind = if is_human {
+        "carbon — human participant".to_string()
     } else {
-        format!("cloud API via {}", r.provider)
+        "silicon — model".to_string()
     };
-    let load_mode = r.load_mode.as_deref().unwrap_or("clean-room");
+    let channel = if is_human {
+        "dashboard quiz — same items, same grader as model runs".to_string()
+    } else {
+        let provider = r.provider.as_deref().unwrap_or("?");
+        let base = if r.location.as_deref() == Some("local") {
+            format!("local API via {provider}")
+        } else {
+            format!("cloud API via {provider}")
+        };
+        format!("{base} (derived — channel column pending §14)")
+    };
+    // Humans have no load mode — showing "clean-room" would claim a control
+    // that does not apply to a person at a keyboard.
+    let load_mode = if is_human {
+        "— (not applicable to a human subject)"
+    } else {
+        r.load_mode.as_deref().unwrap_or("clean-room")
+    };
     // started_at is stamped when execution actually begins (executor sets it
     // with status='loading') — created_at would misstate queue time as start.
     let started = r
@@ -110,13 +157,11 @@ fn render_certificate(r: &WitnessRow, seal: &str) -> String {
     let rows: String = [
         ("RUN", format!("#{}", r.id)),
         ("SUBJECT", subject.clone()),
+        ("SUBJECT KIND", kind),
         ("BATTERY", format!("{} axis", r.axis)),
         ("RESULT", format!("{passed} of {total} trials passed")),
         ("LOAD MODE", load_mode.to_string()),
-        (
-            "CHANNEL",
-            format!("{channel} (derived — channel column pending §14)"),
-        ),
+        ("CHANNEL", channel),
         ("STARTED", started),
         ("SEALED", finished),
     ]
@@ -164,7 +209,7 @@ fn render_certificate(r: &WitnessRow, seal: &str) -> String {
   <text x="89" y="1546" font-size="12" fill="#7d8590">Golden-ratio construction: 1000×1618 canvas, section at y=618 (1618 = 1000 + 618), Fibonacci spacing 13·21·34·55·89.</text>
   <text x="89" y="1572" font-size="12" fill="#7d8590">Zero JS · no external resources · the SVG uses presentation attributes only — this file is complete as it stands.</text>
 </svg>
-</body></html>
+{ledger}</body></html>
 "##,
         id = r.id,
         subject_esc = esc(&subject),
@@ -173,6 +218,92 @@ fn render_certificate(r: &WitnessRow, seal: &str) -> String {
         total = total,
         rows = rows,
         seal_svg = seal_svg,
+        ledger = render_ledger(r.id, claims),
+    )
+}
+
+/// The claim ledger: a second SVG below the certificate, one row per claim,
+/// keyed by test_id — never prose restatement (design constraint from Claude
+/// Science, 2026-07-27). Column-major, three columns, height computed from
+/// the claim count so a 293-item battery and a 3-item human session both
+/// render completely. Same discipline as the certificate: presentation
+/// attributes only, one sizing style attr on the svg element.
+fn render_ledger(run_id: i32, claims: &[ClaimRow]) -> String {
+    if claims.is_empty() {
+        return format!(
+            r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200" role="img"
+     aria-label="Claim ledger for run {run_id}: no trial rows recorded"
+     font-family="ui-monospace, Menlo, Consolas, monospace" style="display:block;max-width:1000px;margin:0 auto;width:100%;height:auto">
+  <rect x="0" y="0" width="1000" height="200" fill="#0a0a0a"/>
+  <rect x="21" y="13" width="958" height="166" fill="none" stroke="#2b3143" stroke-width="1.5" rx="8"/>
+  <text x="89" y="89" font-size="15" fill="#d4a853" letter-spacing="2">CLAIM LEDGER</text>
+  <text x="89" y="123" font-size="14" fill="#a0a0a0">No non-infra trial rows are recorded for this run — nothing to itemize.</text>
+</svg>
+"##
+        );
+    }
+    let per_col = claims.len().div_ceil(3);
+    // Rows start at y=144; the footer zone is the last 76px. The unit test
+    // asserts the last row lands strictly above it for a 293-claim battery.
+    let height = 144 + per_col * 21 + 76;
+    let rows_svg: String = claims
+        .iter()
+        .enumerate()
+        .map(|(i, c)| {
+            let col = i / per_col;
+            let idx = i % per_col;
+            // Columns at 55/370/685; values end-anchored at x0+276 keep a
+            // Fibonacci 34px clear of the border (rect right edge x=979).
+            let x0 = 55 + col * 315;
+            let y = 144 + idx * 21;
+            let (id_label, name, val_fill) = match c.test_id {
+                Some(id) => (
+                    format!("#{id}"),
+                    clip(c.name.as_deref().unwrap_or("(unnamed)"), 18),
+                    // Perfect rows in the body color; anything less in gold —
+                    // the eye finds the misses without editorializing.
+                    if c.k == c.n { "#e0e0e0" } else { "#d4a853" },
+                ),
+                // Pre-migration-021 trials carry no test link. One gray line,
+                // never colored like a claim verdict — it is not one claim.
+                None => ("#—".to_string(), "(unlinked trials)".to_string(), "#7d8590"),
+            };
+            format!(
+                concat!(
+                    r##"<text x="{x_id}" y="{y}" font-size="13" fill="#7d8590">{id_label}</text>"##,
+                    r##"<text x="{x_name}" y="{y}" font-size="13" fill="#a0a0a0">{name}</text>"##,
+                    r##"<text x="{x_val}" y="{y}" font-size="13" fill="{val_fill}" text-anchor="end">{k}/{n}</text>"##
+                ),
+                x_id = x0,
+                x_name = x0 + 55,
+                x_val = x0 + 276,
+                y = y,
+                id_label = id_label,
+                name = esc(&name),
+                val_fill = val_fill,
+                k = c.k,
+                n = c.n,
+            )
+        })
+        .collect();
+    format!(
+        r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 {height}" role="img"
+     aria-label="Claim ledger for run {run_id}: per-claim pass counts for {count} claims, keyed by test id"
+     font-family="ui-monospace, Menlo, Consolas, monospace" style="display:block;max-width:1000px;margin:0 auto;width:100%;height:auto">
+  <rect x="0" y="0" width="1000" height="{height}" fill="#0a0a0a"/>
+  <rect x="21" y="13" width="958" height="{box_h}" fill="none" stroke="#2b3143" stroke-width="1.5" rx="8"/>
+  <text x="89" y="76" font-size="15" fill="#d4a853" letter-spacing="2">CLAIM LEDGER — {count} CLAIMS</text>
+  <text x="89" y="102" font-size="12" fill="#7d8590">one row per claim, keyed by test_id (names are labels; the id is the key) · k/n = passes/trials, counts raw</text>
+  {rows_svg}
+  <text x="89" y="{foot_y}" font-size="12" fill="#7d8590">Every claim in the sealed run is listed — no selection, no summary standing in for the itemization.</text>
+</svg>
+"##,
+        run_id = run_id,
+        count = claims.len(),
+        height = height,
+        box_h = height - 34,
+        rows_svg = rows_svg,
+        foot_y = height - 34,
     )
 }
 
@@ -208,11 +339,17 @@ pub async fn run_witness(
     State(state): State<AppState>,
     Path(run_id): Path<i32>,
 ) -> AppResult<axum::response::Response> {
+    // LEFT JOINs: a human-participant run has model_id NULL, and the old
+    // INNER JOIN made this endpoint answer "no run exists" about runs that
+    // exist — a false statement from the page whose job is not making them.
     let row: Option<WitnessRow> = sqlx::query_as(
-        r#"SELECT r.id, m.key, m.provider, m.location, r.axis, r.status,
+        r#"SELECT r.id, m.key, m.provider, m.location,
+                  p.display_name AS participant, r.axis, r.status,
                   r.pass_count, r.total_count, r.load_mode, r.sha3_provenance,
                   r.started_at, r.finished_at
-           FROM test_runs r JOIN models m ON m.id = r.model_id
+           FROM test_runs r
+           LEFT JOIN models m ON m.id = r.model_id
+           LEFT JOIN participants p ON p.id = r.participant_id
            WHERE r.id = $1"#,
     )
     .bind(run_id)
@@ -241,7 +378,22 @@ pub async fn run_witness(
         )
             .into_response());
     };
-    Ok(Html(render_certificate(&row, &seal)).into_response())
+    // The claim ledger: raw per-claim counts, infra errors excluded (same
+    // rule the seal itself uses), ordered by the binding key.
+    let claims: Vec<ClaimRow> = sqlx::query_as(
+        r#"SELECT tr.test_id, t.name,
+                  COUNT(*) FILTER (WHERE tr.passed)::int AS k,
+                  COUNT(*)::int AS n
+           FROM trial_results tr
+           LEFT JOIN tests t ON t.id = tr.test_id
+           WHERE tr.run_id = $1 AND tr.is_infra_error = false
+           GROUP BY tr.test_id, t.name
+           ORDER BY tr.test_id"#,
+    )
+    .bind(run_id)
+    .fetch_all(&state.db)
+    .await?;
+    Ok(Html(render_certificate(&row, &seal, &claims)).into_response())
 }
 
 #[cfg(test)]
@@ -251,9 +403,10 @@ mod tests {
     fn fixture() -> WitnessRow {
         WitnessRow {
             id: 953,
-            key: "google/gemma-4-31b".into(),
-            provider: "lmstudio".into(),
-            location: "local".into(),
+            key: Some("google/gemma-4-31b".into()),
+            provider: Some("lmstudio".into()),
+            location: Some("local".into()),
+            participant: None,
             axis: "reasoning".into(),
             status: "done".into(),
             pass_count: 189,
@@ -271,13 +424,49 @@ mod tests {
         }
     }
 
+    fn human_fixture() -> WitnessRow {
+        let mut r = fixture();
+        r.key = None;
+        r.provider = None;
+        r.location = None;
+        r.participant = Some("Carey B.".into());
+        r.load_mode = None;
+        r.pass_count = 4;
+        r.total_count = 6;
+        r
+    }
+
+    fn claims_fixture() -> Vec<ClaimRow> {
+        vec![
+            ClaimRow {
+                test_id: Some(26),
+                name: Some("LOGIC-01".into()),
+                k: 3,
+                n: 3,
+            },
+            ClaimRow {
+                test_id: Some(61),
+                name: Some("LOGIC-01N".into()),
+                k: 2,
+                n: 3,
+            },
+            ClaimRow {
+                test_id: Some(27),
+                name: Some("LOGIC-02".into()),
+                k: 0,
+                n: 3,
+            },
+        ]
+    }
+
     #[test]
     fn certificate_contains_the_measurement_and_the_full_seal() {
         let r = fixture();
         let seal = r.sha3_provenance.clone().unwrap();
-        let html = render_certificate(&r, &seal);
+        let html = render_certificate(&r, &seal, &claims_fixture());
         assert!(html.contains("google/gemma-4-31b"));
         assert!(html.contains("passed 189 of 192 trials"));
+        assert!(html.contains("silicon — model"));
         // Every 66-char chunk of the seal must appear verbatim — the full
         // value is on the certificate, merely wrapped.
         let chunks: Vec<String> = seal
@@ -291,8 +480,94 @@ mod tests {
             assert!(html.contains(chunk.as_str()), "missing seal chunk {chunk}");
         }
         assert!(!html.contains("<script"));
-        // Self-containment: only the two sizing style attrs on body/svg.
-        assert!(html.matches("style=\"").count() <= 2);
+        // Self-containment: three sizing style attrs (body, certificate svg,
+        // ledger svg) — nothing else.
+        assert!(html.matches("style=\"").count() <= 3);
+    }
+
+    #[test]
+    fn ledger_lists_every_claim_by_id_with_raw_counts() {
+        let html = render_ledger(953, &claims_fixture());
+        assert!(html.contains("CLAIM LEDGER — 3 CLAIMS"));
+        for (id, kn) in [(26, "3/3"), (61, "2/3"), (27, "0/3")] {
+            assert!(html.contains(&format!("#{id}")), "missing claim id {id}");
+            assert!(html.contains(kn), "missing count {kn}");
+        }
+        // Keyed by id, names as labels — both present, and imperfect rows
+        // are gold while perfect rows are body-colored.
+        assert!(html.contains("LOGIC-01N"));
+        assert!(html.contains("keyed by test_id"));
+        assert!(html.contains(r##"fill="#d4a853" text-anchor="end">2/3"##));
+        assert!(html.contains(r##"fill="#e0e0e0" text-anchor="end">3/3"##));
+    }
+
+    #[test]
+    fn ledger_scales_to_a_full_battery_without_overlap() {
+        // 293 claims — the real full-battery size. Column-major over three
+        // columns: every row must sit inside the computed viewBox.
+        let claims: Vec<ClaimRow> = (1..=293)
+            .map(|i| ClaimRow {
+                test_id: Some(i),
+                name: Some(format!("TEST-{i:03}")),
+                k: 3,
+                n: 3,
+            })
+            .collect();
+        let html = render_ledger(999, &claims);
+        let per_col = 293usize.div_ceil(3); // 98
+        let height = 144 + per_col * 21 + 76;
+        assert!(html.contains(&format!(r#"viewBox="0 0 1000 {height}""#)));
+        let last_y = 144 + (per_col - 1) * 21;
+        assert!(last_y < height - 76, "rows overflow the footer zone");
+        assert!(html.contains("#1<") || html.contains("#1</text>"));
+        assert!(html.contains("#293"));
+    }
+
+    #[test]
+    fn ledger_handles_empty_and_unlinked_honestly() {
+        let empty = render_ledger(7, &[]);
+        assert!(empty.contains("No non-infra trial rows are recorded"));
+        let unlinked = render_ledger(
+            7,
+            &[ClaimRow {
+                test_id: None,
+                name: None,
+                k: 5,
+                n: 9,
+            }],
+        );
+        assert!(unlinked.contains("(unlinked trials)"));
+        assert!(unlinked.contains("5/9"));
+        // Never colored like a claim verdict — it is not one claim.
+        assert!(!unlinked.contains(r##"fill="#e0e0e0" text-anchor="end">5/9"##));
+    }
+
+    #[test]
+    fn human_run_gets_a_carbon_certificate_not_a_false_404() {
+        let r = human_fixture();
+        let html = render_certificate(&r, "sha3-512:deadbeef", &claims_fixture());
+        assert!(html.contains("Carey B."));
+        assert!(html.contains("carbon — human participant"));
+        assert!(html.contains("same items, same grader as model runs"));
+        // No load-mode claim for a human, and no derived model channel.
+        assert!(html.contains("not applicable to a human subject"));
+        assert!(!html.contains("clean-room"));
+        assert!(!html.contains("local API"));
+    }
+
+    #[test]
+    fn hostile_test_name_in_ledger_is_escaped() {
+        let html = render_ledger(
+            1,
+            &[ClaimRow {
+                test_id: Some(1),
+                name: Some("<script>x</script>".into()),
+                k: 1,
+                n: 1,
+            }],
+        );
+        assert!(!html.contains("<script>x"));
+        assert!(html.contains("&lt;script&gt;"));
     }
 
     #[test]
@@ -306,8 +581,8 @@ mod tests {
     #[test]
     fn hostile_model_key_is_escaped_and_clipped() {
         let mut r = fixture();
-        r.key = format!("<script>alert(1)</script>{}", "x".repeat(100));
-        let html = render_certificate(&r, "sha3-512:deadbeef");
+        r.key = Some(format!("<script>alert(1)</script>{}", "x".repeat(100)));
+        let html = render_certificate(&r, "sha3-512:deadbeef", &[]);
         assert!(!html.contains("<script>alert"));
         assert!(html.contains("&lt;script&gt;"));
     }
@@ -320,9 +595,22 @@ mod tests {
         // review. Writes into target/, never the repo tree.
         let r = fixture();
         let seal = r.sha3_provenance.clone().unwrap();
-        let out = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("target")
-            .join("witness-sample.html");
-        let _ = std::fs::write(out, render_certificate(&r, &seal));
+        let target = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("target");
+        // Model run with a mixed ledger, and a human run — both artifacts.
+        let mut claims = claims_fixture();
+        claims.extend((100..=150).map(|i| ClaimRow {
+            test_id: Some(i),
+            name: Some(format!("LOGIC-{:02}X", i - 99)),
+            k: if i % 7 == 0 { 2 } else { 3 },
+            n: 3,
+        }));
+        let _ = std::fs::write(
+            target.join("witness-sample.html"),
+            render_certificate(&r, &seal, &claims),
+        );
+        let _ = std::fs::write(
+            target.join("witness-sample-human.html"),
+            render_certificate(&human_fixture(), &seal, &claims_fixture()),
+        );
     }
 }

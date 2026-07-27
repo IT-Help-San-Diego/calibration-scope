@@ -1226,6 +1226,29 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     window load event (REST loaders already paint first data; the stream's
     snapshot arrives a beat later either way). Verified in-browser: the
     /api/events request starts ~10 ms after loadEventStart.
+  - **2026-07-27 (Claude Code): Witness v2 — the claim ledger — SHIPPED.**
+    Claude Science's design constraint (claim status by claim ID, never
+    prose restatement) is now the certificate's second panel: one row per
+    test_id with raw k/n, column-major over three columns, height computed
+    from the claim count, verified in-browser at 3 and 54 claims and
+    unit-pinned at 293 (the no-overlap assertion caught a real 21px height
+    shortfall on first run — the test earned its keep before it ever hit
+    CI). NULL test_id (pre-021 trials) renders as one gray "unlinked
+    trials" line — not one claim, and not silently dropped. Also fixed:
+    the v1 INNER JOIN made /api/runs/{id}/witness answer "NO SUCH RUN —
+    no run with this id exists" for sealed human-participant runs (runs
+    that exist; model_id is simply NULL) — a false statement from the
+    instrument's own honesty surface, found because item 7 makes human
+    runs commonplace. Human certificates: carbon subject kind, load mode
+    "not applicable to a human subject" (clean-room would claim a control
+    that doesn't apply), channel "dashboard quiz — same items, same
+    grader". PR #3 review catches, both fixed same pass: comparison-panel
+    famKey now groups on family_root_id (the binding rule this project
+    keeps proving — id is the key, name is a label; my own commit applied
+    it to subjects and missed it for families three lines away), and
+    submit_answer/finish_session gained a run-ownership guard
+    (verify_run_owner): a guessed run_id could previously write trials
+    into — or RESEAL — another participant's run or a model run.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
