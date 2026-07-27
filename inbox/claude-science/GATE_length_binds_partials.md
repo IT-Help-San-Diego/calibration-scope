@@ -47,14 +47,28 @@ The bank was built for mid-difficulty items, where the vote-based test is most s
 |---|---|---|
 | FALSE-keyed (61 items) | **1.000** | **none — pinned at ceiling, zero discordant pairs** |
 | TRUE-keyed (66 items) | 0.692 | the only informative half |
-**Off-ceiling items: 35 of 127 = 28%.** If that ratio holds bank-wide, **effective quant-scope n is ~50, not 182.**
-| Bank | Power at d = 0.05 |
-|---|---|
-| 293 items as planned | **0.90** |
-| ~161 effective (50 quant-scope + 111 defeasible) | **0.67** |
-**So the run still resolves d ≈ 0.10 comfortably, but the d = 0.05 resolution that justified 6 reps is likely
-gone** — and d=0.05 was the figure for *locating* the immunity threshold rather than merely detecting a large
-effect. **Expect a weaker answer to §10.9's question than planned, and say so when reporting rather than after.**
+**Off-ceiling items: 35 of 127 = 28%.**
+**CORRECTED 2026-07-27 (auditor-caught). My first version of this table reported 0.90 → 0.67 from a simulation of
+293 INDEPENDENT items with no family structure** — contradicting the pre-registration, which declares the design
+family-structured (118 families of 2–3 template-sharing items), and overstating even the prereg's own item-level
+figure of 0.86. Redone with family structure present, which also settles the unit question: with the structure
+modelled, **(item, model) and (family, model) give the same power** (0.83 vs 0.84 at d=0.05 on the full bank), as
+the amendment established.
+**And the corrected picture depends entirely on one assumption I cannot test from baseline-only data: do
+ceiling items respond to the carrier at all?** "Ceiling compression" — the effect that made the pilot STOP —
+assumes they do *not*: an item a model answers correctly every time has no room to show a small degradation.
+| Assumption about the ~48% of quant-scope pinned at 1.000 | Power @ d=0.05 | @ d=0.10 |
+|---|---|---|
+| ceiling items respond to the carrier in full | 0.96 | 1.00 |
+| respond at half strength | 0.83 | 1.00 |
+| **do NOT respond (the compression case)** | **0.54** | **0.98** |
+| *(if ceiling items were dropped entirely, ~32 families)* | *0.33* | — |
+**So d ≈ 0.10 is resolvable under every assumption (0.98–1.00). d = 0.05 spans 0.33–0.96 and is
+assumption-dependent, not established.** That is the honest statement, and d=0.05 was the figure for *locating*
+the immunity threshold rather than merely detecting a large effect.
+**Report the d=0.05 resolution as contingent, with the assumption named, rather than as a number.** The run itself
+resolves which row of that table is true — measured carrier drops on items with baseline 1.000 versus baseline
+~0.69 are directly comparable once 975 lands.
 Defeasible is unmeasured here and may be fine; its key balance (74 HOLDS / 37 DEFEATED) is at least not 50/50-by-length.
 
 ## 5. THE REBUILD RULE — the gate I should have specified originally
