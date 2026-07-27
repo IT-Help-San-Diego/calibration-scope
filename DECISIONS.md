@@ -1144,6 +1144,18 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
       second shipped φ surface). No witness without a seal; counts raw;
       "demonstrates; does not rank"; channel labeled derived pending §14.
       Witness link added beside the evidence-bundle export in run detail.
+    - **2026-07-26/27 (Claude Code): RELAY TO HERMES (f) — the CI Lighthouse
+      perf gate is the project's own small-N lesson applied to itself.** The
+      dashboard job gates performance at 85 from ONE Lighthouse run on an
+      SSE page. Observed readings across near-identical code in one day:
+      64 (fail), several ≥85 passes, 78 (fail) — including a red on a
+      commit whose only change was a one-line div→button swap. The page's
+      true score straddles the threshold and a single run cannot resolve
+      it — the same reason the pilot's ceiling classifier moved to ≥8
+      trials. Suggested fix (ci.yml, Hermes lane): median of 3 Lighthouse
+      runs, or gate on the median with the spread printed. Until then,
+      isolated perf-gate reds on doc-only or one-line commits should be
+      re-measured, not chased.
     - **Backend findings from the same pass — RELAY TO HERMES (its lane,
       recorded not patched):** (a) lmstudio_sync's UPDATE path sets
       lmstudio_key but never rewrites `key`, so after a model rename/dedup
