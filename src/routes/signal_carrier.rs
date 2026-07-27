@@ -1,6 +1,8 @@
-//! Signal/Carrier read API — surfaces the `owl_signal_carrier` view
+//! Signal/Carrier read API — the `owl_signal_carrier` aggregation
 //! (migration 043) so the dashboard can SHOW the split instead of it
-//! living only in the database.
+//! living only in the database. The aggregation is inlined here rather
+//! than read from the view because the view lacks the
+//! is_infra_error = false filter (see the note in signal_carrier below).
 //!
 //! Two numbers per (subject, family):
 //!   signal_score     — pooled pass rate across every surface form of a
@@ -56,8 +58,48 @@ pub async fn signal_carrier(
     Query(q): Query<SignalCarrierQuery>,
 ) -> AppResult<Json<serde_json::Value>> {
     let min_forms = q.min_forms.unwrap_or(1);
+    // This inlines the owl_signal_carrier view's aggregation WITH the
+    // is_infra_error = false filter the view itself lacks (review catch,
+    // 2026-07-27): unfiltered, a backend outage mid-run reads as the
+    // subject's reasoning getting worse, and an outage that hits one
+    // surface form manufactures fake carrier variance. Infra failures are
+    // missing data, never wrong answers — the rule every other results
+    // query already follows. The view is not changed here because it is
+    // schema other consumers may read directly (relay to the backend lane
+    // to fix at the source once its consumers agree).
     let rows: Vec<SignalCarrierRow> = sqlx::query_as(
-        r#"SELECT
+        r#"WITH family_member AS (
+              SELECT id AS test_id,
+                     CASE WHEN owl_type = 'I' THEN id ELSE owl_root_id END AS family_root_id,
+                     axis
+              FROM tests
+              WHERE owl_type IN ('I', 'N')
+           ),
+           subject_test_rate AS (
+              SELECT tr.model_id, tr.participant_id, fm.family_root_id,
+                     fm.test_id, fm.axis,
+                     COUNT(*) AS total,
+                     COUNT(*) FILTER (WHERE trr.passed) AS passes,
+                     COUNT(*) FILTER (WHERE trr.passed)::FLOAT / NULLIF(COUNT(*), 0) AS pass_rate
+              FROM trial_results trr
+              JOIN test_runs tr ON tr.id = trr.run_id
+              JOIN family_member fm ON fm.test_id = trr.test_id
+              WHERE trr.is_infra_error = false
+              GROUP BY tr.model_id, tr.participant_id, fm.family_root_id, fm.test_id, fm.axis
+           ),
+           sc AS (
+              SELECT model_id, participant_id, family_root_id,
+                     (SELECT name FROM tests WHERE id = family_root_id) AS family_name,
+                     axis,
+                     COUNT(DISTINCT test_id) AS surface_forms_attempted,
+                     SUM(total) AS total_trials,
+                     SUM(passes) AS total_passes,
+                     SUM(passes)::FLOAT / NULLIF(SUM(total), 0) AS signal_score,
+                     VARIANCE(pass_rate) AS carrier_variance
+              FROM subject_test_rate
+              GROUP BY model_id, participant_id, family_root_id, axis
+           )
+           SELECT
               CASE WHEN sc.participant_id IS NOT NULL THEN 'human' ELSE 'model' END AS subject_kind,
               COALESCE(sc.participant_id, sc.model_id)::int AS subject_id,
               COALESCE(p.display_name, m.key, '?') AS subject_name,
@@ -69,7 +111,7 @@ pub async fn signal_carrier(
               sc.total_passes::bigint AS total_passes,
               sc.signal_score::float8 AS signal_score,
               sc.carrier_variance::float8 AS carrier_variance
-           FROM owl_signal_carrier sc
+           FROM sc
            LEFT JOIN models m ON m.id = sc.model_id
            LEFT JOIN participants p ON p.id = sc.participant_id
            WHERE ($1::text IS NULL OR m.key = $1)
@@ -88,6 +130,6 @@ pub async fn signal_carrier(
         "rows": rows,
         "row_count": rows.len(),
         "carrier_measurable_rows": measurable,
-        "note": "carrier_variance is NULL below 2 surface forms — not enough data to measure a wording swing; a 0 there would be a false claim."
+        "note": "carrier_variance is NULL below 2 surface forms — not enough data to measure a wording swing; a 0 there would be a false claim. Infra-error trials are excluded throughout: missing data, never wrong answers."
     })))
 }

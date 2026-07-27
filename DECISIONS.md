@@ -1290,6 +1290,23 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     for participant runs — migrations, backend lane; without the latter, a
     trial_num collision makes the evidence order (and so the seal)
     row-order-dependent between recomputes.
+  - **2026-07-27 (Claude Code): RELAY TO HERMES (h) — the
+    owl_signal_carrier view counts infra-error trials.** Copilot catch on
+    PR #3: the view (migration 043) aggregates trial_results with no
+    is_infra_error = false filter, while every other results query has
+    one — so a backend outage mid-run reads as the subject's reasoning
+    getting worse, and an outage hitting one surface form manufactures
+    fake carrier variance. The dashboard endpoint now inlines the
+    corrected aggregation (signal_carrier.rs), so the chart/compare panel
+    is right; the VIEW itself still serves infra-polluted numbers to any
+    direct consumer (Claude Science's harness, ad-hoc SQL). Fix at the
+    source is a CREATE OR REPLACE VIEW migration — backend lane, and
+    consumers should agree first since it changes published numbers.
+    Same round: made the witness claim-ledger's NULLS LAST explicit —
+    Copilot claimed Postgres sorts NULL first ascending (it doesn't;
+    default is NULLS LAST), declined-with-correction on the thread, but
+    the explicit qualifier documents the intent instead of leaning on a
+    default.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)

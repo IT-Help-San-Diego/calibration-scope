@@ -442,7 +442,7 @@ pub async fn run_witness(
            LEFT JOIN tests t ON t.id = tr.test_id
            WHERE tr.run_id = $1 AND tr.is_infra_error = false
            GROUP BY tr.test_id, t.name
-           ORDER BY tr.test_id"#,
+           ORDER BY tr.test_id NULLS LAST"#,
     )
     .bind(run_id)
     .fetch_all(&state.db)
