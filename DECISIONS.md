@@ -1176,6 +1176,6 @@ May assert: *in a controlled paired test where the carrier was the only variable
 verdict on identical logical content, and under one carrier the model's answers became fully deterministic where
 they had been stochastic.*
 May **not** assert: that the mechanism is known, that the effect is a directional degradation, that it holds
-beyond this model and bank, or that variance collapse is a property of carriers in general rather than of this one carrier (temperature, speculative decoding, and — via §10.8's non-monotone carrier ordering — prompt length are excluded for the accuracy effect).
+beyond this model and bank, or that the variance collapse reflects the carrier's content rather than its length. **Temperature and speculative decoding ARE excluded (both verified); prompt length is NOT** — see §D.4, where my own attempt to exclude it via §10.8's carrier ordering is retracted because that ordering's decisive premise, the carriers' relative lengths, was never measured.
 **The phrase "carrier-immune" remains retired** (§10.16). Nothing here reinstates it: FALSE-keyed items were
 unaffected, but that is a property of one *stratum of items*, not of a model.
