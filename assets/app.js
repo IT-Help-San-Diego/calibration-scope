@@ -4484,6 +4484,11 @@ async function hcStartSession() {
     hcTests = d.tests;
     hcIndex = 0;
     hcCorrect = 0;
+    // Session-start reset, not only hcReset(): a session begun without
+    // "Calibrate Again" would otherwise blend prior-session timings into
+    // this run's median/fastest/slowest (review catch).
+    hcTimes = [];
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     document.getElementById("hc-step-scope").style.display = "none";
     document.getElementById("hc-step-quiz").style.display = "";
     document.getElementById("hc-session-info").textContent = `${hcTests.length} questions · run #${hcRunId}`;
