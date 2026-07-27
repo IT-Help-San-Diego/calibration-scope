@@ -15,11 +15,23 @@ scoring the cell rate doubles resolution over majority-vote McNemar (d=0.05: 0.8
 **Vote-based McNemar** — majority-vote each item's 6 reps into one bit per carrier,
 paired within (item × model). Reported as a robustness check on the primary.
 
-## Resolution claims (honest bounds)
-- Report **d=0.05 at family level** (power 0.78 accounting for the 118 families of
-  2-3 template-sharing items). Claim **nothing at d=0.02** (power 0.20).
+## Resolution claims (honest bounds) — CORRECTED (Claude Science audit)
+- **d ≈ 0.10 resolves under every assumption** (power 0.98 even if ceiling items
+  cannot degrade; 1.00 if they respond at half or full).
+- **d = 0.05 is NOT established** — power spans 0.33–0.96 depending on whether the
+  ~48% of ceiling-pinned items can degrade at all. The earlier "report d=0.05 at
+  family level (0.78)" came from a simulation of 293 independent items, contradicting
+  this design's 118-family structure. Do NOT claim d=0.05 resolution.
+- **The run answers the d=0.05 question itself:** once the Lean arms land, comparing
+  measured carrier drops on baseline-1.000 items vs baseline-0.69 items identifies
+  whether ceiling items degrade under a carrier — that comparison runs FIRST.
 - The bank sits mid-difficulty where the majority-vote is most sensitive
   (p≈0.5); a majority-vote is near-blind at the ceiling (p=0.95 → 0.998 prob of 1).
+- **Length leak (GATE_length_binds_partials v2):** ρ=−0.580 on quant-scope; a blind
+  length-only rule scores 0.953 vs the model's 0.840 — length beats the model. The
+  carrier CONTRAST is structurally immune (length identical in both arms), but any
+  ABSOLUTE-difficulty claim must carry this caveat. Fix additively in the next bank
+  revision (write short items up to overlap).
 
 ## Construct-defect triage (standing caution, Claude Science)
 Lint 0/0 is mechanical; the probe found 2/11 items with construct defects a linter
