@@ -18,13 +18,21 @@ entry's `target` field by grammatical subject — agent / artifact / unclear —
 Wire it into the same gate that runs `itembank_lint.py`.
 
 ## 2. THE BASELINE, WHICH IS WORSE THAN THE ADOPTION IMPLIES
-| | corrective entries | agent-subject | compliance |
-|---|---|---|---|
-| **lifetime** | 77 | 31 | **40%** |
-| 2026-07-26 | 39 | 12 | 31% |
-| 2026-07-27 | 28 | 19 | 68% |
-**Three fifths of every correction in this log names an artifact instead of an author.** That is the measurement
-the rule was adopted without. It is now a number that can go up.
+| bucket | n / 77 | share |
+|---|---|---|
+| **agent-subject (passes)** | **31** | **40%** |
+| artifact-named (fails) | 23 | 30% |
+| unclear (no identifiable subject) | 23 | 30% |
+By day: 12/39 = 31% on the 26th, 19/28 = 68% on the 27th.
+**Corrected 2026-07-27:** an earlier version of this section said *"three fifths of every correction names an
+artifact instead of an author."* **That doubled the artifact figure** by folding *unclear* into it, and it
+contradicted §5 of this same memo, which states the unclear count. **The accurate statement: 60% fail the
+agent-subject test — half of those name an artifact, half have no identifiable subject at all.**
+**And the *unclear* third is not a measurement gap; it is the same evasion in a different costume.** Its members
+open with bare item IDs (`LOGIC-03N …`, `LIT-12 reframed …`), quoted claims (`'+14.7/+15.6 pt isolation effect'`),
+and nominalisations (`Two data bugs in …`, `9th grader-affected item …`). **None of them names an author either.**
+So the honest headline is the 40%: **three fifths of my corrections do not put an agent in the sentence, by one
+route or another.**
 
 ## 3. AND THE APPARENT IMPROVEMENT IS NOT ONE — I CHECKED BEFORE REPORTING IT
 31% → 68% across two days is **Fisher p = 0.0033**, and it would be easy to write "adoption is already working."
@@ -44,7 +52,9 @@ a quirk of how I write.
 
 ## 5. WHAT I AM NOT CLAIMING
 - **The linter's classifier is regex over the first ~90 characters of `target`.** 23 of 77 entries land in
-  *unclear* — it cannot parse a sentence, only recognise how one opens.
+  *unclear* — it cannot parse a sentence, only recognise how one opens. **Do not read *unclear* as "fine": I
+  inspected that bucket and it is agentless too** (item IDs, quoted claims, nominalisations). The three-way split
+  is a property of my phrasing, not a confidence interval.
 - I have **not** run it against `policy/EPISTEMIC_LOG.jsonl` (Hermes's log); the 40% is **my** log. Their baseline
   is theirs to measure, and the tool is in the repo for it.
 - **A 100% compliant log is not an honest log.** This measures one specific evasion, which is now countable — not
