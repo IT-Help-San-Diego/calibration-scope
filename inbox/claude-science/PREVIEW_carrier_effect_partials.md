@@ -31,22 +31,31 @@ My assumption table said everything hinged on whether items pinned at 1.000 can 
 from 1.000 to exactly 0.000.** Every one of the ten goes to zero. That is not compression and not a small
 carrier tax — it is **all-or-nothing**.
 
-## 3. WHAT THE COLLAPSE ACTUALLY IS — the length heuristic, exposed by the carrier
-The ten collapsing items and the twenty-nine flat ones are two clean populations:
+## 3. ~~WHAT THE COLLAPSE ACTUALLY IS — the length heuristic~~ **RETRACTED 2026-07-27, same day, by its own test**
+**The mechanism asserted in v1 of this section is WRONG and is retracted in full.** See
+`ANSWER_is_carrier_color_proven.md` §1. The refutation:
+- Among the 27 TRUE-keyed paired items, **flipped and non-flipped stems are indistinguishable in length —
+  269 vs 272 characters, Mann-Whitney p = 0.369.** Every TRUE-keyed item is long, so the length cue is *constant
+  within the group that flips* and **cannot explain which items flip.**
+- v1 also described the effect as the model moving "further toward answering FALSE." **The movement is
+  BIDIRECTIONAL:** of 27 TRUE-keyed items, 17 end at 0.000 and 10 end at 1.000, and **five move from a near-zero
+  baseline to a perfect score under the carrier.** The ten "collapsing" items were selected *because* they
+  collapsed — selection on the outcome.
+**The descriptive numbers below are correct and are retained as evidence; only the causal reading was wrong.**
 | | n | mean length | TRUE-keyed share | Lean accuracy |
 |---|---|---|---|---|
-| **collapse to 0.000** | 10 | **269 chars** | **1.00** | 0.000 |
-| flat at 1.000 | 29 | **157 chars** | **0.10** | 1.000 |
-And the by-key accuracies make the mechanism explicit:
+| collapse to 0.000 | 10 | 269 chars | 1.00 | 0.000 |
+| flat at 1.000 | 29 | 157 chars | 0.10 | 1.000 |
 | Arm | TRUE-keyed | FALSE-keyed |
 |---|---|---|
 | baseline | 0.685 | 1.000 |
-| **Lean** | **0.380** | **1.000** |
-**Under the Lean carrier the model moves further toward answering FALSE.** FALSE-keyed accuracy is pinned at 1.000
-in both arms; every point of the carrier effect comes out of TRUE-keyed items. **The carrier did not degrade
-reasoning uniformly — it pushed the model harder onto the short-answer/length heuristic the gate already
-detected.** That is a sharper and more interesting result than "accuracy drops 16 points," and it is only visible
-because the bank's leak was characterised first.
+| Lean | 0.380 | 1.000 |
+**What survives:** FALSE-keyed accuracy is pinned at 1.000 in both arms, so every point of the carrier effect comes
+out of TRUE-keyed items. **What does not survive:** any claim about *why*. **No mechanism is established.**
+**And the finding that replaced it** — the one this memo missed entirely — is that the carrier makes the model
+**deterministic**: 13 of 53 cells give intermediate rates at baseline, **0 of 53 under Lean**. That is the result
+worth pursuing, and it is blocked pending exclusion of a sampling-temperature artifact
+(`ANSWER_is_carrier_color_proven.md` §3–4).
 
 ## 4. WHAT THIS MEANS FOR THE POWERED RUN — better than expected, with one large caveat
 - **CORRECTED 2026-07-27 (auditor-caught).** I wrote that the measured behaviour matches the "ceiling items respond
