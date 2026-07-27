@@ -49,9 +49,15 @@ detected.** That is a sharper and more interesting result than "accuracy drops 1
 because the bank's leak was characterised first.
 
 ## 4. WHAT THIS MEANS FOR THE POWERED RUN — better than expected, with one large caveat
-- **The ceiling stratum is informative after all**, so the effective-n pessimism in my corrected memo (0.33 power
-  at d=0.05 if ceiling items are inert) is the **wrong row of the table**. The measured row is closer to "respond
-  in full" — which puts d=0.05 power near 0.96 rather than 0.33.
+- **CORRECTED 2026-07-27 (auditor-caught).** I wrote that the measured behaviour matches the "ceiling items respond
+  in full" row and imported its **0.96** figure. **That row's simulation shifts EVERY ceiling item; the measured
+  pattern is bimodal — 29 of 39 perfectly flat, 10 collapsing — and FALSE-keyed items are inert in both arms.**
+  Mapping a bimodal measurement onto a homogeneous-shift simulation and importing its number was invalid.
+  Re-simulated from the measured structure (≈49% of cells structurally inert, the rest carrying the whole effect):
+  power is **≥0.97 at d=0.05** and 1.00 at the observed d≈0.16, with null FPR 0.045–0.047 (calibrated). **But the
+  more important point is that this data cannot speak to d=0.05 at all** — the observed effect is d≈0.16, and a
+  power figure for d=0.05 rests on an assumed distribution of *small* effects that has not been observed.
+  **Report the run as resolving the effect it measures; do not attach a d=0.05 power number to this evidence.**
 - **But the effect is concentrated in TRUE-keyed items**, i.e. exactly the half where length and key are
   confounded. **So the run's headline carrier number and the bank's leak are entangled**: an observed carrier drop
   is partly "the carrier makes the model rely more on a cue that this bank made diagnostic." A bank without the
