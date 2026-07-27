@@ -151,8 +151,13 @@ index, README, lessons headers, DECISIONS preamble. One voice.
    state, at current origin/main the criterion passes. If it re-flags,
    compare against origin/main with context lines, not bare grep.)
 
-0.1. **Citation registry port (Claude Science ask, 2026-07-26 — added here
-   after its item audit found it was never written into this handoff).**
+0.1. ~~Citation registry port~~ **DONE (Claude Code, 2026-07-26, PR #2).**
+   dns-tool-intel added to the session and cloned; registry ported verbatim
+   to `citation/registry.yaml` (61 entries measured — the memo said 62) plus
+   `nasa:std-7009a` and `grade` added in the source format; root
+   `CITATIONS.md` records provenance, the NASA anti-badge rule, and the
+   primary-source caveat. YAML validated: 63 entries, unique ids, all four
+   required registrations present. Original ask (for the record):
    Port `go-server/internal/citation/registry.yaml` from dns-tool-intel
    (62 registered citations, existing format — zero invention) and register
    at minimum: odni:icd-203, nasa:std-7009a, grade, iso:25012. Source docs:
