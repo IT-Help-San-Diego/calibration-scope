@@ -136,6 +136,14 @@ index, README, lessons headers, DECISIONS preamble. One voice.
 
 ## Open items (pick in order)
 
+**NEXT BUILD for this lane (agreed with Carey 2026-07-26): item 7,
+human-cal UI polish** — per-question timing in the quiz step, a
+carrier-variance bar chart at results, and a human-vs-model comparison
+panel from /api/signal-carrier (returns both subjects in one shape). The
+mock-verification rig for browser-testing dashboard pages lives in the PR
+record (python mock server + Playwright against the real assets).
+
+
 0. ~~§10.9 prose-block downgrade~~ **DONE (commit 3c40571, 2026-07-25 —
    verified by Claude Code 2026-07-26).** §10.9 was retitled from assertion to
    question, the original paragraphs demoted to a verbatim-quoted blockquote
