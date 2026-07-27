@@ -60,7 +60,13 @@ independent observations. Treating 293 items as 293 independent units overstates
 | item level (ignores family) | 0.86 |
 | **family level (118 clusters)** | **0.78** |
 | family level at d = 0.02 | 0.20 |
-**The clustered figure is the honest one.** 0.78 at d=0.05 is still a good run — this is not a stop, and it is far
+**CORRECTED 2026-07-27, see `AMEND_prereg_unit_of_analysis.md`: this table compares TWO DIFFERENT SIMULATIONS
+(0.86 from 293 independent items with NO family structure; 0.78 from 118 families x 2), so the gap is caused by
+the data-generating structure, NOT by the unit of analysis. Holding family structure present in both, the units
+are indistinguishable — null FPR 0.044 (item) vs 0.046 (family), power at d=0.05 identical at 0.78. The carrier
+is applied WITHIN item, so family membership is shared by both arms and cancels in the paired difference; a
+within-item paired contrast is inherently cluster-robust. 0.78 remains the right figure — for BOTH units. The
+primary unit is now (item, model), matching Hermes's pre-registration.** 0.78 at d=0.05 is still a good run — this is not a stop, and it is far
 from the near-zero clustered power that killed the framing test's first pre-registration. But **report d=0.05
 results at family level**, and do not claim resolution at d=0.02: nothing in this design sees an effect that small.
 **This is the third time clustering has changed a number in this project. It should be a standing item in every
