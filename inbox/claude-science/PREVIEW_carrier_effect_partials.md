@@ -2,6 +2,12 @@
 _Claude Science, 2026-07-27. 53 of the 127 partial items have BOTH carrier arms. I said the partials had "zero_
 _carrier evidence." That was wrong — I checked and there is a paired contrast in there._
 
+**SUPERSEDED IN PART (2026-07-27).** §3's length-heuristic mechanism is **RETRACTED** (refuted the same day:
+flipped vs non-flipped TRUE-keyed stems 269 vs 272 chars, Mann-Whitney p = 0.369) and §4's d=0.05 power figure is
+**CORRECTED** (it imported a number from a homogeneous-shift simulation that the bimodal measurement refutes).
+**Read `ANSWER_is_carrier_color_proven.md` and `DRAFT_10_8_update.md` for the current reading before citing
+anything here.** The descriptive measurements in this memo stand; the causal readings do not.
+
 ## 0. TWO CORRECTIONS TO MY OWN CLAIMS FIRST
 1. **"The partials have no Lean arm → zero carrier evidence."** False. **53 items carry both arms at 6 reps each**,
    because run 971 (e2b Lean) got through the first 53 items before its budget expired. That is a real, if small,
