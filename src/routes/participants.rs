@@ -171,6 +171,15 @@ pub async fn start_session(
 
 // ── Run-ownership guard ───────────────────────────────────────────────────
 
+/// What the ownership guard learned about the run — submit_answer also needs
+/// the seeded test list, so the guard returns it instead of re-querying.
+#[derive(sqlx::FromRow)]
+struct RunOwner {
+    participant_id: Option<i32>,
+    status: String,
+    test_ids: Option<serde_json::Value>,
+}
+
 /// The run must exist and belong to this participant. With
 /// `must_be_running`, it must also not be sealed yet. Errors name the real
 /// condition — "not found", "belongs to another subject", "already sealed" —
@@ -180,14 +189,9 @@ async fn verify_run_owner(
     run_id: i32,
     participant_id: i32,
     must_be_running: bool,
-) -> AppResult<()> {
-    #[derive(sqlx::FromRow)]
-    struct RunOwner {
-        participant_id: Option<i32>,
-        status: String,
-    }
+) -> AppResult<RunOwner> {
     let run: Option<RunOwner> =
-        sqlx::query_as(r#"SELECT participant_id, status FROM test_runs WHERE id = $1"#)
+        sqlx::query_as(r#"SELECT participant_id, status, test_ids FROM test_runs WHERE id = $1"#)
             .bind(run_id)
             .fetch_optional(&state.db)
             .await?;
@@ -205,7 +209,7 @@ async fn verify_run_owner(
             run.status
         )));
     }
-    Ok(())
+    Ok(run)
 }
 
 // ── Submit a single answer ────────────────────────────────────────────────
@@ -241,7 +245,23 @@ pub async fn submit_answer(
     // running — a guessed run_id must not write trials into another
     // participant's run or a model run (review catch), and answers must
     // not append after the seal.
-    verify_run_owner(&state, req.run_id, participant_id, true).await?;
+    let run = verify_run_owner(&state, req.run_id, participant_id, true).await?;
+
+    // The test must be one the run was seeded with (review catch): without
+    // this, a client could answer arbitrary active tests and pad its own
+    // run with items the session never posed.
+    let seeded = run
+        .test_ids
+        .as_ref()
+        .and_then(|v| v.as_array())
+        .map(|a| a.iter().any(|x| x.as_i64() == Some(req.test_id as i64)))
+        .unwrap_or(false);
+    if !seeded {
+        return Err(AppError::Executor(format!(
+            "test {} is not part of run {}",
+            req.test_id, req.run_id
+        )));
+    }
 
     // Fetch the test to get expected_result + scoring_method + name
     #[derive(sqlx::FromRow)]
@@ -261,6 +281,32 @@ pub async fn submit_answer(
     let expected = test.expected_result.ok_or_else(|| {
         AppError::Executor(format!("test {} has no expected_result", req.test_id))
     })?;
+
+    // One answer per seeded item: if this test already has a trial row, the
+    // first answer stands and this call replays its recorded verdict instead
+    // of inserting a duplicate. A hard rejection here would strand a client
+    // whose insert succeeded but whose response was lost (it can only
+    // advance on success) — same lenient-retry design as finish_session,
+    // while still blocking trial-padding. Two truly concurrent submits can
+    // race past this check; a UNIQUE(run_id, test_id) partial index for
+    // participant runs is the airtight fix and belongs to a migration
+    // (backend lane — relayed).
+    let existing: Option<(i32, bool)> = sqlx::query_as(
+        r#"SELECT id, passed FROM trial_results
+           WHERE run_id = $1 AND test_id = $2 ORDER BY id LIMIT 1"#,
+    )
+    .bind(req.run_id)
+    .bind(req.test_id)
+    .fetch_optional(&state.db)
+    .await?;
+    if let Some((trial_id, passed)) = existing {
+        return Ok(Json(AnswerResult {
+            trial_result_id: trial_id,
+            passed,
+            expected,
+            test_name: test.name,
+        }));
+    }
 
     // Same grader the executor uses: exact match (case-insensitive, trimmed).
     let passed = match test.scoring_method.as_str() {

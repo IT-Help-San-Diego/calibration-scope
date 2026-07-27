@@ -1248,7 +1248,15 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     it to subjects and missed it for families three lines away), and
     submit_answer/finish_session gained a run-ownership guard
     (verify_run_owner): a guessed run_id could previously write trials
-    into — or RESEAL — another participant's run or a model run.
+    into — or RESEAL — another participant's run or a model run. Third
+    catch, next round: submit_answer now also enforces that test_id is in
+    the run's seeded test_ids (no padding a run with items the session
+    never posed), and duplicate submits replay the recorded verdict
+    instead of inserting — a hard rejection would strand a client whose
+    insert landed but whose response was lost. RELAY TO HERMES (g): the
+    airtight duplicate fix is a partial UNIQUE(run_id, test_id) index for
+    participant runs — migration, backend lane; the in-route check has an
+    unavoidable concurrent-submit race without it.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
