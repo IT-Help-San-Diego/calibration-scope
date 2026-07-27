@@ -1,0 +1,2639 @@
+[
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA01",
+    "name": "QS001A",
+    "prompt_text": "'Every server runs an agent.' Does this claim require that ONE single entity serves all servers, or only that each server has some (possibly different) one? It claims: for each server there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA01",
+    "name": "QS001B",
+    "prompt_text": "'Every server runs an agent.' Does this logically require that all servers share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA02",
+    "name": "QS002A",
+    "prompt_text": "'Every node holds a token.' Does this claim require that ONE single entity serves all nodes, or only that each node has some (possibly different) one? It claims: for each node there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA02",
+    "name": "QS002B",
+    "prompt_text": "'Every node holds a token.' Does this logically require that all nodes share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA03",
+    "name": "QS003A",
+    "prompt_text": "'Every replica has a copy.' Does this claim require that ONE single entity serves all replicas, or only that each replica has some (possibly different) one? It claims: for each replica there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA03",
+    "name": "QS003B",
+    "prompt_text": "'Every replica has a copy.' Does this logically require that all replicas share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA04",
+    "name": "QS004A",
+    "prompt_text": "'Every container has a limit.' Does this claim require that ONE single entity serves all containers, or only that each container has some (possibly different) one? It claims: for each container there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA04",
+    "name": "QS004B",
+    "prompt_text": "'Every container has a limit.' Does this logically require that all containers share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA05",
+    "name": "QS005A",
+    "prompt_text": "'Every test imports a fixture.' Does this claim require that ONE single entity serves all tests, or only that each test has some (possibly different) one? It claims: for each test there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA05",
+    "name": "QS005B",
+    "prompt_text": "'Every test imports a fixture.' Does this logically require that all tests share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA06",
+    "name": "QS006A",
+    "prompt_text": "'Every port has a listener.' Does this claim require that ONE single entity serves all ports, or only that each port has some (possibly different) one? It claims: for each port there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA06",
+    "name": "QS006B",
+    "prompt_text": "'Every port has a listener.' Does this logically require that all ports share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA07",
+    "name": "QS007A",
+    "prompt_text": "'Every file has an owner.' Does this claim require that ONE single entity serves all files, or only that each file has some (possibly different) one? It claims: for each file there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA07",
+    "name": "QS007B",
+    "prompt_text": "'Every file has an owner.' Does this logically require that all files share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA08",
+    "name": "QS008A",
+    "prompt_text": "'Every task has a deadline.' Does this claim require that ONE single entity serves all tasks, or only that each task has some (possibly different) one? It claims: for each task there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA08",
+    "name": "QS008B",
+    "prompt_text": "'Every task has a deadline.' Does this logically require that all tasks share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA09",
+    "name": "QS009A",
+    "prompt_text": "'Every user has a role.' Does this claim require that ONE single entity serves all users, or only that each user has some (possibly different) one? It claims: for each user there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA09",
+    "name": "QS009B",
+    "prompt_text": "'Every user has a role.' Does this logically require that all users share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA10",
+    "name": "QS010A",
+    "prompt_text": "'Every backup has a checksum.' Does this claim require that ONE single entity serves all backups, or only that each backup has some (possibly different) one? It claims: for each backup there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA10",
+    "name": "QS010B",
+    "prompt_text": "'Every backup has a checksum.' Does this logically require that all backups share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA11",
+    "name": "QS011A",
+    "prompt_text": "'Every queue has a consumer.' Does this claim require that ONE single entity serves all queues, or only that each queue has some (possibly different) one? It claims: for each queue there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA11",
+    "name": "QS011B",
+    "prompt_text": "'Every queue has a consumer.' Does this logically require that all queues share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA12",
+    "name": "QS012A",
+    "prompt_text": "'Every shard has a leader.' Does this claim require that ONE single entity serves all shards, or only that each shard has some (possibly different) one? It claims: for each shard there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA12",
+    "name": "QS012B",
+    "prompt_text": "'Every shard has a leader.' Does this logically require that all shards share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA13",
+    "name": "QS013A",
+    "prompt_text": "'Every endpoint has a certificate.' Does this claim require that ONE single entity serves all endpoints, or only that each endpoint has some (possibly different) one? It claims: for each endpoint there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA13",
+    "name": "QS013B",
+    "prompt_text": "'Every endpoint has a certificate.' Does this logically require that all endpoints share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA14",
+    "name": "QS014A",
+    "prompt_text": "'Every job has a priority.' Does this claim require that ONE single entity serves all jobs, or only that each job has some (possibly different) one? It claims: for each job there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA14",
+    "name": "QS014B",
+    "prompt_text": "'Every job has a priority.' Does this logically require that all jobs share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA15",
+    "name": "QS015A",
+    "prompt_text": "'Every table has an index.' Does this claim require that ONE single entity serves all tables, or only that each table has some (possibly different) one? It claims: for each table there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA15",
+    "name": "QS015B",
+    "prompt_text": "'Every table has an index.' Does this logically require that all tables share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA16",
+    "name": "QS016A",
+    "prompt_text": "'Every worker has a queue.' Does this claim require that ONE single entity serves all workers, or only that each worker has some (possibly different) one? It claims: for each worker there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA16",
+    "name": "QS016B",
+    "prompt_text": "'Every worker has a queue.' Does this logically require that all workers share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA17",
+    "name": "QS017A",
+    "prompt_text": "'Every session has an expiry.' Does this claim require that ONE single entity serves all sessions, or only that each session has some (possibly different) one? It claims: for each session there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA17",
+    "name": "QS017B",
+    "prompt_text": "'Every session has an expiry.' Does this logically require that all sessions share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA18",
+    "name": "QS018A",
+    "prompt_text": "'Every bucket has a policy.' Does this claim require that ONE single entity serves all buckets, or only that each bucket has some (possibly different) one? It claims: for each bucket there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA18",
+    "name": "QS018B",
+    "prompt_text": "'Every bucket has a policy.' Does this logically require that all buckets share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA19",
+    "name": "QS019A",
+    "prompt_text": "'Every stream has a partition.' Does this claim require that ONE single entity serves all streams, or only that each stream has some (possibly different) one? It claims: for each stream there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA19",
+    "name": "QS019B",
+    "prompt_text": "'Every stream has a partition.' Does this logically require that all streams share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA20",
+    "name": "QS020A",
+    "prompt_text": "'Every cache has a TTL.' Does this claim require that ONE single entity serves all caches, or only that each cache has some (possibly different) one? It claims: for each cache there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA20",
+    "name": "QS020B",
+    "prompt_text": "'Every cache has a TTL.' Does this logically require that all caches share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA21",
+    "name": "QS021A",
+    "prompt_text": "'Every secret has an expiry.' Does this claim require that ONE single entity serves all secrets, or only that each secret has some (possibly different) one? It claims: for each secret there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA21",
+    "name": "QS021B",
+    "prompt_text": "'Every secret has an expiry.' Does this logically require that all secrets share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA22",
+    "name": "QS022A",
+    "prompt_text": "'Every pipeline has a stage.' Does this claim require that ONE single entity serves all pipelines, or only that each pipeline has some (possibly different) one? It claims: for each pipeline there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA22",
+    "name": "QS022B",
+    "prompt_text": "'Every pipeline has a stage.' Does this logically require that all pipelines share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA23",
+    "name": "QS023A",
+    "prompt_text": "'Every cluster has a quorum.' Does this claim require that ONE single entity serves all clusters, or only that each cluster has some (possibly different) one? It claims: for each cluster there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA23",
+    "name": "QS023B",
+    "prompt_text": "'Every cluster has a quorum.' Does this logically require that all clusters share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA24",
+    "name": "QS024A",
+    "prompt_text": "'Every log has a level.' Does this claim require that ONE single entity serves all logs, or only that each log has some (possibly different) one? It claims: for each log there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA24",
+    "name": "QS024B",
+    "prompt_text": "'Every log has a level.' Does this logically require that all logs share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA25",
+    "name": "QS025A",
+    "prompt_text": "'Every metric has a label.' Does this claim require that ONE single entity serves all metrics, or only that each metric has some (possibly different) one? It claims: for each metric there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA25",
+    "name": "QS025B",
+    "prompt_text": "'Every metric has a label.' Does this logically require that all metrics share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA26",
+    "name": "QS026A",
+    "prompt_text": "'Every alert has a severity.' Does this claim require that ONE single entity serves all alerts, or only that each alert has some (possibly different) one? It claims: for each alert there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA26",
+    "name": "QS026B",
+    "prompt_text": "'Every alert has a severity.' Does this logically require that all alerts share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA27",
+    "name": "QS027A",
+    "prompt_text": "'Every build has an artifact.' Does this claim require that ONE single entity serves all builds, or only that each build has some (possibly different) one? It claims: for each build there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA27",
+    "name": "QS027B",
+    "prompt_text": "'Every build has an artifact.' Does this logically require that all builds share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA28",
+    "name": "QS028A",
+    "prompt_text": "'Every branch has a protector.' Does this claim require that ONE single entity serves all branchs, or only that each branch has some (possibly different) one? It claims: for each branch there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA28",
+    "name": "QS028B",
+    "prompt_text": "'Every branch has a protector.' Does this logically require that all branchs share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA29",
+    "name": "QS029A",
+    "prompt_text": "'Every token has a scope.' Does this claim require that ONE single entity serves all tokens, or only that each token has some (possibly different) one? It claims: for each token there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA29",
+    "name": "QS029B",
+    "prompt_text": "'Every token has a scope.' Does this logically require that all tokens share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA30",
+    "name": "QS030A",
+    "prompt_text": "'Every mount has a filesystem.' Does this claim require that ONE single entity serves all mounts, or only that each mount has some (possibly different) one? It claims: for each mount there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA30",
+    "name": "QS030B",
+    "prompt_text": "'Every mount has a filesystem.' Does this logically require that all mounts share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA31",
+    "name": "QS031A",
+    "prompt_text": "'Every dataset has a schema.' Does this claim require that ONE single entity serves all datasets, or only that each dataset has some (possibly different) one? It claims: for each dataset there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA31",
+    "name": "QS031B",
+    "prompt_text": "'Every dataset has a schema.' Does this logically require that all datasets share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA32",
+    "name": "QS032A",
+    "prompt_text": "'Every model has a version.' Does this claim require that ONE single entity serves all models, or only that each model has some (possibly different) one? It claims: for each model there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA32",
+    "name": "QS032B",
+    "prompt_text": "'Every model has a version.' Does this logically require that all models share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA33",
+    "name": "QS033A",
+    "prompt_text": "'Every feature has a flag.' Does this claim require that ONE single entity serves all features, or only that each feature has some (possibly different) one? It claims: for each feature there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA33",
+    "name": "QS033B",
+    "prompt_text": "'Every feature has a flag.' Does this logically require that all features share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA34",
+    "name": "QS034A",
+    "prompt_text": "'Every tenant has a quota.' Does this claim require that ONE single entity serves all tenants, or only that each tenant has some (possibly different) one? It claims: for each tenant there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA34",
+    "name": "QS034B",
+    "prompt_text": "'Every tenant has a quota.' Does this logically require that all tenants share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA35",
+    "name": "QS035A",
+    "prompt_text": "'Every volume has a snapshot.' Does this claim require that ONE single entity serves all volumes, or only that each volume has some (possibly different) one? It claims: for each volume there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA35",
+    "name": "QS035B",
+    "prompt_text": "'Every volume has a snapshot.' Does this logically require that all volumes share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA36",
+    "name": "QS036A",
+    "prompt_text": "'Every function has a timeout.' Does this claim require that ONE single entity serves all functions, or only that each function has some (possibly different) one? It claims: for each function there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA36",
+    "name": "QS036B",
+    "prompt_text": "'Every function has a timeout.' Does this logically require that all functions share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA37",
+    "name": "QS037A",
+    "prompt_text": "'Every topic has a subscriber.' Does this claim require that ONE single entity serves all topics, or only that each topic has some (possibly different) one? It claims: for each topic there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA37",
+    "name": "QS037B",
+    "prompt_text": "'Every topic has a subscriber.' Does this logically require that all topics share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA38",
+    "name": "QS038A",
+    "prompt_text": "'Every cell has a coordinator.' Does this claim require that ONE single entity serves all cells, or only that each cell has some (possibly different) one? It claims: for each cell there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA38",
+    "name": "QS038B",
+    "prompt_text": "'Every cell has a coordinator.' Does this logically require that all cells share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA39",
+    "name": "QS039A",
+    "prompt_text": "'Every zone has a nameserver.' Does this claim require that ONE single entity serves all zones, or only that each zone has some (possibly different) one? It claims: for each zone there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA39",
+    "name": "QS039B",
+    "prompt_text": "'Every zone has a nameserver.' Does this logically require that all zones share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA40",
+    "name": "QS040A",
+    "prompt_text": "'Every image has a digest.' Does this claim require that ONE single entity serves all images, or only that each image has some (possibly different) one? It claims: for each image there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA40",
+    "name": "QS040B",
+    "prompt_text": "'Every image has a digest.' Does this logically require that all images share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA41",
+    "name": "QS041A",
+    "prompt_text": "'Every package has a maintainer.' Does this claim require that ONE single entity serves all packages, or only that each package has some (possibly different) one? It claims: for each package there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA41",
+    "name": "QS041B",
+    "prompt_text": "'Every package has a maintainer.' Does this logically require that all packages share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA42",
+    "name": "QS042A",
+    "prompt_text": "'Every driver has a version.' Does this claim require that ONE single entity serves all drivers, or only that each driver has some (possibly different) one? It claims: for each driver there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA42",
+    "name": "QS042B",
+    "prompt_text": "'Every driver has a version.' Does this logically require that all drivers share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA43",
+    "name": "QS043A",
+    "prompt_text": "'Every mailbox has a filter.' Does this claim require that ONE single entity serves all mailboxs, or only that each mailbox has some (possibly different) one? It claims: for each mailbox there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA43",
+    "name": "QS043B",
+    "prompt_text": "'Every mailbox has a filter.' Does this logically require that all mailboxs share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA44",
+    "name": "QS044A",
+    "prompt_text": "'Every contact has a tag.' Does this claim require that ONE single entity serves all contacts, or only that each contact has some (possibly different) one? It claims: for each contact there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA44",
+    "name": "QS044B",
+    "prompt_text": "'Every contact has a tag.' Does this logically require that all contacts share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA45",
+    "name": "QS045A",
+    "prompt_text": "'Every invoice has a status.' Does this claim require that ONE single entity serves all invoices, or only that each invoice has some (possibly different) one? It claims: for each invoice there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA45",
+    "name": "QS045B",
+    "prompt_text": "'Every invoice has a status.' Does this logically require that all invoices share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA46",
+    "name": "QS046A",
+    "prompt_text": "'Every ticket has an assignee.' Does this claim require that ONE single entity serves all tickets, or only that each ticket has some (possibly different) one? It claims: for each ticket there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA46",
+    "name": "QS046B",
+    "prompt_text": "'Every ticket has an assignee.' Does this logically require that all tickets share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA47",
+    "name": "QS047A",
+    "prompt_text": "'Every review has an approver.' Does this claim require that ONE single entity serves all reviews, or only that each review has some (possibly different) one? It claims: for each review there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA47",
+    "name": "QS047B",
+    "prompt_text": "'Every review has an approver.' Does this logically require that all reviews share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA48",
+    "name": "QS048A",
+    "prompt_text": "'Every release has a changelog.' Does this claim require that ONE single entity serves all releases, or only that each release has some (possibly different) one? It claims: for each release there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA48",
+    "name": "QS048B",
+    "prompt_text": "'Every release has a changelog.' Does this logically require that all releases share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA49",
+    "name": "QS049A",
+    "prompt_text": "'Every webhook has a secret.' Does this claim require that ONE single entity serves all webhooks, or only that each webhook has some (possibly different) one? It claims: for each webhook there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA49",
+    "name": "QS049B",
+    "prompt_text": "'Every webhook has a secret.' Does this logically require that all webhooks share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA50",
+    "name": "QS050A",
+    "prompt_text": "'Every gateway route has a weight.' Does this claim require that ONE single entity serves all gateway routes, or only that each gateway route has some (possibly different) one? It claims: for each gateway route there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA50",
+    "name": "QS050B",
+    "prompt_text": "'Every gateway route has a weight.' Does this logically require that all gateway routes share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA51",
+    "name": "QS051A",
+    "prompt_text": "'Every cron has a schedule.' Does this claim require that ONE single entity serves all crons, or only that each cron has some (possibly different) one? It claims: for each cron there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA51",
+    "name": "QS051B",
+    "prompt_text": "'Every cron has a schedule.' Does this logically require that all crons share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA52",
+    "name": "QS052A",
+    "prompt_text": "'Every snapshot has a parent.' Does this claim require that ONE single entity serves all snapshots, or only that each snapshot has some (possibly different) one? It claims: for each snapshot there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA52",
+    "name": "QS052B",
+    "prompt_text": "'Every snapshot has a parent.' Does this logically require that all snapshots share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA53",
+    "name": "QS053A",
+    "prompt_text": "'Every vlan has a tag.' Does this claim require that ONE single entity serves all vlans, or only that each vlan has some (possibly different) one? It claims: for each vlan there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA53",
+    "name": "QS053B",
+    "prompt_text": "'Every vlan has a tag.' Does this logically require that all vlans share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA54",
+    "name": "QS054A",
+    "prompt_text": "'Every subnet has a CIDR.' Does this claim require that ONE single entity serves all subnets, or only that each subnet has some (possibly different) one? It claims: for each subnet there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA54",
+    "name": "QS054B",
+    "prompt_text": "'Every subnet has a CIDR.' Does this logically require that all subnets share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA55",
+    "name": "QS055A",
+    "prompt_text": "'Every certificate has a chain.' Does this claim require that ONE single entity serves all certificates, or only that each certificate has some (possibly different) one? It claims: for each certificate there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA55",
+    "name": "QS055B",
+    "prompt_text": "'Every certificate has a chain.' Does this logically require that all certificates share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA56",
+    "name": "QS056A",
+    "prompt_text": "'Every key has a rotation.' Does this claim require that ONE single entity serves all keys, or only that each key has some (possibly different) one? It claims: for each key there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA56",
+    "name": "QS056B",
+    "prompt_text": "'Every key has a rotation.' Does this logically require that all keys share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA57",
+    "name": "QS057A",
+    "prompt_text": "'Every audit has a trail.' Does this claim require that ONE single entity serves all audits, or only that each audit has some (possibly different) one? It claims: for each audit there exists one (not necessarily the same). Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists narrow scope"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-FA57",
+    "name": "QS057B",
+    "prompt_text": "'Every audit has a trail.' Does this logically require that all audits share the SAME single one? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not force one shared"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA01",
+    "name": "QS058A",
+    "prompt_text": "'There is a key that opens every door.' Is the claim that ONE key does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA01",
+    "name": "QS059B",
+    "prompt_text": "'There is a key that opens every door.' Could this be satisfied by a DIFFERENT key for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA01",
+    "name": "QS060C",
+    "prompt_text": "'For each of them, there exists a key that opens every door.' Does this reading allow a DIFFERENT key per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA02",
+    "name": "QS061A",
+    "prompt_text": "'There is a master token that authorizes every request.' Is the claim that ONE master token does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA02",
+    "name": "QS062B",
+    "prompt_text": "'There is a master token that authorizes every request.' Could this be satisfied by a DIFFERENT master token for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA02",
+    "name": "QS063C",
+    "prompt_text": "'For each of them, there exists a master token that authorizes every request.' Does this reading allow a DIFFERENT master token per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA03",
+    "name": "QS064A",
+    "prompt_text": "'There is a root CA that signs every certificate.' Is the claim that ONE root CA does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA03",
+    "name": "QS065B",
+    "prompt_text": "'There is a root CA that signs every certificate.' Could this be satisfied by a DIFFERENT root CA for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA03",
+    "name": "QS066C",
+    "prompt_text": "'For each of them, there exists a root CA that signs every certificate.' Does this reading allow a DIFFERENT root CA per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA04",
+    "name": "QS067A",
+    "prompt_text": "'There is a leader that coordinates every shard.' Is the claim that ONE leader does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA04",
+    "name": "QS068B",
+    "prompt_text": "'There is a leader that coordinates every shard.' Could this be satisfied by a DIFFERENT leader for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA04",
+    "name": "QS069C",
+    "prompt_text": "'For each of them, there exists a leader that coordinates every shard.' Does this reading allow a DIFFERENT leader per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA05",
+    "name": "QS070A",
+    "prompt_text": "'There is a admin that can reach every host.' Is the claim that ONE admin does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA05",
+    "name": "QS071B",
+    "prompt_text": "'There is a admin that can reach every host.' Could this be satisfied by a DIFFERENT admin for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA05",
+    "name": "QS072C",
+    "prompt_text": "'For each of them, there exists a admin that can reach every host.' Does this reading allow a DIFFERENT admin per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA06",
+    "name": "QS073A",
+    "prompt_text": "'There is a seed that reproduces every run.' Is the claim that ONE seed does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA06",
+    "name": "QS074B",
+    "prompt_text": "'There is a seed that reproduces every run.' Could this be satisfied by a DIFFERENT seed for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA06",
+    "name": "QS075C",
+    "prompt_text": "'For each of them, there exists a seed that reproduces every run.' Does this reading allow a DIFFERENT seed per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA07",
+    "name": "QS076A",
+    "prompt_text": "'There is a primary that owns every write.' Is the claim that ONE primary does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA07",
+    "name": "QS077B",
+    "prompt_text": "'There is a primary that owns every write.' Could this be satisfied by a DIFFERENT primary for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA07",
+    "name": "QS078C",
+    "prompt_text": "'For each of them, there exists a primary that owns every write.' Does this reading allow a DIFFERENT primary per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA08",
+    "name": "QS079A",
+    "prompt_text": "'There is a gateway that routes every packet.' Is the claim that ONE gateway does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA08",
+    "name": "QS080B",
+    "prompt_text": "'There is a gateway that routes every packet.' Could this be satisfied by a DIFFERENT gateway for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA08",
+    "name": "QS081C",
+    "prompt_text": "'For each of them, there exists a gateway that routes every packet.' Does this reading allow a DIFFERENT gateway per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA09",
+    "name": "QS082A",
+    "prompt_text": "'There is a license that covers every seat.' Is the claim that ONE license does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA09",
+    "name": "QS083B",
+    "prompt_text": "'There is a license that covers every seat.' Could this be satisfied by a DIFFERENT license for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA09",
+    "name": "QS084C",
+    "prompt_text": "'For each of them, there exists a license that covers every seat.' Does this reading allow a DIFFERENT license per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA10",
+    "name": "QS085A",
+    "prompt_text": "'There is a schema that validates every record.' Is the claim that ONE schema does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA10",
+    "name": "QS086B",
+    "prompt_text": "'There is a schema that validates every record.' Could this be satisfied by a DIFFERENT schema for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA10",
+    "name": "QS087C",
+    "prompt_text": "'For each of them, there exists a schema that validates every record.' Does this reading allow a DIFFERENT schema per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA11",
+    "name": "QS088A",
+    "prompt_text": "'There is a policy that governs every bucket.' Is the claim that ONE policy does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA11",
+    "name": "QS089B",
+    "prompt_text": "'There is a policy that governs every bucket.' Could this be satisfied by a DIFFERENT policy for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA11",
+    "name": "QS090C",
+    "prompt_text": "'For each of them, there exists a policy that governs every bucket.' Does this reading allow a DIFFERENT policy per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA12",
+    "name": "QS091A",
+    "prompt_text": "'There is a schedule that triggers every job.' Is the claim that ONE schedule does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA12",
+    "name": "QS092B",
+    "prompt_text": "'There is a schedule that triggers every job.' Could this be satisfied by a DIFFERENT schedule for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA12",
+    "name": "QS093C",
+    "prompt_text": "'For each of them, there exists a schedule that triggers every job.' Does this reading allow a DIFFERENT schedule per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA13",
+    "name": "QS094A",
+    "prompt_text": "'There is a role that grants every permission.' Is the claim that ONE role does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA13",
+    "name": "QS095B",
+    "prompt_text": "'There is a role that grants every permission.' Could this be satisfied by a DIFFERENT role for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA13",
+    "name": "QS096C",
+    "prompt_text": "'For each of them, there exists a role that grants every permission.' Does this reading allow a DIFFERENT role per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA14",
+    "name": "QS097A",
+    "prompt_text": "'There is a proxy that forwards every request.' Is the claim that ONE proxy does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA14",
+    "name": "QS098B",
+    "prompt_text": "'There is a proxy that forwards every request.' Could this be satisfied by a DIFFERENT proxy for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA14",
+    "name": "QS099C",
+    "prompt_text": "'For each of them, there exists a proxy that forwards every request.' Does this reading allow a DIFFERENT proxy per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA15",
+    "name": "QS100A",
+    "prompt_text": "'There is a umbrella cert that secures every subdomain.' Is the claim that ONE umbrella cert does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA15",
+    "name": "QS101B",
+    "prompt_text": "'There is a umbrella cert that secures every subdomain.' Could this be satisfied by a DIFFERENT umbrella cert for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA15",
+    "name": "QS102C",
+    "prompt_text": "'For each of them, there exists a umbrella cert that secures every subdomain.' Does this reading allow a DIFFERENT umbrella cert per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA16",
+    "name": "QS103A",
+    "prompt_text": "'There is a config that configures every node.' Is the claim that ONE config does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA16",
+    "name": "QS104B",
+    "prompt_text": "'There is a config that configures every node.' Could this be satisfied by a DIFFERENT config for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA16",
+    "name": "QS105C",
+    "prompt_text": "'For each of them, there exists a config that configures every node.' Does this reading allow a DIFFERENT config per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA17",
+    "name": "QS106A",
+    "prompt_text": "'There is a template that renders every page.' Is the claim that ONE template does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA17",
+    "name": "QS107B",
+    "prompt_text": "'There is a template that renders every page.' Could this be satisfied by a DIFFERENT template for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA17",
+    "name": "QS108C",
+    "prompt_text": "'For each of them, there exists a template that renders every page.' Does this reading allow a DIFFERENT template per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA18",
+    "name": "QS109A",
+    "prompt_text": "'There is a manifest that describes every artifact.' Is the claim that ONE manifest does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA18",
+    "name": "QS110B",
+    "prompt_text": "'There is a manifest that describes every artifact.' Could this be satisfied by a DIFFERENT manifest for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA18",
+    "name": "QS111C",
+    "prompt_text": "'For each of them, there exists a manifest that describes every artifact.' Does this reading allow a DIFFERENT manifest per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA19",
+    "name": "QS112A",
+    "prompt_text": "'There is a router that reaches every subnet.' Is the claim that ONE router does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA19",
+    "name": "QS113B",
+    "prompt_text": "'There is a router that reaches every subnet.' Could this be satisfied by a DIFFERENT router for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA19",
+    "name": "QS114C",
+    "prompt_text": "'For each of them, there exists a router that reaches every subnet.' Does this reading allow a DIFFERENT router per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA20",
+    "name": "QS115A",
+    "prompt_text": "'There is a keypair that unlocks every vault.' Is the claim that ONE keypair does this for all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide: single entity for all"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA20",
+    "name": "QS116B",
+    "prompt_text": "'There is a keypair that unlocks every vault.' Could this be satisfied by a DIFFERENT keypair for each one rather than one for all? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide requires one entity"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-EA20",
+    "name": "QS117C",
+    "prompt_text": "'For each of them, there exists a keypair that unlocks every vault.' Does this reading allow a DIFFERENT keypair per case (not necessarily one for all)? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists permits different-per-case"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG01",
+    "name": "QS118A",
+    "prompt_text": "'All that is cached is not fresh.' Read literally as: nothing cached is fresh. Is that literal universal-negative reading the usual intended meaning? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: literal vs intended"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG01",
+    "name": "QS119B",
+    "prompt_text": "'All that is cached is not fresh.' Under the reading 'not everything cached is fresh', is the statement making a universal claim about all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: partial not universal"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG02",
+    "name": "QS120A",
+    "prompt_text": "'Every log is not an error.' Read literally as: no log is an error. Is that literal universal-negative reading the usual intended meaning? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: literal vs intended"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG02",
+    "name": "QS121B",
+    "prompt_text": "'Every log is not an error.' Under the reading 'not every log is an error', is the statement making a universal claim about all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: partial not universal"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG03",
+    "name": "QS122A",
+    "prompt_text": "'All replicas are not in sync.' Read literally as: no replica is in sync. Is that literal universal-negative reading the usual intended meaning? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: literal vs intended"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG03",
+    "name": "QS123B",
+    "prompt_text": "'All replicas are not in sync.' Under the reading 'not all replicas are in sync', is the statement making a universal claim about all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: partial not universal"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG04",
+    "name": "QS124A",
+    "prompt_text": "'Every token is not expired.' Read literally as: no token is expired. Is that literal universal-negative reading the usual intended meaning? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: literal vs intended"
+  },
+  {
+    "probe_class": "quant-scope",
+    "family_id": "QS-NEG04",
+    "name": "QS125B",
+    "prompt_text": "'Every token is not expired.' Under the reading 'not every token is expired', is the statement making a universal claim about all of them? Answer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "negation scope: partial not universal"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-01",
+    "name": "DF001A",
+    "prompt_text": "By default, servers in this cluster are healthy. Node is a server in this cluster. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-01",
+    "name": "DF001B",
+    "prompt_text": "By default, servers in this cluster are healthy. Node is a server in this cluster, AND Node is returning 500s on all probes. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-01",
+    "name": "DF001C",
+    "prompt_text": "By default, servers in this cluster are healthy. Node is a server in this cluster, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-02",
+    "name": "DF002A",
+    "prompt_text": "By default, signed packages install cleanly. This package is signed and the signature verifies. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-02",
+    "name": "DF002B",
+    "prompt_text": "By default, signed packages install cleanly. This package is signed and the signature verifies, AND The package's dependency is missing. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-02",
+    "name": "DF002C",
+    "prompt_text": "By default, signed packages install cleanly. This package is signed and the signature verifies, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-03",
+    "name": "DF003A",
+    "prompt_text": "By default, the backup completes by 3 AM. The backup ran last night. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-03",
+    "name": "DF003B",
+    "prompt_text": "By default, the backup completes by 3 AM. The backup ran last night, AND The disk filled at 2 AM. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-03",
+    "name": "DF003C",
+    "prompt_text": "By default, the backup completes by 3 AM. The backup ran last night, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-04",
+    "name": "DF004A",
+    "prompt_text": "By default, alarms indicate real faults. The alarm is sounding. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-04",
+    "name": "DF004B",
+    "prompt_text": "By default, alarms indicate real faults. The alarm is sounding, AND The sensor covering it is disconnected. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-04",
+    "name": "DF004C",
+    "prompt_text": "By default, alarms indicate real faults. The alarm is sounding, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-05",
+    "name": "DF005A",
+    "prompt_text": "By default, cached data is fresh. This entry is in the cache. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-05",
+    "name": "DF005B",
+    "prompt_text": "By default, cached data is fresh. This entry is in the cache, AND The entry is 40 days old with a 1-day TTL. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-05",
+    "name": "DF005C",
+    "prompt_text": "By default, cached data is fresh. This entry is in the cache, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-06",
+    "name": "DF006A",
+    "prompt_text": "By default, students who attend lecture pass. Maya attended every lecture. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-06",
+    "name": "DF006B",
+    "prompt_text": "By default, students who attend lecture pass. Maya attended every lecture, AND Maya never submitted any assignment. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-06",
+    "name": "DF006C",
+    "prompt_text": "By default, students who attend lecture pass. Maya attended every lecture, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-07",
+    "name": "DF007A",
+    "prompt_text": "By default, retries succeed. The job retried. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-07",
+    "name": "DF007B",
+    "prompt_text": "By default, retries succeed. The job retried, AND The downstream service is permanently down. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-07",
+    "name": "DF007C",
+    "prompt_text": "By default, retries succeed. The job retried, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-08",
+    "name": "DF008A",
+    "prompt_text": "By default, TLS certs are trusted. This cert was presented. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-08",
+    "name": "DF008B",
+    "prompt_text": "By default, TLS certs are trusted. This cert was presented, AND The cert is self-signed and not in the trust store. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-08",
+    "name": "DF008C",
+    "prompt_text": "By default, TLS certs are trusted. This cert was presented, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-09",
+    "name": "DF009A",
+    "prompt_text": "By default, the queue drains overnight. The queue had 10k items at midnight. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-09",
+    "name": "DF009B",
+    "prompt_text": "By default, the queue drains overnight. The queue had 10k items at midnight, AND A poison message halted the consumer. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-09",
+    "name": "DF009C",
+    "prompt_text": "By default, the queue drains overnight. The queue had 10k items at midnight, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-10",
+    "name": "DF010A",
+    "prompt_text": "By default, elections of a primary succeed. The cluster held an election. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-10",
+    "name": "DF010B",
+    "prompt_text": "By default, elections of a primary succeed. The cluster held an election, AND A network partition split the quorum. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-10",
+    "name": "DF010C",
+    "prompt_text": "By default, elections of a primary succeed. The cluster held an election, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-11",
+    "name": "DF011A",
+    "prompt_text": "By default, migrations are reversible. The migration ran. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-11",
+    "name": "DF011B",
+    "prompt_text": "By default, migrations are reversible. The migration ran, AND The migration dropped a column with no backup. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-11",
+    "name": "DF011C",
+    "prompt_text": "By default, migrations are reversible. The migration ran, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-12",
+    "name": "DF012A",
+    "prompt_text": "By default, health checks pass after warmup. The service just started. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-12",
+    "name": "DF012B",
+    "prompt_text": "By default, health checks pass after warmup. The service just started, AND The service's config file is unreadable. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-12",
+    "name": "DF012C",
+    "prompt_text": "By default, health checks pass after warmup. The service just started, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-13",
+    "name": "DF013A",
+    "prompt_text": "By default, disk alerts mean the disk is filling. The disk alert fired. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-13",
+    "name": "DF013B",
+    "prompt_text": "By default, disk alerts mean the disk is filling. The disk alert fired, AND A logging bug wrote debug lines at error level. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-13",
+    "name": "DF013C",
+    "prompt_text": "By default, disk alerts mean the disk is filling. The disk alert fired, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-14",
+    "name": "DF014A",
+    "prompt_text": "By default, idempotent requests are safe to retry. The client retried the charge. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-14",
+    "name": "DF014B",
+    "prompt_text": "By default, idempotent requests are safe to retry. The client retried the charge, AND The request was a non-idempotent refund. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-14",
+    "name": "DF014C",
+    "prompt_text": "By default, idempotent requests are safe to retry. The client retried the charge, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-15",
+    "name": "DF015A",
+    "prompt_text": "By default, the cache invalidates on write. A write just committed. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-15",
+    "name": "DF015B",
+    "prompt_text": "By default, the cache invalidates on write. A write just committed, AND The invalidation bus is down. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-15",
+    "name": "DF015C",
+    "prompt_text": "By default, the cache invalidates on write. A write just committed, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-16",
+    "name": "DF016A",
+    "prompt_text": "By default, the standby takes over on failover. The primary just failed. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-16",
+    "name": "DF016B",
+    "prompt_text": "By default, the standby takes over on failover. The primary just failed, AND The standby is three days behind on replication. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-16",
+    "name": "DF016C",
+    "prompt_text": "By default, the standby takes over on failover. The primary just failed, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-17",
+    "name": "DF017A",
+    "prompt_text": "By default, expired tokens are rejected. This token is expired. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-17",
+    "name": "DF017B",
+    "prompt_text": "By default, expired tokens are rejected. This token is expired, AND The auth server's clock is 10 minutes slow. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-17",
+    "name": "DF017C",
+    "prompt_text": "By default, expired tokens are rejected. This token is expired, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-18",
+    "name": "DF018A",
+    "prompt_text": "By default, schema changes are backward compatible. The schema changed. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-18",
+    "name": "DF018B",
+    "prompt_text": "By default, schema changes are backward compatible. The schema changed, AND The change renamed a field clients depend on. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-18",
+    "name": "DF018C",
+    "prompt_text": "By default, schema changes are backward compatible. The schema changed, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-19",
+    "name": "DF019A",
+    "prompt_text": "By default, logs can be trusted for forensics. The log shows an intrusion. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-19",
+    "name": "DF019B",
+    "prompt_text": "By default, logs can be trusted for forensics. The log shows an intrusion, AND The log transport was compromised upstream. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-19",
+    "name": "DF019C",
+    "prompt_text": "By default, logs can be trusted for forensics. The log shows an intrusion, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-20",
+    "name": "DF020A",
+    "prompt_text": "By default, a green dashboard means the service is up. The dashboard is green. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-20",
+    "name": "DF020B",
+    "prompt_text": "By default, a green dashboard means the service is up. The dashboard is green, AND The monitoring agent froze hours ago. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-20",
+    "name": "DF020C",
+    "prompt_text": "By default, a green dashboard means the service is up. The dashboard is green, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-21",
+    "name": "DF021A",
+    "prompt_text": "By default, a 200 status means the request succeeded. The API returned 200. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-21",
+    "name": "DF021B",
+    "prompt_text": "By default, a 200 status means the request succeeded. The API returned 200, AND A proxy returns 200 for cached error pages. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-21",
+    "name": "DF021C",
+    "prompt_text": "By default, a 200 status means the request succeeded. The API returned 200, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-22",
+    "name": "DF022A",
+    "prompt_text": "By default, emails marked sent were delivered. The email is marked sent. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-22",
+    "name": "DF022B",
+    "prompt_text": "By default, emails marked sent were delivered. The email is marked sent, AND The recipient's server silently dropped it as spam. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-22",
+    "name": "DF022C",
+    "prompt_text": "By default, emails marked sent were delivered. The email is marked sent, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-23",
+    "name": "DF023A",
+    "prompt_text": "By default, high CPU means a runaway process. CPU is at 99%. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-23",
+    "name": "DF023B",
+    "prompt_text": "By default, high CPU means a runaway process. CPU is at 99%, AND A scheduled batch job runs at this hour. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-23",
+    "name": "DF023C",
+    "prompt_text": "By default, high CPU means a runaway process. CPU is at 99%, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-24",
+    "name": "DF024A",
+    "prompt_text": "By default, a locked account means an intruder. The account is locked. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-24",
+    "name": "DF024B",
+    "prompt_text": "By default, a locked account means an intruder. The account is locked, AND The user mistyped their password five times. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-24",
+    "name": "DF024C",
+    "prompt_text": "By default, a locked account means an intruder. The account is locked, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-25",
+    "name": "DF025A",
+    "prompt_text": "By default, slow queries mean missing indexes. Queries are slow. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-25",
+    "name": "DF025B",
+    "prompt_text": "By default, slow queries mean missing indexes. Queries are slow, AND A backup is saturating disk I/O right now. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-25",
+    "name": "DF025C",
+    "prompt_text": "By default, slow queries mean missing indexes. Queries are slow, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-26",
+    "name": "DF026A",
+    "prompt_text": "By default, a timeout means the service is down. The request timed out. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-26",
+    "name": "DF026B",
+    "prompt_text": "By default, a timeout means the service is down. The request timed out, AND The client's network lost connectivity. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-26",
+    "name": "DF026C",
+    "prompt_text": "By default, a timeout means the service is down. The request timed out, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-27",
+    "name": "DF027A",
+    "prompt_text": "By default, more replicas mean more capacity. We added replicas. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-27",
+    "name": "DF027B",
+    "prompt_text": "By default, more replicas mean more capacity. We added replicas, AND All replicas landed on the same overloaded host. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-27",
+    "name": "DF027C",
+    "prompt_text": "By default, more replicas mean more capacity. We added replicas, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-28",
+    "name": "DF028A",
+    "prompt_text": "By default, a retry storm means a bug. Retries spiked. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-28",
+    "name": "DF028B",
+    "prompt_text": "By default, a retry storm means a bug. Retries spiked, AND The load balancer's health-check interval is too short. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-28",
+    "name": "DF028C",
+    "prompt_text": "By default, a retry storm means a bug. Retries spiked, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-29",
+    "name": "DF029A",
+    "prompt_text": "By default, stale DNS means a propagation delay. DNS is stale. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-29",
+    "name": "DF029B",
+    "prompt_text": "By default, stale DNS means a propagation delay. DNS is stale, AND Someone hardcoded the old IP in /etc/hosts. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-29",
+    "name": "DF029C",
+    "prompt_text": "By default, stale DNS means a propagation delay. DNS is stale, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-30",
+    "name": "DF030A",
+    "prompt_text": "By default, a full connection pool means high load. The pool is full. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-30",
+    "name": "DF030B",
+    "prompt_text": "By default, a full connection pool means high load. The pool is full, AND Connections are leaking and never released. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-30",
+    "name": "DF030C",
+    "prompt_text": "By default, a full connection pool means high load. The pool is full, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-31",
+    "name": "DF031A",
+    "prompt_text": "By default, a dropped packet means congestion. Packets are dropping. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-31",
+    "name": "DF031B",
+    "prompt_text": "By default, a dropped packet means congestion. Packets are dropping, AND A cable is partially unplugged. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-31",
+    "name": "DF031C",
+    "prompt_text": "By default, a dropped packet means congestion. Packets are dropping, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-32",
+    "name": "DF032A",
+    "prompt_text": "By default, a slow deploy means a large diff. The deploy is slow. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-32",
+    "name": "DF032B",
+    "prompt_text": "By default, a slow deploy means a large diff. The deploy is slow, AND A node is throttled by the cloud provider. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-32",
+    "name": "DF032C",
+    "prompt_text": "By default, a slow deploy means a large diff. The deploy is slow, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-33",
+    "name": "DF033A",
+    "prompt_text": "By default, a failed health check means a crash. The health check failed. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-33",
+    "name": "DF033B",
+    "prompt_text": "By default, a failed health check means a crash. The health check failed, AND The health endpoint's dependency is slow. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-33",
+    "name": "DF033C",
+    "prompt_text": "By default, a failed health check means a crash. The health check failed, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-34",
+    "name": "DF034A",
+    "prompt_text": "By default, rising memory means a leak. Memory is climbing. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-34",
+    "name": "DF034B",
+    "prompt_text": "By default, rising memory means a leak. Memory is climbing, AND The cache is warming after a cold start. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-34",
+    "name": "DF034C",
+    "prompt_text": "By default, rising memory means a leak. Memory is climbing, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-35",
+    "name": "DF035A",
+    "prompt_text": "By default, a 503 means the app is down. The app returned 503. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-35",
+    "name": "DF035B",
+    "prompt_text": "By default, a 503 means the app is down. The app returned 503, AND The rate limiter is shedding load deliberately. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-35",
+    "name": "DF035C",
+    "prompt_text": "By default, a 503 means the app is down. The app returned 503, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-36",
+    "name": "DF036A",
+    "prompt_text": "By default, a missing metric means no traffic. The metric vanished. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-36",
+    "name": "DF036B",
+    "prompt_text": "By default, a missing metric means no traffic. The metric vanished, AND The metrics exporter crashed. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-36",
+    "name": "DF036C",
+    "prompt_text": "By default, a missing metric means no traffic. The metric vanished, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-37",
+    "name": "DF037A",
+    "prompt_text": "By default, identical configs mean identical behavior. Both nodes have the same config. With no other information, does it follow by default that the expected outcome holds? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-37",
+    "name": "DF037B",
+    "prompt_text": "By default, identical configs mean identical behavior. Both nodes have the same config, AND One node is running an older binary. Does the expected outcome still hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "DEFEATED",
+    "scoring_method": "exact",
+    "note": "defeater present"
+  },
+  {
+    "probe_class": "defeasible",
+    "family_id": "DF-37",
+    "name": "DF037C",
+    "prompt_text": "By default, identical configs mean identical behavior. Both nodes have the same config, and the operator noted the weather was overcast (unrelated). With no other relevant information, does the expected outcome hold by default? Answer with exactly one word: HOLDS or DEFEATED.",
+    "expected_result": "HOLDS",
+    "scoring_method": "exact",
+    "note": "default rule, irrelevant non-defeater"
+  }
+]
