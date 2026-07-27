@@ -50,9 +50,8 @@ From `src/executor/mod.rs`, budget expiry deliberately maps onto the ordinary fa
 That is correct behaviour for the *run*, and the completed trials are genuinely preserved. **But it means a truncated
 run produces a `status='error'` run whose trials look ordinary.** The run-level status is the only signal that the
 dataset is partial — there is no per-trial marker. **So the analysis must gate on run completeness, not just on
-`is_infra_error`.** My harness blocks on unpaired cells, which would catch a truncated arm — but only because the
-missing trials make cells unpaired, not because it knows the run died. **Worth adding an explicit expected-row-count
-assertion: 293 items × 6 reps × 2 carriers × 2 models = 7,032 rows, and anything less is a truncated dataset.**
+`is_infra_error`.** **Added:** `EXPECTED_ROWS = 7032` (293 × 6 × 2 × 2) is now asserted in `gate_integrity`, so a
+truncated dataset BLOCKS with its completion percentage rather than being analysed as if whole (self-test T7).
 
 ## 5. WHAT I AM NOT CLAIMING
 - **I cannot see the working tree or the running binary.** Everything above is from committed source plus Hermes's
