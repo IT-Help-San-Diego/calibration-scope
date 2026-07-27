@@ -100,7 +100,12 @@ pub async fn signal_carrier(
                      SUM(total) AS total_trials,
                      SUM(passes) AS total_passes,
                      SUM(passes)::FLOAT / NULLIF(SUM(total), 0) AS signal_score,
-                     VAR_POP(pass_rate) AS carrier_variance
+                     -- VAR_POP of one value is 0, not NULL — var_samp's n−1
+                     -- division used to make the below-2-forms NULL free.
+                     -- The contract says NULL, never 0, when the swing is
+                     -- unmeasurable, so the guard is now explicit.
+                     CASE WHEN COUNT(DISTINCT test_id) >= 2
+                          THEN VAR_POP(pass_rate) END AS carrier_variance
               FROM subject_test_rate
               GROUP BY model_id, participant_id, family_root_id, axis
            )
