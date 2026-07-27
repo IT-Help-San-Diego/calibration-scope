@@ -41,28 +41,41 @@ of items under baseline, certain on all of them under Lean — sometimes certain
    deterministic, and it is not — 13 of 53 cells vary across repetitions. So the baseline carries genuine
    sampler-level nondeterminism, and the Lean carrier **removes** it. That is a more specific claim than
    "the carrier reduces accuracy."
-2. **ONE artifact remains open, and it is answerable from the database.** Temperature-0 nondeterminism has known
-   sources: batching and KV-cache effects, GPU float non-associativity, and **speculative decoding**. This harness
-   supports speculative decoding, and `migrations/033_speculative_decode_stats.sql` records
-   `speculative_draft_model`, `total_draft_tokens_count`, and accepted/rejected draft-token counts **per trial**.
-   **If a draft model was active in one arm and not the other, that alone would produce exactly this
-   signature** — stochastic in one arm, deterministic in the other — with no carrier effect at all.
-   The exported CSV omits these columns, so it cannot be settled from the sealed export. **One query settles it:
-   per carrier arm, count trials with a non-null `speculative_draft_model`. §C should not be published until that
-   count is reported and equal across arms.**
-3. **No mechanism is established.** An earlier reading — that the carrier pushed the model onto a stem-length
+2. **Speculative decoding is excluded** (`spec_decode_artifact_ruled_out.json`, `f255876`): zero
+   `speculative_draft_model`, zero draft tokens, zero accepted draft tokens **in both arms**. This was the check I
+   named as blocking; it came back clean, and with temperature fixed at 0.0 and configs byte-identical, **the
+   execution-side confounds I can name are exhausted.**
+3. **State the variance result on the PAIRED items, not on mismatched denominators.** The figures in circulation —
+   "baseline stochastic on 31/66, Lean deterministic on 0/27" — are both correct but describe **different item
+   sets**: 66 is the full baseline arm, 27 is only the TRUE-keyed subset the truncated Lean arm reached. The valid
+   comparison uses the same items in both arms:
+   | Arm | TRUE-keyed paired items with a stochastic cell |
+   |---|---|
+   | baseline | **13 of 27 (0.481)** |
+   | Lean | **0 of 27 (0.000)** |
+   Fisher exact **p = 3.6 × 10⁻⁵**. The effect is not weakened by using matched denominators — it is cleaner, and
+   it is the number that should appear in print.
+4. **One residual mechanism I cannot exclude, and it is not in the confound ladder.** With temperature at 0 and no
+   draft model, residual nondeterminism comes from float non-associativity in batched matrix multiplication, which
+   is **sequence-length dependent**. The Lean wrapper necessarily changes the wrapped prompt's token count, so the
+   two arms may sit in different numerical regimes. That could produce a determinism difference **without any
+   carrier effect on reasoning.** The exported `prompt_len` is the *base item* length (identical across arms by
+   design), so it cannot test this. **Logging the wrapped prompt's token count per trial would settle it**, and
+   until then "the carrier changes whether the model commits" has a live mechanical alternative: "longer prompts
+   land in a more stable numerical regime."
+5. **No mechanism is established.** An earlier reading — that the carrier pushed the model onto a stem-length
    heuristic — is **retracted**: among TRUE-keyed items, flipped and unflipped stems are indistinguishable in
    length (269 vs 272 characters, Mann-Whitney *p* = 0.369). Length is confounded with the answer key across the
    bank (§10.8y) but has no discriminating power within the responsive half.
-4. **The bank has a known defect.** A length-only rule predicts this bank's keys at 0.941 out-of-sample. The
+6. **The bank has a known defect.** A length-only rule predicts this bank's keys at 0.941 out-of-sample. The
    *within-item* carrier contrast is structurally immune to it — length is identical in both arms — but the
    effect is concentrated in exactly the half where length and key are confounded, so **generalisation to a
    leak-free bank is unestablished.**
-5. **One model, one class, one truncated arm.** The Lean arm covered only the lowest item ids (199–251).
+7. **One model, one class, one truncated arm.** The Lean arm covered only the lowest item ids (199–251).
    Selection checks are reassuring (baseline accuracy 0.840 in both reached and unreached subsets,
    Mann-Whitney *p* = 0.835; TRUE-share 0.509 vs 0.527) but are not proof against an unconsidered
    id-correlated property.
-6. **This does not resolve the §10.9 threshold question.** That requires the `nemotron` arms — the immune
+8. **This does not resolve the §10.9 threshold question.** That requires the `nemotron` arms — the immune
    control — which are queued.
 
 **E. What §10.8 may now assert, and what it may not.**
@@ -70,6 +83,6 @@ May assert: *in a controlled paired test where the carrier was the only variable
 verdict on identical logical content, and under one carrier the model's answers became fully deterministic where
 they had been stochastic.*
 May **not** assert: that the mechanism is known, that the effect is a directional degradation, that it holds
-beyond this model and bank, or that speculative decoding has been ruled out as the source of the variance difference (temperature has been).
+beyond this model and bank, or that the variance collapse reflects reasoning rather than a sequence-length-dependent numerical regime (temperature and speculative decoding ARE excluded; wrapped-prompt length is not).
 **The phrase "carrier-immune" remains retired** (§10.16). Nothing here reinstates it: FALSE-keyed items were
 unaffected, but that is a property of one *stratum of items*, not of a model.
