@@ -176,6 +176,11 @@ pub struct SubmitAnswer {
     pub run_id: i32,
     pub test_id: i32,
     pub answer: String,
+    /// Client-measured milliseconds from question render to submit — stored
+    /// in trial_results.latency_ms, the same column model trials use, with
+    /// the same semantic: time to produce the answer. Optional so older
+    /// clients keep working; absent falls back to the previous hardcoded 0.
+    pub elapsed_ms: Option<i64>,
 }
 
 #[derive(Debug, Serialize)]
@@ -228,11 +233,14 @@ pub async fn submit_answer(
     .fetch_one(&state.db)
     .await?;
 
+    // Clamp to [0, 24h] — a client clock glitch must not write a negative or
+    // absurd "latency" into the same column model response times live in.
+    let latency_ms = req.elapsed_ms.unwrap_or(0).clamp(0, 86_400_000);
     let trial_id: i32 = sqlx::query_scalar(
         r#"INSERT INTO trial_results
              (run_id, trial_num, test_id, raw_response, passed, latency_ms,
               is_infra_error)
-           VALUES ($1, $2, $3, $4, $5, 0, false)
+           VALUES ($1, $2, $3, $4, $5, $6, false)
            RETURNING id"#,
     )
     .bind(req.run_id)
@@ -240,6 +248,7 @@ pub async fn submit_answer(
     .bind(req.test_id)
     .bind(&req.answer)
     .bind(passed)
+    .bind(latency_ms)
     .fetch_one(&state.db)
     .await?;
 

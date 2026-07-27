@@ -36,6 +36,10 @@ pub struct SignalCarrierQuery {
 #[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct SignalCarrierRow {
     pub subject_kind: String,
+    /// participants.id for humans, models.id for models — display names are
+    /// not unique (two participants can both be "CB"), so UI filtering must
+    /// key on this, never on subject_name.
+    pub subject_id: Option<i32>,
     pub subject_name: String,
     pub family_root_id: Option<i32>,
     pub family_name: Option<String>,
@@ -55,6 +59,7 @@ pub async fn signal_carrier(
     let rows: Vec<SignalCarrierRow> = sqlx::query_as(
         r#"SELECT
               CASE WHEN sc.participant_id IS NOT NULL THEN 'human' ELSE 'model' END AS subject_kind,
+              COALESCE(sc.participant_id, sc.model_id)::int AS subject_id,
               COALESCE(p.display_name, m.key, '?') AS subject_name,
               sc.family_root_id,
               sc.family_name,

@@ -1196,6 +1196,36 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     **SHA3-512 / SHA3-256** because they match the literal sealed hash
     strings (`sha3-512:...`). Sealed surfaces (lessons, comics) are exempt
     until a re-seal is otherwise required.
+  - **2026-07-27 (Claude Code, post-merge branch restart): handoff item 7 —
+    human-cal results science — SHIPPED, browser-verified 23/23.** Three
+    surfaces at page-human-cal: (1) per-question timing — elapsed clock in
+    the quiz header, stamped at the submit click (network time is not
+    thinking time), sent as a new optional `elapsed_ms` on the answer
+    endpoint and stored in trial_results.latency_ms, the same column model
+    response times use — it was hardcoded 0 for humans, a small standing
+    data lie now closed (clamped 0–24 h server-side; absent = old
+    behavior); (2) per-family carrier-swing chart — signal bar (pooled
+    pass rate) + swing bar (per-form pass-rate variance scaled to its 0.25
+    theoretical max, scale stated in the caption); NULL variance renders
+    "not measurable — N form(s)", never 0; every bar's value printed as
+    text beside it; (3) same-families comparison panel, both subject kinds
+    in one shape, with the "read the fractions, not just the bars" caveat
+    (models run N=3 per form). **/api/signal-carrier now returns
+    `subject_id`** — display names are not unique, and the previous
+    results code took the FIRST human row in the view regardless of
+    participant; the rig reproduced that exact collision (two same-named
+    participants) before the id filter fixed it. Same pass, review
+    catches: wizard's Setup link was dead in Focused mode (Focused CSS
+    force-hides page-setup) → deepPage() flips to Deep before navigating;
+    pkSendLocal dereferenced a null battery on a fast click → honest
+    "still loading" guard; 'human-cal' added to the Focused mode-restore
+    whitelists (reload mid-quiz bounced to benchmark). **Perf fix with
+    relay (f) context:** the EventSource opened at script parse time, so
+    the load trace never went network-quiet — the prime suspect for the
+    gate's 64–90 straddle on identical assets. It now connects after the
+    window load event (REST loaders already paint first data; the stream's
+    snapshot arrives a beat later either way). Verified in-browser: the
+    /api/events request starts ~10 ms after loadEventStart.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
