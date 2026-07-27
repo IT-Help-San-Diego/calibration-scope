@@ -3,8 +3,15 @@
 carrier_analysis.py — PRE-REGISTERED analysis for the powered carrier run (970-973).
 Written 2026-07-27, BEFORE any of runs 970-973 produced output. Commit this before the CSV lands.
 
-PRIMARY TEST (declared): paired t on CELL PASS-RATES, family-clustered.
-  unit = (family, model); value = mean pass rate over that family's items x 6 reps
+PRIMARY TEST (declared): paired t on CELL PASS-RATES at (ITEM, model) level.
+  unit = (item, model); value = mean pass rate over that item's 6 reps
+  AMENDMENT 2026-07-27 (dated, pre-data): the primary unit is (item,model), matching
+  Hermes's analysis/POWERED_RUN_preregistration.md. My earlier (family,model) unit was
+  motivated by a clustering worry that does NOT apply here: the carrier is applied WITHIN
+  item, so family membership is shared by both arms and cancels in the paired difference.
+  Verified by simulation with family structure present in both: null FPR item 0.044 /
+  family 0.046; power at d=0.05 item 0.78 / family 0.78 -- IDENTICAL. The family-level
+  test is retained as a reported robustness check, not as the primary.
   contrast = baseline carrier vs Lean carrier, paired within unit
   Rationale (simulated 2026-07-27): rate-based beats vote-then-McNemar roughly 2x in
   resolution (d=0.05: power 0.87 vs 0.59) and is calibrated (null FPR 0.044-0.055).
@@ -56,6 +63,23 @@ def gate_length_leak(d, item_len):
                     "length_leak_binds": bool(abs(rho) >= SPEARMAN_GATE and p < ALPHA),
                     "near_length_ceiling": bool(r.mean() >= LENGTH_LEAK_CEILING - 0.05)}
     return out
+
+def primary_item_clustered(d):
+    """PRIMARY (amended 2026-07-27, pre-data): unit = (item, model), paired baseline vs Lean.
+    Cluster-robust by construction — the carrier is applied within item, so family
+    membership is shared by both arms and cancels in the difference."""
+    cell = d.groupby(["item_id","model","carrier"])["pass"].mean().unstack("carrier").dropna()
+    if cell.shape[1] != 2: return {"error": f"expected 2 carrier columns, got {list(cell.columns)}"}
+    a, b = cell.columns[0], cell.columns[1]
+    diff = cell[a] - cell[b]
+    t = st.ttest_rel(cell[a], cell[b])
+    return {"unit": "(item,model)", "n_units": int(len(cell)),
+            "carrier_a": str(a), "carrier_b": str(b),
+            "mean_a": float(cell[a].mean()), "mean_b": float(cell[b].mean()),
+            "mean_drop_a_minus_b": float(diff.mean()), "sd": float(diff.std(ddof=1)),
+            "t": float(t.statistic), "p": float(t.pvalue), "df": int(len(cell)-1),
+            "ci95": [float(x) for x in st.t.interval(0.95, len(cell)-1,
+                       loc=diff.mean(), scale=st.sem(diff))] if len(cell) > 1 else None}
 
 def primary_family_clustered(d):
     """Unit of analysis = (family, model). Items within a family share a template and are
@@ -155,14 +179,15 @@ def analyse(path):
     except Exception:
         pass
     res = {"n_rows": int(len(d)), "n_items": int(d.item_id.nunique()),
+           "primary_item_level": primary_item_clustered(d),
            "n_families": int(d.family_id.nunique()), "n_models": int(d.model.nunique()),
            "primary_family_clustered": primary_family_clustered(d),
            "secondary_vote_mcnemar": secondary_vote_mcnemar(d),
            "per_class": per_class(d), "per_model": per_model(d),
            "model_interaction": interaction(d), "defect_triage": defect_triage(d)}
     if item_len: res["gate_length_leak"] = gate_length_leak(d, item_len)
-    p = res["primary_family_clustered"].get("p")
-    drop = res["primary_family_clustered"].get("mean_drop_a_minus_b")
+    p = res["primary_item_level"].get("p")
+    drop = res["primary_item_level"].get("mean_drop_a_minus_b")
     if p is None:
         res["verdict"] = "ERROR"
     elif p < ALPHA and drop > 0:
@@ -174,8 +199,8 @@ def analyse(path):
         res["verdict_reason"] = f"Unexpected direction: carrier arm scored {abs(drop):.3f} HIGHER (p={p:.4g}). Check carrier application before interpreting."
     else:
         res["verdict"] = "NO_RESOLVABLE_CARRIER_EFFECT"
-        res["verdict_reason"] = (f"drop={drop:.3f}, p={p:.4g}. At n={res['primary_family_clustered']['n_units']} "
-            "family-model units this design resolves d>=0.05 at power ~0.78; a null here does NOT establish immunity below that.")
+        res["verdict_reason"] = (f"drop={drop:.3f}, p={p:.4g}. At n={res['primary_item_level']['n_units']} "
+            "item-model units this design resolves d>=0.05 at power ~0.78 (family-level robustness check identical); a null here does NOT establish immunity below that.")
     return res
 
 def selftest():
@@ -216,9 +241,10 @@ def selftest():
     c="BLOCKED" in r and any("UNPAIRED" in s for s in r["BLOCKED"]); ok&=c
     print(f"  T5 unpaired cell              -> {'BLOCKED' if c else 'MISSED'}: {'PASS' if c else 'FAIL'}")
     d=synth(drop=0.10); r0=analyse("/tmp/_t1.csv")
-    c=r0["primary_family_clustered"]["n_units"]==236  # 118 families x 2 models
+    # 118 families x 2 items x 2 models = 472 item-model cells; 118 x 2 models = 236 family-model cells
+    c=r0["primary_item_level"]["n_units"]==472 and r0["primary_family_clustered"]["n_units"]==236
     ok&=c
-    print(f"  T6 unit is (family,model)     -> n_units={r0['primary_family_clustered']['n_units']} (must be 236): {'PASS' if c else 'FAIL'}")
+    print(f"  T6 units item=472 family=236  -> item={r0['primary_item_level']['n_units']} family={r0['primary_family_clustered']['n_units']}: {'PASS' if c else 'FAIL'}")
     print("SELF-TEST:", "ALL PASS" if ok else "FAILURES PRESENT")
     return ok
 
