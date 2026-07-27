@@ -25,7 +25,8 @@ machine — which is a real result and is not the human-attribution claim the th
 > different prompt carriers with the model, decoding settings, and temperature held identical. The carrier changed
 > the model's verdict on 13 of 53 items, and — more specifically — **the model's answers went from stochastic
 > (varying across repeated identical trials) to fully deterministic** under one carrier: 13 of 27 items varied
-> across repetitions under the baseline carrier, **0 of 27 under the other** (Fisher exact *p* = 3.6 × 10⁻⁵).
+> across repetitions under the baseline carrier, **0 of 27 under the other** — 13 items changed in that direction
+> and **none in the reverse** (McNemar exact, paired, *p* = 2.4 × 10⁻⁴).
 > Temperature was fixed at 0 and speculative decoding was off in both arms.
 > **What this does and does not establish.** It is evidence that a carrier can change a verdict on identical
 > content in an artificial reasoner. It is **not** a test of the prediction stated above — that anonymized versus
