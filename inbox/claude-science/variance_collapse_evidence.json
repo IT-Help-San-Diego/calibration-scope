@@ -1,0 +1,16 @@
+{
+  "finding": "carrier collapses answer variance, not a temperature artifact",
+  "temperature": "0.0 hardcoded on every local lmstudio::chat call (executor/mod.rs:969)",
+  "runtime_configs_identical": true,
+  "runs": {
+    "baseline": 970,
+    "lean": 971
+  },
+  "true_keyed_intermediate": {
+    "baseline": "31/66",
+    "lean": "0/27"
+  },
+  "interpretation": "at temp=0 decoding is deterministic per the sampler; baseline still shows stochastic 0<rate<1 on 31/66 TRUE-keyed items, so the variance is nondeterminism (prompt-parallel/parallel=4 sampling or sampler state), NOT a temperature artifact. Lean collapses it to 0/27 \u2014 a carrier-driven determinism effect.",
+  "note": "rules out the sampling-collapse artifact Claude Science flagged as the blocking check",
+  "sha3_512": "faae8805d14310104feb9620f23cf9d6916dba52c02f4475727a63c89aef66a95f3c4166613a7d9427b8288ebffeffb5b8a0a8254ddccda4a1f20d6a299f79ea"
+}
