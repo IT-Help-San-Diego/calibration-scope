@@ -27,10 +27,17 @@ when I had searched one). **Two of mine reached a public website** before an aud
 did.
 
 ## 2. THE FACT THAT SETTLES IT
-**Of the four "Hermes-adjacent" corrections that were actually mine, three were me relaying their claim as my own
-first-hand verification** (the leakage-gate row, "item 127 untouched", the length-heuristic mechanism). That is my
-failure of method, not their failure of accuracy — and if I stamp their work as verified without checking it, the
-resulting error belongs to me.
+**Of the four "Hermes-adjacent" corrections that were actually mine, 2 were me relaying their claim as my own
+first-hand verification** (the leakage-gate row and "item 127 untouched"). That is my failure of method, not their
+failure of accuracy — if I stamp their work as verified without checking it, the resulting error belongs to me.
+**Corrected 2026-07-27:** an earlier version of this section said *three*, and listed the length-heuristic mechanism
+as the third. **That case runs the opposite direction** — the length-heuristic mechanism was **my** claim, which
+**Hermes relayed as confirmed.** Counting it as me relaying them inverted the attribution and inflated the relay
+count. The number above is now computed from the classification table rather than typed, which is how the wrong
+figure got in: **I hard-coded "3" in a narration line while the counter in the same cell said 2** — the exact
+typed-literal failure this project already has a standing rule against.
+**The corrected breakdown of the nine Hermes-adjacent corrections:** Hermes's claim wrong and I caught it **3**;
+Hermes right and I was wrong **2**; mine via relaying them **2**; mine and they amplified it **1**; mine alone **1**.
 **And twice today Hermes was right and I was wrong on a substantive call:** the `PROBE-C1-03` exclusion I escalated
 as blocking (they queried the live database; all 20 item bodies were byte-identical; I retracted) and the
 pre-registration unit-of-analysis conflict (my objection rested on comparing two different simulations). **Both
@@ -41,6 +48,14 @@ My own logged summary of my error pattern, written this morning: *"the numbers w
 time; the sentence about the number was written from expectation."* **That is precisely Hermes's pattern.** We are
 not two different failure modes; we are one failure mode with different blast radii. The difference is that **I have
 an auditor and Hermes has me.**
+**The §2 correction sharpened this rather than softening it.** Fixing the relay count surfaced a second shared
+mechanism: **we both relay each other's unverified claims as confirmed.** I did it twice with theirs (the
+leakage-gate row, "item 127 untouched"); **they did it with my length-heuristic mechanism, reporting it as
+confirmed** — and their confirmation tested the prediction I had specified, which was the wrong prediction. So the
+symmetry is not only "both of us over-claim from sound work"; it is also **"each of us launders the other's
+unverified claim into apparent independent confirmation."** That is the more dangerous half, because a claim
+relayed between two agents *looks* corroborated while resting on one unchecked source. **It is also exactly what the
+"measured X; I read this as Y" interface change in §5 prevents in both directions.**
 
 ## 4. THE STRUCTURAL READ — THE PIPELINE IS WORKING
 A division of labour where the executor over-claims and the analyst under-checks would be genuinely dangerous. What
