@@ -53,8 +53,14 @@ of items under baseline, certain on all of them under Lean — sometimes certain
    |---|---|
    | baseline | **13 of 27 (0.481)** |
    | Lean | **0 of 27 (0.000)** |
-   Fisher exact **p = 3.6 × 10⁻⁵**. The effect is not weakened by using matched denominators — it is cleaner, and
-   it is the number that should appear in print.
+   **McNemar exact (paired) p = 2.4 × 10⁻⁴**, on 13 discordant pairs — 13 items stochastic under baseline and
+   deterministic under Lean, **0 in the reverse direction.**
+   **Test correction (2026-07-27):** an earlier version of this section reported *Fisher exact p = 3.6 × 10⁻⁵*.
+   **Fisher treats the two arms as independent samples, which this design is not** — the same 27 items appear in
+   both arms. The paired test is McNemar, and it gives a p roughly 7× larger. The conclusion is unchanged and the
+   direction is perfectly asymmetric, but **2.4 × 10⁻⁴ is the number that may appear in print; 3.6 × 10⁻⁵ was
+   anti-conservative.** (This is the same independence-versus-pairing error class retracted earlier in this
+   session; it recurred in a cell whose own header said "paired.")
 4. **One residual mechanism I cannot exclude, and it is not in the confound ladder.** With temperature at 0 and no
    draft model, residual nondeterminism comes from float non-associativity in batched matrix multiplication, which
    is **sequence-length dependent**. The Lean wrapper necessarily changes the wrapped prompt's token count, so the
