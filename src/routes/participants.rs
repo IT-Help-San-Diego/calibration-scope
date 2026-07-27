@@ -244,6 +244,11 @@ pub struct AnswerResult {
     /// The test's name — so the UI can show "LOGIC-01N: correct" without
     /// a second round-trip.
     pub test_name: String,
+    /// The latency actually RECORDED for this trial. On a duplicate replay
+    /// this is the first submit's value, not the retry's clock — the UI
+    /// must display what was persisted or its "recorded with each trial"
+    /// summary would overclaim (review catch).
+    pub latency_ms: i64,
 }
 
 pub async fn submit_answer(
@@ -301,20 +306,21 @@ pub async fn submit_answer(
     // race past this check; a UNIQUE(run_id, test_id) partial index for
     // participant runs is the airtight fix and belongs to a migration
     // (backend lane — relayed).
-    let existing: Option<(i32, bool)> = sqlx::query_as(
-        r#"SELECT id, passed FROM trial_results
+    let existing: Option<(i32, bool, Option<i64>)> = sqlx::query_as(
+        r#"SELECT id, passed, latency_ms FROM trial_results
            WHERE run_id = $1 AND test_id = $2 ORDER BY id LIMIT 1"#,
     )
     .bind(req.run_id)
     .bind(req.test_id)
     .fetch_optional(&state.db)
     .await?;
-    if let Some((trial_id, passed)) = existing {
+    if let Some((trial_id, passed, recorded_ms)) = existing {
         return Ok(Json(AnswerResult {
             trial_result_id: trial_id,
             passed,
             expected,
             test_name: test.name,
+            latency_ms: recorded_ms.unwrap_or(0),
         }));
     }
 
@@ -381,6 +387,7 @@ pub async fn submit_answer(
         passed,
         expected,
         test_name: test.name,
+        latency_ms,
     }))
 }
 

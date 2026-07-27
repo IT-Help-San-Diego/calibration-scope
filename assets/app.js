@@ -4541,9 +4541,14 @@ async function hcSubmit() {
         return;
     }
     if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
-    hcTimes.push(elapsedMs);
     const d = await r.json();
-    const tookS = (elapsedMs / 1000).toFixed(1);
+    // Display and summarize the RECORDED latency, not this click's clock:
+    // on a lost-response retry the server replays the first submit's row,
+    // and showing the retry's time would diverge from what was persisted
+    // (review catch). Older servers without the field fall back honestly.
+    const recordedMs = typeof d.latency_ms === "number" ? d.latency_ms : elapsedMs;
+    hcTimes.push(recordedMs);
+    const tookS = (recordedMs / 1000).toFixed(1);
     if (d.passed) {
         hcCorrect++;
         document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--safe)">✓ Correct — ${esc(d.test_name)}</span> <span style="color:var(--text-muted)">· ${tookS}s</span>`;
