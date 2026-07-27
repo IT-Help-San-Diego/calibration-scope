@@ -58,15 +58,20 @@ pub async fn signal_carrier(
     Query(q): Query<SignalCarrierQuery>,
 ) -> AppResult<Json<serde_json::Value>> {
     let min_forms = q.min_forms.unwrap_or(1);
-    // This inlines the owl_signal_carrier view's aggregation WITH the
-    // is_infra_error = false filter the view itself lacks (review catch,
-    // 2026-07-27): unfiltered, a backend outage mid-run reads as the
-    // subject's reasoning getting worse, and an outage that hits one
-    // surface form manufactures fake carrier variance. Infra failures are
-    // missing data, never wrong answers — the rule every other results
-    // query already follows. The view is not changed here because it is
-    // schema other consumers may read directly (relay to the backend lane
-    // to fix at the source once its consumers agree).
+    // This inlines the owl_signal_carrier view's aggregation WITH two
+    // corrections the view itself lacks (review catches, 2026-07-27):
+    // (1) is_infra_error = false — unfiltered, a backend outage mid-run
+    // reads as the subject's reasoning getting worse, and an outage that
+    // hits one surface form manufactures fake carrier variance. Infra
+    // failures are missing data, never wrong answers — the rule every
+    // other results query already follows. (2) VAR_POP, not VARIANCE():
+    // Postgres VARIANCE() is sample variance (÷ n−1), which reaches 0.5
+    // for two forms at 0% and 100% — but the forms attempted are the
+    // complete set under measurement, not a sample, and the UI's stated
+    // 0.25 theoretical max is a population-variance bound. The view is not
+    // changed here because it is schema other consumers may read directly
+    // (relay to the backend lane to fix at the source once its consumers
+    // agree — including the var_samp/var_pop choice).
     let rows: Vec<SignalCarrierRow> = sqlx::query_as(
         r#"WITH family_member AS (
               SELECT id AS test_id,
@@ -95,7 +100,7 @@ pub async fn signal_carrier(
                      SUM(total) AS total_trials,
                      SUM(passes) AS total_passes,
                      SUM(passes)::FLOAT / NULLIF(SUM(total), 0) AS signal_score,
-                     VARIANCE(pass_rate) AS carrier_variance
+                     VAR_POP(pass_rate) AS carrier_variance
               FROM subject_test_rate
               GROUP BY model_id, participant_id, family_root_id, axis
            )

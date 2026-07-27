@@ -1306,7 +1306,16 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     Copilot claimed Postgres sorts NULL first ascending (it doesn't;
     default is NULLS LAST), declined-with-correction on the thread, but
     the explicit qualifier documents the intent instead of leaning on a
-    default.
+    default. Second defect in the same view (Copilot, next round):
+    VARIANCE() is Postgres var_samp (÷ n−1), reaching 0.5 for two forms
+    at 0%/100% — the dashboard's stated 0.25 theoretical max is a
+    population-variance bound, and the attempted forms are the complete
+    set under measurement, not a sample. The dashboard endpoint now uses
+    VAR_POP; the view fix should settle var_samp vs var_pop WITH Claude
+    Science (their pilot stats may assume one or the other). The mock rig
+    had computed population variance all along — it verified semantics
+    the view didn't have, which is exactly the class of gap a mock cannot
+    catch.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
