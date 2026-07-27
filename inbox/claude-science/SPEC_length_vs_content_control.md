@@ -45,10 +45,20 @@ reference contrast.
    but only **0.30** if it collapses partway (→ 0.25), and still only **0.67 at n = 60.** So a null result means
    *"this control did not do what Lean did"* — it does **not** mean *"this control did nothing."* A partial
    numerical contribution is not detectable at any affordable size and must not be claimed as excluded.
-2. **The test is conservative, which cuts in our favour.** Null false-positive rate simulates at **0.025–0.033**
-   against a nominal 0.05, because McNemar on small discordant counts is discrete. **A null is trustworthy; a
-   borderline positive is not** — if a control lands near significance, treat it as unresolved rather than as
-   evidence.
+2. **The test under-rejects, and that makes a POSITIVE more reliable — not less.** Null rejection rate simulates
+   at **0.025–0.033** against a nominal 0.05, because McNemar on small discordant counts is discrete.
+   **CORRECTED 2026-07-27:** an earlier version of this spec drew the opposite inference — *"a null is trustworthy;
+   a borderline positive is not"* — which is **backwards.** Actual type-I error *below* nominal means a rejection is
+   **harder** to obtain by chance than the p-value advertises, so **a positive is conservative evidence and should
+   be believed.** The cost of sub-nominal size is **power**, which makes a **null less informative**, not more.
+   **The corrected reading, and it is load-bearing for the read-out table:** if a control lands anywhere near
+   significance, that is evidence the control *did* collapse variance — which triggers the **retraction** row of
+   §1. The earlier instruction to "treat it as unresolved" would have discarded exactly the result that most
+   requires acting on. **A positive on either control arm is grounds to retract the variance claim, borderline or
+   not.**
+   **What actually licenses trusting a null here is the separate power simulation, not conservativeness:** power
+   0.99 against a Lean-sized collapse at n = 27. That is why a null supports "this control did not do what Lean
+   did" — and per limit 1, nothing more than that.
 
 ## 5. BUDGET
 **27 items × 2 control arms × 6 reps = 324 calls.** At the measured 7.1 s/trial that is **≈38 minutes** — it can
