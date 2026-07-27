@@ -1,0 +1,31 @@
+{
+  "check": "wrapped-prompt-length alternative (final alternative to the carrier effect)",
+  "wrapped_prompt_tokens": {
+    "baseline_970": {
+      "mean": 71,
+      "median": 73,
+      "range": "49-77",
+      "n": 392
+    },
+    "lean_971": {
+      "mean": 192,
+      "median": 192,
+      "range": "192",
+      "n": 158
+    }
+  },
+  "prompt_token_delta": "+121 tokens (the Lean scaffold \u2014 this IS the carrier)",
+  "decisive_within_baseline_test": {
+    "stochastic_items_true_keyed": {
+      "n": 31,
+      "mean_prompt_len": 72.7
+    },
+    "deterministic_items_true_keyed": {
+      "n": 35,
+      "mean_prompt_len": 68.7
+    },
+    "interpretation": "WITHIN baseline (uniform carrier), stochastic and deterministic items have ~SAME prompt length (72.7 vs 68.7). Prompt length does NOT predict which items are uncertain. So the collapse is driven by carrier CONTENT, not a longer-prompt numerical regime."
+  },
+  "verdict": "The +121 tokens are the carrier itself. The collapse cannot be reduced to prompt length, because within the baseline (fixed length regime) the same-length items split into stochastic vs deterministic. Carrier Color stands: the wrapper's content, not its length, determines whether the model commits.",
+  "sha3_512": "1db9ce8dfa5a09f46eddf36a377a1074446c843b54121c0f61efc7ddc4ba8ccfa9c19b0c7263e22c8c6a51b3c597053a00a826d73ab13503f72c8b1569a37134"
+}
