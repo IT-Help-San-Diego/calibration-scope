@@ -1,0 +1,98 @@
+{
+  "mechanism_check": "PREVIEW_carrier_effect_partials \u2014 token-level confirmation",
+  "collapsing_items": 10,
+  "signature": "TRUE->FALSE flip under Lean, deterministic",
+  "items": [
+    {
+      "test_id": "199",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "211",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "209",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "213",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "221",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "219",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "231",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "241",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "245",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    },
+    {
+      "test_id": "249",
+      "baseline_tokens": {
+        "TRUE": 6
+      },
+      "lean_tokens": {
+        "FALSE": 6
+      }
+    }
+  ],
+  "sha3_512": "40877b7742bfda7e135c83a7c435b91b6812d85ca3ce7c6406699c34c8cbe093b25b7057ef1b94296caaa9c4b9fa8ba64b5ca691e87adeeda398790662678896"
+}
