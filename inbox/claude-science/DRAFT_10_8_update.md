@@ -32,24 +32,37 @@ The carrier did not make the model worse so much as **collapse its answer distri
 of items under baseline, certain on all of them under Lean — sometimes certainly right, sometimes certainly wrong.
 
 **D. Bounds. Read these as part of the finding, not as disclaimers.**
-1. **Sampling behaviour is not excluded.** A prompt wrapper can alter effective sampling. If the Lean carrier
-   drove effective temperature toward zero, §C is an execution artifact and §A–B require re-reading. The results
-   CSV carries no temperature, seed, or logprob columns, so this **cannot** be settled from the sealed evidence.
-   **A re-run of a handful of these items with temperature, seed, and logprobs logged is required before §C is
-   claimed anywhere public.**
-2. **No mechanism is established.** An earlier reading — that the carrier pushed the model onto a stem-length
+1. **Temperature is excluded as the explanation — verified in source, not accepted on report.**
+   `src/executor/mod.rs` passes a literal to the local path: `lmstudio::chat(&client, …, 4096, 0.0)`. Temperature
+   is **0.0 on every local trial in both arms**, so there was no temperature for the carrier to change. (The
+   executor's own `verdict.rs` states the same design intent: *"Our harness is deterministic — temperature 0,
+   pinned stimuli, SHA-3 sealed evidence."*)
+   **This makes §C stronger and relocates the puzzle:** at temperature 0 the *baseline* should already be
+   deterministic, and it is not — 13 of 53 cells vary across repetitions. So the baseline carries genuine
+   sampler-level nondeterminism, and the Lean carrier **removes** it. That is a more specific claim than
+   "the carrier reduces accuracy."
+2. **ONE artifact remains open, and it is answerable from the database.** Temperature-0 nondeterminism has known
+   sources: batching and KV-cache effects, GPU float non-associativity, and **speculative decoding**. This harness
+   supports speculative decoding, and `migrations/033_speculative_decode_stats.sql` records
+   `speculative_draft_model`, `total_draft_tokens_count`, and accepted/rejected draft-token counts **per trial**.
+   **If a draft model was active in one arm and not the other, that alone would produce exactly this
+   signature** — stochastic in one arm, deterministic in the other — with no carrier effect at all.
+   The exported CSV omits these columns, so it cannot be settled from the sealed export. **One query settles it:
+   per carrier arm, count trials with a non-null `speculative_draft_model`. §C should not be published until that
+   count is reported and equal across arms.**
+3. **No mechanism is established.** An earlier reading — that the carrier pushed the model onto a stem-length
    heuristic — is **retracted**: among TRUE-keyed items, flipped and unflipped stems are indistinguishable in
    length (269 vs 272 characters, Mann-Whitney *p* = 0.369). Length is confounded with the answer key across the
    bank (§10.8y) but has no discriminating power within the responsive half.
-3. **The bank has a known defect.** A length-only rule predicts this bank's keys at 0.941 out-of-sample. The
+4. **The bank has a known defect.** A length-only rule predicts this bank's keys at 0.941 out-of-sample. The
    *within-item* carrier contrast is structurally immune to it — length is identical in both arms — but the
    effect is concentrated in exactly the half where length and key are confounded, so **generalisation to a
    leak-free bank is unestablished.**
-4. **One model, one class, one truncated arm.** The Lean arm covered only the lowest item ids (199–251).
+5. **One model, one class, one truncated arm.** The Lean arm covered only the lowest item ids (199–251).
    Selection checks are reassuring (baseline accuracy 0.840 in both reached and unreached subsets,
    Mann-Whitney *p* = 0.835; TRUE-share 0.509 vs 0.527) but are not proof against an unconsidered
    id-correlated property.
-5. **This does not resolve the §10.9 threshold question.** That requires the `nemotron` arms — the immune
+6. **This does not resolve the §10.9 threshold question.** That requires the `nemotron` arms — the immune
    control — which are queued.
 
 **E. What §10.8 may now assert, and what it may not.**
@@ -57,6 +70,6 @@ May assert: *in a controlled paired test where the carrier was the only variable
 verdict on identical logical content, and under one carrier the model's answers became fully deterministic where
 they had been stochastic.*
 May **not** assert: that the mechanism is known, that the effect is a directional degradation, that it holds
-beyond this model and bank, or that sampling behaviour has been ruled out.
+beyond this model and bank, or that speculative decoding has been ruled out as the source of the variance difference (temperature has been).
 **The phrase "carrier-immune" remains retired** (§10.16). Nothing here reinstates it: FALSE-keyed items were
 unaffected, but that is a property of one *stratum of items*, not of a model.
