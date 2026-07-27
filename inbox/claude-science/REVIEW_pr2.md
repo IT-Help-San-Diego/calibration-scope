@@ -17,8 +17,18 @@ whitespace from the removed and added line sets and compared the token streams: 
 the removed set reappears in the added set. The change is `rustfmt` line-wrapping plus one corrected comment
 (a `// must NOT match` comment that contradicted the assertion beneath it — a real fix, since the comment said the
 opposite of the test). **The grader that produced 970/971 and will grade 974-977 is untouched.**
-**The two new route modules (`picker.rs`, `witness.rs`) are wired in `mod.rs` but `witness.rs` performs no
-INSERT/UPDATE/DELETE** — read-only. Nothing in this PR can mutate run data.
+**No route this PR adds can mutate run data — checked across every changed Rust file, not just one.**
+*(Corrected 2026-07-27: I first ran the write-op scan on `witness.rs` alone and generalised the result to the whole
+PR, while §5 of this same file admitted `picker.rs` was unreviewed. The conclusion survives; it was unearned when
+I made it. Scan re-run properly below.)*
+| File | Δ | Finding |
+|---|---|---|
+| `src/routes/witness.rs` | new, 328 | `sqlx::query_as` only, **`SELECT` only.** The one `TRUNCATE` hit was a **doc comment** ("Truncate display strings…"), not SQL — my keyword scan's false positive. |
+| `src/routes/picker.rs` | new, 299 | **Zero `sqlx` calls and no DB handle in the signature** — `picker_grade` takes only `Json<GradeRequest>`. Pure computation; it cannot reach the database at all. |
+| `src/main.rs` | +3 | All three added lines are **route registrations.** The `UPDATE test_runs …` line the scan flagged is **pre-existing** — verified absent from the added lines. |
+| `src/routes/mod.rs` | +2 | Module declarations. |
+**Routes added: `GET /api/runs/{id}/witness`, `GET /api/picker/battery`, `POST /api/picker/grade`.** The POST is the
+only non-GET and it is the one with no database access.
 
 ## 2. THE PUBLIC COPY — IN MY LANE, AND IT PASSES
 The README front door adds a **carrier sentence**: *"A system reasons in one voice or another — we measure whether
@@ -53,8 +63,9 @@ today removing from three others.
 
 ## 5. WHAT I AM NOT CLAIMING
 - I verified `scoring.rs` by token-stream comparison of the **diff**, not by building or running the test suite.
-- I read `witness.rs` for write operations and route declarations; I did **not** review its logic or `picker.rs`
-  beyond confirming it is wired.
+- I scanned **all four changed Rust files** for write operations and read the three added route registrations.
+  I did **not** review `witness.rs`'s or `picker.rs`'s *logic* — only their database access and signatures.
+  A pure-computation grader endpoint can still be wrong; it just cannot corrupt run data.
 - `assets/app.js` (+629) and `dashboard.html` (+119) I did **not** review — GUI lane, and Claude Code reports
   browser verification against a mocked backend.
 - Run-safety: I am **relaying** Claude Code's firsthand observation of the local process (PID, launchd, port 8768).
