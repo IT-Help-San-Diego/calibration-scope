@@ -457,7 +457,7 @@ pub async fn execute_run(
 /// Worst case without this: 300s load + 33 trials x 300s timeout ≈ 3 hours
 /// for ONE queued run. With it: the run aborts honestly at the budget,
 /// records whatever trials completed, and frees the machine.
-const RUN_BUDGET_SECS: u64 = 5400; // 90 minutes — raised from 60 for 64-item channel experiment (64 tests × N=3 × ~28s/trial ≈ 90 min)
+const RUN_BUDGET_SECS: u64 = 64800; // 18 hours — 293-item powered bank × 6 reps × ~8s/trial ≈ 3.9 h/run (e2b); nemotron slower. Sized as max_test_count × reps × slowest_model_avg_latency × 1.2, per the tail-latency budget rule (was 90 min for the 64-item channel experiment — 970 died at exactly 90.0 min with 758/1758 trials).
 
 #[allow(clippy::too_many_arguments)]
 async fn execute_run_inner(
