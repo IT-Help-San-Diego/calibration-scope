@@ -26,9 +26,18 @@ ALPHA = 0.05
 LENGTH_LEAK_CEILING = 0.874   # measured: best length-only rule on the powered quant-scope bank
 SPEARMAN_GATE = 0.30          # |rho| above this at baseline => length is scoring the class
 
+EXPECTED_ROWS = 293 * 6 * 2 * 2   # items x reps x carriers x models = 7032
+
 def gate_integrity(d):
     """Hard stops. Returns list of blocking problems."""
     stop = []
+    # Budget expiry is deliberately NOT flagged per-trial (executor/mod.rs maps it to the
+    # ordinary failure path), so a truncated run's rows look completely ordinary. The only
+    # detectable signature is a short row count. Run 970 died at 43% and its trials were
+    # indistinguishable from good ones. Assert the count explicitly.
+    if len(d) < EXPECTED_ROWS:
+        stop.append(f"TRUNCATED DATASET: {len(d)} rows, expected {EXPECTED_ROWS} "
+                    f"({100*len(d)/EXPECTED_ROWS:.0f}%) — a run may have hit its wall-clock budget")
     need = {"item_id","family_id","probe_class","model","carrier","rep","pass","expected_result"}
     missing = need - set(d.columns)
     if missing: stop.append(f"MISSING COLUMNS: {sorted(missing)}")
@@ -45,6 +54,7 @@ def gate_integrity(d):
     return stop
 
 def gate_length_leak(d, item_len):
+    """Baseline-arm length gate used inside analyse(). For a BASELINE-ONLY export use gate_only()."""
     """A length-only rule scores 0.874 on the powered quant-scope bank. If the models are
     exploiting it, the class's off-ceiling yield is illusory. Immune to the CARRIER contrast
     (length is constant within item across arms) but threatens the ABSOLUTE rate."""
@@ -166,6 +176,55 @@ def defect_triage(d):
     return {"n_items_failing_ALL_models": len(zeros), "items": zeros[:40],
             "action": "REVIEW KEYS before reporting these as difficulty (2 of 11 probe items had construct defects)"}
 
+def gate_only(path, bank_path="powered_bank_base.json"):
+    """STANDALONE length-gate path for a BASELINE-ONLY export (e.g. the truncated runs 970/971).
+    analyse() deliberately BLOCKS such input (one carrier, unpaired cells, infra rows), so the
+    gate is unreachable there — this entry point exists precisely for that case.
+    Usage:  python3 carrier_analysis.py --gate <baseline.csv> [bank.json]
+    """
+    d = pd.read_csv(path); d.columns = [c.strip() for c in d.columns]
+    need = {"item_id","probe_class","pass"}
+    missing = need - set(d.columns)
+    if missing: return {"BLOCKED": [f"MISSING COLUMNS for gate: {sorted(missing)}"]}
+    n_all = len(d)
+    if "is_infra_error" in d.columns:
+        d = d[~d.is_infra_error.astype(bool)]
+    try:
+        bank = json.load(open(bank_path))
+        bank = bank.get("items", bank) if isinstance(bank, dict) else bank
+        item_len = {x["name"]: len(x["prompt_text"]) for x in bank}
+    except Exception as e:
+        # NEVER silently skip the gate — a missing bank is a blocking condition, not a no-op.
+        return {"BLOCKED": [f"CANNOT LOAD BANK for item lengths from {bank_path!r}: {e}. "
+                            "The length gate requires item texts; refusing to report a partial gate."]}
+    covered = d.item_id.isin(item_len).mean() if len(d) else 0.0
+    out = {"mode": "gate_only (baseline-only input; carrier contrast NOT computed)",
+           "rows_total": int(n_all), "rows_after_infra_drop": int(len(d)),
+           "items_seen": int(d.item_id.nunique()),
+           "bank_coverage_of_rows": float(covered),
+           "length_gate": _length_gate_core(d, item_len)}
+    if covered < 0.99:
+        out["WARNING"] = (f"only {covered:.1%} of rows matched a bank item — unmatched item_ids are "
+                          "excluded from the gate, so treat the result as partial")
+    return out
+
+def _length_gate_core(d, item_len):
+    out = {}
+    for cls, g in d.groupby("probe_class"):
+        r = g.groupby("item_id")["pass"].mean()
+        L = r.index.map(item_len)
+        ok = ~pd.isna(L)
+        if ok.sum() < 8:
+            out[cls] = {"n_items": int(ok.sum()), "note": "fewer than 8 items — no correlation reported"}
+            continue
+        rho, p = st.spearmanr(np.asarray(L)[ok], r.values[ok])
+        out[cls] = {"n_items": int(ok.sum()), "baseline_acc": float(r.mean()),
+                    "spearman_len_vs_pass": float(rho), "p": float(p),
+                    "length_leak_binds": bool(abs(rho) >= SPEARMAN_GATE and p < ALPHA),
+                    "near_length_ceiling": bool(r.mean() >= LENGTH_LEAK_CEILING - 0.05),
+                    "reference": f"a length-only rule scores {LENGTH_LEAK_CEILING} on the powered quant-scope bank"}
+    return out
+
 def analyse(path):
     d = pd.read_csv(path); d.columns = [c.strip() for c in d.columns]
     stop = gate_integrity(d)
@@ -224,6 +283,9 @@ def selftest():
         if infra: d.loc[d.sample(infra,random_state=1).index,"is_infra_error"]=1
         return d
     ok=True
+    # NOTE: synthetic fixtures are 118x2x2x2x6 = 5664 rows, below EXPECTED_ROWS, so the
+    # truncation gate is exercised separately (T7) and relaxed for the estimator tests.
+    globals()["EXPECTED_ROWS"] = 0
     d=synth(drop=0.10); d.to_csv("/tmp/_t1.csv",index=False); r=analyse("/tmp/_t1.csv")
     c=r["verdict"]=="CARRIER_EFFECT_PRESENT"; ok&=c
     print(f"  T1 real carrier drop d=0.10   -> {r['verdict']}: {'PASS' if c else 'FAIL'}")
@@ -245,11 +307,35 @@ def selftest():
     c=r0["primary_item_level"]["n_units"]==472 and r0["primary_family_clustered"]["n_units"]==236
     ok&=c
     print(f"  T6 units item=472 family=236  -> item={r0['primary_item_level']['n_units']} family={r0['primary_family_clustered']['n_units']}: {'PASS' if c else 'FAIL'}")
+    # T8/T9: the BASELINE-ONLY path. analyse() must BLOCK it; gate_only() must REACH the gate.
+    import os as _os
+    bank=[{"name":f"F{f:03d}-{j}","prompt_text":"x"*(150+ (f%7)*30 + j*10)} for f in range(118) for j in range(2)]
+    json.dump({"items":bank}, open("/tmp/_bank.json","w"))
+    db=pd.read_csv("/tmp/_t1.csv"); db=db[db.carrier=="baseline"]; db.to_csv("/tmp/_t8.csv",index=False)
+    r8=analyse("/tmp/_t8.csv")
+    c=("BLOCKED" in r8); ok&=c
+    print(f"  T8 baseline-only via analyse() -> {'BLOCKED (correct)' if c else 'NOT BLOCKED'}: {'PASS' if c else 'FAIL'}")
+    r9=gate_only("/tmp/_t8.csv","/tmp/_bank.json")
+    c=("BLOCKED" not in r9) and ("length_gate" in r9) and len(r9["length_gate"])>0 \
+      and all("spearman_len_vs_pass" in v or "note" in v for v in r9["length_gate"].values())
+    ok&=c
+    print(f"  T9 baseline-only via gate_only -> reached gate for {list(r9.get('length_gate',{}).keys())}: {'PASS' if c else 'FAIL'}")
+    r10=gate_only("/tmp/_t8.csv","/tmp/_nonexistent_bank.json")
+    c=("BLOCKED" in r10) and any("CANNOT LOAD BANK" in s for s in r10["BLOCKED"]); ok&=c
+    print(f"  T10 missing bank              -> {'BLOCKED (no silent skip)' if c else 'SILENTLY SKIPPED'}: {'PASS' if c else 'FAIL'}")
+    globals()["EXPECTED_ROWS"] = 7032
+    r=analyse("/tmp/_t1.csv")
+    c=("BLOCKED" in r) and any("TRUNCATED" in s for s in r["BLOCKED"])
+    ok&=c
+    print(f"  T7 truncated dataset          -> {'BLOCKED' if c else 'MISSED'}: {'PASS' if c else 'FAIL'}")
     print("SELF-TEST:", "ALL PASS" if ok else "FAILURES PRESENT")
     return ok
 
 if __name__=="__main__":
-    if len(sys.argv)>1:
+    if len(sys.argv)>2 and sys.argv[1]=="--gate":
+        bank = sys.argv[3] if len(sys.argv)>3 else "powered_bank_base.json"
+        print(json.dumps(gate_only(sys.argv[2], bank), indent=1, default=str))
+    elif len(sys.argv)>1:
         print(json.dumps(analyse(sys.argv[1]), indent=1, default=str))
         r=analyse(sys.argv[1])
         if "BLOCKED" not in r: print("\nVERDICT:", r["verdict"], "\n", r.get("verdict_reason",""))
