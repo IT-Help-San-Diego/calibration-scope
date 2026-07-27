@@ -12,14 +12,18 @@
 //!   2. POST /api/participants/:id/start   → create a test_runs row (participant_id
 //!      set, model_id NULL, status='running') seeded with the I+N tests for a
 //!      chosen axis/family. Returns the run_id + the list of test prompts.
-//!   3. POST /api/participants/:id/answer  → submit one verdict; scored by the
-//!      same exact-match grader the executor uses; writes a trial_results row.
+//!   3. POST /api/participants/:id/answer  → submit one verdict; scored by
+//!      scoring::score_response — the executor's own grader, same verdict
+//!      extraction and normalization models get; writes a trial_results row.
 //!   4. POST /api/participants/:id/finish   → seal the run (status='done',
 //!      recompute pass_count/total_count, set sha3_provenance).
 //!
 //! No LLM is ever called. No model judges the human. The grader is the same
-//! deterministic `score_response` function — exact string match against
-//! expected_result, identical to what models face.
+//! deterministic `score_response` function models face — verdict extraction
+//! plus normalization against expected_result, identical rubric. (Until
+//! 2026-07-27 this doc claimed that while the code ran a stricter plain
+//! string compare — a human's "no" failed where a model's "no" passed.
+//! Adversarial-verification catch; the parity is now real.)
 
 use axum::extract::{Path, State};
 use axum::response::Json;
@@ -184,6 +188,12 @@ struct RunOwner {
 /// `must_be_running`, it must also not be sealed yet. Errors name the real
 /// condition — "not found", "belongs to another subject", "already sealed" —
 /// because a wrong 404 here would be the instrument stating a falsehood.
+///
+/// Scope, stated honestly: this is integrity against mistakes and stray
+/// clients, not authentication. The instrument has no auth layer and the
+/// participant id is the caller-chosen path segment, so a caller who pairs a
+/// run with its real owner id passes — an instrument-wide boundary, not
+/// something this guard can close.
 async fn verify_run_owner(
     state: &AppState,
     run_id: i32,
@@ -308,12 +318,18 @@ pub async fn submit_answer(
         }));
     }
 
-    // Same grader the executor uses: exact match (case-insensitive, trimmed).
-    let passed = match test.scoring_method.as_str() {
-        "exact" => req.answer.trim().eq_ignore_ascii_case(&expected),
-        // Future: fuzzy/contains scoring can be added here.
-        _ => req.answer.trim().eq_ignore_ascii_case(&expected),
-    };
+    // Same grader the executor uses — literally the same function. This
+    // module's doc always promised score_response; what shipped was a plain
+    // case-insensitive compare, so a human typing "no" against expected
+    // "INVALID" failed where a model answering "no" passed (adversarial
+    // verification catch, 2026-07-27). Verdict extraction, normalization,
+    // and rubric selection are now identical across subject kinds — which
+    // is what makes the two comparable at all. An unknown scoring_method is
+    // a test-definition error, surfaced honestly instead of guess-graded.
+    let passed =
+        crate::executor::scoring::score_response(&req.answer, &expected, &test.scoring_method)
+            .map_err(AppError::Executor)?
+            .passed;
 
     // Write the trial_result row. trial_num is sequential within the run.
     let next_trial: i32 = sqlx::query_scalar(
@@ -327,11 +343,21 @@ pub async fn submit_answer(
     // Clamp to [0, 24h] — a client clock glitch must not write a negative or
     // absurd "latency" into the same column model response times live in.
     let latency_ms = req.elapsed_ms.unwrap_or(0).clamp(0, 86_400_000);
-    let trial_id: i32 = sqlx::query_scalar(
+    // Conditional INSERT: the ownership guard's status read is several
+    // queries behind by now, and an unconditional insert could land a trial
+    // AFTER finish_session sealed the run — leaving trial_results
+    // contradicting the sealed counts (adversarial verification catch). The
+    // WHERE EXISTS re-checks running-ness in the same statement as the
+    // insert; zero rows means the run sealed mid-flight and the answer is
+    // honestly reported as not recorded.
+    let trial_id: Option<i32> = sqlx::query_scalar(
         r#"INSERT INTO trial_results
              (run_id, trial_num, test_id, raw_response, passed, latency_ms,
               is_infra_error)
-           VALUES ($1, $2, $3, $4, $5, $6, false)
+           SELECT $1, $2, $3, $4, $5, $6, false
+           WHERE EXISTS (SELECT 1 FROM test_runs
+                         WHERE id = $1 AND participant_id = $7
+                           AND status = 'running')
            RETURNING id"#,
     )
     .bind(req.run_id)
@@ -340,8 +366,15 @@ pub async fn submit_answer(
     .bind(&req.answer)
     .bind(passed)
     .bind(latency_ms)
-    .fetch_one(&state.db)
+    .bind(participant_id)
+    .fetch_optional(&state.db)
     .await?;
+    let Some(trial_id) = trial_id else {
+        return Err(AppError::Executor(format!(
+            "run {} was sealed while this answer was in flight — the answer was not recorded",
+            req.run_id
+        )));
+    };
 
     Ok(Json(AnswerResult {
         trial_result_id: trial_id,
@@ -374,10 +407,35 @@ pub async fn finish_session(
 ) -> AppResult<Json<SessionResult>> {
     // Same ownership guard as submit_answer — without it a stray run_id
     // would recompute and RESEAL an arbitrary run, including a model run.
-    // Re-finishing an already-sealed participant run is allowed (the
-    // recompute is deterministic, the reseal identical), so a client retry
-    // after a dropped response does not error.
-    verify_run_owner(&state, req.run_id, participant_id, false).await?;
+    let run = verify_run_owner(&state, req.run_id, participant_id, false).await?;
+
+    // A retry against an already-sealed run REPLAYS the stored seal instead
+    // of recomputing: the first seal stands. Recomputing on every retry
+    // rewrote finished_at each time and re-derived the hash from a fresh
+    // read (adversarial verification catch) — replay makes the idempotency
+    // literal instead of claimed.
+    if run.status == "done" {
+        #[derive(sqlx::FromRow)]
+        struct Sealed {
+            pass_count: i32,
+            total_count: i32,
+            sha3_provenance: Option<String>,
+        }
+        let sealed: Sealed = sqlx::query_as(
+            r#"SELECT pass_count, total_count, sha3_provenance
+               FROM test_runs WHERE id = $1"#,
+        )
+        .bind(req.run_id)
+        .fetch_one(&state.db)
+        .await?;
+        return Ok(Json(SessionResult {
+            run_id: req.run_id,
+            status: "done".into(),
+            pass_count: sealed.pass_count,
+            total_count: sealed.total_count,
+            sha3_provenance: sealed.sha3_provenance,
+        }));
+    }
 
     // Recompute pass_count / total_count from the trial_results.
     #[derive(sqlx::FromRow)]
@@ -407,11 +465,14 @@ pub async fn finish_session(
         test_id: i32,
         passed: bool,
     }
+    // ORDER BY trial_num, id — the id tiebreak makes the evidence string
+    // deterministic even if a trial_num collision ever lands (there is no
+    // unique constraint on (run_id, trial_num); relay (g) covers the index).
     let verdicts: Vec<TrialVerdict> = sqlx::query_as(
         r#"SELECT trial_num, test_id, passed
            FROM trial_results
            WHERE run_id = $1 AND is_infra_error = false
-           ORDER BY trial_num"#,
+           ORDER BY trial_num, id"#,
     )
     .bind(req.run_id)
     .fetch_all(&state.db)

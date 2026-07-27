@@ -1257,6 +1257,39 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     airtight duplicate fix is a partial UNIQUE(run_id, test_id) index for
     participant runs — migration, backend lane; the in-route check has an
     unavoidable concurrent-submit race without it.
+  - **2026-07-27 (Claude Code): adversarial verification round on the
+    witness-v2/guards diff — two real bugs, both honesty-class, both
+    fixed.** (1) **The carbon certificate's "same grader as model runs"
+    line was false** — and so was this module's own doc, since 043: human
+    answers were graded by a plain case-insensitive compare while models
+    get scoring::score_response (verdict extraction + normalization). A
+    human typing "no" against expected INVALID failed where a model's
+    "no" passed; even "invalid." failed. Fixed the deep way: submit_answer
+    now calls score_response itself, so the parity is real, not claimed.
+    **Measurement-method note:** human runs sealed before 2026-07-27 were
+    graded by the stricter compare; comparisons across that boundary
+    should say so. (2) **Seal TOCTOU:** an answer in flight when Finish
+    landed could insert after the seal, leaving trial_results
+    contradicting the sealed counts. The INSERT now re-checks
+    status='running' in the same statement and reports "sealed while this
+    answer was in flight" when it loses the race. Also from the round:
+    finish_session now REPLAYS the stored seal for already-done runs
+    (recomputing rewrote finished_at per retry and re-derived the hash
+    from a fresh read); the evidence string gained an ORDER BY trial_num,
+    id tiebreak; the ownership guard's doc now states honestly that it is
+    integrity against mistakes, not authentication (the instrument has no
+    auth layer — instrument-wide boundary, predates this diff); and the
+    ledger prints a gold two-line note when its non-infra trial sum
+    disagrees with the sealed RESULT (pre-017 sealings included infra
+    trials in the denominator and were never backfilled — shown, not
+    hidden). Copilot same round: the ledger header now counts CLAIMS
+    excluding the synthetic unlinked-trials line, and the empty-ledger
+    aria-label carries the same "non-infra" qualifier as the visible
+    copy. **RELAY TO HERMES (g), extended:** the airtight fixes are
+    partial UNIQUE(run_id, test_id) AND UNIQUE(run_id, trial_num) indexes
+    for participant runs — migrations, backend lane; without the latter, a
+    trial_num collision makes the evidence order (and so the seal)
+    row-order-dependent between recomputes.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)

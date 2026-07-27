@@ -218,7 +218,7 @@ fn render_certificate(r: &WitnessRow, seal: &str, claims: &[ClaimRow]) -> String
         total = total,
         rows = rows,
         seal_svg = seal_svg,
-        ledger = render_ledger(r.id, claims),
+        ledger = render_ledger(r.id, claims, r.total_count),
     )
 }
 
@@ -228,11 +228,11 @@ fn render_certificate(r: &WitnessRow, seal: &str, claims: &[ClaimRow]) -> String
 /// the claim count so a 293-item battery and a 3-item human session both
 /// render completely. Same discipline as the certificate: presentation
 /// attributes only, one sizing style attr on the svg element.
-fn render_ledger(run_id: i32, claims: &[ClaimRow]) -> String {
+fn render_ledger(run_id: i32, claims: &[ClaimRow], sealed_total: i32) -> String {
     if claims.is_empty() {
         return format!(
             r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200" role="img"
-     aria-label="Claim ledger for run {run_id}: no trial rows recorded"
+     aria-label="Claim ledger for run {run_id}: no non-infra trial rows recorded"
      font-family="ui-monospace, Menlo, Consolas, monospace" style="display:block;max-width:1000px;margin:0 auto;width:100%;height:auto">
   <rect x="0" y="0" width="1000" height="200" fill="#0a0a0a"/>
   <rect x="21" y="13" width="958" height="166" fill="none" stroke="#2b3143" stroke-width="1.5" rx="8"/>
@@ -242,18 +242,54 @@ fn render_ledger(run_id: i32, claims: &[ClaimRow]) -> String {
 "##
         );
     }
+    // The header counts CLAIMS — the synthetic unlinked-trials line is
+    // explicitly not one, so it is named separately, not folded in (review
+    // catch: "N CLAIMS" was counting rendered rows).
+    let claim_count = claims.iter().filter(|c| c.test_id.is_some()).count();
+    let has_unlinked = claims.iter().any(|c| c.test_id.is_none());
+    let header_suffix = if has_unlinked {
+        " + UNLINKED TRIALS"
+    } else {
+        ""
+    };
+    let aria_unlinked = if has_unlinked {
+        ", plus one line pooling trials with no test link"
+    } else {
+        ""
+    };
+    // The certificate's RESULT uses the counts stored at seal time; the
+    // ledger recomputes live with the current infra-exclusion rule. Runs
+    // sealed under the pre-2026-07-08 convention (infra trials in the
+    // denominator, never backfilled) or runs a trial slipped into after
+    // sealing will disagree — shown, not hidden.
+    let ledger_total: i32 = claims.iter().map(|c| c.n).sum();
+    // Two pre-wrapped lines — a single line overflows the 1000-wide viewBox
+    // at 12px mono (caught on the rendered screenshot, not in the tests).
+    let mismatch = if ledger_total != sealed_total {
+        Some((
+            format!(
+                "This ledger sums {ledger_total} non-infra trials; the sealed RESULT above counts {sealed_total}."
+            ),
+            "The delta is infra-error trials included by an older sealing convention, or rows recorded outside the seal — shown, not hidden."
+                .to_string(),
+        ))
+    } else {
+        None
+    };
     let per_col = claims.len().div_ceil(3);
-    // Rows start at y=144; the footer zone is the last 76px. The unit test
-    // asserts the last row lands strictly above it for a 293-claim battery.
-    let height = 144 + per_col * 21 + 76;
+    // Rows start at y=144; the footer zone is the last 76px (118px when the
+    // two mismatch-note lines are present). The unit test asserts the last
+    // row lands strictly above it for a 293-claim battery.
+    let height = 144 + per_col * 21 + 76 + if mismatch.is_some() { 42 } else { 0 };
     let rows_svg: String = claims
         .iter()
         .enumerate()
         .map(|(i, c)| {
             let col = i / per_col;
             let idx = i % per_col;
-            // Columns at 55/370/685; values end-anchored at x0+276 keep a
-            // Fibonacci 34px clear of the border (rect right edge x=979).
+            // Columns at 55/370/685; values end-anchored at x0+276, so the
+            // rightmost column ends at x=961 — 18px inside the border rect
+            // edge (x=979). The left margin is the Fibonacci 34 (55−21).
             let x0 = 55 + col * 315;
             let y = 144 + idx * 21;
             let (id_label, name, val_fill) = match c.test_id {
@@ -286,23 +322,41 @@ fn render_ledger(run_id: i32, claims: &[ClaimRow]) -> String {
             )
         })
         .collect();
+    let mismatch_svg = mismatch
+        .map(|(l1, l2)| {
+            format!(
+                concat!(
+                    r##"<text x="89" y="{y1}" font-size="12" fill="#d4a853">{l1}</text>"##,
+                    r##"<text x="89" y="{y2}" font-size="12" fill="#d4a853">{l2}</text>"##
+                ),
+                y1 = height - 76,
+                y2 = height - 55,
+                l1 = esc(&l1),
+                l2 = esc(&l2),
+            )
+        })
+        .unwrap_or_default();
     format!(
         r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 {height}" role="img"
-     aria-label="Claim ledger for run {run_id}: per-claim pass counts for {count} claims, keyed by test id"
+     aria-label="Claim ledger for run {run_id}: per-claim pass counts for {count} claims, keyed by test id{aria_unlinked}"
      font-family="ui-monospace, Menlo, Consolas, monospace" style="display:block;max-width:1000px;margin:0 auto;width:100%;height:auto">
   <rect x="0" y="0" width="1000" height="{height}" fill="#0a0a0a"/>
   <rect x="21" y="13" width="958" height="{box_h}" fill="none" stroke="#2b3143" stroke-width="1.5" rx="8"/>
-  <text x="89" y="76" font-size="15" fill="#d4a853" letter-spacing="2">CLAIM LEDGER — {count} CLAIMS</text>
+  <text x="89" y="76" font-size="15" fill="#d4a853" letter-spacing="2">CLAIM LEDGER — {count} CLAIMS{header_suffix}</text>
   <text x="89" y="102" font-size="12" fill="#7d8590">one row per claim, keyed by test_id (names are labels; the id is the key) · k/n = passes/trials, counts raw</text>
   {rows_svg}
+  {mismatch_svg}
   <text x="89" y="{foot_y}" font-size="12" fill="#7d8590">Every claim in the sealed run is listed — no selection, no summary standing in for the itemization.</text>
 </svg>
 "##,
         run_id = run_id,
-        count = claims.len(),
+        count = claim_count,
+        header_suffix = header_suffix,
+        aria_unlinked = aria_unlinked,
         height = height,
         box_h = height - 34,
         rows_svg = rows_svg,
+        mismatch_svg = mismatch_svg,
         foot_y = height - 34,
     )
 }
@@ -487,8 +541,10 @@ mod tests {
 
     #[test]
     fn ledger_lists_every_claim_by_id_with_raw_counts() {
-        let html = render_ledger(953, &claims_fixture());
-        assert!(html.contains("CLAIM LEDGER — 3 CLAIMS"));
+        // Σn = 9 and sealed_total = 9 agree — no mismatch note.
+        let html = render_ledger(953, &claims_fixture(), 9);
+        assert!(html.contains("CLAIM LEDGER — 3 CLAIMS<"));
+        assert!(!html.contains("older sealing convention"));
         for (id, kn) in [(26, "3/3"), (61, "2/3"), (27, "0/3")] {
             assert!(html.contains(&format!("#{id}")), "missing claim id {id}");
             assert!(html.contains(kn), "missing count {kn}");
@@ -513,7 +569,7 @@ mod tests {
                 n: 3,
             })
             .collect();
-        let html = render_ledger(999, &claims);
+        let html = render_ledger(999, &claims, 879);
         let per_col = 293usize.div_ceil(3); // 98
         let height = 144 + per_col * 21 + 76;
         assert!(html.contains(&format!(r#"viewBox="0 0 1000 {height}""#)));
@@ -525,8 +581,11 @@ mod tests {
 
     #[test]
     fn ledger_handles_empty_and_unlinked_honestly() {
-        let empty = render_ledger(7, &[]);
+        let empty = render_ledger(7, &[], 0);
         assert!(empty.contains("No non-infra trial rows are recorded"));
+        // The aria-label must carry the same "non-infra" qualifier as the
+        // visible copy — a run of only infra-error trials has trial rows.
+        assert!(empty.contains("no non-infra trial rows recorded"));
         let unlinked = render_ledger(
             7,
             &[ClaimRow {
@@ -535,11 +594,28 @@ mod tests {
                 k: 5,
                 n: 9,
             }],
+            9,
         );
         assert!(unlinked.contains("(unlinked trials)"));
         assert!(unlinked.contains("5/9"));
-        // Never colored like a claim verdict — it is not one claim.
+        // Never colored like a claim verdict — it is not one claim, and the
+        // header must not count it as one either.
         assert!(!unlinked.contains(r##"fill="#e0e0e0" text-anchor="end">5/9"##));
+        assert!(unlinked.contains("CLAIM LEDGER — 0 CLAIMS + UNLINKED TRIALS"));
+        assert!(unlinked.contains("pooling trials with no test link"));
+    }
+
+    #[test]
+    fn ledger_shows_seal_mismatch_instead_of_hiding_it() {
+        // Σn = 9 but the stored seal says 12 (e.g. pre-017 infra inclusion):
+        // the delta is stated on the artifact, in gold, not silently absorbed.
+        let html = render_ledger(953, &claims_fixture(), 12);
+        assert!(html.contains("sums 9 non-infra trials"));
+        assert!(html.contains("counts 12"));
+        assert!(html.contains("shown, not hidden"));
+        // And the viewBox grew by two lines to hold it.
+        let height = 144 + 21 + 76 + 42;
+        assert!(html.contains(&format!(r#"viewBox="0 0 1000 {height}""#)));
     }
 
     #[test]
@@ -565,6 +641,7 @@ mod tests {
                 k: 1,
                 n: 1,
             }],
+            1,
         );
         assert!(!html.contains("<script>x"));
         assert!(html.contains("&lt;script&gt;"));
@@ -608,9 +685,29 @@ mod tests {
             target.join("witness-sample.html"),
             render_certificate(&r, &seal, &claims),
         );
+        let human_claims = vec![
+            ClaimRow {
+                test_id: Some(26),
+                name: Some("LOGIC-01".into()),
+                k: 1,
+                n: 2,
+            },
+            ClaimRow {
+                test_id: Some(61),
+                name: Some("LOGIC-01N".into()),
+                k: 2,
+                n: 2,
+            },
+            ClaimRow {
+                test_id: Some(27),
+                name: Some("LOGIC-02".into()),
+                k: 1,
+                n: 2,
+            },
+        ];
         let _ = std::fs::write(
             target.join("witness-sample-human.html"),
-            render_certificate(&human_fixture(), &seal, &claims_fixture()),
+            render_certificate(&human_fixture(), &seal, &human_claims),
         );
     }
 }
