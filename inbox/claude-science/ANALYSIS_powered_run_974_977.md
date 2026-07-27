@@ -41,25 +41,36 @@ should now also become **single-model** scoping.
 not hold, because **e2b is itself deterministic on 83.6% of items.** The models differ in *degree*, and degree is
 confounded with accuracy (0.771 vs 0.867).
 
-## 4. THE EFFECT IS NOT WHERE THE MECHANISM STORY PUT IT
-If the carrier works by collapsing uncertainty, the accuracy damage should concentrate in the items that *were*
-uncertain. It does not:
-| e2b items | Δ | p |
+## 4. THE CARRIER DAMAGES ALREADY-CONFIDENT ITEMS TOO — and my first reading of this was wrong
+**RETRACTED AND REWRITTEN 2026-07-27.** The first version of this section was headed *"the effect is not where the
+mechanism story put it"* and concluded the carrier flips confident answers rather than resolving uncertain ones.
+**That contradicted the table printed directly beneath it, and I committed the exact fallacy §2 of this same
+document names.**
+| e2b items | Δ per item | p vs 0 |
 |---|---|---|
-| stochastic at baseline (48) | −0.125 | 0.171 |
-| **deterministic at baseline (245)** | **−0.061** | **0.042** |
-**Only 29% of the total effect mass comes from the stochastic items.** The significant accuracy loss is in items
-that were already deterministic — the carrier is **flipping confident answers**, not merely resolving uncertain
-ones. **That is a different mechanism from the one in circulation, and it is the more interesting finding.**
-**Per-class:** the e2b damage is concentrated in **quant-scope (0.777 → 0.680)**; defeasible barely moves
-(0.760 → 0.730). Nemotron's defeasible arm actually *improves* (0.883 → 0.901).
+| stochastic at baseline (48) | **−0.125** | 0.171 |
+| deterministic at baseline (245) | **−0.061** | 0.042 |
+**Per item, the uncertain stratum is damaged twice as hard.** My claim rested on which stratum reached p < 0.05 —
+which is driven by **n = 245 vs n = 48**, not by effect size — and that is "significant in A, not in B is not a test
+of the interaction," the error I had just diagnosed in the threshold claim two sections earlier.
+**The interaction I failed to run, now run:** Welch t = −0.67, **p = 0.504**; Mann-Whitney **p = 0.274.**
+**The two strata are not distinguishable.** The point estimate favours the uncertainty story, not against it.
+**The "71% of effect mass" figure was worse than unsupported — it pointed the other way.** Deterministic items are
+**84%** of the bank and carry **71%** of the mass. Under equal per-item damage, mass share would equal headcount
+share. **71 < 84 means that stratum is damaged *less* per item** — I quoted a number whose own arithmetic
+contradicted the sentence it was supporting.
+**What the data does support, stated at its actual strength:** **245 items that were fully deterministic at baseline
+still lose 0.061 each under the carrier (p = 0.042).** So the carrier is **not acting only on uncertain items** —
+confident answers move too. It does **not** follow that confident items are where the damage concentrates.
 
 ## 5. WHAT I AM NOT CLAIMING
 - These are the pre-registered primary and the declared secondaries. **The family-level clustered secondary and the
   length-leak gate are not in this note** — next pass.
 - p = 0.088 is **not** evidence of no interaction. It is insufficient evidence of one. A third model, or more items,
   could resolve it; nothing here says the threshold is false.
-- §4's mechanism reading is **post-hoc** — I did not pre-register a stochastic/deterministic split. It should be
-  treated as a hypothesis for the next run, not a result.
+- §4's stratification is **post-hoc** — I did not pre-register a stochastic/deterministic split — **and the
+  post-hoc caveat did not save me**: the first version's directional claim was contradicted by its own effect
+  sizes, not merely under-powered. A caveat about provenance does not repair a conclusion that the numbers
+  point away from.
 - **978 (the neutral-carrier control) is still the deciding test for content-vs-length**, and nothing here touches
   it. Per the corrected spec, **C1 is the length test and a positive there retracts the variance claim.**
