@@ -51,11 +51,20 @@ reference contrast.
    a borderline positive is not"* — which is **backwards.** Actual type-I error *below* nominal means a rejection is
    **harder** to obtain by chance than the p-value advertises, so **a positive is conservative evidence and should
    be believed.** The cost of sub-nominal size is **power**, which makes a **null less informative**, not more.
-   **The corrected reading, and it is load-bearing for the read-out table:** if a control lands anywhere near
-   significance, that is evidence the control *did* collapse variance — which triggers the **retraction** row of
-   §1. The earlier instruction to "treat it as unresolved" would have discarded exactly the result that most
-   requires acting on. **A positive on either control arm is grounds to retract the variance claim, borderline or
-   not.**
+   **The corrected reading, and it must be read THROUGH §1's table rather than instead of it.** If a control lands
+   anywhere near significance, that is evidence the control *did* collapse variance, and a borderline positive must
+   be treated as a positive — the earlier instruction to "treat it as unresolved" would have discarded exactly the
+   result that most requires acting on.
+   **But which arm's positive triggers retraction is not symmetric, and an earlier version of this paragraph got
+   that wrong too** (it said "either arm"). The derivation:
+   - **C1** is length-matched *only*. If C1 collapses variance, **token count alone suffices** → the numerical
+     explanation holds → **the variance claim must be retracted.** **C1 is the length test.**
+   - **C2** is length-matched *and* vocabulary-matched. If C2 collapses while C1 does not, length alone does
+     **not** suffice — Lean's *vocabulary* does. That **modifies** the claim (vocabulary-level rather than
+     meaning-level); it does not kill it. **C2 is not the length test.**
+   **So: a positive on C1 — borderline or not — is the retraction trigger, and §1's `yes | yes` row is that
+   trigger's coherent form** (if length suffices, C2 is also length-matched and should collapse too, which is why
+   `yes | no` is flagged incoherent). A C2-only positive is the `no | yes` row: a real finding, not a retraction.
    **What actually licenses trusting a null here is the separate power simulation, not conservativeness:** power
    0.99 against a Lean-sized collapse at n = 27. That is why a null supports "this control did not do what Lean
    did" — and per limit 1, nothing more than that.
