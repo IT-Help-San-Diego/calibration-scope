@@ -4677,27 +4677,42 @@ function hcRenderScience(rows) {
         // rule as test_id vs test name, and subject_id vs subject_name).
         const famKey = x => (x.family_root_id != null ? "id:" + x.family_root_id : "name:" + (x.family_name || "?")) + "|" + (x.axis || "");
         const famSet = new Set(mine.map(famKey));
-        const models = rows.filter(x => x.subject_kind === "model" && famSet.has(famKey(x)));
-        if (!models.length) {
+        // EVERY other subject, not just models: the panel's whole claim is
+        // that both kinds land in one shape, and filtering peers to
+        // subject_kind === "model" quietly dropped other participants —
+        // the heading promised more than the code delivered (review catch).
+        const subjKey = x => x.subject_kind + ":" + x.subject_id;
+        const meKey = subjKey(mine[0]);
+        const peersAll = rows.filter(x => famSet.has(famKey(x)) && subjKey(x) !== meKey);
+        if (!peersAll.length) {
             cmpSec.style.display = "";
-            cmpEl.innerHTML = `<div class="hc-chart-cap">No model has attempted these families yet — nothing to compare against. Runs land here as they seal.</div>`;
+            cmpEl.innerHTML = `<div class="hc-chart-cap">No other subject — model or person — has attempted these families yet, so there is nothing to compare against. Runs land here as they seal.</div>`;
             return;
         }
         cmpSec.style.display = "";
         cmpEl.innerHTML = mine.map(x => {
-            const peers = models.filter(m => famKey(m) === famKey(x))
-                .sort((a, b) => (b.signal_score || 0) - (a.signal_score || 0));
+            // Humans first, then models, each by score — a person comparing
+            // themselves is usually asking "am I typical?" before "how do I
+            // rank against silicon?".
+            const peers = peersAll.filter(m => famKey(m) === famKey(x))
+                .sort((a, b) => (a.subject_kind === b.subject_kind)
+                    ? (b.signal_score || 0) - (a.signal_score || 0)
+                    : (a.subject_kind === "human" ? -1 : 1));
             const row = (name, r2, you) => {
                 const sig = r2.signal_score != null ? r2.signal_score : 0;
                 const trials = (r2.total_passes != null && r2.total_trials != null) ? `${r2.total_passes}/${r2.total_trials}` : "?";
-                return `<div class="hc-row${you ? " hc-row-you" : ""}"><span class="hc-cmp-name">${esc(name)}</span>${hcBarTrack(sig, you ? "" : "hc-fill-model")}<span class="hc-val">${trials} (${Math.round(sig * 100)}%)</span></div>`;
+                const human = r2.subject_kind === "human";
+                return `<div class="hc-row${you ? " hc-row-you" : ""}"><span class="hc-cmp-name">${esc(name)}</span>`
+                    + `<span class="hc-kind">${human ? "carbon" : "silicon"}</span>`
+                    + hcBarTrack(sig, you || human ? "" : "hc-fill-model")
+                    + `<span class="hc-val">${trials} (${Math.round(sig * 100)}%)</span></div>`;
             };
             return `<div class="hc-fam"><div class="hc-fam-name">${esc(famLabel(x))}</div>`
                 + row("You — " + hcParticipantName, x, true)
                 + peers.map(m => row(m.subject_name, m, false)).join("")
                 + `</div>`;
         }).join("")
-        + `<div class="hc-chart-cap">pooled pass rate per family — trial counts differ by subject (models run N=3 per form), so read the fractions, not just the bars</div>`;
+        + `<div class="hc-chart-cap">pooled pass rate per family — trial counts differ by subject (models run N=3 per form, a person answers each item once), so read the fractions, not just the bars</div>`;
     }
 }
 
