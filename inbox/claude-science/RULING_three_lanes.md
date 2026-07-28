@@ -60,20 +60,27 @@ Spec-vs-**key**, needing no reference to the root. Run against all 7 `formal_spe
 alternation missed them. I caught it by checking the count against the known answer. **A checker that flags nothing
 looks identical to a clean bank.**)*
 
-## 5. RULING ON THE WORKTREE DECISION — the dichotomy offered is false
-The choice presented was **overwrite another session's commit and turn CI red**, or **leave the work stranded in a
-worktree**. **Neither is necessary.** The two versions differ in **two independent** ways:
-1. **Coverage** — mine has `PILOT-F1-NEG-TRAP`, theirs is missing it. **Strictly better, and turns nothing red.**
-2. **`LOGIC-06C` encoded so it cannot fail.** **This alone is what would go red.**
-**And the red is an ordering artifact, not a dependency.** 057 was deferred only to avoid a migration-*number* race
-with PRs #4/#5 — a numbering concern. **Sequence it and nothing ever goes red:**
-1. merge PR #4 and PR #5 (both green, both waiting only on Carey);
-2. author 057 — the number is now unambiguous;
-3. **land the strict checker in the same PR as 057** — the gate arrives *able* to fail, and passes, because the
-   defect is fixed.
-**No overwrite, no red main, cost is one merge cycle.** Land the `PILOT-F1-NEG-TRAP` coverage now, separately; it
-is green and independent. **I agree completely that a gate which cannot fail on the one broken row is not a gate —
-that is exactly why it should land beside the fix rather than instead of it.**
+## 5. ~~RULING ON THE WORKTREE DECISION~~ **RETRACTED — I ruled on a state that had already changed**
+**WITHDRAWN 2026-07-28, same day, before Carey acted on it.** I wrote §5 calling the offered choice a false
+dichotomy and recommending the strict gate be held back to land beside migration 057, so main never goes red.
+**Two things were wrong with that.**
+**First, it was moot.** The strict version had already landed — commit `80ada8a`, `hermes/oracle-28-coverage`,
+verified: `PILOT-F1-NEG-TRAP` present, `LOGIC-06C` able to fail. **I was adjudicating a decision that had been
+made two turns earlier.** I should have checked the branch before ruling on it.
+**Second, my objection priced a cost that does not exist in this shape.** My premise was *"a red main blocks every
+other lane's merges."* **The gate landed on an open PR, not on main.** A red check on an unmerged PR blocks nothing
+— main is untouched and the other lanes are unaffected. **Their sequencing is better than mine on an axis I failed
+to weigh**, and my "no red main" concern was answered by a fact I did not look up.
+**And on §4, a related correction.** I derived the spec-vs-key invariant — *a `formal_spec` must not assert `⊢`
+when the keyed answer is negative* — and presented it as the fix to add. **It is already implemented**: the landed
+battery mirrors the seeded spec faithfully, records the seeded key, and the gate fails precisely because computed
+`VALID` contradicts seeded `INVALID`. **That is the invariant, running.** §4's analysis of *why the proposed
+inequality rule would break LOGIC-03C/04C* still stands and is still useful; §4's framing as "here is the right fix
+instead" was a rediscovery of what the code already did.
+**What I actually endorse, having read what landed:** the red-by-design gate is correct, flagging it rather than
+patching it was correct, and *"a gate that cannot fail on the one broken row is not a gate"* was right when they
+said it and right now. **Migration 057's content (`∀x(P→Q), ∃xQ ⊬ ∃xP`) is the fix; the gate staying red until it
+lands is the instrument working.**
 
 ## 6. WHAT I AM NOT CLAIMING
 - The token table is **Hermes's measurement**; I verified the arithmetic and its implications, not the query.
