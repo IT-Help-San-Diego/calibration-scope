@@ -68,25 +68,25 @@
   <button id="mode-toggle" class="tab" onclick="toggleMode()" title="Focused = single-viewport workspace (action never leaves the screen). Deep = full tab flow with everything visible. Both modes keep full power — Focused arranges, Deep exposes.">Mode: Deep</button>
   <button id="a11y-toggle" class="tab" onclick="toggleA11y()" title="High-contrast / large-text mode" style="cursor:pointer;">Readable: Off</button>
 
-  <div class="tab" onclick="showPage('setup')" id="tab-setup">Setup</div>
+  <button class="tab" onclick="showPage('setup')" id="tab-setup">Setup</button>
   <span class="nav-arrow">→</span>
   <button class="tab" onclick="showPage('onboard')" id="tab-onboard" title="60-second continuity test — zero credentials, nothing to interpret">First Run</button>
   <span class="nav-arrow">→</span>
-  <div class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">Benchmark</div>
+  <button class="tab active" onclick="showPage('benchmark')" id="tab-benchmark">Benchmark</button>
   <span class="nav-arrow">→</span>
-  <div class="tab" onclick="showPage('prompt-builder')" id="tab-prompt-builder">Prompt Builder</div>
+  <button class="tab" onclick="showPage('prompt-builder')" id="tab-prompt-builder">Prompt Builder</button>
   <span class="nav-arrow">→</span>
-  <div class="tab" onclick="showPage('loot-page')" id="tab-loot-page">Loot</div>
+  <button class="tab" onclick="showPage('loot-page')" id="tab-loot-page">Loot</button>
   <span class="nav-arrow">→</span>
-  <div class="tab" onclick="showPage('tests-page')" id="tab-tests-page">Tests</div>
+  <button class="tab" onclick="showPage('tests-page')" id="tab-tests-page">Tests</button>
   <span class="nav-arrow">→</span>
-  <div class="tab" onclick="showPage('runs-page')" id="tab-runs-page">Runs</div>
+  <button class="tab" onclick="showPage('runs-page')" id="tab-runs-page">Runs</button>
   <span class="nav-arrow">→</span>
-  <div class="tab" onclick="showPage('human-cal')" id="tab-human-cal">Human Cal</div>
+  <button class="tab" onclick="showPage('human-cal')" id="tab-human-cal">Human Cal</button>
   <div class="spacer"></div>
   <button class="btn-mini" onclick="syncLMStudio()" title="Check for newly downloaded local models" style="margin-right:4px">Sync Local</button>
   <button class="btn-mini" onclick="syncCloud()" title="Discover every cloud model your API keys can reach (Nous / OpenRouter / OpenAI)" style="margin-right:4px">Sync Cloud</button>
-  <div class="tab" onclick="showPage('lmstudio')" id="tab-lmstudio">LM Studio</div>
+  <button class="tab" onclick="showPage('lmstudio')" id="tab-lmstudio">LM Studio</button>
 </div>
 
 <!-- ============ PAGE: Benchmark ============ -->

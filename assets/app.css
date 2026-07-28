@@ -150,6 +150,24 @@
     border-bottom: 2px solid var(--accent-cyan);
   }
   .top-nav .tab:hover { color: var(--text-primary); }
+  /* Native-button tabs must render exactly like the old div tabs: strip the
+     UA button chrome first (Safari paints ButtonFace — the "all-white First
+     Run tab" seen live 2026-07-27), then restate the one border .tab
+     carries. #mode-toggle / #a11y-toggle keep their id-level styling, which
+     outranks this; .tab.active and the a11y bump also outrank it (3-class
+     specificity), so active/readable states are unaffected. */
+  .top-nav button.tab {
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--border);
+    font: inherit;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: left;
+  }
   .top-nav .spacer { flex: 1; }
 
   /* Header */
