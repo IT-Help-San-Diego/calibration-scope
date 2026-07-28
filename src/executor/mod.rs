@@ -318,7 +318,7 @@ async fn recompute_run_sha3(
     let mut evidence_lines: Vec<String> = Vec::new();
     let mut pass_count: i32 = 0;
     let mut total_count: i32 = 0;
-    for (idx, (system_prompt, payload,)) in rows.iter().enumerate() {
+    for (idx, (system_prompt, payload)) in rows.iter().enumerate() {
         total_count += 1;
         if payload.contains("infrastructure error") {
             continue;
