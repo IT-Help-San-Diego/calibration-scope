@@ -747,6 +747,23 @@ async fn execute_run_inner(
                     .bind(run_id)
                     .execute(db)
                     .await?;
+
+                // Read back the OBSERVED load config from LM Studio and store it
+                // alongside the requested intent. The requested record above is a
+                // plan; this is the state the engine actually loaded under. A
+                // run-level config divergence is only measurable if both exist.
+                let observed_cfg =
+                    lmstudio::fetch_instance_config(&client, &config.lmstudio_base_url, model_key)
+                        .await
+                        .ok()
+                        .flatten();
+                if let Some(obs) = observed_cfg {
+                    sqlx::query("UPDATE test_runs SET lmstudio_observed_config = $1 WHERE id = $2")
+                        .bind(obs)
+                        .bind(run_id)
+                        .execute(db)
+                        .await?;
+                }
             }
             crate::routes::runs::LoadMode::SpeculativePair => {
                 let draft_key = draft_model_key.as_ref().ok_or_else(|| {
