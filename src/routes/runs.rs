@@ -944,14 +944,16 @@ pub async fn resume_run(
     State(state): State<AppState>,
     axum::extract::Path(run_id): axum::extract::Path<i32>,
 ) -> AppResult<Json<serde_json::Value>> {
-    let run: Option<(
+    // Type alias to avoid clippy::type_complexity on the sqlx tuple
+    type RunRow = (
         i32,
         String,
         String,
         Option<String>,
         Option<String>,
         Option<serde_json::Value>,
-    )> = sqlx::query_as(
+    );
+    let run: Option<RunRow> = sqlx::query_as(
         r#"SELECT r.model_id, m.key, r.axis, r.scaffold_supplement, r.load_mode, r.test_ids
                FROM test_runs r JOIN models m ON m.id = r.model_id WHERE r.id = $1"#,
     )
