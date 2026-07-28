@@ -1933,7 +1933,7 @@ var hcParticipantName = '';
 // 'human-cal' was missing here even though its tab calls showPage('human-cal') —
 // the click hid every page and revealed nothing. Same list gates the
 // localStorage page restore, so it also could never survive a reload.
-const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker', 'wizard'];
+const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker', 'wizard', 'board'];
 function showPage(name) {
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -1960,6 +1960,72 @@ function showPage(name) {
   if (name === 'onboard') obLoad();
   if (name === 'picker') pkLoad();
   if (name === 'wizard') wzLoad();
+  if (name === 'board') loadBoardPage();
+}
+
+// ── Board: the cross-lane work board, rendered from policy/kanban.jsonl ──
+// The file already existed and /api/kanban already served it; there was no
+// way to SEE it without curl. This is that view. Read-only on purpose — the
+// lanes append to the file and the linter gates it, so a UI that wrote back
+// would be a second, unlinted path to the same state.
+const BOARD_COLUMNS = [
+  ['in_flight', 'In flight'],
+  ['blocked', 'Blocked'],
+  ['backlog', 'Backlog'],
+  ['done', 'Done'],
+];
+
+function boardCard(c) {
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const v = c.verifier;
+  // A done card without a verifier should be impossible (the linter rejects
+  // it). Show it loudly rather than silently if one ever appears.
+  const verified = v
+    ? `<div style="font-size:11px;color:var(--safe);margin-top:6px;" title="${esc(v.check)}">✓ ${esc(v.kind)} ${esc(v.ref)}</div>`
+    : (c.column === 'done'
+        ? `<div style="font-size:11px;color:var(--unsafe);margin-top:6px;">⚠ done with no verifier</div>`
+        : '');
+  const blocked = c.blocked_on
+    ? `<div style="font-size:11px;color:var(--flaky, var(--text-muted));margin-top:6px;">blocked on ${esc(c.blocked_on)}</div>`
+    : '';
+  const cost = c.cost && (c.cost.calls || c.cost.est_hours)
+    ? `<span style="color:var(--text-muted);font-size:11px;"> · ${esc(c.cost.calls || 0)} calls · ${esc(c.cost.est_hours || 0)}h</span>`
+    : '';
+  return `<li style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;list-style:none;">
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--accent-gold);">${esc(c.id)}<span style="color:var(--text-muted);"> · ${esc(c.lane)}</span>${cost}</div>
+    <div style="font-size:13px;margin-top:3px;">${esc(c.title)}</div>
+    ${blocked}${verified}
+  </li>`;
+}
+
+async function loadBoardPage() {
+  const el = document.getElementById('board-body');
+  if (!el) return;
+  const r = await apiFetch('/api/kanban');
+  if (!r.ok) {
+    el.innerHTML = `<div style="color:var(--unsafe)">Couldn't read the board: ${r.error}</div>`;
+    return;
+  }
+  const cards = (r.data && r.data.cards) || [];
+  if (!cards.length) { el.innerHTML = '<div style="color:var(--text-muted)">No cards on the board.</div>'; return; }
+  const cols = BOARD_COLUMNS.map(([key, label]) => {
+    const mine = cards.filter(c => c.column === key);
+    const body = mine.length
+      ? `<ul style="margin:0;padding:0;">${mine.map(boardCard).join('')}</ul>`
+      : `<div style="color:var(--text-muted);font-size:12px;">—</div>`;
+    return `<section style="flex:1;min-width:240px;" aria-label="${label}, ${mine.length} ${mine.length === 1 ? 'card' : 'cards'}">
+      <h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin:0 0 8px;">${label} <span style="color:var(--text-muted);">${mine.length}</span></h3>
+      ${body}
+    </section>`;
+  }).join('');
+  // Any column the file uses that this view doesn't know about — surfaced
+  // rather than silently dropped, so a new column can't hide work.
+  const known = BOARD_COLUMNS.map(([k]) => k);
+  const stray = [...new Set(cards.map(c => c.column).filter(c => !known.includes(c)))];
+  const warn = stray.length
+    ? `<div style="color:var(--unsafe);font-size:12px;margin-bottom:10px;">Unrecognised column(s) not shown above: ${stray.join(', ')}</div>`
+    : '';
+  el.innerHTML = warn + `<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">${cols}</div>`;
 }
 // Restore last-viewed page on load (defaults to benchmark).
 const savedPage = localStorage.getItem('amb-active-page');

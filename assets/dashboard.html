@@ -106,6 +106,8 @@
   <button class="tab" onclick="showPage('tests-page')" id="tab-tests-page">Tests</button>
   <span class="nav-arrow">→</span>
   <button class="tab" onclick="showPage('runs-page')" id="tab-runs-page">Runs</button>
+
+  <button class="tab" onclick="showPage('board')" id="tab-board" title="Cross-lane work board — read live from policy/kanban.jsonl, the same file the lanes append to">Board</button>
   <span class="nav-arrow">→</span>
   <button class="tab" onclick="showPage('human-cal')" id="tab-human-cal">Human Cal</button>
   <div class="spacer"></div>
@@ -966,6 +968,18 @@ Is this formula satisfiable? Answer SAT or UNSAT.</div>
 
 <!-- ============ PAGE: LM Studio ============ -->
 <!-- ============ PAGE: Human Calibration ============ -->
+<div class="page" id="page-board" style="display:none;">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
+    <h2 style="margin:0;">Board</h2>
+    <button onclick="loadBoardPage()" style="padding:6px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);cursor:pointer;font-size:12px;">Refresh</button>
+  </div>
+  <p style="color:var(--text-muted);font-size:12px;margin:0 0 14px;">
+    Read live from <code>policy/kanban.jsonl</code> — the same file every lane appends to. Nothing here is entered twice.
+    A card cannot sit in <strong>done</strong> without a verifier, so "done" means someone recorded how it was checked.
+  </p>
+  <div id="board-body" aria-live="polite">Loading…</div>
+</div>
+
 <div class="page" id="page-human-cal" style="display:none;">
   <div class="setup-wrap">
     <div class="setup-hero">
