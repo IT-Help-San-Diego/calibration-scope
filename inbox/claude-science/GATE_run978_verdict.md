@@ -40,22 +40,39 @@ Last turn I retracted the accuracy finding because my Fisher test pooled 6 reps 
 **The accuracy result is restored, properly this time.** Same token budget: neutral costs nothing measurable,
 Lean costs 7.2 points. **Both halves of content-vs-length now answer the same way — content.**
 
-## 3. THE BOUND, STATED BECAUSE THE SPEC REQUIRED IT IN ADVANCE
-My spec warned this design detects full collapse but not partial, quoting power 0.30 — **that figure was for
-n = 27, and this ran at n = 293, so I re-simulated at the realized size:**
-| neutral's true effect | power to detect |
-|---|---|
-| Lean-sized collapse | **1.00** |
-| 50% collapse | **0.84** |
-| **25% collapse** | **0.26** |
-**Neutral's observed drop (48 → 38) is a 21% reduction — inside the band this design cannot resolve.**
-**So: a Lean-sized or 50% length effect is excluded. A small partial length contribution is NOT.** The honest
-statement is *"the collapse is not explained by length,"* **not** *"length contributes nothing."*
+## 3. THE BOUND — CORRECTED. My first power table used the wrong data-generating process.
+**RETRACTED AND RE-DERIVED 2026-07-27.** §3 originally claimed *"a Lean-sized or 50% length effect is excluded"*
+on power figures of 1.00 and 0.84. **Those came from a simulation drawing each arm's stochasticity
+independently** — an unpaired DGP for a within-item paired McNemar. That violates my own standing rule that a
+simulated power figure must instantiate the declared design's structure.
+**Re-simulated with the paired structure and the observed reverse flow** (baseline-deterministic items that
+*became* stochastic under neutral: 18/245 = 7.3%):
+| neutral's true effect | expected forward vs reverse | power |
+|---|---|---|
+| 25% of stochastic items collapse | 12 vs 18 | **0.12** |
+| **50% collapse** | 24 vs 18 | **0.08** |
+| 75% collapse | 36 vs 18 | 0.69 |
+| Lean-sized (47/48) | 47 vs 18 | **0.99** |
+**Only a Lean-sized collapse is excluded. A 50% length effect is NOT** — the auditor's recomputation is confirmed
+exactly.
+**Why the design is so weak in the middle, which is the interesting part:** the reverse flow is a **floor**. With
+zero forward collapse, discordance is 0-vs-18 and McNemar rejects decisively *in the opposite direction*. To
+register as a collapse, the forward flow must **exceed 18** — i.e. more than ~38% of the 48 stochastic items — so
+the whole 25–60% band is invisible to this test.
+
+## 3b. WHICH MEANS THE CONCLUSION RESTS ON A DIFFERENT TEST THAN I SAID
+The neutral-vs-baseline null (p = 0.18) is **underpowered and should not be load-bearing.** The finding rests on
+the **direct neutral-vs-Lean contrast**, which is paired, correctly specified, and not affected by any of this:
+**38 items stochastic under neutral but not Lean, 3 the other way, p = 1.0 × 10⁻⁸** — and its false-positive rate
+under an equal-carriers null simulates at **0.029** against nominal 0.05, so it is conservative.
+**The defensible claim: at an identical ~121-token budget, the logical carrier and the neutral carrier behave
+overwhelmingly differently, so token count alone does not produce the collapse.** What is **not** established is
+that length contributes *nothing* — a partial length effect anywhere in the 25–60% band remains entirely possible.
 
 ## 4. WHAT THIS CHANGES IN THE PUBLISHED RECORD
 The site currently says: *"the carrier adds text, so the two conditions differ in prompt length as well as in
 content … 'longer prompts land in a more stable regime' remains a live alternative."*
-**That is now falsified by a length-matched control and should be updated** — but the variance result stays
+**That is now falsified by the direct carrier contrast (§3b) and should be updated** — but the variance result stays
 **single-model** (nemotron had no variance to collapse) and the update must carry §3's partial-effect bound.
 **I have not touched the site.** Draft wording on your approval, per the standing framing rule.
 
