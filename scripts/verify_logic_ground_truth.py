@@ -64,10 +64,14 @@ setting LOGIC-06C's formal_spec to '∀x(P→Q), ∃xQ ⊬ ∃xP'; it is NOT a c
 to this file, and the entry below is deliberately left failing until that
 lands.
 
-Note that --check-owl-families cannot catch this. For C rows it requires
-only a non-NULL formal_spec, and it actively PASSES a C row whose spec
-equals its root's ("matches root"). Only the battery below sees the
-contradiction.
+FIXED (migration 057 in the DB; c_row_verdict here). Test 87's spec is now
+'∀x(P→Q), ∃xQ ⊬ ∃xP' and the battery entry passes. The reason this defect
+survived so long was that --check-owl-families used to accept ANY non-NULL
+spec on a C row, including one copied verbatim from its root. It no longer
+does: spec reuse is now legal only when the ROOT IS ITSELF A FALLACY
+(LOGIC-03/04/11, seeded INVALID), and is a FAIL when the root asserts a
+correct rule. Run `--selftest-c-rule` to see that rule reject the
+LOGIC-06C shape; it needs no database.
 
 Run: python3 scripts/verify_logic_ground_truth.py
 Exit 0 = every seeded ground truth matches the computed verdict.
@@ -517,6 +521,69 @@ def main():
 # queries the live `tests` table and flags any N/C row whose formal_spec
 # has drifted from its root's, which a human editing prompt_text by hand
 # could do by accident and nothing else in the schema would catch.
+# Root answers seen in the registry, normalised to "does this root assert a
+# CORRECT rule, or is the root itself a fallacy/false statement?". The live
+# vocabulary is exactly {VALID, INVALID, TRUE, SAT}; the rest are accepted
+# because the seeded one-word answers vary by prompt phrasing.
+_ROOT_AFFIRMATIVE = {"VALID", "TRUE", "FOLLOWS", "YES", "SAT"}
+_ROOT_NEGATIVE = {"INVALID", "FALSE", "DOESNOTFOLLOW", "NO", "UNSAT"}
+
+
+def c_row_verdict(cspec, rspec, root_expected):
+    """Decide whether a C row's formal_spec is honest. Pure, so it is testable.
+
+    Returns (ok: bool, reason: str).
+
+    A C row is an adversarial sibling: it must carry the TRAP's structure.
+    Spec equality with its root is therefore only legitimate when the ROOT IS
+    ITSELF A FALLACY — LOGIC-03/04/11 are seeded INVALID, so a trap built on
+    them shares their structure and the bait lives in the framing instead.
+
+    When the root asserts a CORRECT rule, a C row repeating that spec is
+    claiming to be a trap while carrying a spec that says the argument is
+    valid. That is self-contradictory, and it is exactly the shape of the
+    LOGIC-06C defect (spec '∀x(P→Q), ∃xP ⊢ ∃xQ' copied from its VALID root
+    while the row was keyed to answer NO). Migration 057 fixed that row; this
+    rule is what stops the next one, since the old check passed it silently.
+    """
+    if cspec is None:
+        return False, "has NULL formal_spec"
+    if cspec != rspec:
+        return True, "carries trap spec distinct from root"
+    norm = (root_expected or "").strip().upper()
+    if norm in _ROOT_NEGATIVE:
+        return True, "spec equals root, but root is itself a fallacy — legitimate"
+    if norm in _ROOT_AFFIRMATIVE:
+        return False, (
+            f"spec is a verbatim copy of a root asserting a CORRECT rule "
+            f"(root answer {norm}) — a C row cannot be a trap and carry its "
+            f"root's valid spec; write the trap's own spec"
+        )
+    return False, f"root answer {root_expected!r} not recognised — cannot judge spec reuse"
+
+
+def selftest_c_rule():
+    """The rule must FAIL on each violation it claims to catch, or it is decoration."""
+    cases = [
+        # (name, cspec, rspec, root_expected, expected_ok)
+        ("LOGIC-06C shape: copies a VALID root's spec", "A ⊢ B", "A ⊢ B", "VALID", False),
+        ("equivalence root seeded TRUE, spec copied", "A ⟷ B", "A ⟷ B", "TRUE", False),
+        ("SAT root, spec copied", "cnf", "cnf", "SAT", False),
+        ("LOGIC-03C shape: fallacy root, spec copied", "A ⊬ B", "A ⊬ B", "INVALID", True),
+        ("carries its own trap spec", "A ⊬ B", "A ⊢ B", "VALID", True),
+        ("NULL spec", None, "A ⊢ B", "INVALID", False),
+        ("unrecognised root answer", "A ⊢ B", "A ⊢ B", "MAYBE", False),
+    ]
+    ok = True
+    for name, cs, rs, re_, want in cases:
+        got, reason = c_row_verdict(cs, rs, re_)
+        good = got == want
+        ok = ok and good
+        print(f"  [{'PASS' if good else 'FAIL'}] selftest: {name} -> "
+              f"{'accept' if got else 'reject'} (wanted {'accept' if want else 'reject'})")
+    return ok
+
+
 def check_owl_families():
     try:
         import psycopg2
@@ -539,7 +606,8 @@ def check_owl_families():
             cur.execute(
                 """
                 SELECT c.id, c.name, c.owl_type, c.formal_spec,
-                       i.id AS root_id, i.name AS root_name, i.formal_spec AS root_spec
+                       i.id AS root_id, i.name AS root_name, i.formal_spec AS root_spec,
+                       i.expected_result AS root_expected
                 FROM tests c
                 JOIN tests i ON i.id = c.owl_root_id
                 WHERE c.owl_type IN ('N', 'C')
@@ -555,7 +623,7 @@ def check_owl_families():
         return
 
     failures = 0
-    for cid, cname, owl_type, cspec, rid, rname, rspec in rows:
+    for cid, cname, owl_type, cspec, rid, rname, rspec, rexp in rows:
         if owl_type == "N":
             # Migration 036 canon: an N row is "the SAME formal_spec /
             # theorem as its owl_root_id, different surface text". Drift
@@ -574,19 +642,17 @@ def check_owl_families():
             # have is a spec at all (plus transform+flaw, DB-enforced by
             # owl_c_completeness).
             #
-            # KNOWN LIMITATION: the final `else` below PASSES a C row whose
-            # spec equals its root's. That is right when the root is itself a
-            # fallacy (LOGIC-03/04/11), but it is also how LOGIC-06C's defect
-            # slips past this check — see the module docstring. Only the
-            # offline battery catches that one.
-            if cspec is None:
+            # Spec reuse is judged against the ROOT'S ANSWER, not allowed
+            # blanket — see c_row_verdict. This closes the hole that let
+            # LOGIC-06C sit here as a [PASS] until it was found by hand.
+            ok, reason = c_row_verdict(cspec, rspec, rexp)
+            if not ok:
                 failures += 1
-                print(f"[FAIL] test {cid} '{cname}' (C) has NULL formal_spec")
-            elif cspec != rspec:
-                print(f"[PASS] test {cid} '{cname}' (C) carries trap spec "
-                      f"{cspec!r} (root {rid} '{rname}' = {rspec!r} — allowed for C)")
+                print(f"[FAIL] test {cid} '{cname}' (C) {reason} "
+                      f"(root {rid} '{rname}' = {rspec!r})")
             else:
-                print(f"[PASS] test {cid} '{cname}' (C) matches root {rid} '{rname}'")
+                print(f"[PASS] test {cid} '{cname}' (C) {reason} "
+                      f"(root {rid} '{rname}')")
 
     print(f"\n{len(rows) - failures}/{len(rows)} owl families consistent"
           + (" — ALL CORRECT" if failures == 0 else f" — {failures} MISMATCH(ES), DO NOT SHIP"))
@@ -594,6 +660,9 @@ def check_owl_families():
 
 
 if __name__ == "__main__":
+    if "--selftest-c-rule" in sys.argv:
+        # Proves the C-row rule fires. Needs no DB, so CI can run it always.
+        sys.exit(0 if selftest_c_rule() else 1)
     if "--check-owl-families" in sys.argv:
         check_owl_families()
     else:
