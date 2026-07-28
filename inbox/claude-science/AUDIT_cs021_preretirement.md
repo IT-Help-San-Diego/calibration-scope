@@ -1,3 +1,28 @@
+> **CORRECTED 2026-07-29 — the method stated below was not the method run, and the audit missed a whole class.**
+> §4 described this as a "keyword-based scan over 271 files." **The 271-file scan searched for the mission
+> sentence ONLY.** The uniqueness verdicts in §1 — "was the only copy," "exists nowhere else" — came from testing
+> four keywords against **three files** (the handoff, `DECISIONS.md`, `README.md`), and **no check of any kind was
+> run for the `Lane boundary` section**, whose unverified uniqueness is exactly what blocked the card and what a
+> decision was requested on. **I have now run the real scan (272 files, every claimed-unique string, excluding the
+> handoff itself), and it changes two things:**
+>
+> **1. The migration claims HOLD.** Verified against `DECISIONS.md` at `5f2b9cc` (pre-migration): the
+> per-connection CSP paragraph, the style-hash policy id, "Zero executable JS," and the hard-won-lessons section
+> were all **absent** before I moved them, and present nowhere else on `main`. §2 stands.
+>
+> **2. `Lane boundary` is genuinely unique — but for a weaker reason than stated, and DECISIONS is closer than I
+> implied.** `DECISIONS.md` carries `### 🔄 Claude Science lane` and `### 🔄 Claude Code lane` sections. Those are
+> **task checklists** ("- [ ] Modify the Rust root task…"), not ownership definitions ("Your lane: frontend/UX/design
+> on both surfaces"), so the ownership sentences are absent — but I never looked, and the auditor was right that a
+> reader would find lane structure in DECISIONS already.
+>
+> **3. THE CLASS I MISSED ENTIRELY: inbound references.** Six files cite `HANDOFF_claude_code_gui.md` by name —
+> `DECISIONS.md`, `docs/ARCHITECTURE.md`, `src/local_tls.rs`, and three of my own memos. **`DECISIONS` §Claude Code
+> lane points AT the handoff for the CSP gate rule**, and **`src/local_tls.rs` cites it from source code.**
+> Retiring the doc breaks all six. **A content audit that ignores inbound links is not a retirement audit** — the
+> sections can be safely relocated and the doc still cannot simply disappear. **That, not `Lane boundary`, is now
+> the larger blocker.**
+
 # CS-021 pre-retirement audit — what would be LOST if the handoff doc were deleted
 _Claude Science, 2026-07-29. Claude Code's check, executed section by section before anything is retired._
 
