@@ -11,10 +11,20 @@ exported and analysed.** Their reaper reading and their "restart freely before f
 **CS-001 exists to measure run-to-run engine drift.** A resumed run is **two model loads wearing one `run_id`**:
 trials 1..N from the first load, N+1..1758 from a second, with a different KV-cache state and possibly different
 batch conditions.
-**That is not a hypothetical mechanism — it is measured, in our own data.** Runs 970/971 died at 127/293 items.
-When re-fired as 974/975, **~50 items per model flipped between 6/6 and 0/6** relative to the partials. That flip
-*is* the across-load difference. **A resume would move that same effect inside a single arm, where the analysis
-cannot see it.**
+**CORRECTED 2026-07-28 — my empirical support for this was misattributed and the real data inverts it.**
+I originally wrote that runs 970/971, re-fired as 974/975, showed ~50 items per model flipping 6/6↔0/6 *relative to
+the partials*, and called that the across-load difference. **I never computed that.** The ~50 was measured between
+the baseline and lean **carrier arms** inside the powered run — a carrier contrast, not an across-load one.
+**I then ran the comparison I had claimed.** Run 970's baseline arm and run 974's baseline arm share 127 items,
+same model, same condition, two separate model loads. Of the 126 with full reps: **0 changed pass rate, 0
+deterministic reversals, 0 changed stochastic status, mean |delta| 0.0000.** That is evidence **against** large
+across-load drift.
+**So this section's argument is withdrawn and replaced.** The case for `load_epoch` is not a measured drift
+magnitude — it is **undetectability**: a resumed run is byte-indistinguishable from a clean one in the export, so
+we cannot tell whether to worry. If drift is ~0 the column is cheap insurance; if it is real in conditions we have
+not sampled, it is essential. Full correction, including what this implies for CS-001, in
+`inbox/claude-science/CORRECTION_resume_evidence.md`.
+
 **And the failure is silent: in the exported CSV a resumed run is byte-indistinguishable from a clean one.**
 
 ## 2. THE FIX IS ONE COLUMN
