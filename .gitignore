@@ -25,3 +25,4 @@ zig-backend/signal_wrapper.o
 
 # Local ingestion dumps — user drops research artifacts here for later processing
 ingest/
+node_modules/
