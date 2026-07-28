@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Ground-truth oracle for the Calibration Scope formal logic battery.
 
-Every formal-logic test seeded in migrations 013/025/056 is re-verified here by
-a COMPLETE decision procedure — not a heuristic, not an LLM:
+Every formal-logic test seeded in migrations 013/025/047/049/056 is re-verified
+here by a COMPLETE decision procedure — not a heuristic, not an LLM:
 
   * Propositional entailment tests: exhaustive truth-table evaluation
     (2^n assignments).
@@ -34,20 +34,40 @@ a COMPLETE decision procedure — not a heuristic, not an LLM:
     returns the FIRST satisfying assignment found and stops; it does not
     enumerate every model.
 
-COVERAGE — what this oracle does NOT check. The battery below covers the
-logic ROOTS seeded by 013/025, the ten N/C rows added by 056, and the 28
-N/C + pilot-trap rows seeded by 047/048/049 (13 LOGIC-* N/C rows and 15
-PILOT-F*-TRAP-* rows, added 2026-07-28). That closes every seeded logic
-row in the DB as of this writing.
+COVERAGE. The battery below covers the logic ROOTS seeded by 013/025, the
+ten N/C rows added by 056, and all 28 N/C rows that predate 056: eight from
+047 (whose root pointers 048 repaired), fifteen PILOT-F*-TRAP-* rows from
+049, and five rows (LOGIC-01N/01C, LOGIC-02C, LOGIC-03C, LOGIC-04C — dev
+ids 77-81) that exist in the development database with NO migration anywhere
+in this repo. Those five cannot be reproduced from a fresh seed; that is a
+provenance gap worth closing on its own, and it is why they are labelled
+"dev-DB row" rather than by migration below.
 
-DEFECT CLASS SURFACED (2026-07-28): spec-vs-prompt drift. The oracle
-verifies the FORMAL SPEC's verdict. LOGIC-06C's spec (∀x(P→Q), ∃xP ⊢ ∃xQ)
-and its prompt disagree in quantifier placement — the prompt is the
-illicit-conversion trap (INVALID, correctly keyed NO) while the spec is
-the valid root form. The oracle cannot catch a spec that misdescribes its
-own prompt; it can only check the spec it is given. Future spec-authoring
-must verify spec↔prompt agreement out-of-band (a human or a second
-instrument), not assume this oracle covers it.
+Still NOT covered: the nineteen PILOT-F* ROOT rows seeded by 049 (owl_type
+'I' — PILOT-F1-MP, PILOT-F4-DEMORGAN, PILOT-F5-SAT and the rest). Their
+hand-written expected answers remain machine-unverified. Open work, not
+done work.
+
+KNOWN SEEDED DEFECT — this script currently exits 1 BY DESIGN.
+LOGIC-06C Existential Syllogism (dev id 87, seeded by 047) carries
+formal_spec '∀x(P→Q), ∃xP ⊢ ∃xQ' — a verbatim copy of its LOGIC-06 root,
+and VALID — while its expected_result is 'NO — illicit existential
+conversion…', i.e. INVALID. A spec asserting ⊢ cannot carry the answer NO;
+the row contradicts itself.
+
+The PROMPT is sound and its seeded answer is right FOR THE PROMPT: it argues
+"every memory leak is a defect" + "some defects exist" ⊢ "some leaks exist",
+which is illicit existential conversion and genuinely INVALID. What is wrong
+is the formal_spec — inherited from the root instead of written for the trap,
+precisely what the C-row discipline below forbids. The fix is a migration
+setting LOGIC-06C's formal_spec to '∀x(P→Q), ∃xQ ⊬ ∃xP'; it is NOT a change
+to this file, and the entry below is deliberately left failing until that
+lands.
+
+Note that --check-owl-families cannot catch this. For C rows it requires
+only a non-NULL formal_spec, and it actively PASSES a C row whose spec
+equals its root's ("matches root"). Only the battery below sees the
+contradiction.
 
 Run: python3 scripts/verify_logic_ground_truth.py
 Exit 0 = every seeded ground truth matches the computed verdict.
@@ -103,69 +123,72 @@ SOME = lambda dom, f: any(f(x) for x in dom)
 # ── The battery: name -> (kind, structure, seeded ground truth) ──────────
 # Structures MUST mirror the formal_spec column seeded in the migrations.
 #
-# The fourth element is the verdict on the FORMAL SPEC, not a copy of the
-# test's expected_result string. For the entailment items those coincide
-# (seeded 'VALID'/'INVALID'). For the others the mapping is:
+# The fourth element is the SEEDED ground truth, normalised to the verdict
+# vocabulary of the decision procedure — never a copy of the computed
+# verdict, or the entry would check nothing. For the entailment items the
+# seeded string is already 'VALID'/'INVALID'. For the others the mapping is:
 #   VALID   <-> seeded TRUE (equivalence items), FOLLOWS, YES
 #   INVALID <-> seeded FALSE (equivalence items), DOESNOTFOLLOW, NO
+# One row (LOGIC-01N) seeds the CONCLUSION itself rather than a verdict word
+# — 'confirmed', the one word its prompt asks for; VALID is what licenses it.
 # An equivalence item is encoded with no premises and the biconditional as
 # the conclusion, so VALID means "the biconditional is a tautology".
 #
-# N/C rows (migrations 047/056): an N row repeats its root's structure but
-# carries its OWN seeded answer, so verifying it checks that the migration
-# wrote the right one-word verdict for that spec. A C row carries the TRAP's
-# structure — its verdict is derived here from the trap, never inherited
-# from the root, which is the whole point of checking it.
+# N/C rows (migrations 047/049/056 and dev-DB rows 77-81): an N row repeats
+# its root's structure but carries its OWN seeded answer, so verifying it
+# checks that the migration wrote the right one-word verdict for that spec.
+# A C row carries the TRAP's structure — its verdict is derived here from the
+# trap, never inherited from the root, which is the whole point of checking
+# it. Where a root is ALREADY a fallacy (LOGIC-03/04/11), its C row's trap
+# spec legitimately coincides with the root's: there the trap is in the
+# framing, not the structure.
 PROP = {
     "LOGIC-01 Modus Ponens": (
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[0]], lambda v: v[1], "VALID"),
     "LOGIC-01N Modus Ponens (reworded)": (
-        # 047/048: N keeps the root spec P→Q, P ⊢ Q; seeded 'confirmed' (maps
-        # VALID — confirmed the rule's conclusion holds).
+        # Dev-DB row 77: N keeps the root spec P → Q, P ⊢ Q. Seeded answer is
+        # not a verdict word but the conclusion itself, 'confirmed'.
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[0]], lambda v: v[1], "VALID"),
     "LOGIC-01C Modus Ponens (adversarial: converse trap)": (
-        # 047/048 trap spec P→Q, Q ⊬ P — the CONVERSE, presented as if it were
-        # the valid root. Structure is affirming-the-consequent, NOT modus
-        # ponens; the verdict is derived from the trap, never inherited.
-        # Seeded NO (maps INVALID). Countermodel P=false, Q=true.
+        # Dev-DB row 78, trap spec P → Q, Q ⊬ P — the root's CONVERSE offered
+        # as if valid. Seeded NO; countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "LOGIC-02 Modus Tollens": (
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[1]], lambda v: not v[0], "VALID"),
     "LOGIC-02C Modus Tollens (adversarial: inverse trap)": (
-        # 047/048 trap spec P→Q, ¬P ⊬ ¬Q — the INVERSE, presented as if it were
-        # the valid root. Structure is denying-the-antecedent, NOT modus
-        # tollens; verdict derived from the trap. Seeded NO (maps INVALID).
-        # Countermodel P=false, Q=true.
+        # Dev-DB row 79, trap spec P → Q, ¬P ⊬ ¬Q — the root's INVERSE, i.e.
+        # denying the antecedent. Seeded NO; countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-03 Affirming the Consequent (Fallacy)": (
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "LOGIC-03N Affirming the Consequent (reworded)": (
-        # 047/048: N keeps the root spec P→Q, Q ⊬ P; seeded DOESNOTFOLLOW
-        # (maps INVALID). Countermodel P=false, Q=true.
+        # 047 row 82: N keeps the root spec P → Q, Q ⊬ P; seeded
+        # DOESNOTFOLLOW. Countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "LOGIC-03C Affirming Consequent (adversarial: valid-looking converse)": (
-        # 047/048 trap spec P→Q, Q ⊬ P — same structure as the root fallacy,
-        # the trap is presentational, not logical. Seeded NO (maps INVALID).
-        # Countermodel P=false, Q=true.
+        # Dev-DB row 80. The root is already the fallacy, so the trap spec
+        # P → Q, Q ⊬ P coincides with the root's; the bait is the confident
+        # "a colleague concludes" framing. Seeded NO; countermodel P=false,
+        # Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "LOGIC-03C Affirming the Consequent (adversarial: reverse-causal trap)": (
-        # 047/048: second 03C row (domain_transfer). Same trap spec; counter-
-        # model P=false, Q=true. Seeded NO (maps INVALID).
+        # 047 row 83 — a SECOND, distinct 03C row. Same trap spec, different
+        # bait: inflated benchmark scores usually DO signal contamination,
+        # priming the converse. Seeded NO; countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "LOGIC-04 Denying the Antecedent (Fallacy)": (
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-04N Denying the Antecedent (reworded)": (
-        # 047/048: N keeps the root spec P→Q, ¬P ⊬ ¬Q; seeded DOESNOTFOLLOW
-        # (maps INVALID). Countermodel P=false, Q=true.
+        # 047 row 84: N keeps the root spec P → Q, ¬P ⊬ ¬Q; seeded
+        # DOESNOTFOLLOW. Countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-04C Denying Antecedent (adversarial: valid-looking inverse)": (
-        # 047/048 trap spec P→Q, ¬P ⊬ ¬Q — same structure as the root fallacy;
-        # trap is presentational. Seeded NO (maps INVALID). Countermodel
-        # P=false, Q=true.
+        # Dev-DB row 81; root is already the fallacy, so trap spec = root
+        # spec P → Q, ¬P ⊬ ¬Q. Seeded NO; countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-04C Denying the Antecedent (adversarial: inverse trap)": (
-        # 047/048: second 04C row (domain_transfer). Same trap spec; counter-
-        # model P=false, Q=true. Seeded NO (maps INVALID).
+        # 047 row 85 — a SECOND, distinct 04C row. Same trap spec, cache-
+        # warmth bait. Seeded NO; countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-07 Boolean Algebra - De Morgan": (
         2, [], lambda v: (not (v[0] and v[1])) == ((not v[0]) or (not v[1])), "VALID"),
@@ -201,13 +224,13 @@ PROP = {
     "LOGIC-11 Affirming a Disjunct (Fallacy)": (
         2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-11N Affirming a Disjunct (reworded)": (
-        # 047/048: N keeps the root spec P∨Q, P ⊬ ¬Q; seeded DOESNOTFOLLOW
-        # (maps INVALID). Countermodel P=true, Q=true.
+        # 047 row 88: N keeps the root spec P ∨ Q, P ⊬ ¬Q; seeded
+        # DOESNOTFOLLOW. Countermodel P=true, Q=true.
         2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-11C Affirming a Disjunct (adversarial: exclusive-or trap)": (
-        # 047/048 trap spec P∨Q, P ⊬ ¬Q — same structure as the root; the
-        # trap presupposes ∨ is exclusive. Seeded NO (maps INVALID).
-        # Countermodel P=true, Q=true.
+        # 047 row 89; root is already the fallacy, so trap spec = root spec.
+        # The bait is the exclusive reading of "or", which the prompt then
+        # explicitly blocks. Seeded NO; countermodel P=true, Q=true.
         2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-12 Denying a Conjunct (Fallacy)": (
         2, [lambda v: not (v[0] and v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
@@ -226,71 +249,99 @@ PROP = {
         4, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[2], v[3]),
             lambda v: (not v[1]) or (not v[3])],
         lambda v: (not v[0]) or (not v[2]), "VALID"),
-    # ── PILOT-F*-TRAP-* rows (migration 049) — 13 propositional traps ──────
+
+    # ── PILOT item-bank traps (migration 049, owl_transform='pilot_trap') ──
+    # The 'C' rows of the F1..F6 pilot families: each family's valid root
+    # rule bent into its classic near-miss. All 14 propositional ones are
+    # seeded INVALID or FALSE; the fifteenth, PILOT-F5-TRAP-SAT, is
+    # satisfiability-shaped and lives in the SAT battery below. Their 19 'I'
+    # roots are NOT verified here — see COVERAGE in the module docstring.
     "PILOT-F1-TRAP-AC": (
-        # 049 trap spec P→Q, Q ⊬ P — affirming-the-consequent shape. Seeded
-        # INVALID. Countermodel P=false, Q=true.
+        # P→Q, Q ⊬ P — affirming the consequent, against F1's modus ponens
+        # root. Seeded INVALID; countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
+    "PILOT-F1-NEG-TRAP": (
+        # P→Q, ¬P ⊬ ¬Q — denying the antecedent, against F1's modus tollens
+        # root. Seeded INVALID; countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "PILOT-F1-TRAP-HS": (
-        # 049 trap spec P→Q, Q→R, R ⊬ P — chain run backward from the final
-        # consequent. Seeded INVALID. Countermodel P=false, Q=true, R=true.
-        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2])],
+        # P→Q, Q→R, R ⊬ P — the hypothetical-syllogism chain run BACKWARD
+        # from its final consequent. Seeded INVALID; countermodel P=false,
+        # Q=false, R=true.
+        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2]), lambda v: v[2]],
         lambda v: v[0], "INVALID"),
     "PILOT-F2-TRAP-AC": (
-        # 049 trap spec P→Q, Q ⊬ P — affirming-the-consequent shape. Seeded
-        # INVALID. Countermodel P=false, Q=true.
+        # P→Q, Q ⊬ P — same shape as F1-TRAP-AC, F2 vocabulary. Seeded
+        # INVALID; countermodel P=false, Q=true.
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "PILOT-F2-TRAP-CHAIN": (
-        # 049 trap spec P→Q, Q→R, R ⊬ P — chain run backward. Seeded INVALID.
-        # Countermodel P=false, Q=true, R=true.
-        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2])],
+        # P→Q, Q→R, R ⊬ P — chain run backward. Seeded INVALID; countermodel
+        # P=false, Q=false, R=true.
+        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2]), lambda v: v[2]],
         lambda v: v[0], "INVALID"),
     "PILOT-F3-TRAP-AD": (
-        # 049 trap spec P∨Q, P ⊬ ¬Q — affirming-a-disjunct shape (inclusive
-        # ∨). Seeded INVALID. Countermodel P=true, Q=true.
+        # P∨Q, P ⊬ ¬Q — affirming a disjunct; the prompt states the ∨ is
+        # inclusive. Seeded INVALID; countermodel P=true, Q=true.
         2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
     "PILOT-F3-TRAP-DC": (
-        # 049 trap spec ¬(P∧Q), ¬P ⊬ ¬Q — denying-a-conjunct shape. Seeded
-        # INVALID. Countermodel P=false, Q=true.
+        # ¬(P∧Q), ¬P ⊬ ¬Q — denying a conjunct. Seeded INVALID; countermodel
+        # P=false, Q=true.
         2, [lambda v: not (v[0] and v[1]), lambda v: not v[0]],
         lambda v: not v[1], "INVALID"),
     "PILOT-F4-TRAP-CHAIN2": (
-        # 049 trap spec ¬(P∧Q), ¬Q ⊬ ¬P — conjunct chain run backward. Seeded
-        # INVALID. Countermodel P=true, Q=false.
+        # ¬(P∧Q), ¬Q ⊬ ¬P — F4's conjunctive syllogism with the wrong
+        # conjunct denied. Seeded INVALID; countermodel P=true, Q=false.
         2, [lambda v: not (v[0] and v[1]), lambda v: not v[1]],
         lambda v: not v[0], "INVALID"),
     "PILOT-F5-TRAP-DNEG": (
-        # 049 trap spec ¬¬P ⊬ ¬P — double negation does NOT negate. Seeded
-        # INVALID. Countermodel P=true (¬¬P true, ¬P false).
+        # ¬¬P ⊬ ¬P — double negation eliminated to the WRONG polarity.
+        # Seeded INVALID; countermodel P=true (¬¬P true, ¬P false).
         1, [lambda v: not (not v[0])], lambda v: not v[0], "INVALID"),
-    "PILOT-F6-TRAP-CHAIN": (
-        # 049 trap spec P→Q, Q→R, R→S, S ⊬ P — 4-link chain run backward.
-        # Seeded INVALID. Countermodel P=false, Q=true, R=true, S=true.
-        4, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2]),
-            lambda v: IMP(v[2], v[3])], lambda v: v[0], "INVALID"),
-    "PILOT-F6-TRAP-MPCHAIN": (
-        # 049 trap spec P→Q, Q→R, R ⊬ P — chain run backward (same shape as
-        # F1-TRAP-HS/F2-TRAP-CHAIN). Seeded INVALID. Countermodel P=false,
-        # Q=true, R=true.
-        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2])],
-        lambda v: v[0], "INVALID"),
     "PILOT-F6-TRAP-RES": (
-        # 049 trap spec P∨Q, P∨R ⊬ Q∨R — resolution misapplication. Seeded
-        # INVALID. Countermodel P=true, Q=false, R=false.
+        # P∨Q, P∨R ⊬ Q∨R — resolution attempted with no complementary pair
+        # (P occurs positively in both clauses). Seeded INVALID; countermodel
+        # P=true, Q=false, R=false.
         3, [lambda v: v[0] or v[1], lambda v: v[0] or v[2]],
         lambda v: v[1] or v[2], "INVALID"),
-    # ── PILOT-F*-TRAP-* FALSE equivalences (no premises; biconditional as
-    # conclusion, so VALID means "the biconditional is a tautology") ────────
+    "PILOT-F6-TRAP-CHAIN": (
+        # P→Q, Q→R, R→S, S ⊬ P — four-link chain run backward. Seeded
+        # INVALID; countermodel P=false, Q=false, R=false, S=true.
+        4, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2]),
+            lambda v: IMP(v[2], v[3]), lambda v: v[3]],
+        lambda v: v[0], "INVALID"),
+    "PILOT-F6-TRAP-MPCHAIN": (
+        # P→Q, Q→R, R ⊬ P — same shape as F1-TRAP-HS / F2-TRAP-CHAIN, F6
+        # vocabulary. Seeded INVALID; countermodel P=false, Q=false, R=true.
+        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2]), lambda v: v[2]],
+        lambda v: v[0], "INVALID"),
+
+    # The two F4 equivalence traps. Encoded per the equivalence convention
+    # above: no premises, biconditional as conclusion.
     "PILOT-F4-TRAP-DEM": (
-        # 049 trap spec ¬(P∨Q) ⊬ ¬P∨¬Q — De Morgan misapplication (kept ∨
-        # instead of flipping to ∧). Seeded FALSE (maps INVALID).
-        # Countermodel P=true, Q=false: LHS ¬(T∨F)=F, RHS ¬T∨¬F=F∨T=T — F≠T.
+        # Equivalence ¬(P∨Q) ⟷ ¬P∨¬Q — De Morgan with the connective NOT
+        # flipped. Seeded FALSE; countermodel P=true, Q=false (LHS false,
+        # RHS true).
+        #
+        # NOTE on notation: 049 seeds this row's formal_spec as
+        # '¬(P∨Q) ⊬ ¬P∨¬Q', but the prompt asks "Is the following
+        # equivalence true?" and seeds FALSE, so the item IS an equivalence
+        # and is encoded as one. The distinction is load-bearing here and
+        # nowhere else: read as a bare entailment, ¬(P∨Q) ⊢ ¬P∨¬Q is VALID
+        # (the antecedent forces P and Q both false, satisfying the
+        # disjunction), which would contradict both the seeded '⊬' and the
+        # seeded FALSE. The whole F4 family writes equivalences with ⊢/⊬ —
+        # its root PILOT-F4-DEMORGAN carries '¬(P∧Q) ⊢ ¬P∨¬Q' for a
+        # TRUE-seeded equivalence — whereas the 013 roots LOGIC-07/08 use
+        # '⟷'. That is a notation inconsistency in 049, not a wrong answer:
+        # FALSE is correct for the question the prompt actually asks.
         2, [], lambda v: (not (v[0] or v[1])) == ((not v[0]) or (not v[1])), "INVALID"),
     "PILOT-F4-TRAP-DIST": (
-        # 049 trap spec P∨(Q∧R) ⊬ (P∨Q)∧R — distribution misapplication
-        # (second disjunct not distributed). Seeded FALSE (maps INVALID).
-        # Countermodel P=true, Q=false, R=false: LHS T∨(F∧F)=T,
-        # RHS (T∨F)∧F=T∧F=F — T≠F.
+        # Equivalence P∨(Q∧R) ⟷ (P∨Q)∧R — distribution with R left
+        # undistributed. Seeded FALSE; countermodel P=true, Q=false, R=false
+        # (LHS true, RHS false). Seeded with the same ⊢/⊬ notation as
+        # TRAP-DEM above, but here both readings agree, so nothing turns on
+        # it: the entailment P∨(Q∧R) ⊢ (P∨Q)∧R fails on that same
+        # countermodel.
         3, [], lambda v: (v[0] or (v[1] and v[2])) == ((v[0] or v[1]) and v[2]), "INVALID"),
 }
 
@@ -321,25 +372,29 @@ FOL = {
             lambda d, p, a: SOME(d, p[0])],
         lambda d, p, a: SOME(d, p[1]), "VALID"),
     "LOGIC-06N Existential Syllogism (reworded)": (
-        # 047/048: N keeps the root spec ∀x(P→Q), ∃xP ⊢ ∃xQ; seeded FOLLOWS
-        # (maps VALID — the existential premise licenses ∃xQ).
+        # 047 row 86: N keeps the root spec ∀x(P→Q), ∃xP ⊢ ∃xQ — p[0]=P,
+        # p[1]=Q, same indexing as the root above. Seeded FOLLOWS.
         2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
             lambda d, p, a: SOME(d, p[0])],
         lambda d, p, a: SOME(d, p[1]), "VALID"),
     "LOGIC-06C Existential Syllogism (adversarial: quantifier-swap trap)": (
-        # 047/048 — REPORTED DEFECT (do not "fix" the oracle to agree):
-        # this row's formal_spec (∀x(P→Q), ∃xP ⊢ ∃xQ — existential over the
-        # FIRST term, VALID, identical to the 06 root) does NOT describe its
-        # prompt. The prompt commits the existential over the SECOND term
-        # ("every leak is a defect" + "some defects exist" ⊬ "some leaks
-        # exist") — illicit existential conversion, genuinely INVALID, and
-        # the expected_result correctly says NO. Spec and prompt diverge in
-        # quantifier placement. The verdict recorded here is the SPEC's
-        # verdict (VALID): the oracle checks the spec, and a spec that
-        # misdescribes its prompt is the defect this row exposed.
+        # *** EXPECTED TO FAIL — a real seeded defect, not an oracle bug. ***
+        # 047 row 87 seeds formal_spec '∀x(P→Q), ∃xP ⊢ ∃xQ', copied verbatim
+        # from its LOGIC-06 root and mirrored faithfully below. That spec is
+        # VALID. Its seeded expected_result is 'NO — illicit existential
+        # conversion…', which normalises to INVALID and is what the fourth
+        # element records. Computed VALID vs seeded INVALID: the row
+        # contradicts itself, and the gate goes red, which is the point.
+        #
+        # The prompt is fine — it argues ∀x(P→Q), ∃xQ ⊬ ∃xP, which really is
+        # invalid, so NO is the right answer to give a model. The defect is
+        # the spec, inherited from the root instead of written for the trap.
+        # Fix it in a migration (set the spec to '∀x(P→Q), ∃xQ ⊬ ∃xP'), NOT
+        # by relaxing this entry. See the docstring for why
+        # --check-owl-families cannot catch it.
         2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
             lambda d, p, a: SOME(d, p[0])],
-        lambda d, p, a: SOME(d, p[1]), "VALID"),
+        lambda d, p, a: SOME(d, p[1]), "INVALID"),
     "LOGIC-19 Existential Fallacy (Fallacy)": (
         2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
             lambda d, p, a: not SOME(d, p[0])],
@@ -390,9 +445,7 @@ FOL = {
 # same left-to-right order as the formal_spec column.
 #
 # LOGIC-09 was seeded by migration 013 and, until 056, had NO machine check
-# anywhere in this repo — it was the only 013/025 ROOT without one. (It was
-# not the only unchecked seeded logic test: the 28 N/C rows from 047/048/049
-# are still unchecked — see the COVERAGE note in the module docstring.) Its
+# anywhere in this repo — it was the only 013/025 ROOT without one. Its
 # 'SAT' claim was correct, but the repo could not demonstrate that. It can now.
 SAT = {
     "LOGIC-09 Satisfiability": (
@@ -417,9 +470,11 @@ SAT = {
             lambda v: v[0] or v[2],
             lambda v: v[1] or (not v[2])], "UNSAT"),
     "PILOT-F5-TRAP-SAT": (
-        # 049 trap spec P, ¬P ⊬ SAT — a bare contradiction presented as a
-        # satisfiability question. No assignment satisfies both clauses.
-        # Seeded UNSAT. v[0]=P.
+        # 049 trap, spec 'P, ¬P ⊬ SAT': the clause set {P, ¬P}. Belongs here
+        # and not in PROP because the prompt asks "Is this set satisfiable?"
+        # — a satisfiability question, the same shape as LOGIC-09, not an
+        # entailment. One unit clause per literal, v[0]=P. No assignment
+        # satisfies both, so there is no witness to display. Seeded UNSAT.
         1, [lambda v: v[0], lambda v: not v[0]], "UNSAT"),
 }
 
@@ -523,6 +578,12 @@ def check_owl_families():
             # force the spec to lie about the stimulus. What a C row MUST
             # have is a spec at all (plus transform+flaw, DB-enforced by
             # owl_c_completeness).
+            #
+            # KNOWN LIMITATION: the final `else` below PASSES a C row whose
+            # spec equals its root's. That is right when the root is itself a
+            # fallacy (LOGIC-03/04/11), but it is also how LOGIC-06C's defect
+            # slips past this check — see the module docstring. Only the
+            # offline battery catches that one.
             if cspec is None:
                 failures += 1
                 print(f"[FAIL] test {cid} '{cname}' (C) has NULL formal_spec")
