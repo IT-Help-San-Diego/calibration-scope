@@ -115,7 +115,10 @@ def selftest():
 if __name__ == "__main__":
     if "--selftest" in sys.argv:
         sys.exit(0 if selftest() else 1)
-    path = sys.argv[1] if len(sys.argv) > 1 else "kanban.jsonl"
+    # Default to the board's canonical location so `python3 scripts/kanban_lint.py`
+    # from the repo root works without an argument.
+    default = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "policy", "kanban.jsonl")
+    path = sys.argv[1] if len(sys.argv) > 1 else default
     cards = load(path)
     fails = check(cards)
     from collections import Counter

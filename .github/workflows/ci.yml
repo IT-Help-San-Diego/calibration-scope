@@ -42,6 +42,13 @@ jobs:
       - name: Verify logic ground truth (offline oracle)
         run: python3 scripts/verify_logic_ground_truth.py
 
+      # The cross-lane Kanban board: a done card must carry a verifier, a
+      # blocked card must name its blocker, no duplicate ids, no unknown
+      # lanes. A board that can rot without failing CI is the same defect
+      # shape as a grader that can't fail on a broken row.
+      - name: Verify Kanban board (cross-lane work state)
+        run: python3 scripts/kanban_lint.py policy/kanban.jsonl
+
       # Live-DB consistency: apply the schema, then check every N/C paraphrase
       # row shares its owl-root's formal skeleton.
       - name: Apply migrations (psql)
