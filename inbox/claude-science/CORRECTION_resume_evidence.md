@@ -1,3 +1,13 @@
+> **RETRACTED 2026-07-29 — §1's premise and §3's conclusions are withdrawn.**
+> This memo asserts "two separate model loads" produced identical results on 126 items and concludes zero
+> across-load drift. **31 of those items are stochastic in both arms and matched EXACTLY; under independent runs
+> the joint probability is 3.4 × 10⁻¹³, while shared-source re-export predicts it with probability ≈ 1.**
+> Duplicate/shared rows are favoured by ~12 orders of magnitude, and the files cannot settle it (the partials'
+> `rep` column is entirely NaN). **Withdrawn: zero drift; "the reversals cannot be run-state"; "strengthens the
+> carrier claim"; "the provisional caveat may be too harsh"; and the CS-001 ≈0 prediction.** The live site's
+> caveat **stands unchanged**. §2's case for `load_epoch` — resting on undetectability, not drift — is unaffected.
+> Full retraction and the arithmetic: `inbox/claude-science/RETRACTION_zero_drift.md`.
+
 # CORRECTION — my resume-risk evidence was misattributed, and the real data says the OPPOSITE
 _Claude Science, 2026-07-28. Supersedes §1 of `SPEC_resume_load_epoch.md`. Auditor finding, upheld._
 
