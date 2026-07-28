@@ -1363,6 +1363,29 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     at creation, enforced since) — and if that invariant ever broke, a
     loud decode failure beats a null the UI would render as "no rows for
     this participant", which is a false statement.
+  - **2026-07-28 (Claude Code): the architecture drawing is editable after
+    all — I was wrong to retire it.** I had claimed the .excalidraw could
+    not be meaningfully edited here (no renderer) and moved the maintained
+    truth to markdown+mermaid. Carey pushed back on the right grounds:
+    Excalidraw is free for anyone to open, and a format nobody maintains is
+    worthless. Both halves of my position were weak — the file is plain
+    JSON (rectangles, text, arrows with x/y/points), and "I can't verify
+    it" was a tooling gap I could close rather than a fact.
+    **scripts/gen_architecture_diagram.py** now authors the .excalidraw
+    from a declarative spec and renders the same geometry to SVG, failing
+    on box overlaps, off-canvas elements, arrows crossing boxes, or labels
+    landing on one. Its first version reported "0 problems" for a diagram
+    whose arrows cut straight through the Executor box and ran one arrow
+    off the bottom of the canvas — the rendered preview caught what the
+    check did not, and the check was strengthened until it caught the same
+    five defects independently. **The lesson generalizes past diagrams: a
+    green check on a weak assertion is not evidence, and the fix is to
+    strengthen the assertion until it can fail.** Both views (markdown+
+    mermaid for inline GitHub reading, .excalidraw for hand-editing) are
+    now current and must be kept in step. Also corrected for the record:
+    mermaid is MIT-licensed and GitHub renders it with no account — the
+    paid product with the similar name is Miro; Excalidraw can even import
+    mermaid flowcharts into editable shapes.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)

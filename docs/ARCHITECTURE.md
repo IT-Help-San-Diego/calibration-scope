@@ -1,9 +1,18 @@
 # Architecture — Calibration Scope
 
-Updated 2026-07-28. This document is the maintained architecture reference;
-`docs/architecture.excalidraw` predates the Focused shell, the first-run
-rungs, human calibration, the Witness generator, and the MCP server, and is
-kept only as a drawing source — when the two disagree, this file is current.
+Updated 2026-07-28. Two views of the same architecture, both current and
+both free to open:
+
+- **`docs/architecture.excalidraw`** — the editable drawing. Open it at
+  [excalidraw.com](https://excalidraw.com) (no account) or in the VS Code
+  Excalidraw extension, and move things around by hand. Regenerate it from
+  a spec with `scripts/gen_architecture_diagram.py`, which also renders an
+  SVG proof and fails on overlaps, off-canvas elements, arrows crossing
+  boxes, or labels landing on top of one.
+- **this file** — the prose reference, with a diagram GitHub renders
+  inline so a reader sees the shape without downloading anything.
+
+Keep them in step: when you change one, change the other.
 
 ## The one-sentence shape
 

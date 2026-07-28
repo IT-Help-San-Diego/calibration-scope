@@ -412,14 +412,19 @@ items, same grader as model runs".
    connect deferred to after the window load event (a parse-time
    EventSource kept the network busy through the whole Lighthouse trace —
    desktop perf straddled 64–90 on identical assets).
-8. ~~Architecture diagram.~~ **DONE 2026-07-28 as docs/ARCHITECTURE.md** —
-   a maintained markdown + mermaid reference covering the Focused shell,
-   first-run rungs, human-cal, signal-carrier (with its recorded view
-   defects), Witness, MCP server, evidence discipline, and the three-agent
-   workflow. The .excalidraw is kept as a drawing source and explicitly
-   marked superseded when they disagree; editing its JSON blind (no
-   renderer in this environment) would have violated the verify-everything
-   rule, so the maintained truth moved to a format GitHub renders.
+8. ~~Architecture diagram.~~ **DONE 2026-07-28, both views current.**
+   docs/ARCHITECTURE.md is the prose reference (mermaid renders inline on
+   GitHub); docs/architecture.excalidraw is the editable drawing, now
+   regenerated to match — Focused shell, first-run rungs, human-cal,
+   signal-carrier with its recorded view defects, Witness, MCP, evidence
+   discipline, known gaps, three-agent workflow.
+   **scripts/gen_architecture_diagram.py** authors the .excalidraw from a
+   declarative spec AND renders the same geometry to SVG, exiting non-zero
+   on overlaps, off-canvas elements, arrows crossing boxes, or labels
+   landing on one — so "I can't verify a drawing here" is no longer true.
+   First run of that checker passed a diagram whose arrows cut through the
+   Executor and ran off the canvas; the eye caught it, then the checker was
+   strengthened until it caught the same things. Keep both views in step.
 9. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
    siblings. Template = migration 047/048 pattern (same formal_spec, new
    surface text for N; transform + named owl_flaw for C; resolve roots by

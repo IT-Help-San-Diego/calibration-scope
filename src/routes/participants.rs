@@ -315,9 +315,13 @@ pub async fn submit_answer(
     // race past this check; a UNIQUE(run_id, test_id) partial index for
     // participant runs is the airtight fix and belongs to a migration
     // (backend lane — relayed).
+    // is_infra_error = false, same as every scoring query: an infra row is
+    // missing data, not an answer, so it must neither block a legitimate
+    // submit nor be replayed as a verdict (review catch).
     let existing: Option<(i32, bool, Option<i64>)> = sqlx::query_as(
         r#"SELECT id, passed, latency_ms FROM trial_results
-           WHERE run_id = $1 AND test_id = $2 ORDER BY id LIMIT 1"#,
+           WHERE run_id = $1 AND test_id = $2 AND is_infra_error = false
+           ORDER BY id LIMIT 1"#,
     )
     .bind(req.run_id)
     .bind(req.test_id)
