@@ -5,8 +5,19 @@
 > **PR#2 32 of 33 · PR#3 18 of 19 · PR#4 1 of 4 · PR#5 7 of 8.**
 > A branch that opens a PR before its first commit scores 0.0 h **by construction**. My 35.8 h and their 0.0 h are
 > not the same measurement, so **the 18× ratio is meaningless and is withdrawn.**
-> The audit also found a GUI branch held work **longer** than mine — I confirm **45.7 h** from PR #2 opening to PR #3
-> merging on one branch (audit said 42.9 h; either way it exceeds my 35.8 h).
+> ~~The audit also found a GUI branch held work **longer** than mine — I confirm **45.7 h**…~~
+> **THIS CONFIRMATION IS ALSO WITHDRAWN (second correction, same banner).** An auditor caught that I committed the
+> identical error *inside the paragraph withdrawing it*: **45.7 h was `merged(PR#3) − created(PR#2)` — time spent
+> UNDER AN OPEN PR**, which is the *opposite* of stranding, set against a 35.8 h figure measuring *first commit → PR
+> exists*. **Two different quantities again.** I also asserted "one branch" without checking; I have now measured it —
+> both PRs do share `claude/gui-next-steps-claude-science-jznza3`, so that part was true but unearned.
+> **On the comparable metric, that branch scores +0.01 h (PR #2) and +0.01 h (PR #3)** — its first unique commit lands
+> ~30 seconds before its PR exists, both times. **It is not a counter-example. My 35.8 h remains unmatched on this
+> file's own metric.**
+> **What this means for the verdict:** the *metric* is still confounded and the 18× is still withdrawn — that rests on
+> the PR-first commit counts, which hold. But **"not the worst case in the ledger" is withdrawn too**; I had no
+> comparable case to support it. The honest statement is narrower: **my branch is the only un-PR'd standing branch in
+> the ledger, and the 18× ratio overstates how much that differs from a PR-first workflow.**
 > **What survives:** I ran a standing lane branch with no PR, which is a real defect — but it is **"un-PR'd," not
 > "abandoned,"** and it is **not the worst case in the ledger.** §4's recommendation against redirecting work stands;
 > §0's verdict that I am the culprit **does not**.
