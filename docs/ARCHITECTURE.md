@@ -8,7 +8,9 @@ both free to open:
   Excalidraw extension, and move things around by hand. Regenerate it from
   a spec with `scripts/gen_architecture_diagram.py`, which also renders an
   SVG proof and fails on overlaps, off-canvas elements, arrows crossing
-  boxes, or labels landing on top of one.
+  boxes, or labels landing on top of one. Run it with `--self-test` to
+  watch that guard catch seven deliberately broken layouts — a check
+  nobody has seen fail is not evidence.
 - **this file** — the prose reference, with a diagram GitHub renders
   inline so a reader sees the shape without downloading anything.
 

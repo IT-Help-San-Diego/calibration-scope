@@ -280,7 +280,12 @@ def overlap_report(els):
             bid = e["id"].split("_t")[0]
             if bid in rects:
                 r = rects[bid]
-                if not (r["x"] <= e["x"] and e["y"] + e["fontSize"] <= r["y"] + r["height"]):
+                # All FOUR edges. The first version checked only left and
+                # bottom, so a line floating above its box passed clean
+                # (review catch — a hole in the checker that exists to
+                # catch holes). Right is covered by the width test below.
+                if not (r["x"] <= e["x"] and r["y"] <= e["y"]
+                        and e["y"] + e["fontSize"] <= r["y"] + r["height"]):
                     problems.append(f"text outside box: {e['id']} ({e['text'][:30]})")
                 if e["x"] + len(e["text"]) * e["fontSize"] * 0.62 > r["x"] + r["width"]:
                     problems.append(f"text overflows box width: {e['id']} ({e['text'][:34]})")
@@ -323,7 +328,57 @@ def overlap_report(els):
                     problems.append(f"label {e['id']} sits on box {bid}")
     return problems
 
+def self_test():
+    """Prove the checker can fail. A guard nobody has watched fail is not
+    evidence — this file's own history is the argument (its first version
+    reported "0 problems" for a diagram with arrows through a box and one
+    off the canvas). Each case perturbs a good diagram and must be caught."""
+    cases = []
+
+    def case(name, mutate, expect):
+        els = build()
+        mutate(els)
+        found = overlap_report(els)
+        hit = any(expect in p for p in found)
+        cases.append((name, hit, found[:2]))
+
+    def first(els, pred):
+        return next(e for e in els if pred(e))
+
+    case("text above its box",
+         lambda els: first(els, lambda e: e["id"] == "b_dash_t1").update(y=100),
+         "text outside box")
+    case("text below its box",
+         lambda els: first(els, lambda e: e["id"] == "b_dash_t1").update(y=900),
+         "text outside box")
+    case("text left of its box",
+         lambda els: first(els, lambda e: e["id"] == "b_dash_t1").update(x=10),
+         "text outside box")
+    case("text wider than its box",
+         lambda els: first(els, lambda e: e["id"] == "b_dash_t1").update(text="x" * 200),
+         "overflows box width")
+    case("overlapping boxes",
+         lambda els: first(els, lambda e: e["id"] == "b_exec").update(y=180),
+         "box overlap")
+    case("arrow off canvas",
+         lambda els: first(els, lambda e: e["id"] == "a_dash_api").update(y=H + 50),
+         "off canvas")
+    case("arrow through a box",
+         lambda els: first(els, lambda e: e["id"] == "a_dash_api").update(
+             points=[[0, 0], [385, 0]]),
+         "crosses box")
+
+    ok = all(hit for _, hit, _ in cases)
+    for name, hit, found in cases:
+        print(f"  {'caught' if hit else 'MISSED'}  {name}"
+              + ("" if hit else f"  (reported: {found})"))
+    print("self-test:", "all failure modes caught" if ok else "CHECKER IS BLIND TO SOMETHING")
+    return 0 if ok else 1
+
+
 if __name__ == "__main__":
+    if "--self-test" in sys.argv:
+        sys.exit(self_test())
     els = build()
     probs = overlap_report(els)
     doc = {"type":"excalidraw","version":2,
