@@ -115,10 +115,21 @@ def selftest():
 if __name__ == "__main__":
     if "--selftest" in sys.argv:
         sys.exit(0 if selftest() else 1)
-    # Default to the board's canonical location so `python3 scripts/kanban_lint.py`
-    # from the repo root works without an argument.
-    default = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "policy", "kanban.jsonl")
-    path = sys.argv[1] if len(sys.argv) > 1 else default
+    # Default to the real board path relative to the repo root, so
+    # `python3 scripts/kanban_lint.py` from the root Just Works. Falls back to a
+    # bare kanban.jsonl for the case where the board sits beside the script.
+    if len(sys.argv) > 1 and not sys.argv[1].startswith("--"):
+        path = sys.argv[1]
+    else:
+        here = os.path.dirname(os.path.abspath(__file__))
+        for cand in (os.path.join(here, "..", "policy", "kanban.jsonl"),
+                     "policy/kanban.jsonl", "kanban.jsonl"):
+            if os.path.exists(cand):
+                path = cand
+                break
+        else:
+            print("[FAIL] no board found (looked for policy/kanban.jsonl and kanban.jsonl)")
+            sys.exit(2)
     cards = load(path)
     fails = check(cards)
     from collections import Counter
