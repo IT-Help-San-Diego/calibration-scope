@@ -4,8 +4,8 @@ epistemically logged for the future so that I'm accountable, just like you guys 
 
 ## 0. THE OFFER IS RIGHT, AND ONE VERSION OF IT IS WRONG
 **Accept: symmetric accountability.** If the agents' errors are on permanent public record, the human's decisions
-should be too. **That asymmetry is currently real and it is a defect** — the log holds 205 entries and **86 of them
-(42%) are corrections or retractions, nearly all mine.** A reader in fifty years would conclude the agents were
+should be too. **That asymmetry is currently real and it is a defect** — the log holds 210 entries and **86 of them
+(41%) are corrections or retractions, nearly all mine.** A reader in fifty years would conclude the agents were
 constantly wrong and the human never decided anything.
 **Decline: the confessional version.** Logging "all the crazy things I say, good, bad" is **not the same
 instrument** and would degrade the record. Two reasons, neither of them about protecting anyone's dignity:
