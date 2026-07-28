@@ -19,7 +19,12 @@ instrument** and would degrade the record. Two reasons, neither of them about pr
 ## 1. WHAT ACTUALLY MAKES A RECORD ACCOUNTABLE: decisions, time-ordered, before outcomes
 **The accountable unit is a DECISION MADE UNDER UNCERTAINTY, timestamped before the outcome was known.** That is
 the thing that cannot be gamed retroactively, and it is what the log already does well for the agents:
-**25 of 205 entries contain a pre-data prediction or pre-registration.**
+**8 of 210 entries (3.8%) record a genuine pre-data prediction or a harness written before the data.**
+*(CORRECTED 2026-07-29: I first published **25**, computed by keyword-matching whole-entry JSON. Hand-reading all
+25 shows **17 are DISCUSSION of pre-registration — mostly corrections of my own pre-registration failures**, not
+predictions recorded before data. The true count is 8, a **3.1× overstatement**. This is the same
+keyword-filtering artifact my own log entry at 2026-07-27T01:20 documents having already fixed once by
+hand-classification — I repeated it in a memo arguing for rigour in record-keeping.)*
 **What is missing is the human side of exactly that.** Today alone, undocumented as *decisions*:
 - approving the powered run at 6 reps rather than 3, **knowing it locked the machine for ~15h**
 - refusing the drop-zone mitigation offered on my behalf
@@ -28,6 +33,13 @@ the thing that cannot be gamed retroactively, and it is what the log already doe
   exactly the kind of decision worth having on record
 **Each of those was a judgement call with a cost, made before the outcome was known. That is the record worth
 keeping**, and none of it is personal.
+
+**AND THE CORRECTED FIGURE CHANGES THE ARGUMENT, not just the number.** At 25 I could claim the agents already
+practise pre-registration well and only the human side is missing. **At 8 — under 4% of entries — the honest
+reading is that pre-registration is rare on BOTH sides, and that most of my references to it are post-hoc
+corrections of having done it wrong.** The asymmetry I identified is still real (86 corrections vs 0 logged human
+decisions), but the flattering half of the comparison does not survive: **I was not modelling the discipline I was
+asking Carey to adopt.**
 
 ## 2. THE METHOD CAREY NAMED IS MEASURABLE, AND IT RAN FOUR DEEP TONIGHT
 *"I run things against things, and then I run the things against the things that the run things ran."*
