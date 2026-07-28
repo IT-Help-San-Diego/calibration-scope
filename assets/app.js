@@ -1324,13 +1324,22 @@ function hideRunActiveBanner() {
 function refreshAbortBar() {
   const bar = document.getElementById('abort-bar');
   const label = document.getElementById('abort-run-label');
+  const stripState = document.getElementById('control-run-state');
+  const stripStop = document.getElementById('control-stop-btn');
   if (!bar) return;
   const n = _liveRunIds.size;
   bar.classList.toggle('armed', n > 0);
   document.body.classList.toggle('abort-armed', n > 0);
-  if (label) label.textContent = n === 0 ? 'RUN LIVE'
+  const runText = n === 0 ? 'RUN LIVE'
     : n === 1 ? `RUN #${[..._liveRunIds][0]} LIVE`
     : `${n} RUNS LIVE`;
+  if (label) label.textContent = runText;
+  // Control strip mirrors run state + shows STOP when armed.
+  if (stripState) {
+    stripState.textContent = n > 0 ? '● ' + runText : '● idle';
+    stripState.style.color = n > 0 ? 'var(--accent-red, #ff6b6b)' : 'var(--text-muted)';
+  }
+  if (stripStop) stripStop.style.display = n > 0 ? '' : 'none';
   if (n === 0) { const m = document.getElementById('abort-mem'); if (m) m.textContent = ''; }
 }
 async function abortAllLiveRuns() {
