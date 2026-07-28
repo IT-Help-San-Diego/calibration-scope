@@ -1925,7 +1925,16 @@ function showPage(name) {
     const el = document.getElementById('page-' + p);
     if (el) el.style.display = (p === name) ? '' : 'none';
     const tab = document.getElementById('tab-' + p);
-    if (tab) tab.classList.toggle('active', p === name);
+    if (tab) {
+      tab.classList.toggle('active', p === name);
+      // The gold underline is the sighted cue; aria-current is the same
+      // fact for a screen reader. Without it the nav is nine buttons with
+      // no announced selection (verification catch after the tabs became
+      // real buttons). Removed rather than set false — absent is the
+      // standard "not current".
+      if (p === name) tab.setAttribute('aria-current', 'page');
+      else tab.removeAttribute('aria-current');
+    }
   });
   localStorage.setItem('amb-active-page', name);
   if (name === 'setup') { loadRealityCheck(); loadHermesVerify(); loadCloudKeys(); loadNewestBots(); }

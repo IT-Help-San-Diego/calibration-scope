@@ -18,16 +18,16 @@ the lessons.
 ```mermaid
 flowchart TB
     subgraph mac["Local instrument (user's machine, port 8768)"]
-        dash["Dashboard\nsingle-file app: dashboard.html + app.min.js/css\nFocused shell (default) / Deep tabs"]
-        axum["axum backend (Rust)\nroutes/: runs, models, events SSE, prompt-check,\nparticipants, signal-carrier, picker, witness, mcp"]
-        exec["Executor\nclean-room load, blind trials, N=3,\nscore_response grader, SHA3-512 seal"]
-        guard["lm_guard semaphore\n(serializes every LM Studio call)"]
-        pg[("PostgreSQL\ntests · test_runs · trial_results\nparticipants · owl_signal_carrier view")]
+        dash["Dashboard<br/>single-file app: dashboard.html + app.min.js/css<br/>Focused shell (default) / Deep tabs"]
+        axum["axum backend (Rust)<br/>routes/: runs, models, events SSE, prompt-check,<br/>participants, signal-carrier, picker, witness, mcp"]
+        exec["Executor<br/>clean-room load, blind trials, N=3,<br/>score_response grader, SHA3-512 seal"]
+        guard["lm_guard semaphore<br/>(serializes every LM Studio call)"]
+        pg[("PostgreSQL<br/>tests · test_runs · trial_results<br/>participants · owl_signal_carrier view")]
     end
-    lms["LM Studio\nlocal OpenAI-compatible API"]
-    cloud["Cloud providers\nNous · OpenRouter · OpenAI · Gemini"]
-    human["Human participant\ndashboard quiz — same items,\nsame grader as models"]
-    site["Public site — calibrationscope.com\nS3 + CloudFront, zero JS,\nCSP style hashes pinned"]
+    lms["LM Studio<br/>local OpenAI-compatible API"]
+    cloud["Cloud providers<br/>Nous · OpenRouter · OpenAI · Gemini"]
+    human["Human participant<br/>dashboard quiz — same items,<br/>same grader as models"]
+    site["Public site — calibrationscope.com<br/>S3 + CloudFront, zero JS,<br/>CSP style hashes pinned"]
 
     dash -->|"REST + SSE (stream connects after window load)"| axum
     axum --> pg
@@ -35,7 +35,7 @@ flowchart TB
     exec --> guard --> lms
     exec --> cloud
     human --> dash
-    mcp["MCP client (any bot)\nPOST /mcp"] --> axum
+    mcp["MCP client (any bot)<br/>POST /mcp"] --> axum
     site -.->|"LOCAL ⇄ WEB flip link"| dash
 ```
 

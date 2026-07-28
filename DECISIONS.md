@@ -1339,6 +1339,30 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     drawing source and marked superseded on disagreement — editing its
     JSON with no renderer available would have been an unverifiable
     change.
+  - **2026-07-28 (Claude Code): verification round on the tab/wording/doc
+    batch — zero real bugs, four papercuts, three fixed.** (1) The
+    architecture doc's mermaid used `\n` for line breaks; mermaid v10+
+    (what GitHub renders) only breaks on `<br/>`, so every node would have
+    shown a literal backslash-n — the doc claimed "renders on GitHub" and
+    would have rendered wrong. Fixed. Lesson: a diagram format is a
+    dependency; "it renders" is a claim needing verification like any
+    other. (2) The nav-wide `font: inherit` in the button reset changed
+    #mode-toggle's line-height from UA normal to body's 1.5, growing the
+    pill ~4px — my commit message had claimed "every intentional state is
+    unchanged", which was not yet true. Both toggles now pin
+    `line-height: normal`, and the rig asserts it. (3) The nine tabs
+    became real buttons but announced no selection — `aria-current="page"`
+    now moves with navigation (sighted users had the gold underline; a
+    screen reader had nothing). (4) NOT fixed, recorded with reasoning:
+    the nav logo has an onclick with no keyboard path. WCAG 2.1.1 asks
+    that the *functionality* be keyboard-operable, and it is —
+    #tab-benchmark does the same thing and is focusable — so adding a
+    redundant tab stop would cost more than it gives. Same round
+    (Copilot): signal-carrier's `subject_id` tightened from Option<i32>
+    to i32, since 043's XOR CHECK was added without NOT VALID (validated
+    at creation, enforced since) — and if that invariant ever broke, a
+    loud decode failure beats a null the UI would render as "no rows for
+    this participant", which is a false statement.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)

@@ -636,7 +636,12 @@
   /* Accessibility toggle — must be legible on the dark theme in BOTH states.
      Default (Readable: On) = solid amber pill, black text (high contrast, pops).
      Off (Deep mode) = dark pill, solid light text (never gray-on-white). */
-  #mode-toggle { cursor: pointer; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; background: var(--bg-card); }
+  /* line-height pinned to the UA default these two pills always rendered
+     with: they were <button class="tab"> before the nav-wide button reset,
+     so inheriting body's 1.5 through `font: inherit` would silently grow
+     them ~4px (verification catch — the reset's commit claimed no visual
+     change, and for these two that was not yet true). */
+  #mode-toggle { cursor: pointer; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; background: var(--bg-card); line-height: normal; }
   #mode-toggle:hover { filter: brightness(1.1); }
   html[data-mode="focused"] #mode-toggle { background: var(--accent-cyan, #3fd8c9); color: #04110f; font-weight: 600; }
   /* FOCUSED MODE — Benchmark workspace is the ONLY page. The action never
@@ -747,6 +752,7 @@
   html[data-mode="focused"] #workspace { display: none !important; }
 
   #a11y-toggle {
+    line-height: normal;  /* same reason as #mode-toggle above */
     font-weight: 700;
     font-size: 12px;
     letter-spacing: 0.3px;

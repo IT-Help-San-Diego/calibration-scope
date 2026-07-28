@@ -42,7 +42,14 @@ pub struct SignalCarrierRow {
     /// participants.id for humans, models.id for models — display names are
     /// not unique (two participants can both be "CB"), so UI filtering must
     /// key on this, never on subject_name.
-    pub subject_id: Option<i32>,
+    ///
+    /// Not optional: migration 043's `test_runs_subject_xor` CHECK (added
+    /// without NOT VALID, so validated on creation and enforced since)
+    /// guarantees exactly one of participant_id/model_id per run, so the
+    /// COALESCE always resolves. If that invariant were ever broken, decode
+    /// fails loudly here — better than emitting a null the UI would filter
+    /// into "no rows for this participant", which is a false statement.
+    pub subject_id: i32,
     pub subject_name: String,
     pub family_root_id: Option<i32>,
     pub family_name: Option<String>,
