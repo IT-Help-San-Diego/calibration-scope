@@ -1023,6 +1023,70 @@ makes those subjects first-class instead of side experiments.
    grades, Replit lands on the leaderboard with `manual` provenance.
 3. Format-compliance field wired into run detail + leaderboard.
 
+
+
+---
+
+## 16. Surface gate rules and hard-won build lessons
+_Migrated from `policy/HANDOFF_claude_code_gui.md` on 2026-07-29 by Claude Science, BEFORE that doc is retired
+(CS-021). Claude Code flagged the risk correctly: the handoff is stale as a work order but is the ONLY copy of
+several operational records. Each item below was verified absent from `DECISIONS.md` and `README.md` before being
+moved. The mission sentence was checked too and is NOT at risk — it already lives in §"The mission sentence" above,
+under its own heading, as the wording mandate._
+
+### 16.1 Gate rules (hard, do not skip)
+
+- **Zero executable JS on the public site.** script-src 'none'. The only
+  allowed exception is application/ld+json data blocks.
+- **style-src hash rule (public site).** The CloudFront CSP carries BOTH
+  pages' style hashes ('self' + sha256 of each page's <style> block).
+  Recompute on EVERY CSS change or the page blanks. Policy id
+  42a28561-ee87-4c3a-8621-94187ee9e22e.
+- **CSP is different per surface — and on the LOCAL surface, per CONNECTION**
+  (updated 2026-07-22, local HTTPS shipped). Public site = full hardening incl.
+  upgrade-insecure-requests (correct — real TLS). Local dashboard now speaks
+  BOTH protocols on one port (first-byte peek → rustls or plain HTTP):
+  upgrade-insecure-requests is emitted ONLY on TLS connections
+  (security.rs::csp takes an `https` flag from the per-connection ConnScheme
+  extension). On a plain-HTTP connection the directive would command Safari to
+  refetch assets over TLS the client may not trust — the white-page bug. Do
+  NOT make it unconditional in either direction, and do NOT copy a CSP
+  between surfaces blindly.
+- **Verify in the live browser, not by curl.** Firefox MCP
+  (mcp__firefox_devtools__*) is the instrument: navigate, evaluate_script for
+  computed sizes + sheetCount, list_console_messages. The
+  browser-console-preflight skill is mandatory before any HTML/CSS edit.
+- **No spinners.** Every loading state shows real data or nothing.
+- **Lighthouse ≥ 91 perf / 100 a11y / 100 bp / 100 seo** (desktop preset)
+  on the public site; 90/98/100/91 on the dashboard.
+- **Accessibility is the default.** Readable/High-contrast is ON first visit.
+- Commit + push immediately after each verified change (cross-agent record
+  duty: whichever agent does the work updates DECISIONS.md itself).
+
+### 16.2 Hard-won lessons (read before you debug)
+
+1. **The Safari white page was NOT bfcache, caching, nonce mismatch, or a JS
+   bug.** It was `upgrade-insecure-requests` in the LOCAL dashboard's CSP.
+   Safari honors it: it upgraded its own subresource URLs
+   (`/assets/app.min.css` → `https://127.0.0.1:8768/...`) and died because
+   nothing on 8768 speaks TLS. Every asset failed with "network connection
+   lost", `showPage` was undefined, white tool. Firefox's loopback carve-out
+   hid it. **Fixed by removing that directive from the LOCAL CSP only**
+   (commit eef6d20 + the follow-up). The public site keeps it — it's correct
+   there.
+2. **Verify against the LIVE resolver/source, never from memory.** Three
+   separate "impossible" claims this session (cost figures, Cognitive Atlas
+   counts, nonce mismatches) were all wrong in MY verification method, not
+   the instrument. When something "can't be true," re-measure first.
+3. **The nonce stamping is now single-source.** The middleware stamps BOTH
+   the CSP header AND the HTML body with the same per-request nonce. Don't
+   split them again — the handler's stamp is a no-op after the middleware
+   pass by design.
+4. **Assets are inlined/self-hosted deliberately.** The site has no external
+   subresources; every image/script/style is same-origin. Don't introduce a
+   CDN or external font.
+
+
 ## 15. The Unified Architecture — Measure / Reveal / Witness (2026-07-24, Hermes + Carey)
 
 ### The convergence
