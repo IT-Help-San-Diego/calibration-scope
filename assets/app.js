@@ -189,12 +189,27 @@ async function loadBrainMapCycle() {
     }
     if (!maps.length) { caption.textContent = 'no images loaded'; return; }
     const renderMaps = (win) => {
+      // Buttons, not divs: these are now real controls (they navigate), so
+      // they must be keyboard-reachable and announced. A div with
+      // cursor:pointer looks clickable to a mouse and does not exist to a
+      // keyboard — the same gap the subject-picker tabs had.
       strip.innerHTML = win.map(m =>
-        `<div style="flex:0 0 auto;cursor:pointer;" title="${escHtml(m.col.name + ' · ' + m.img.name + ' · ' + (m.col.doi||'Open NeuroVault'))}">`
-        + `<img src="/api/neurovault/img/${m.col.id}/${m.img.id}" alt="${escHtml(m.img.name)}" loading="lazy" `
+        `<button type="button" data-cw-collection="${m.col.id}" `
+        + `style="flex:0 0 auto;cursor:pointer;background:none;border:none;padding:0;border-radius:6px;" `
+        + `title="${escHtml(m.col.name + ' · ' + m.img.name + ' · ' + (m.col.doi||'Open NeuroVault'))}" `
+        + `aria-label="${escHtml(m.img.name + ' — open in Crosswalk')}">`
+        + `<img src="/api/neurovault/img/${m.col.id}/${m.img.id}" alt="" loading="lazy" `
         + `style="height:64px;width:auto;border-radius:6px;border:1px solid var(--border);display:block;background:#0a0f14;" />`
-        + `</div>`
+        + `</button>`
       ).join('');
+      strip.querySelectorAll('[data-cw-collection]').forEach(btn => {
+        const id = Number(btn.getAttribute('data-cw-collection'));
+        btn.addEventListener('mouseenter', () => crosswalkBadge(true));
+        btn.addEventListener('focus', () => crosswalkBadge(true));
+        btn.addEventListener('mouseleave', () => crosswalkBadge(false));
+        btn.addEventListener('blur', () => crosswalkBadge(false));
+        btn.addEventListener('click', () => crosswalkGoto(id));
+      });
     };
     if (maps.length <= 3) {
       renderMaps(maps);
@@ -246,7 +261,7 @@ async function loadScienceLayer() {
         // Same-origin proxy (backend fetch-and-cache) — keeps img-src 'self'
         // CSP intact instead of loosening policy for neurovault.org.
         const thumb = '/api/neurovault/img/' + c.id + '/' + img.id;
-        return '<div class="science-card" style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;" onclick="toggleScienceWhy(' + c.id + ')">'
+        return '<div class="science-card" data-collection="' + c.id + '" style="background:var(--bg-primary);border:1px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;" onclick="toggleScienceWhy(' + c.id + ')">'
           + '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-bottom:6px;">' + escHtml(c.name) + '</div>'
           + '<img src="' + escHtml(thumb) + '" alt="' + escHtml(img.name) + ' - ' + escHtml(c.doi || 'Open NeuroVault map') + '" loading="lazy" style="width:100%;height:auto;border-radius:8px;display:block;background:#0a0f14;" />'
           + '<div style="margin-top:6px;font-size:11px;color:var(--text-secondary);">' + escHtml(img.name) + '</div>'
@@ -1933,7 +1948,7 @@ var hcParticipantName = '';
 // 'human-cal' was missing here even though its tab calls showPage('human-cal') —
 // the click hid every page and revealed nothing. Same list gates the
 // localStorage page restore, so it also could never survive a reload.
-const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker', 'wizard', 'board'];
+const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker', 'wizard', 'board', 'crosswalk'];
 function showPage(name) {
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
@@ -1961,6 +1976,59 @@ function showPage(name) {
   if (name === 'picker') pkLoad();
   if (name === 'wizard') wzLoad();
   if (name === 'board') loadBoardPage();
+  if (name === 'crosswalk') { loadScienceLayer(); renderCrosswalkAtlas(); }
+}
+
+// ── Crosswalk: axis → cognitive construct ────────────────────────────────
+// The content lives in ingest/artifacts/ontology_crosswalk.json, which is
+// gitignored today (CS-025 ships it). Rather than hard-block the tab or —
+// worse — render plausible-looking construct names from memory, this states
+// the absence and names the card that fixes it. An empty panel that explains
+// itself is honest; a populated one built from guesswork is the exact defect
+// this project keeps finding in its own authoring.
+function renderCrosswalkAtlas() {
+  const el = document.getElementById('crosswalk-atlas');
+  if (!el) return;
+  el.innerHTML =
+    '<div style="font-size:13px;letter-spacing:1.2px;color:var(--text-muted);margin-bottom:8px;">AXIS → COGNITIVE CONSTRUCT</div>'
+    + '<div style="border:1px dashed var(--border);border-radius:10px;padding:14px;background:var(--bg-primary);max-width:900px;">'
+    + '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">'
+    + 'Not shown yet. The verified mapping (six families → Cognitive Atlas constructs, re-checked against the '
+    + 'live Cognitive Atlas API on 2026-07-22 after all six original IDs turned out to be hallucinated) lives in '
+    + '<code>ingest/artifacts/ontology_crosswalk.json</code>, which is currently gitignored — so it is on this '
+    + 'machine but not in the repo, and the README already cites it.'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">'
+    + 'Tracked as <strong>CS-025</strong> (ship it or drop the citation). This tab deliberately does not '
+    + 'reconstruct the mapping from memory — a crosswalk asserted without its source is the thing it exists to prevent.'
+    + '</div></div>';
+}
+
+// Hint-strip → Crosswalk wiring. Hovering a map badges the Crosswalk tab
+// ("this is where your neuroscience folks go"); clicking navigates there and
+// anchors on that map's entry. Focused mode force-hides the tab, so clicks go
+// through deepPage(), the existing escape hatch, instead of looking dead.
+function crosswalkBadge(on) {
+  const b = document.getElementById('tab-crosswalk-badge');
+  const t = document.getElementById('tab-crosswalk');
+  if (b) b.style.display = on ? '' : 'none';
+  if (t) t.style.outline = on ? '1px solid var(--accent-gold,#d4a853)' : '';
+}
+
+function crosswalkGoto(collectionId) {
+  window.__crosswalkAnchor = collectionId;
+  crosswalkBadge(false);
+  deepPage('crosswalk');
+  // The grid renders asynchronously; highlight once it exists.
+  let tries = 0;
+  const mark = () => {
+    const card = document.querySelector('[data-collection="' + collectionId + '"]');
+    if (!card) { if (++tries < 20) setTimeout(mark, 150); return; }
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.outline = '2px solid var(--accent-gold,#d4a853)';
+    setTimeout(() => { card.style.outline = ''; }, 2400);
+  };
+  mark();
 }
 
 // ── Board: the cross-lane work board, rendered from policy/kanban.jsonl ──
@@ -4518,7 +4586,9 @@ whenReady(function() {
   loadModels();
   loadSpecDecodePairs();
   hydrateLiveRuns();
-  loadScienceLayer();    // body is parsed now — the science layer can find its DOM
+  // The hint strip lives on the Benchmark page, so it loads on boot. The
+  // Crosswalk tab loads its own grid lazily via showPage().
+  loadBrainMapCycle();
   loadOwlCoverage();      // real I/N/C/M counts from the DB, honest N/C = 0
   owlInit();
 });

@@ -106,8 +106,15 @@
   <button class="tab" onclick="showPage('tests-page')" id="tab-tests-page">Tests</button>
   <span class="nav-arrow">→</span>
   <button class="tab" onclick="showPage('runs-page')" id="tab-runs-page">Runs</button>
-
+  <span class="nav-arrow">→</span>
   <button class="tab" onclick="showPage('board')" id="tab-board" title="Cross-lane work board — read live from policy/kanban.jsonl, the same file the lanes append to">Board</button>
+  <span class="nav-arrow">→</span>
+
+  <!-- CROSSWALK — the neuroscience hub. "Crosswalk" is the established
+       informatics term for a validated mapping between two classification
+       systems; here it maps capability axes to cognitive constructs. The
+       brain-map strip under the hero badges this tab on hover. -->
+  <button class="tab" onclick="showPage('crosswalk')" id="tab-crosswalk" title="Where the neuroscience lives: each reproducible map linked to its paper (DOI) and its Cognitive Atlas construct">Crosswalk<span id="tab-crosswalk-badge" style="display:none;margin-left:6px;font-size:9px;padding:1px 5px;border-radius:8px;background:var(--accent-gold,#d4a853);color:#000;vertical-align:middle;">map</span></button>
   <span class="nav-arrow">→</span>
   <button class="tab" onclick="showPage('human-cal')" id="tab-human-cal">Human Cal</button>
   <div class="spacer"></div>
@@ -489,19 +496,36 @@
 </div>
 <div id="center-scroll">
 
-<!-- ═══ Science Layer — NeuroVault reproducible functional maps ═══
-     ALWAYS VISIBLE below the brain hero. Shows the neurologist's
-     three-way slice/statistical-map view grounded in real DOIs and
-     paper provenance. Collections are fetched from /api/neurovault/*.
-     Hover lights up the matching collection; click opens DOI/paper. -->
-<div id="science-layer" style="background:var(--bg-secondary);border-top:1px solid var(--border);padding:16px 24px;">
+<!-- ═══ CROSSWALK — the neuroscience hub (CS-026) ═══
+     Was a strip buried below the brain hero; promoted to a top-level tab so
+     the neuroscience has somewhere to LIVE rather than being a footnote under
+     a benchmark. Each entry is a chain: reproducible map → the paper that
+     produced it (DOI) → the Cognitive Atlas construct it measures.
+     The meaning-gate is unchanged — only collections with a verified link to
+     an axis we measure are admitted, and excluded ones stay listed WITH their
+     reasons rather than being quietly dropped. -->
+<div class="page" id="page-crosswalk" style="display:none;">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <h2 style="margin:0;">Crosswalk</h2>
+    <button onclick="loadScienceLayer()" class="btn-secondary" style="padding:6px 12px;font-size:11px;">Refresh</button>
+  </div>
+  <p style="color:var(--text-muted);font-size:12px;margin:6px 0 16px;max-width:900px;">
+    A <em>crosswalk</em> is the standard informatics term for a validated mapping between two classification
+    systems. This one maps the capability axes this instrument measures onto cognitive constructs — one map,
+    two sciences. Every entry links the reproducible map to its paper and its Cognitive Atlas construct, so a
+    neuroscientist can check the claim rather than take it.
+  </p>
   <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:12px;">
     <div style="font-size:13px;letter-spacing:1.2px;color:var(--text-muted);">REPRODUCIBLE FUNCTIONAL ANATOMY — one verified link</div>
-    <button onclick="loadScienceLayer()" class="btn-secondary" style="padding:6px 12px;font-size:11px;">Refresh</button>
     <span id="science-status" style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);">loading collections…</span>
   </div>
   <div id="science-grid" style="display:grid;gap:10px;"></div>
   <div id="science-provenance" style="margin-top:10px;font-family:var(--font-mono);font-size:11px;color:var(--text-secondary);"></div>
+
+  <!-- Axis → construct table. Content ships in CS-025 (ontology_crosswalk.json
+       is gitignored today), so this renders a stated-absence panel rather than
+       hard-blocking the tab — the shell is useful without it. -->
+  <div id="crosswalk-atlas" style="margin-top:22px;"></div>
 </div>
 
 <!-- Scientific Protocol — procedures & controls for consistent, honest results -->
