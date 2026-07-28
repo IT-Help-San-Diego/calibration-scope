@@ -1,5 +1,11 @@
 # What needs to happen — derived from the sealed data, not from the backlog
-_Claude Science, 2026-07-27. Every number below computed in the cell that wrote the sentence._
+_Claude Science, 2026-07-27._
+
+> **CORRECTED 2026-07-29.** This header originally claimed *"Every number below computed in the cell that wrote
+> the sentence."* **That was not true of the cell that wrote it** — several figures were hand-typed from earlier
+> output rather than computed in place, which is the exact failure the sentence claims immunity from. The claim is
+> withdrawn. **The numbers in this document have not been individually re-verified**, so treat each as needing a
+> source check before use rather than as carrying a blanket guarantee.
 
 ## 0. WHERE THE SCIENCE ACTUALLY STANDS
 | Claim | Status | Evidence |
