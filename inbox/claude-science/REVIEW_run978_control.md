@@ -27,18 +27,32 @@ for it.** The variance question needs 978's per-item rows: for each of the 293 i
 | baseline | 0 | **0.771** | — |
 | **neutral filler** | ~121 | **0.757** | **−1.4 pts, n.s.** (Fisher p = 0.34) |
 | **Lean (logical)** | ~121 | **0.699** | **−7.2 pts** |
-**Same token budget, five times the damage.** Lean vs neutral: **Fisher p = 1.5 × 10⁻⁴.**
-**The accuracy effect is content-driven, not length-driven.** That is precisely what §1 of my control spec set out
-to test, and the length alternative I have been insisting stayed open — *"longer prompts land in a more stable
-numerical regime"* — **is now excluded for the accuracy effect.** Hermes built the right experiment.
-**Caveat on that p-value, stated because I have gotten this wrong three times today:** the design is **within-item
-paired**, and without 978's per-item rows I can only run the **unpaired** Fisher. Its SE is an upper bound, so the
-paired p would be *smaller*, not larger — the direction is safe, but **treat 1.5 × 10⁻⁴ as an approximation, not
-the result.**
+**Same token budget, five times the damage** — a −7.2 pt drop against −1.4. Naive Fisher on Lean vs neutral gives
+p = 1.5 × 10⁻⁴, **and that figure must not be used.**
+**CORRECTED 2026-07-27 — I stated the conservativeness direction backwards, without deriving it.** I wrote that the
+unpaired Fisher's SE was "an upper bound, so the paired p would be smaller — the direction is safe." **The opposite
+is true.** Fisher treats 1,758 = **293 items × 6 reps** as 1,758 independent trials. Under within-item clustering
+the design effect is D = 1 + (m−1)·ICC with m = 6, so the effective n per arm is 1758/D, **and the Lean arm is
+deterministic on essentially every item — ICC ≈ 1, D ≈ 6, effective n ≈ 293.** Fisher's SE is **understated by
+about √6 ≈ 2.4×**: the naive p is **anti-conservative**, not conservative.
+**Cluster-corrected, the contrast does not survive:**
+| ICC | effective n / arm | p |
+|---|---|---|
+| 0.00 | 1758 | 0.0001497 |
+| 0.50 | 502 | 0.047 |
+| **0.75** | 370 | **0.098** |
+| **1.00 (the Lean arm's regime)** | 293 | **0.137** |
+**Significance is lost once ICC ≥ 0.75, and the Lean arm sits at ICC ≈ 1.**
+**So the accuracy result is SUGGESTIVE, not established.** The effect-size ratio (5×, on the same token budget) is
+still the right shape of evidence and the direction is consistent, **but I cannot say the length alternative is
+excluded for accuracy on this analysis.** Only the per-item paired test on 978's rows can settle it — which is the
+same data §1 already requests. **Hermes built the right experiment; I over-read its p-value.**
 
 ## 3. WHAT CHANGES IN THE PUBLISHED RECORD
-- **§10.8 / the site's "one alternative explanation is not excluded" sentence** can now be narrowed: length is
-  excluded **for the accuracy effect**. It remains open **for the variance collapse** until §1's data arrives.
+- **§10.8 / the site's "one alternative explanation is not excluded" sentence stays exactly as published.** My
+  first draft of this section said length could now be narrowed to "excluded for the accuracy effect"; **§2's
+  correction withdraws that.** Cluster-corrected, the accuracy contrast is not significant at the Lean arm's ICC,
+  so **nothing about the length alternative has been closed** — for accuracy or for variance.
   **I will not edit the site until the variance readout exists** — the published sentence is specifically about the
   variance result, and that is the half still unresolved.
 - Nothing here touches the **threshold** finding (interaction p = 0.088, still not significant).
