@@ -365,6 +365,7 @@ pub async fn execute_run(
     scaffold_supplement: Option<String>,
     test_ids: Option<Vec<i32>>,
     load_preset: Option<String>,
+    resume_from: Option<(i32, i32)>,
 ) {
     let cancel_token = cancellations.register(run_id).await;
 
@@ -386,6 +387,7 @@ pub async fn execute_run(
             scaffold_supplement,
             test_ids,
             load_preset,
+            resume_from,
         ),
     )
     .await
@@ -487,6 +489,7 @@ async fn execute_run_inner(
     scaffold_supplement: Option<String>,
     test_ids: Option<Vec<i32>>,
     load_preset: Option<String>,
+    resume_from: Option<(i32, i32)>,
 ) -> AppResult<()> {
     let client = reqwest::Client::new();
 
@@ -967,6 +970,18 @@ async fn execute_run_inner(
             build_messages(test, &config.project_root, scaffold_supplement.as_deref())?;
 
         for trial_num in 1..=n_trials {
+            // RESUME: when resuming a run with durable partial state, skip trials
+            // that already have a trial_results row for this run. The state is
+            // already durable per-trial (each lands atomically); the resume logic
+            // just starts from the first missing one instead of re-running all.
+            // completed_trials is NOT incremented for skipped trials — the count
+            // reflects work done THIS execution, which is what the dashboard
+            // shows; the seal covers all trials including the resumed ones.
+            if let Some((skip_test, skip_trial)) = resume_from {
+                if test.id < skip_test || (test.id == skip_test && trial_num < skip_trial) {
+                    continue;
+                }
+            }
             // Also checked here (not just inside cancellable! around the
             // network call) so a cancel between trials doesn't have to wait
             // for one more full trial to start before taking effect.

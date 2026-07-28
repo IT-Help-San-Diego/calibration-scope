@@ -79,9 +79,14 @@ async fn main() {
     // exists for them anymore, so without this they'd read "running" forever.
     // Marking them 'error' is honest: their execution genuinely did not finish.
     // ('aborted' is excluded from the reap target — it's already terminal.)
+    //
+    // A run with completed trials but total_count < expected (from the run_plan
+    // emission) is NOT abandoned — its partial state is durable in trial_results.
+    // Mark it 'resume_pending' instead of 'error': the operator can resume it
+    // from the first missing trial rather than starting over.
     match sqlx::query(
         "UPDATE test_runs SET status = 'error', finished_at = NOW()
-         WHERE status NOT IN ('done', 'error', 'aborted')",
+         WHERE status NOT IN ('done', 'error', 'aborted', 'resume_pending')",
     )
     .execute(&state.db)
     .await
@@ -137,6 +142,7 @@ async fn main() {
         .route("/api/runs/complete", post(routes::runs::complete_run))
         .route("/api/runs/{id}", get(routes::runs::get_run_detail))
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
+        .route("/api/runs/{id}/resume", post(routes::runs::resume_run))
         .route(
             "/api/models/{key}/time-estimate",
             get(routes::time_estimate::time_estimate),

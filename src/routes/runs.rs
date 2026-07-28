@@ -329,6 +329,7 @@ pub async fn start_runs(
             req.scaffold_supplement.clone(),
             req.test_ids.clone(),
             req.load_preset.clone(),
+            None, // resume_from
         );
         run_ids.push(run_id);
     }
@@ -383,6 +384,7 @@ pub async fn start_runs(
             req.scaffold_supplement.clone(),
             req.test_ids.clone(),
             req.load_preset.clone(),
+            None, // resume_from
         );
     }
 
@@ -516,6 +518,7 @@ pub async fn complete_run(
         None,
         None,
         Some(ids.clone()),
+        None, // resume_from
         None,
     );
 
@@ -541,6 +544,7 @@ fn spawn_run_task(
     scaffold_supplement: Option<String>,
     test_ids: Option<Vec<i32>>,
     load_preset: Option<String>,
+    resume_from: Option<(i32, i32)>,
 ) {
     let db = state.db.clone();
     let config = state.config.clone();
@@ -585,6 +589,7 @@ fn spawn_run_task(
             scaffold_supplement,
             test_ids,
             load_preset,
+            resume_from,
         )
         .await;
     });
@@ -754,6 +759,7 @@ pub async fn start_baseline_scaffold(
             None,
             None,
             req.load_preset.clone(),
+            None, // resume_from
         );
         spawn_run_task(
             &state,
@@ -765,6 +771,7 @@ pub async fn start_baseline_scaffold(
             Some(supplement.clone()),
             None,
             req.load_preset.clone(),
+            None, // resume_from
         );
     }
 
@@ -923,6 +930,120 @@ pub async fn abort_run(
     Ok(Json(
         serde_json::json!({ "run_id": run_id, "aborted": signaled }),
     ))
+}
+
+/// POST /api/runs/:id/resume — resume a run with durable partial state.
+///
+/// A run marked `resume_pending` (by the startup reaper, or by the operator)
+/// has completed trials in trial_results but total_count < expected. This
+/// endpoint computes the first missing trial and re-fires the executor with
+/// resume_from=Some((test_id, trial_num)), so the run picks up where it left
+/// off instead of starting over. The seal covers all trials, including the
+/// resumed ones; the dashboard shows progress for THIS execution.
+pub async fn resume_run(
+    State(state): State<AppState>,
+    axum::extract::Path(run_id): axum::extract::Path<i32>,
+) -> AppResult<Json<serde_json::Value>> {
+    let run: Option<(i32, String, String, Option<String>, Option<String>, Option<serde_json::Value>)> =
+        sqlx::query_as(
+            r#"SELECT r.model_id, m.key, r.axis, r.scaffold_supplement, r.load_mode, r.test_ids
+               FROM test_runs r JOIN models m ON m.id = r.model_id WHERE r.id = $1"#,
+        )
+        .bind(run_id)
+        .fetch_optional(&state.db)
+        .await?;
+
+    let Some((model_id, model_key, axis, scaffold_supplement, load_mode, test_ids_json)) = run else {
+        return Err(AppError::Executor(format!("No run with id {}", run_id)));
+    };
+
+    // test_ids is JSONB (a JSON array of ints or NULL); deserialize to Vec<i32>.
+    let test_ids: Option<Vec<i32>> = test_ids_json
+        .as_ref()
+        .and_then(|v| serde_json::from_value(v.clone()).ok());
+
+    // The first trial with no trial_results row for this run. The test set is
+    // the run's actual tests: test_ids when present (modular/custom run), else
+    // the whole axis. Order by test_id, trial_num and take the first gap.
+    let first_missing: Option<(i32, i32)> = if let Some(ids) = &test_ids {
+        sqlx::query_as(
+            r#"SELECT t.id, s.trial_num
+               FROM tests t
+               CROSS JOIN generate_series(1, COALESCE(t.trials_per_run, 3)) AS s(trial_num)
+               WHERE t.id = ANY($1) AND t.active = true
+                 AND NOT EXISTS (
+                   SELECT 1 FROM trial_results tr
+                   WHERE tr.run_id = $2 AND tr.test_id = t.id AND tr.trial_num = s.trial_num
+                 )
+               ORDER BY t.id, s.trial_num
+               LIMIT 1"#,
+        )
+        .bind(ids)
+        .bind(run_id)
+        .fetch_optional(&state.db)
+        .await?
+    } else {
+        sqlx::query_as(
+            r#"SELECT t.id, s.trial_num
+               FROM tests t
+               CROSS JOIN generate_series(1, COALESCE(t.trials_per_run, 3)) AS s(trial_num)
+               WHERE t.axis = $1 AND t.active = true
+                 AND NOT EXISTS (
+                   SELECT 1 FROM trial_results tr
+                   WHERE tr.run_id = $2 AND tr.test_id = t.id AND tr.trial_num = s.trial_num
+                 )
+               ORDER BY t.id, s.trial_num
+               LIMIT 1"#,
+        )
+        .bind(&axis)
+        .bind(run_id)
+        .fetch_optional(&state.db)
+        .await?
+    };
+
+    let Some((resume_test, resume_trial)) = first_missing else {
+        return Ok(Json(serde_json::json!({
+            "resumed": false,
+            "run_id": run_id,
+            "reason": "no missing trials — this run is already complete"
+        })));
+    };
+
+    // Mark the run as loading again and re-fire with resume_from.
+    sqlx::query("UPDATE test_runs SET status = 'loading', finished_at = NULL WHERE id = $1")
+        .bind(run_id)
+        .execute(&state.db)
+        .await?;
+
+    let model = ModelRow {
+        id: model_id,
+        key: model_key.clone(),
+        location: "local".to_string(),
+        provider: "lmstudio".to_string(),
+        supports_vision: false,
+    };
+
+    crate::routes::runs::spawn_run_task(
+        &state,
+        run_id,
+        &model,
+        axis,
+        match load_mode.as_deref() {
+            Some("scaffolded") => crate::routes::runs::LoadMode::Scaffolded,
+            _ => crate::routes::runs::LoadMode::CleanRoom,
+        },
+        None,
+        scaffold_supplement,
+        test_ids,
+        None,
+        Some((resume_test, resume_trial)),
+    );
+
+    Ok(Json(serde_json::json!({
+        "resumed": true,
+        "run_id": run_id,
+        "resume_from": {"test_id": resume_test, "trial_num": resume_trial}
+    })))
 }
 
 /// GET /api/runs/:id/export — the evidence bundle.
