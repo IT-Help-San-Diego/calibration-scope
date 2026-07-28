@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Calibration Scope cross-lane Kanban",
+  "type": "object",
+  "required": ["version", "updated_at", "boards"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "boards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["project", "title", "cards"],
+        "properties": {
+          "project": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string" },
+          "cards": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "title", "lane", "state", "updated_at"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                "title": { "type": "string" },
+                "lane": { "type": "string", "enum": ["hermes", "claude-code", "claude-science", "carey"] },
+                "state": { "type": "string", "enum": ["backlog", "in_flight", "blocked", "done"] },
+                "blocked_by": { "type": ["string", "null"] },
+                "credits_gated": { "type": "boolean" },
+                "verification": {
+                  "type": ["string", "null"],
+                  "description": "The commit SHA, run ID, or PR number that proves the card is done. Required when state=done; null otherwise. No verification = not done."
+                },
+                "note": { "type": "string" },
+                "updated_at": { "type": "string", "format": "date-time" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

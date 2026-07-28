@@ -118,6 +118,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(routes::index::index_handler))
         .route("/api/status", get(routes::status::status_handler))
+        .route("/api/kanban", get(routes::kanban::kanban_handler))
         .route("/api/summary", get(routes::summary::summary_handler))
         .route("/api/models", get(routes::models::models_handler))
         .route(

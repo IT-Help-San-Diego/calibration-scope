@@ -8,6 +8,7 @@ pub mod hermes_check;
 pub mod host;
 pub mod index;
 pub mod insights;
+pub mod kanban;
 pub mod lmstudio;
 pub mod loot;
 pub mod mcp;
