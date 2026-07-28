@@ -13,6 +13,26 @@ jobs:
   # ── The seL4-style gate: logic ground truths, proved not asserted ──────────
   # Deliberately independent of the Rust build so it protects `main` even if the
   # (macOS-targeted) app has a platform hiccup. Pure Python + a Postgres service.
+  board-gate:
+    name: Kanban board gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # The linter must itself be sound before it is allowed to judge the board:
+      # --selftest builds one violating card per rule and asserts rejection, plus a
+      # valid card it must accept. A checker that never fails is decoration.
+      - name: Validator self-test
+        run: python3 scripts/kanban_lint.py --selftest
+      # Enforces the contract in policy/KANBAN_contract.md. Fails the build, does
+      # not warn: a `done` card with no verifier, a verifier naming a file that is
+      # not present, a `blocked` card with no named blocker, a dangling dependency,
+      # a duplicate id, or an unknown lane all exit non-zero.
+      - name: Lint the board
+        run: python3 scripts/kanban_lint.py policy/kanban.jsonl
+
   logic-gate:
     name: Logic ground-truth gate
     runs-on: ubuntu-latest
@@ -41,13 +61,6 @@ jobs:
       # wrong seeded ground truth fails the build. No DB needed.
       - name: Verify logic ground truth (offline oracle)
         run: python3 scripts/verify_logic_ground_truth.py
-
-      # The cross-lane Kanban board: a done card must carry a verifier, a
-      # blocked card must name its blocker, no duplicate ids, no unknown
-      # lanes. A board that can rot without failing CI is the same defect
-      # shape as a grader that can't fail on a broken row.
-      - name: Verify Kanban board (cross-lane work state)
-        run: python3 scripts/kanban_lint.py policy/kanban.jsonl
 
       # Live-DB consistency: apply the schema, then check every N/C paraphrase
       # row shares its owl-root's formal skeleton.
