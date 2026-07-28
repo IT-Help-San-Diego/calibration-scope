@@ -38,6 +38,33 @@ def load(path):
     return cards
 
 
+def count_records(path, pattern):
+    """Count RECORDS matching a pattern, not regex occurrences.
+
+    Written after I reported "two earlier entries contain X" from a sweep that
+    printed "2 occurrence(s)". The pattern appeared in two lines, but ONE of
+    them contained both matches and the other was the retraction quoting it —
+    so the true count of offending records was one, not two.
+
+    A match tally over a concatenated file silently overcounts whenever a single
+    record contains the pattern twice, and silently miscounts whenever a record
+    quotes the pattern in order to retract it. Neither failure is visible in the
+    number.
+
+    Returns (n_records, [(line_no, n_occurrences), ...]) so the caller can see
+    the distribution rather than a single figure.
+    """
+    rx = re.compile(pattern)
+    rows = []
+    for i, line in enumerate(open(path)):
+        if not line.strip():
+            continue
+        n = len(rx.findall(line))
+        if n:
+            rows.append((i, n))
+    return len(rows), rows
+
+
 def assert_added(path, expected_ids, prior_count=None):
     """Assert an intended insert actually landed. Call BEFORE pushing, never after.
 
