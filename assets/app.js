@@ -1999,7 +1999,10 @@ function renderCrosswalkAtlas() {
     + 'machine but not in the repo, and the README already cites it.'
     + '</div>'
     + '<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">'
-    + 'Tracked as <strong>CS-025</strong> (ship it or drop the citation). This tab deliberately does not '
+    + 'Tracked as <strong>CS-025</strong>, which has two live options: ship the verified file, or reword the '
+    + 'README to cite <code>DECISIONS §10.13</code>, which already carries the verified ID table publicly. '
+    + 'Dropping the citation is NOT among them — the six IDs were re-verified against the live Cognitive Atlas '
+    + 'API, so the unverified-identifier basis for dropping it is false. This tab deliberately does not '
     + 'reconstruct the mapping from memory — a crosswalk asserted without its source is the thing it exists to prevent.'
     + '</div></div>';
 }
