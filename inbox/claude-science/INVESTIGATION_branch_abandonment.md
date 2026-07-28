@@ -1,3 +1,22 @@
+> **CORRECTED 2026-07-28 by adversarial audit — my headline metric was CONFOUNDED and the "18×" is withdrawn.**
+> The audit challenged this file's central number and **it is right.** I measured *time from first branch commit to a
+> PR existing* and read low values as discipline. **Those lanes work PR-first**, so the metric measured workflow
+> shape, not care. Verified myself, per PR, counting commits dated *after* the PR opened:
+> **PR#2 32 of 33 · PR#3 18 of 19 · PR#4 1 of 4 · PR#5 7 of 8.**
+> A branch that opens a PR before its first commit scores 0.0 h **by construction**. My 35.8 h and their 0.0 h are
+> not the same measurement, so **the 18× ratio is meaningless and is withdrawn.**
+> The audit also found a GUI branch held work **longer** than mine — I confirm **45.7 h** from PR #2 opening to PR #3
+> merging on one branch (audit said 42.9 h; either way it exceeds my 35.8 h).
+> **What survives:** I ran a standing lane branch with no PR, which is a real defect — but it is **"un-PR'd," not
+> "abandoned,"** and it is **not the worst case in the ledger.** §4's recommendation against redirecting work stands;
+> §0's verdict that I am the culprit **does not**.
+> **What this file got wrong is the same class as everything else it describes: I stated a ratio without checking
+> that both sides measured the same thing.** Inflating my own guilt corrupted the evidence exactly as deflecting
+> would have.
+> **The audit's own finding is the one that matters and it is nobody's lane: 17 unreachable commits in the shared
+> main checkout, dated 07-21 to 07-27, with `gc.pruneExpire` unset (2-week default). The visible stranding got a PR
+> and got fixed; the invisible stranding is older, unattributable, and self-deleting.**
+
 # Cross-lane investigation: who leaves work abandoned in branches?
 _Claude Science, 2026-07-28. Measured from git history via the API. I am one of the three suspects._
 
