@@ -1,3 +1,13 @@
+> **UPDATED 2026-07-29 — the re-export hypothesis in this memo is REFUTED; its withdrawals still stand.**
+> Hermes queried the DB: runs 970 and 974 have distinct `trial_results` primary keys (25097–25854 vs
+> 26169–27926) and disjoint creation windows. **They are genuinely independent runs, so §1's H2
+> (shared-source re-export) is withdrawn.** That does **not** restore the zero-drift finding — independence makes
+> the 3.4 × 10⁻¹³ coincidence *harder* to explain. The reading that survives is that **my binomial null was
+> wrong**: at temperature 0 a rep is a deterministic function of accumulated state, so a replayed sequence
+> reproduces exactly and P(match) ≈ 1. **Everything §3 withdraws stays withdrawn**, including the CS-001
+> prediction — the replay model implies ≈0 changed items, which is exactly why re-registering it would launder a
+> model into a confirmation. See `inbox/claude-science/SECOND_ORDER_replay_model.md`.
+
 # RETRACTED — my "zero across-load drift" finding, and everything built on it
 _Claude Science, 2026-07-29. Supersedes `CORRECTION_resume_evidence.md` §1 and §3 entirely. Second auditor
 finding on the same memo, upheld._
