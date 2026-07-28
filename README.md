@@ -10,7 +10,7 @@ Every benchmark asks "what can it do?" Calibration Scope asks a sharper question
 
 Runs against local models ([LM Studio](https://lmstudio.ai)) and cloud endpoints (Nous, OpenRouter, OpenAI, Gemini) — vision, tool use, reasoning, prompt-injection resistance — using ground-truth tests, N=3 trials, SHA-3-sealed evidence, and zero trust in anyone's marketing numbers. Built in Rust (Axum + Tokio + SQLx + PostgreSQL) with a single-file live dashboard driven by Server-Sent Events.
 
-The defining feature: **the same battery, the same seals, run against local and cloud models — then matched back and forth.** Run a 30B model on your own GPU, run the same 90-test battery on a cloud endpoint, and cross-reference the verdicts on identical stimulus. The methodology is the constant; only the silicon changes. That is how you answer *"what am I dealing with today — and is it better than last week, or just bigger?"*
+The defining feature: **the same battery, the same seals, run against local and cloud models — then matched back and forth.** Run a 30B model on your own GPU, run the same sealed battery on a cloud endpoint, and cross-reference the verdicts on identical stimulus. The methodology is the constant; only the silicon changes. That is how you answer *"what am I dealing with today — and is it better than last week, or just bigger?"*
 
 And the loop closes on the human. The same fallacy taxonomy, the same N=3 discipline, the same sealed evidence can be pointed at **you** — take a calibrated logic/reasoning test, track your own weaknesses over time, and watch your profile move. Silicon and carbon under one instrument. That is the point: a tool to honestly measure intelligence wherever it shows up.
 

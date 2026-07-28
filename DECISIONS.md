@@ -1316,6 +1316,29 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     had computed population variance all along — it verified semantics
     the view didn't have, which is exactly the class of gap a mock cannot
     catch.
+  - **2026-07-28 (Claude Code): tab keyboard pass + wording residuals +
+    architecture doc.** (1) All nine nav tabs are native buttons with the
+    UA chrome stripped — fixes the all-white First Run tab Carey
+    photographed live on Safari (yesterday's div→button swap never reset
+    ButtonFace; mode/a11y toggles only looked right via their id-level
+    backgrounds) and completes the systemic keyboard pass: every tab
+    focusable, Enter-activatable, 23 Playwright checks. NOTE: pulling
+    main would NOT have fixed the white tab — the bug was in the Mac's
+    checkout already; the fix is this commit. (2) Wording residuals:
+    README's "90-test battery" figure had no sealed-run provenance
+    (PUBLIC_REPO scan SEV3) → "the same sealed battery", no number;
+    SCISPACE_PACKAGE.md — "features no existing benchmark provides" and
+    "no single existing benchmark provides" hedged to "we have not
+    found", "Universal Fallacy Blindness" renamed "Widespread" (19 of 21
+    is not universal — the sentence contradicted its own title),
+    stated-vs-actual identity installed in the summary, SHA-3-512 →
+    SHA3-512 per the identifier convention. Lessons headers CHECKED and
+    found already compliant — no edit, recorded as closure. (3)
+    docs/ARCHITECTURE.md added as the maintained architecture reference
+    (mermaid renders on GitHub); the stale .excalidraw is kept as a
+    drawing source and marked superseded on disagreement — editing its
+    JSON with no renderer available would have been an unverifiable
+    change.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)

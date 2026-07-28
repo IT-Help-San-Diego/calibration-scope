@@ -412,9 +412,14 @@ items, same grader as model runs".
    connect deferred to after the window load event (a parse-time
    EventSource kept the network busy through the whole Lighthouse trace —
    desktop perf straddled 64–90 on identical assets).
-8. **Architecture diagram.** docs/architecture.excalidraw is stale — add
-   the Focused shell, NeuroVault proxy, signal-carrier view, spec-decode
-   panel, human-calibration page, /api/runs/complete endpoint, MCP server.
+8. ~~Architecture diagram.~~ **DONE 2026-07-28 as docs/ARCHITECTURE.md** —
+   a maintained markdown + mermaid reference covering the Focused shell,
+   first-run rungs, human-cal, signal-carrier (with its recorded view
+   defects), Witness, MCP server, evidence discipline, and the three-agent
+   workflow. The .excalidraw is kept as a drawing source and explicitly
+   marked superseded when they disagree; editing its JSON blind (no
+   renderer in this environment) would have violated the verify-everything
+   rule, so the maintained truth moved to a format GitHub renders.
 9. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
    siblings. Template = migration 047/048 pattern (same formal_spec, new
    surface text for N; transform + named owl_flaw for C; resolve roots by
