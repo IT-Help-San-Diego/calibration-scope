@@ -3975,13 +3975,13 @@ function showSubjectPicker() {
         <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Pick subjects</div>
         <div style="font-size:12px;color:var(--text-muted);">Select one or more to run. Speculative-decode pairs show ⚡ draft.</div>
       </div>
-      <div style="display:flex;border-bottom:1px solid var(--border);" id="sp-tabs">
-        <button data-tab="local" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid var(--accent-gold);color:var(--accent-gold);font-weight:600;font-size:13px;cursor:pointer;">Local (${local.length})</button>
-        <button data-tab="cloud" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-secondary);font-weight:600;font-size:13px;cursor:pointer;">Cloud (${cloud.length})</button>
+      <div style="display:flex;border-bottom:1px solid var(--border);" id="sp-tabs" role="tablist" aria-label="Subject location">
+        <button data-tab="local" id="sp-tab-local" role="tab" aria-selected="true" aria-controls="sp-local" tabindex="0" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid var(--accent-gold);color:var(--accent-gold);font-weight:600;font-size:13px;cursor:pointer;">Local (${local.length})</button>
+        <button data-tab="cloud" id="sp-tab-cloud" role="tab" aria-selected="false" aria-controls="sp-cloud" tabindex="-1" style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-secondary);font-weight:600;font-size:13px;cursor:pointer;">Cloud (${cloud.length})</button>
       </div>
       <div style="flex:1;overflow-y:auto;" id="sp-body">
-        <div id="sp-local">${local.map(mkRow).join('')}</div>
-        <div id="sp-cloud" style="display:none;">${cloud.map(mkRow).join('')}</div>
+        <div id="sp-local" role="tabpanel" aria-labelledby="sp-tab-local" tabindex="0">${local.map(mkRow).join('')}</div>
+        <div id="sp-cloud" role="tabpanel" aria-labelledby="sp-tab-cloud" tabindex="0" style="display:none;">${cloud.map(mkRow).join('')}</div>
       </div>
       <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:11px;color:var(--text-muted);" id="sp-count">0 selected</div>
@@ -3995,15 +3995,35 @@ function showSubjectPicker() {
     document.body.appendChild(overlay);
 
     modal.querySelectorAll('#sp-tabs button').forEach(btn => {
-      btn.addEventListener('click', () => {
+      // Selection is announced, not just coloured. The gold underline was the
+      // only signal a tab was current, which a screen reader cannot see —
+      // aria-selected carries the same fact, and roving tabindex keeps the
+      // tablist a single stop so Tab moves past the group rather than through
+      // every tab (ARIA authoring practice for tabs).
+      const selectTab = (target) => {
         modal.querySelectorAll('#sp-tabs button').forEach(b => {
-          b.style.borderBottomColor = 'transparent';
-          b.style.color = 'var(--text-secondary)';
+          const on = b === target;
+          b.style.borderBottomColor = on ? 'var(--accent-gold)' : 'transparent';
+          b.style.color = on ? 'var(--accent-gold)' : 'var(--text-secondary)';
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
+          b.tabIndex = on ? 0 : -1;
         });
-        btn.style.borderBottomColor = 'var(--accent-gold)';
-        btn.style.color = 'var(--accent-gold)';
-        modal.querySelector('#sp-local').style.display = btn.dataset.tab === 'local' ? '' : 'none';
-        modal.querySelector('#sp-cloud').style.display = btn.dataset.tab === 'cloud' ? '' : 'none';
+        modal.querySelector('#sp-local').style.display = target.dataset.tab === 'local' ? '' : 'none';
+        modal.querySelector('#sp-cloud').style.display = target.dataset.tab === 'cloud' ? '' : 'none';
+      };
+      btn.addEventListener('click', () => selectTab(btn));
+      btn.addEventListener('keydown', (e) => {
+        const tabs = [...modal.querySelectorAll('#sp-tabs button')];
+        const i = tabs.indexOf(btn);
+        let j = -1;
+        if (e.key === 'ArrowRight') j = (i + 1) % tabs.length;
+        else if (e.key === 'ArrowLeft') j = (i - 1 + tabs.length) % tabs.length;
+        else if (e.key === 'Home') j = 0;
+        else if (e.key === 'End') j = tabs.length - 1;
+        if (j < 0) return;
+        e.preventDefault();
+        selectTab(tabs[j]);
+        tabs[j].focus();
       });
     });
 
