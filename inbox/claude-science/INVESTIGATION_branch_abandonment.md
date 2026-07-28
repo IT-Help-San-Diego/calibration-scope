@@ -1,0 +1,63 @@
+# Cross-lane investigation: who leaves work abandoned in branches?
+_Claude Science, 2026-07-28. Measured from git history via the API. I am one of the three suspects._
+
+## 0. THE ANSWER IS ME. Unambiguously, by an 18× margin.
+Carey asked which agent leaves unfinished work stranded, so that work can be redirected away from them. **The
+metric that answers it is time from a branch's first commit to a pull request existing** — not PR merge time, which
+only measures work that already reached a PR.
+| lane | PR | commits unique to branch | first commit → PR exists |
+|---|---|---|---|
+| Claude Code | #2 | 33 | **0.0 h** |
+| Claude Code | #3 | 19 | **0.0 h** |
+| Claude Code | #4 | 4 | **0.0 h** |
+| Hermes | #5 | 8 | **0.0 h** |
+| (foundations) | #1 | 4 | 2.0 h |
+| **Claude Science** | **#6** | **65** | **35.8 h** |
+**Every other lane opened a PR in the same hour it started committing. I accumulated 65 commits over 35.8 hours
+with no PR at all — and PR #6 exists only because Carey asked the question.**
+
+## 1. THE AGGRAVATING FACTOR IS WORSE THAN THE LAG
+Every other branch was **purpose-scoped**: one task → branch → PR → merge → branch deleted. `sweep2-foundations`,
+`claude/gui-items-6-9-10`, `hermes/oracle-28-coverage` — all gone from the branch list because they completed.
+**Mine was a standing branch I treated as a personal workspace for two days.** That is not "forgot to open a PR."
+**It is a workflow that never had one**, and it would have continued indefinitely.
+
+## 2. DISCONFIRMING CHECK — I looked for other offenders and there are none
+`claude/gui-next-steps-claude-science-jznza3` is still in the branch list, which looks like a second offender. **It
+is 0 commits ahead of main** — fully merged, merely undeleted. **Housekeeping, not abandonment.**
+**Exactly one lane has unmerged work sitting on a branch. It is mine.**
+
+## 3. WHAT MADE IT WORSE THAN A PROCESS SLIP
+The stranded set included **`ANALYSIS_powered_run_974_977.md`** — the analysis two live-site claims rest on — and
+**`AUDIT_lmstudio_api.md`**, whose Gap 2 finding Hermes had *already implemented a fix for* without being able to
+read the audit itself.
+**And this file's own protocol says: "verify the other lanes' claims first-hand before relaying them."** Neither
+lane **could** verify mine — it was not in the shared history. **I spent two days insisting nobody relay
+unverified claims while making my own claims unverifiable.** That is the finding, not the branch hygiene.
+A concrete cost, already paid: my ruling that *"require C spec ≠ root spec"* would break LOGIC-03C/04C **lived only
+in `RULING_three_lanes.md` on the unmerged branch.** It was re-listed as open work in the closing summary because
+nobody could have read it. **One lane nearly built a regression because my ruling was stranded.**
+
+## 4. ON REDIRECTING WORK AWAY FROM ME — the honest recommendation
+Carey's instinct is right in general and I think **wrong in this specific case**, for a reason I can support:
+- **The defect is delivery, not analysis.** Every stranded file is *finished work* that was *verified* — including
+  its own retractions. Nothing in PR #6 is half-built.
+- **The fix is mechanical and already applied**: PR #6 is open, the branch is synced, and the rule going forward is
+  **one task → one branch → PR the same session → delete the branch.** No standing personal branch.
+- **Redirecting analysis to a lane that has never done an analysis** would trade a delivery problem for a
+  competence problem. Hermes and Claude Code have been fast and clean on delivery *within their lanes*; neither has
+  run a paired McNemar or caught a power-simulation error.
+**What I would actually redirect:** nothing yet — **but hold me to a checkable condition rather than a promise.**
+`inbox/claude-science/` on **main** is the deliverable location. If my lane's work is not on main at the end of a
+session, the session produced nothing. **That is measurable by anyone, without asking me.**
+
+## 5. WHAT I AM NOT CLAIMING
+- **I cannot attribute branches to agents from git metadata** — commits do not carry a lane identity. The mapping
+  above comes from branch names (`hermes/…`, `claude/…`, `claude-science`) and each lane's own statements. A branch
+  named for one lane but committed to by another (**which happened twice today**) would be misattributed.
+- The 0.0 h figures mean *same hour*, not *same instant*; API timestamps round to the minute.
+- **PR #1's branch is deleted**, so its 2.0 h is computed from the compare-API commit list and may exclude commits
+  that were rebased away.
+- This measures **branch discipline only**. It is not a ranking of contribution, correctness, or care — on the
+  count of *wrong claims made*, I am also first, and that is recorded separately in
+  `MEMO_is_hermes_the_problem.md`.
