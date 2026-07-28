@@ -70,6 +70,21 @@ def check(cards, repo_root="."):
                 if v.get("kind") in ("commit", "deploy") and not re.fullmatch(r"[0-9a-f]{7,40}", v["ref"]):
                     fails.append(f"R2 {cid}: verifier ref {v['ref']!r} is not a commit sha")
 
+        # R7: a verifier must be SUBSTANTIVE, not merely well-formed.
+        # CS-016 was closed with verifier ref 971dfc9 — a real sha, for an unrelated
+        # commit (oracle coverage). R1 and R2 both passed: a sha was present and it
+        # resolved. Neither rule asks whether the ref has anything to do with the card.
+        # A `check` string that only restates the title, or is shorter than a sentence,
+        # is the signature of a card closed on a status rather than on evidence.
+        if c.get("column") == "done" and c.get("verifier"):
+            chk = (c["verifier"].get("check") or "").strip()
+            if len(chk) < 40:
+                fails.append(f"R7 {cid}: verifier check is {len(chk)} chars - too short to describe what was checked")
+            title_words = set(re.findall(r"[a-z]{4,}", (c.get("title") or "").lower()))
+            chk_words = set(re.findall(r"[a-z]{4,}", chk.lower()))
+            if title_words and chk_words and chk_words.issubset(title_words):
+                fails.append(f"R7 {cid}: verifier check only restates the title - describes no actual check")
+
         # R3: blocked must say what blocks it
         if c.get("column") == "blocked" and not c.get("blocked_on"):
             fails.append(f"R3 {cid}: in `blocked` with no blocked_on - indistinguishable from abandoned")
@@ -95,6 +110,15 @@ def selftest():
           "verifier": {"kind": "file", "ref": "does/not/exist.md", "check": "x"}}, "R2"),
         ("bad sha", {"id": "T6", "lane": "hermes", "column": "done",
                      "verifier": {"kind": "commit", "ref": "not-a-sha", "check": "x"}}, "R2"),
+        # R7 cases: a verifier can be well-formed and still describe no check.
+        ("check too short to say anything",
+         {"id": "T8", "lane": "hermes", "column": "done", "title": "Do the thing",
+          "verifier": {"kind": "commit", "ref": "abc1234", "check": "done"}}, "R7"),
+        ("check only restates the title",
+         {"id": "T9", "lane": "hermes", "column": "done",
+          "title": "Sealed provenance record hash chained local file",
+          "verifier": {"kind": "commit", "ref": "abc1234",
+                       "check": "sealed provenance record hash chained local file"}}, "R7"),
     ]
     ok = True
     for name, card, rule in cases:
@@ -106,7 +130,11 @@ def selftest():
         ok = ok and hit
     # and a valid card must produce NO failure
     f = tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False)
-    f.write(json.dumps({"id": "T7", "lane": "hermes", "column": "backlog"}) + "\n"); f.close()
+    f.write(json.dumps({"id": "T7", "lane": "hermes", "column": "backlog"}) + "\n")
+    f.write(json.dumps({"id": "T10", "lane": "hermes", "column": "done", "title": "Fix the widget",
+                        "verifier": {"kind": "commit", "ref": "abc1234",
+                                     "check": "read migration 059 on main and confirmed the infra filter is present and var_pop appears only in a comment"}}) + "\n")
+    f.close()
     clean = check(load(f.name))
     print(f"  [{'PASS' if not clean else 'FAIL'}] selftest: valid card -> no failures")
     return ok and not clean
