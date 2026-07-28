@@ -1513,3 +1513,74 @@ May **not** assert: that the mechanism is known, that the effect is a directiona
 beyond this model and bank, or that the variance collapse reflects the carrier's content rather than its length. **Temperature and speculative decoding ARE excluded (both verified); prompt length is NOT** — see §D.4, where my own attempt to exclude it via §10.8's carrier ordering is retracted because that ordering's decisive premise, the carriers' relative lengths, was never measured.
 **The phrase "carrier-immune" remains retired** (§10.16). Nothing here reinstates it: FALSE-keyed items were
 unaffected, but that is a property of one *stratum of items*, not of a model.
+
+---
+
+## Morning check-in — Claude Code lane, 2026-07-28
+
+**Status.** Handoff items 6, 7, 8 and 10 are DONE; item 9 is written and
+validated but DELIBERATELY UNAPPLIED. PR #4 is open and CI-green (fmt,
+clippy, build, test, logic ground-truth gate, Lighthouse, CodeQL) and is
+awaiting Carey's merge decision — it is not merged as of this note.
+
+**A pre-merge check that came back clean, recorded because a negative result
+is still evidence.** Migration 056's adversarial C rows carry a full
+paragraph as `expected_result` (`'UNSAT — the first three clauses admit
+exactly two assignments…'`) against `scoring_method = 'exact'`, which looks
+on its face like a permanently unpassable row and therefore a poisoned
+ground truth. It is not. `score_response` (src/executor/scoring.rs) extracts
+the verdict from BOTH sides and normalizes before comparing — the paragraph
+form is the ESTABLISHED convention for adversarial items, introduced by the
+grader bug #3 fix of 2026-07-25, and the in-code comment says so. I also
+checked the specific new risk: LOGIC-09 introduces a verdict vocabulary
+(SAT/UNSAT) that no prior item used. Both tokens ARE in `extract_verdict`'s
+list, ordered by descending length with a word-boundary check, so
+`'UNSAT — …'` extracts to UNSAT rather than shadowing. **No defect. The
+migration follows the existing convention correctly.**
+
+**On the oracle extension — the non-circularity condition is accepted as
+stated.** The rule relayed via Carey is right and is now the standing rule
+for this lane: *if the machine verdict disagrees with the hand-seeded
+answer, REPORT it; never adjust the oracle to agree.* The reason it matters
+here specifically: whoever adds an oracle entry writes both the lambda
+structure and the seeded verdict, so deriving both from the same reasoning
+makes the check circular and it passes trivially. The structure must come
+from the `formal_spec` and the seeded verdict from the migration's
+`expected_result` — two independent sources — or the gate proves nothing.
+The negative control already run on 056 (flipping 09C to SAT and 05C to
+VALID yields `37/39 — 2 MISMATCH(ES)`, exit 1) is the evidence that this
+gate can in fact fail.
+
+**RELAY TO HERMES (i) — nine documented-vs-actual gaps in the MCP tool
+surface**, found by `scripts/mcp_e2e_test.py` (73 checks, 0 FAIL). Six are
+tool descriptions promising what the implementation does not deliver:
+`get_status` advertises `uptime` it does not return; `get_model_verdict`
+advertises `score` it does not return; `get_run` omits fields its own
+description promises; `list_models`' `runnable` filter is advertised but
+inert (0 of 349 rows carry the field); `list_tests active=false` does not
+select inactive tests; `get_owl_state` omits advertised coverage classes.
+Three are transport deviations that originate in axum's `Json` extractor
+rejecting the body BEFORE `mcp_handler` runs, so malformed JSON and a
+missing `method` never become JSON-RPC errors. **Low priority** — no client
+consumes this surface yet; fix when that file is open anyway.
+
+**FOR CLAUDE SCIENCE — one contamination question, checked and answered
+NO.** Relay (h) reports that the `owl_signal_carrier` view (migration 043)
+aggregates `trial_results` with no `is_infra_error = false` filter, which
+would let a backend outage manufacture fake carrier variance. I checked
+whether that could have contaminated the disputed 974–978 analysis: the
+view is read ONLY by `src/routes/signal_carrier.rs` and
+`src/routes/participants.rs` — both dashboard paths, and the endpoint
+already inlines the corrected aggregation. No analysis script reads it; the
+powered-run work went through the sealed CSVs. **So (h) is dashboard
+correctness, not a confound in the carrier science.** It should be fixed,
+but it does not bear on the provisional sentence.
+
+**Lane note.** The prompt-provenance columns of item 0.2
+(`subject_prompt_declared` / `subject_prompt_sha256` / `subject_prompt_source`
+plus the missing `channel`) are the measurement that would have answered
+"were the baseline and Lean arms actually different?" in one query, instead
+of a forensic trace through `build_messages`. The spec marks §3a as schema
+work and Hermes shipped migration 055 in exactly that area the same day, so
+this lane's recommendation is that 0.2 sits with Hermes. Flagging the
+reasoning, not claiming the call.
