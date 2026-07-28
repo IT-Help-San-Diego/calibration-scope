@@ -35,11 +35,19 @@ a COMPLETE decision procedure — not a heuristic, not an LLM:
     enumerate every model.
 
 COVERAGE — what this oracle does NOT check. The battery below covers the
-logic ROOTS seeded by 013/025 and the ten N/C rows added by 056. It does
-NOT cover the 28 N/C rows seeded by migrations 047, 048 and 049 (13
-LOGIC-* rows and 15 PILOT-F*-TRAP-* rows); their hand-written expected
-answers are still machine-unverified. Adding entries for them is open
-work, not done work.
+logic ROOTS seeded by 013/025, the ten N/C rows added by 056, and the 28
+N/C + pilot-trap rows seeded by 047/048/049 (13 LOGIC-* N/C rows and 15
+PILOT-F*-TRAP-* rows, added 2026-07-28). That closes every seeded logic
+row in the DB as of this writing.
+
+DEFECT CLASS SURFACED (2026-07-28): spec-vs-prompt drift. The oracle
+verifies the FORMAL SPEC's verdict. LOGIC-06C's spec (∀x(P→Q), ∃xP ⊢ ∃xQ)
+and its prompt disagree in quantifier placement — the prompt is the
+illicit-conversion trap (INVALID, correctly keyed NO) while the spec is
+the valid root form. The oracle cannot catch a spec that misdescribes its
+own prompt; it can only check the spec it is given. Future spec-authoring
+must verify spec↔prompt agreement out-of-band (a human or a second
+instrument), not assume this oracle covers it.
 
 Run: python3 scripts/verify_logic_ground_truth.py
 Exit 0 = every seeded ground truth matches the computed verdict.
@@ -111,11 +119,53 @@ SOME = lambda dom, f: any(f(x) for x in dom)
 PROP = {
     "LOGIC-01 Modus Ponens": (
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[0]], lambda v: v[1], "VALID"),
+    "LOGIC-01N Modus Ponens (reworded)": (
+        # 047/048: N keeps the root spec P→Q, P ⊢ Q; seeded 'confirmed' (maps
+        # VALID — confirmed the rule's conclusion holds).
+        2, [lambda v: IMP(v[0], v[1]), lambda v: v[0]], lambda v: v[1], "VALID"),
+    "LOGIC-01C Modus Ponens (adversarial: converse trap)": (
+        # 047/048 trap spec P→Q, Q ⊬ P — the CONVERSE, presented as if it were
+        # the valid root. Structure is affirming-the-consequent, NOT modus
+        # ponens; the verdict is derived from the trap, never inherited.
+        # Seeded NO (maps INVALID). Countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "LOGIC-02 Modus Tollens": (
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[1]], lambda v: not v[0], "VALID"),
+    "LOGIC-02C Modus Tollens (adversarial: inverse trap)": (
+        # 047/048 trap spec P→Q, ¬P ⊬ ¬Q — the INVERSE, presented as if it were
+        # the valid root. Structure is denying-the-antecedent, NOT modus
+        # tollens; verdict derived from the trap. Seeded NO (maps INVALID).
+        # Countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-03 Affirming the Consequent (Fallacy)": (
         2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
+    "LOGIC-03N Affirming the Consequent (reworded)": (
+        # 047/048: N keeps the root spec P→Q, Q ⊬ P; seeded DOESNOTFOLLOW
+        # (maps INVALID). Countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
+    "LOGIC-03C Affirming Consequent (adversarial: valid-looking converse)": (
+        # 047/048 trap spec P→Q, Q ⊬ P — same structure as the root fallacy,
+        # the trap is presentational, not logical. Seeded NO (maps INVALID).
+        # Countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
+    "LOGIC-03C Affirming the Consequent (adversarial: reverse-causal trap)": (
+        # 047/048: second 03C row (domain_transfer). Same trap spec; counter-
+        # model P=false, Q=true. Seeded NO (maps INVALID).
+        2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
     "LOGIC-04 Denying the Antecedent (Fallacy)": (
+        2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
+    "LOGIC-04N Denying the Antecedent (reworded)": (
+        # 047/048: N keeps the root spec P→Q, ¬P ⊬ ¬Q; seeded DOESNOTFOLLOW
+        # (maps INVALID). Countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
+    "LOGIC-04C Denying Antecedent (adversarial: valid-looking inverse)": (
+        # 047/048 trap spec P→Q, ¬P ⊬ ¬Q — same structure as the root fallacy;
+        # trap is presentational. Seeded NO (maps INVALID). Countermodel
+        # P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
+    "LOGIC-04C Denying the Antecedent (adversarial: inverse trap)": (
+        # 047/048: second 04C row (domain_transfer). Same trap spec; counter-
+        # model P=false, Q=true. Seeded NO (maps INVALID).
         2, [lambda v: IMP(v[0], v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-07 Boolean Algebra - De Morgan": (
         2, [], lambda v: (not (v[0] and v[1])) == ((not v[0]) or (not v[1])), "VALID"),
@@ -150,6 +200,15 @@ PROP = {
         lambda v: v[1] and not v[1], "INVALID"),
     "LOGIC-11 Affirming a Disjunct (Fallacy)": (
         2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
+    "LOGIC-11N Affirming a Disjunct (reworded)": (
+        # 047/048: N keeps the root spec P∨Q, P ⊬ ¬Q; seeded DOESNOTFOLLOW
+        # (maps INVALID). Countermodel P=true, Q=true.
+        2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
+    "LOGIC-11C Affirming a Disjunct (adversarial: exclusive-or trap)": (
+        # 047/048 trap spec P∨Q, P ⊬ ¬Q — same structure as the root; the
+        # trap presupposes ∨ is exclusive. Seeded NO (maps INVALID).
+        # Countermodel P=true, Q=true.
+        2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-12 Denying a Conjunct (Fallacy)": (
         2, [lambda v: not (v[0] and v[1]), lambda v: not v[0]], lambda v: not v[1], "INVALID"),
     "LOGIC-13 Conjunctive Syllogism": (
@@ -167,6 +226,72 @@ PROP = {
         4, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[2], v[3]),
             lambda v: (not v[1]) or (not v[3])],
         lambda v: (not v[0]) or (not v[2]), "VALID"),
+    # ── PILOT-F*-TRAP-* rows (migration 049) — 13 propositional traps ──────
+    "PILOT-F1-TRAP-AC": (
+        # 049 trap spec P→Q, Q ⊬ P — affirming-the-consequent shape. Seeded
+        # INVALID. Countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
+    "PILOT-F1-TRAP-HS": (
+        # 049 trap spec P→Q, Q→R, R ⊬ P — chain run backward from the final
+        # consequent. Seeded INVALID. Countermodel P=false, Q=true, R=true.
+        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2])],
+        lambda v: v[0], "INVALID"),
+    "PILOT-F2-TRAP-AC": (
+        # 049 trap spec P→Q, Q ⊬ P — affirming-the-consequent shape. Seeded
+        # INVALID. Countermodel P=false, Q=true.
+        2, [lambda v: IMP(v[0], v[1]), lambda v: v[1]], lambda v: v[0], "INVALID"),
+    "PILOT-F2-TRAP-CHAIN": (
+        # 049 trap spec P→Q, Q→R, R ⊬ P — chain run backward. Seeded INVALID.
+        # Countermodel P=false, Q=true, R=true.
+        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2])],
+        lambda v: v[0], "INVALID"),
+    "PILOT-F3-TRAP-AD": (
+        # 049 trap spec P∨Q, P ⊬ ¬Q — affirming-a-disjunct shape (inclusive
+        # ∨). Seeded INVALID. Countermodel P=true, Q=true.
+        2, [lambda v: v[0] or v[1], lambda v: v[0]], lambda v: not v[1], "INVALID"),
+    "PILOT-F3-TRAP-DC": (
+        # 049 trap spec ¬(P∧Q), ¬P ⊬ ¬Q — denying-a-conjunct shape. Seeded
+        # INVALID. Countermodel P=false, Q=true.
+        2, [lambda v: not (v[0] and v[1]), lambda v: not v[0]],
+        lambda v: not v[1], "INVALID"),
+    "PILOT-F4-TRAP-CHAIN2": (
+        # 049 trap spec ¬(P∧Q), ¬Q ⊬ ¬P — conjunct chain run backward. Seeded
+        # INVALID. Countermodel P=true, Q=false.
+        2, [lambda v: not (v[0] and v[1]), lambda v: not v[1]],
+        lambda v: not v[0], "INVALID"),
+    "PILOT-F5-TRAP-DNEG": (
+        # 049 trap spec ¬¬P ⊬ ¬P — double negation does NOT negate. Seeded
+        # INVALID. Countermodel P=true (¬¬P true, ¬P false).
+        1, [lambda v: not (not v[0])], lambda v: not v[0], "INVALID"),
+    "PILOT-F6-TRAP-CHAIN": (
+        # 049 trap spec P→Q, Q→R, R→S, S ⊬ P — 4-link chain run backward.
+        # Seeded INVALID. Countermodel P=false, Q=true, R=true, S=true.
+        4, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2]),
+            lambda v: IMP(v[2], v[3])], lambda v: v[0], "INVALID"),
+    "PILOT-F6-TRAP-MPCHAIN": (
+        # 049 trap spec P→Q, Q→R, R ⊬ P — chain run backward (same shape as
+        # F1-TRAP-HS/F2-TRAP-CHAIN). Seeded INVALID. Countermodel P=false,
+        # Q=true, R=true.
+        3, [lambda v: IMP(v[0], v[1]), lambda v: IMP(v[1], v[2])],
+        lambda v: v[0], "INVALID"),
+    "PILOT-F6-TRAP-RES": (
+        # 049 trap spec P∨Q, P∨R ⊬ Q∨R — resolution misapplication. Seeded
+        # INVALID. Countermodel P=true, Q=false, R=false.
+        3, [lambda v: v[0] or v[1], lambda v: v[0] or v[2]],
+        lambda v: v[1] or v[2], "INVALID"),
+    # ── PILOT-F*-TRAP-* FALSE equivalences (no premises; biconditional as
+    # conclusion, so VALID means "the biconditional is a tautology") ────────
+    "PILOT-F4-TRAP-DEM": (
+        # 049 trap spec ¬(P∨Q) ⊬ ¬P∨¬Q — De Morgan misapplication (kept ∨
+        # instead of flipping to ∧). Seeded FALSE (maps INVALID).
+        # Countermodel P=true, Q=false: LHS ¬(T∨F)=F, RHS ¬T∨¬F=F∨T=T — F≠T.
+        2, [], lambda v: (not (v[0] or v[1])) == ((not v[0]) or (not v[1])), "INVALID"),
+    "PILOT-F4-TRAP-DIST": (
+        # 049 trap spec P∨(Q∧R) ⊬ (P∨Q)∧R — distribution misapplication
+        # (second disjunct not distributed). Seeded FALSE (maps INVALID).
+        # Countermodel P=true, Q=false, R=false: LHS T∨(F∧F)=T,
+        # RHS (T∨F)∧F=T∧F=F — T≠F.
+        3, [], lambda v: (v[0] or (v[1] and v[2])) == ((v[0] or v[1]) and v[2]), "INVALID"),
 }
 
 FOL = {
@@ -192,6 +317,26 @@ FOL = {
         lambda d, p, a: ALL(d, lambda x: IMP(p[2](x), p[1](x))), "INVALID"),
     "LOGIC-06 Syllogism - Existential Fallacy": (
         # ∀x(P→Q), ∃xP ⊢ ∃xQ — existential premise makes this VALID
+        2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
+            lambda d, p, a: SOME(d, p[0])],
+        lambda d, p, a: SOME(d, p[1]), "VALID"),
+    "LOGIC-06N Existential Syllogism (reworded)": (
+        # 047/048: N keeps the root spec ∀x(P→Q), ∃xP ⊢ ∃xQ; seeded FOLLOWS
+        # (maps VALID — the existential premise licenses ∃xQ).
+        2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
+            lambda d, p, a: SOME(d, p[0])],
+        lambda d, p, a: SOME(d, p[1]), "VALID"),
+    "LOGIC-06C Existential Syllogism (adversarial: quantifier-swap trap)": (
+        # 047/048 — REPORTED DEFECT (do not "fix" the oracle to agree):
+        # this row's formal_spec (∀x(P→Q), ∃xP ⊢ ∃xQ — existential over the
+        # FIRST term, VALID, identical to the 06 root) does NOT describe its
+        # prompt. The prompt commits the existential over the SECOND term
+        # ("every leak is a defect" + "some defects exist" ⊬ "some leaks
+        # exist") — illicit existential conversion, genuinely INVALID, and
+        # the expected_result correctly says NO. Spec and prompt diverge in
+        # quantifier placement. The verdict recorded here is the SPEC's
+        # verdict (VALID): the oracle checks the spec, and a spec that
+        # misdescribes its prompt is the defect this row exposed.
         2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
             lambda d, p, a: SOME(d, p[0])],
         lambda d, p, a: SOME(d, p[1]), "VALID"),
@@ -271,6 +416,11 @@ SAT = {
             lambda v: (not v[1]) or (not v[2]),
             lambda v: v[0] or v[2],
             lambda v: v[1] or (not v[2])], "UNSAT"),
+    "PILOT-F5-TRAP-SAT": (
+        # 049 trap spec P, ¬P ⊬ SAT — a bare contradiction presented as a
+        # satisfiability question. No assignment satisfies both clauses.
+        # Seeded UNSAT. v[0]=P.
+        1, [lambda v: v[0], lambda v: not v[0]], "UNSAT"),
 }
 
 
