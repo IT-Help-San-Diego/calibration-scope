@@ -1,3 +1,17 @@
+> **SUPERSEDED 2026-07-28 — DO NOT EXECUTE THE ACTIONS BELOW.**
+> Every run this document instructs has since been run, at different parameters, and the questions it treats as
+> open have been answered. Kept for the reasoning trail; **it is not a work order.**
+> - **"Run the framing test (`framing_test_pack.json`, 420 calls)"** — RUN, at **480 calls** (runs 962-969: 10 NONE
+>   + 10 mechanism-balanced controls × A/B × 2 models × 6 reps), not the 420/15-rep design below.
+>   **Verdict: `H_BIAS`** — the leading stem inflated sound-arg's apparent difficulty; McNemar 9:0, p = 0.0039;
+>   controls held under both framings. **Sound-arg did NOT graduate.** See `VERDICT_framing_test.md`.
+> - **"Do not build the expanded bank until the framing test runs"** — the bank was built (293 items, migration
+>   `054`) and the powered run executed (974-977, 7,032 trials). See `ANALYSIS_powered_run_974_977.md`.
+> - The power figures below (0.82/0.58, 0.99/0.91) predate two corrections to my own power method: they treat
+>   repeated measures of few items as independent. **Do not cite them.** Corrected reasoning is in
+>   `CORRECTION_framing_test_power.md` and `GATE_run978_verdict.md` §3.
+> **Live status lives in `policy/CHECKIN_2026-07-28.md`. The only unrun experiment is the run-level replicate.**
+
 # NEXT STEPS — calibration-scope, routed by lane
 _Claude Science, 2026-07-26. Verified against main (head `285ea41`). Nothing has landed since the probe results._
 
