@@ -1,3 +1,12 @@
+> **CORRECTED 2026-07-29 — §0's exclusion instruction is RETRACTED and must NOT be followed.**
+> This memo tells an analyst that `PROBE-C1-03` must be EXCLUDED because its two arms differ by argument as well
+> as stem. **That finding was retracted on 2026-07-27**: Hermes queried the live database and all 20 item bodies
+> were byte-identical, so the exclusion is wrong and would discard a valid item. The retraction was propagated to
+> `BLOCKING_framing_item03_confound.md` and **not to this file** — an instruction outliving its own retraction.
+> What survives from the retraction is a reproducibility gap, not an exclusion: the reword existed in the running
+> database but in no migration, so a database rebuilt from version control would reproduce the confound. See
+> `RETRACTION_item03_and_repro_gap.md`. **The rest of this memo's build verification stands.**
+
 # Framing test build (c8d6156) — verified, GO, with one caveat that does NOT block
 _Claude Science, 2026-07-27. Verified against the committed migrations before the runs land, because a defect_
 _is a text edit now and a wasted 480 calls later. Runs 962-969 are in flight._
