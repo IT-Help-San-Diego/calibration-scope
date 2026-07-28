@@ -264,14 +264,23 @@ pub async fn submit_answer(
 
     // The test must be one the run was seeded with (review catch): without
     // this, a client could answer arbitrary active tests and pad its own
-    // run with items the session never posed.
-    let seeded = run
-        .test_ids
-        .as_ref()
-        .and_then(|v| v.as_array())
-        .map(|a| a.iter().any(|x| x.as_i64() == Some(req.test_id as i64)))
-        .unwrap_or(false);
-    if !seeded {
+    // run with items the session never posed. A run with NO recorded seed
+    // list (test_ids NULL — nullable per migration 041; start_session has
+    // always written it, so only hand-made rows hit this) is refused with
+    // the REAL condition named: silently passing it would reopen the
+    // padding hole, and the generic "not part of run" line would be a
+    // false statement — we don't know the membership, we know it was
+    // never recorded.
+    let Some(seed_list) = run.test_ids.as_ref().and_then(|v| v.as_array()) else {
+        return Err(AppError::Executor(format!(
+            "run {} has no recorded seed list, so membership cannot be verified — it does not accept answers; start a new session",
+            req.run_id
+        )));
+    };
+    if !seed_list
+        .iter()
+        .any(|x| x.as_i64() == Some(req.test_id as i64))
+    {
         return Err(AppError::Executor(format!(
             "test {} is not part of run {}",
             req.test_id, req.run_id
