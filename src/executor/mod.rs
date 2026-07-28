@@ -174,7 +174,7 @@ fn build_messages(
     test: &TestDef,
     project_root: &std::path::Path,
     scaffold_supplement: Option<&str>,
-) -> AppResult<Vec<serde_json::Value>> {
+) -> AppResult<(Vec<serde_json::Value>, Option<String>)> {
     let mut messages: Vec<serde_json::Value> = Vec::new();
 
     // Scaffold system prompt: the operator's general guidance PLUS, for reasoning
@@ -187,6 +187,11 @@ fn build_messages(
     // experiment (baseline answered "OmniFocus"; scaffolded, with the spec,
     // answered "Obsidian"). The neutralized hint gives real structural direction
     // without the verdict.
+    //
+    // The effective system content is also returned so the caller can persist
+    // it per trial (migration 058): the sealed evidence must cover the
+    // stimulus, not just the response.
+    let mut effective_system: Option<String> = None;
     if let Some(scaffold) = scaffold_supplement {
         if !scaffold.is_empty() {
             let mut system_content = scaffold.to_string();
@@ -198,6 +203,7 @@ fn build_messages(
                 "role": "system",
                 "content": system_content,
             }));
+            effective_system = Some(system_content);
         }
     }
 
@@ -270,14 +276,14 @@ fn build_messages(
                     {"type": "image_url", "image_url": {"url": format!("data:image/png;base64,{}", b64)}}
                 ]
             }));
-            Ok(messages)
+            Ok((messages, effective_system))
         }
         None => {
             messages.push(serde_json::json!({
                 "role": "user",
                 "content": test.prompt_text
             }));
-            Ok(messages)
+            Ok((messages, effective_system))
         }
     }
 }
@@ -298,8 +304,8 @@ async fn recompute_run_sha3(
     model_key: &str,
     axis: &str,
 ) -> Option<String> {
-    let rows = sqlx::query_as::<_, (String,)>(
-        r#"SELECT COALESCE(reasoning_content, '') || ' ' || COALESCE(raw_response, '')
+    let rows = sqlx::query_as::<_, (Option<String>, String,)>(
+        r#"SELECT system_prompt, COALESCE(reasoning_content, '') || ' ' || COALESCE(raw_response, '')
            FROM trial_results
            WHERE run_id = $1
            ORDER BY test_id, trial_num"#,
@@ -312,13 +318,18 @@ async fn recompute_run_sha3(
     let mut evidence_lines: Vec<String> = Vec::new();
     let mut pass_count: i32 = 0;
     let mut total_count: i32 = 0;
-    for (idx, (payload,)) in rows.iter().enumerate() {
+    for (idx, (system_prompt, payload,)) in rows.iter().enumerate() {
         total_count += 1;
         if payload.contains("infrastructure error") {
             continue;
         }
         if !payload.trim().is_empty() {
             pass_count += 1;
+        }
+        // Seal the stimulus when present (scaffolded trials), matching the
+        // live path's evidence format.
+        if let Some(sys) = system_prompt {
+            evidence_lines.push(format!("trial={} system_prompt={}", idx + 1, sys));
         }
         evidence_lines.push(format!("trial={} response={}", idx + 1, payload));
     }
@@ -952,7 +963,8 @@ async fn execute_run_inner(
             }),
         );
 
-        let messages = build_messages(test, &config.project_root, scaffold_supplement.as_deref())?;
+        let (messages, effective_system) =
+            build_messages(test, &config.project_root, scaffold_supplement.as_deref())?;
 
         for trial_num in 1..=n_trials {
             // Also checked here (not just inside cancellable! around the
@@ -1084,8 +1096,8 @@ async fn execute_run_inner(
             }
 
             let (trial_result_id,): (i32,) = sqlx::query_as(
-                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id, prompt_tokens, completion_tokens, speculative_draft_model, total_draft_tokens_count, accepted_draft_tokens_count, rejected_draft_tokens_count)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id"#,
+                r#"INSERT INTO trial_results (run_id, trial_num, raw_response, latency_ms, passed, detail, is_infra_error, reasoning_content, test_id, prompt_tokens, completion_tokens, speculative_draft_model, total_draft_tokens_count, accepted_draft_tokens_count, rejected_draft_tokens_count, system_prompt)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id"#,
             )
             .bind(run_id)
             .bind(trial_num)
@@ -1102,6 +1114,7 @@ async fn execute_run_inner(
             .bind(spec_decode.as_ref().and_then(|s| s.total_draft_tokens_count))
             .bind(spec_decode.as_ref().and_then(|s| s.accepted_draft_tokens_count))
             .bind(spec_decode.as_ref().and_then(|s| s.rejected_draft_tokens_count))
+            .bind(&effective_system)
             .fetch_one(db)
             .await?;
 
@@ -1136,6 +1149,17 @@ async fn execute_run_inner(
                     sd.total_draft_tokens_count.unwrap_or(-1),
                     sd.accepted_draft_tokens_count.unwrap_or(-1),
                     sd.rejected_draft_tokens_count.unwrap_or(-1),
+                ));
+            }
+            // The stimulus is sealed BEFORE the response: the SHA3 provenance
+            // covers the exact system prompt the model saw (when scaffolded),
+            // not just what it said back. Clean-room trials seal nothing here
+            // (system_prompt is NULL) — their stimulus is the bare test item,
+            // already implied by the test name in the response line below.
+            if let Some(sys) = &effective_system {
+                evidence_lines.push(format!(
+                    "test={} trial={} system_prompt={}",
+                    test.name, trial_num, sys
                 ));
             }
             evidence_lines.push(match &reasoning {
