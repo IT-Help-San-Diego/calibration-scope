@@ -1,7 +1,7 @@
 {
  "type": "excalidraw",
  "version": 2,
- "source": "claude-code (docs/gen via scratchpad)",
+ "source": "scripts/gen_architecture_diagram.py",
  "elements": [
   {
    "type": "text",

@@ -248,7 +248,11 @@ def render_svg(els, path):
             o.append(f'<text x="{e["x"]}" y="{e["y"] + e["fontSize"]}" font-size="{e["fontSize"]}" '
                      f'font-family="{fam}" fill="{e["strokeColor"]}">{html.escape(e["text"])}</text>')
     o.append("</svg>")
-    open(path, "w").write("\n".join(o))
+    # encoding pinned: the diagram carries —, ·, ⇄, φ, so relying on the
+    # platform default would raise UnicodeEncodeError on a cp1252 Windows
+    # box (review catch).
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(o))
 
 def _hit(bx, by, bw, bh, x0, y0, x1, y1, pad=0):
     """Does the axis-aligned segment (x0,y0)-(x1,y1) enter the box interior?"""
@@ -322,11 +326,13 @@ def overlap_report(els):
 if __name__ == "__main__":
     els = build()
     probs = overlap_report(els)
-    doc = {"type":"excalidraw","version":2,"source":"claude-code (docs/gen via scratchpad)",
+    doc = {"type":"excalidraw","version":2,
+           "source":"scripts/gen_architecture_diagram.py",
            "elements":els,"appState":{"gridSize":None,"viewBackgroundColor":"#ffffff"},
            "files":{}}
-    json.dump(doc, open(os.path.join(REPO, "docs", "architecture.excalidraw"),"w"),
-              indent=1, ensure_ascii=False)
+    with open(os.path.join(REPO, "docs", "architecture.excalidraw"),
+              "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, indent=1, ensure_ascii=False)
     os.makedirs(os.path.join(REPO, "target"), exist_ok=True)
     render_svg(els, sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, "target", "architecture-preview.svg"))
     print(f"elements: {len(els)}  ·  layout problems: {len(probs)}")
