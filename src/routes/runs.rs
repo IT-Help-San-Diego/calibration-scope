@@ -944,16 +944,23 @@ pub async fn resume_run(
     State(state): State<AppState>,
     axum::extract::Path(run_id): axum::extract::Path<i32>,
 ) -> AppResult<Json<serde_json::Value>> {
-    let run: Option<(i32, String, String, Option<String>, Option<String>, Option<serde_json::Value>)> =
-        sqlx::query_as(
-            r#"SELECT r.model_id, m.key, r.axis, r.scaffold_supplement, r.load_mode, r.test_ids
+    let run: Option<(
+        i32,
+        String,
+        String,
+        Option<String>,
+        Option<String>,
+        Option<serde_json::Value>,
+    )> = sqlx::query_as(
+        r#"SELECT r.model_id, m.key, r.axis, r.scaffold_supplement, r.load_mode, r.test_ids
                FROM test_runs r JOIN models m ON m.id = r.model_id WHERE r.id = $1"#,
-        )
-        .bind(run_id)
-        .fetch_optional(&state.db)
-        .await?;
+    )
+    .bind(run_id)
+    .fetch_optional(&state.db)
+    .await?;
 
-    let Some((model_id, model_key, axis, scaffold_supplement, load_mode, test_ids_json)) = run else {
+    let Some((model_id, model_key, axis, scaffold_supplement, load_mode, test_ids_json)) = run
+    else {
         return Err(AppError::Executor(format!("No run with id {}", run_id)));
     };
 
