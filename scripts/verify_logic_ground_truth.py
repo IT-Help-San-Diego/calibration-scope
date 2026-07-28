@@ -378,23 +378,18 @@ FOL = {
             lambda d, p, a: SOME(d, p[0])],
         lambda d, p, a: SOME(d, p[1]), "VALID"),
     "LOGIC-06C Existential Syllogism (adversarial: quantifier-swap trap)": (
-        # *** EXPECTED TO FAIL — a real seeded defect, not an oracle bug. ***
-        # 047 row 87 seeds formal_spec '∀x(P→Q), ∃xP ⊢ ∃xQ', copied verbatim
-        # from its LOGIC-06 root and mirrored faithfully below. That spec is
-        # VALID. Its seeded expected_result is 'NO — illicit existential
-        # conversion…', which normalises to INVALID and is what the fourth
-        # element records. Computed VALID vs seeded INVALID: the row
-        # contradicts itself, and the gate goes red, which is the point.
-        #
-        # The prompt is fine — it argues ∀x(P→Q), ∃xQ ⊬ ∃xP, which really is
-        # invalid, so NO is the right answer to give a model. The defect is
-        # the spec, inherited from the root instead of written for the trap.
-        # Fix it in a migration (set the spec to '∀x(P→Q), ∃xQ ⊬ ∃xP'), NOT
-        # by relaxing this entry. See the docstring for why
-        # --check-owl-families cannot catch it.
+        # FIXED by migration 057 (2026-07-28). Before 057, row 87's spec was
+        # '∀x(P→Q), ∃xP ⊢ ∃xQ' (a verbatim copy of its VALID LOGIC-06 root)
+        # while its seeded answer was 'NO — illicit existential conversion…'
+        # (INVALID) — the row contradicted itself and the gate went red by
+        # design. 057 corrected the DB spec to '∀x(P→Q), ∃xQ ⊬ ∃xP'
+        # (existential over the CONSEQUENT), which is what the prompt
+        # actually argues. The structure below mirrors the corrected spec:
+        # premises ∀x(P→Q) and ∃xQ, conclusion ∃xP, INVALID. Countermodel
+        # dom=1, P(0)=F, Q(0)=T: both premises hold, conclusion fails.
         2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
-            lambda d, p, a: SOME(d, p[0])],
-        lambda d, p, a: SOME(d, p[1]), "INVALID"),
+            lambda d, p, a: SOME(d, p[1])],
+        lambda d, p, a: SOME(d, p[0]), "INVALID"),
     "LOGIC-19 Existential Fallacy (Fallacy)": (
         2, [lambda d, p, a: ALL(d, lambda x: IMP(p[0](x), p[1](x))),
             lambda d, p, a: not SOME(d, p[0])],
