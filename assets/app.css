@@ -159,14 +159,18 @@
   .top-nav button.tab {
     appearance: none;
     -webkit-appearance: none;
-    background: none;
+    background: var(--bg-secondary) !important;
     border: none;
     border-right: 1px solid var(--border);
     font: inherit;
     font-family: var(--font-sans);
     font-size: 12px;
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
     text-align: left;
+  }
+  .top-nav button.tab.active {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
   }
   .top-nav .spacer { flex: 1; }
 
