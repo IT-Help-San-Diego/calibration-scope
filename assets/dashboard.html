@@ -90,7 +90,16 @@
 <!-- Top Nav -->
 <div class="top-nav" id="top-nav" role="navigation" aria-label="Primary">
   <img class="logo" src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" onerror="this.style.display='none'" style="height:32px;margin-right:6px;cursor:pointer" onclick="showPage('benchmark')">
-  <button id="mode-toggle" class="tab" onclick="toggleMode()" title="Focused = single-viewport workspace (action never leaves the screen). Deep = full tab flow with everything visible. Both modes keep full power — Focused arranges, Deep exposes.">Mode: Deep</button>
+  <!-- FOCUS ⇄ DEEP flipper (CS-029). Two segments, both always visible, so the
+       control shows the CHOICE. The old single button read "Mode: Focused",
+       which is ambiguous — current state or the thing clicking gives you?
+       IDs deliberately do NOT start with "tab-": the Focused CSS hides
+       .top-nav .tab[id^="tab-"], so this control survives its own mode. -->
+  <div id="mode-flip" role="group" aria-label="Display density" style="display:inline-flex;align-items:stretch;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-right:6px;">
+    <button type="button" id="mode-focus" onclick="setMode('focused')" aria-pressed="true" style="border:none;padding:6px 12px;font-size:12px;cursor:pointer;background:var(--accent-gold,#d4a853);color:#000;font-weight:700;" title="Focus — the control room: brain centre, model picker, live stream, control strip. Action never leaves the screen.">Focus</button>
+    <button type="button" id="mode-deep" onclick="setMode('deep')" aria-pressed="false" style="border:none;padding:6px 12px;font-size:12px;cursor:pointer;background:transparent;color:var(--text-secondary);font-weight:500;" title="Deep — full density: every tab including Crosswalk, Board and the registry. Nothing is missing in Deep.">Deep</button>
+  </div>
+  <button id="mode-toggle" class="tab" hidden onclick="toggleMode()" title="Focused = single-viewport workspace (action never leaves the screen). Deep = full tab flow with everything visible. Bothmodes keep full power — Focused arranges, Deep exposes.">Mode: Deep</button>
   <button id="a11y-toggle" class="tab" onclick="toggleA11y()" title="High-contrast / large-text mode" style="cursor:pointer;">Readable: Off</button>
 
   <button class="tab" onclick="showPage('setup')" id="tab-setup">Setup</button>

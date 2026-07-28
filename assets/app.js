@@ -4320,13 +4320,43 @@ async function showTestPicker(axes) {
     overlay.querySelector('button[data-close]').addEventListener('click', () => { overlay.remove(); resolve(null); });
   });
 }
+// Paint the flipper to match the live mode. Both segments always render, so
+// the control shows the CHOICE rather than only the current state — "Mode:
+// Focused" on a single button could be read as either "you are in Focused" or
+// "click for Focused", and that ambiguity is the thing being fixed.
+function syncModeFlip(mode) {
+  const focused = mode === 'focused';
+  const seg = (id, on) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.style.background = on ? 'var(--accent-gold,#d4a853)' : 'transparent';
+    b.style.color = on ? '#000' : 'var(--text-secondary)';
+    b.style.fontWeight = on ? '700' : '500';
+  };
+  seg('mode-focus', focused);
+  seg('mode-deep', !focused);
+  // Legacy single-button control, still present on any surface that has not
+  // been migrated to the flipper.
+  const btn = document.getElementById('mode-toggle');
+  if (btn) btn.textContent = 'Mode: ' + (focused ? 'Focus' : 'Deep');
+}
+
+// Explicit setter. The flipper calls this directly so clicking the segment you
+// are already on is a no-op instead of flipping you away from it — the bug a
+// two-segment control built on a toggle always has.
+function setMode(mode) {
+  const focused = mode !== 'deep';
+  if (document.documentElement.getAttribute('data-mode') === (focused ? 'focused' : 'deep')) return;
+  toggleMode();
+}
+
 function toggleMode() {
   const cur = document.documentElement.getAttribute('data-mode');
   const focused = cur !== 'focused';
   document.documentElement.setAttribute('data-mode', focused ? 'focused' : 'deep');
   try { localStorage.setItem('calibration-mode', focused ? 'focused' : 'deep'); } catch(e) {}
-  const btn = document.getElementById('mode-toggle');
-  if (btn) btn.textContent = 'Mode: ' + (focused ? 'Focused' : 'Deep');
+  syncModeFlip(focused ? 'focused' : 'deep');
   // Focused forces the benchmark workspace active (it is the only page) —
   // except the Focused-legal pages (onboarding ladder, picker, wizard,
   // human-cal), which must survive the mode flip or their flows die mid-step.
@@ -4349,12 +4379,10 @@ function deepPage(name) {
     // full-density cockpit for scientists who want everything visible.
     if (saved === 'deep') {
       document.documentElement.setAttribute('data-mode', 'deep');
-      const btn = document.getElementById('mode-toggle');
-      if (btn) btn.textContent = 'Mode: Deep';
+      syncModeFlip('deep');
     } else {
       document.documentElement.setAttribute('data-mode', 'focused');
-      const btn = document.getElementById('mode-toggle');
-      if (btn) btn.textContent = 'Mode: Focused';
+      syncModeFlip('focused');
       // Preserve a restored Focused-legal page (onboarding, picker, wizard,
       // human-cal) — forcing benchmark here made first-run unreachable on
       // reload, and bounced a mid-quiz human-cal participant to the workspace.
