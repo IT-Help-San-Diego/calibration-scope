@@ -1,4 +1,6 @@
-# Run 978 — the control worked, and it answers a different question than the one it was asked
+# Run 978 — a sound control, no established result yet
+_Its reported figure answers a different question than its own pre-registered rule asks,_
+_and the accuracy contrast does not survive clustering. Both halves of content-vs-length remain open._
 _Claude Science, 2026-07-27. Kernel was reset; everything below re-derived from the repo._
 
 ## 0. WHAT I VERIFIED FIRST-HAND
@@ -21,7 +23,7 @@ for it.** The variance question needs 978's per-item rows: for each of the 293 i
 **Request: the 978 per-trial CSV** (`test_id, carrier, pass` × 6 reps), same shape as
 `powered_run_974_977.csv`. Then the McNemar on stochastic-vs-deterministic status runs in one command.
 
-## 2. BUT THE CONTROL DID ITS JOB — on accuracy, and this IS a result
+## 2. THE CONTROL IS THE RIGHT EXPERIMENT — but its accuracy result is NOT established (heading corrected)
 | e2b arm | tokens added | accuracy | vs baseline |
 |---|---|---|---|
 | baseline | 0 | **0.771** | — |
