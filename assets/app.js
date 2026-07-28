@@ -1274,6 +1274,11 @@ function updateGpuStrip(s) {
     const memEl = document.getElementById('abort-mem');
     if (memEl) memEl.textContent = '· ' + (mem / 1073741824).toFixed(1) + ' GB wired' + (pct != null ? ' · GPU ' + pct + '%' : '');
   }
+  // Feed the control-strip meters (GPU + memory).
+  const csGpu = document.getElementById('control-gpu');
+  if (csGpu) csGpu.textContent = pct != null ? 'GPU ' + pct + '%' : '';
+  const csMem = document.getElementById('control-mem');
+  if (csMem) csMem.textContent = mem != null ? (mem / 1073741824).toFixed(1) + ' GB' : '';
 }
 
 // ═══ EMERGENCY ABORT BAR ENGINE ═══════════════════════════════════════════
