@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-dNvWCSqsBpK4qiKAwqW+9GrXt/7ql5iMhCm3LU0pKoM='">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; worker-src 'none'; script-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'sha256-pC7E44VSL8MichIiD+67NV4X9I5aZmfIDZg67/aiYmA='">
 <title>Lessons - Human Failure Runs | Calibration Scope</title>
 <meta name="description" content="Four measured ways an AI model fails, each printed with the exact knob that causes it, held up next to the human bug it rhymes with. Every seal is a real SHA3-256 of a sealed lesson file.">
 <meta name="author" content="Carey James Balboa / IT Help San Diego Inc.">
@@ -37,7 +37,10 @@ nav .wrap{display:flex;gap:22px;align-items:center;min-height:52px;flex-wrap:wra
 nav a{text-decoration:none;font-size:14px;color:var(--text2);padding:6px 0}
 nav a.on,nav a:hover{color:var(--gold)}
 nav .brand{color:var(--gold);font-weight:700;font-family:var(--mono);font-size:15px}
-header{padding:72px 0 48px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg))}
+/* Scoped to the PAGE header/footer only: lesson cards carry their own
+   <header>/<footer> landmarks, which must not inherit the page banner's
+   centring, padding or gradient. */
+body>header{padding:72px 0 48px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg))}
 h1{font-size:clamp(30px,6vw,44px);font-family:var(--mono);letter-spacing:-.5px}
 .tag{color:var(--gold);font-size:clamp(16px,3vw,19px);margin-top:12px}
 .sub{color:var(--text2);max-width:640px;margin:18px auto 0;font-size:16px}
@@ -48,27 +51,62 @@ p{margin-bottom:14px}
 .card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:18px}
 .card h3{font-size:15px;margin-bottom:8px;font-family:var(--mono)}
 .card p{font-size:14px;color:var(--text2);margin:0}
-.seal{font-family:var(--mono);font-size:13px;color:var(--green);background:#3fb95014;border:1px solid #3fb95040;border-radius:6px;padding:10px 14px;display:inline-block;margin-top:8px}
 blockquote{border-left:3px solid var(--gold);padding:8px 18px;margin:18px 0;color:var(--text2);font-style:italic}
-footer{border-top:1px solid var(--border);padding:32px 0;font-size:13px;color:var(--text2);background:var(--bg2)}
-footer a{color:var(--gold)}
+body>footer{border-top:1px solid var(--border);padding:32px 0;font-size:13px;color:var(--text2);background:var(--bg2)}
+body>footer a{color:var(--gold)}
 .fine{font-size:12px;margin-top:10px;opacity:.8}
 .mt20{margin-top:20px}
 .mono15{font-family:var(--mono);font-size:15px}
 
-.lesson{margin:56px 0;padding-bottom:40px;border-bottom:1px solid var(--border)}
-.lesson:last-child{border-bottom:none}
-.lesson h2{margin-bottom:4px}
-.tagline{color:var(--text2);font-style:italic;margin-bottom:18px}
-.comicwrap{background:#0a0d14;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+/* ── Lesson cards ─────────────────────────────────────────────────────────
+   One card per lesson, read top to bottom: header (name + epistemic tier) →
+   comic (the hook) → blurb (the claim) → footer (source link + SHA3-256
+   receipt). The card surface is one step lighter than the page so the comic's
+   own dark well reads as inset rather than as a hole in the background. */
+.lesson{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin:32px 0 0}
+.lhead{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px 20px;margin-bottom:18px}
+.ltitle{flex:1 1 320px;min-width:0}
+.lesson h2{margin-bottom:3px;line-height:1.25}
+.lnum{color:var(--text2);font-weight:400}
+.tagline{color:var(--text2);font-style:italic;font-size:15px;margin:0}
+.comicwrap{background:#0a0d14;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:0}
 .comicwrap svg{width:100%;height:auto;display:block}
-.blurb{font-size:15px;color:var(--text2)}
-.lmeta{font-size:13px;margin-top:8px}
-.status{font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--green);background:#3fb95014;border:1px solid #3fb95040;border-radius:4px;padding:2px 8px;margin-right:10px}
-.seal{font-family:var(--mono);font-size:11px;color:var(--text2);margin-top:6px;word-break:break-all}
-.seal code{color:var(--gold)}
+.comicwrap a:focus-visible{outline:2px solid var(--gold);outline-offset:-3px}
+.blurb{font-size:16px;color:var(--text);margin:18px 0 0}
+
+/* Epistemic tier badge — THREE KINDS OF CLAIM, NOT THREE GRADES. That
+   distinction is the whole point of this page, so the design must not imply a
+   ranking: every badge carries IDENTICAL chrome (same size, weight, surface,
+   border, padding), and only the category mark and the hue on the tier keyword
+   change. The three hues are peers in this palette (no warning colour, no
+   greying-out), and the mark differs in SHAPE as well as hue so the category
+   survives greyscale and colour-blindness. PARABLE is a different kind of
+   claim from SEALED, not a lesser one — do not "promote" one of these. */
+.status{display:inline-block;max-width:100%;margin:5px 0 0;font-family:var(--mono);font-size:11px;letter-spacing:.5px;line-height:1.7;color:var(--text2);background:#ffffff0a;border:1px solid var(--border);border-radius:5px;padding:4px 10px}
+.tier{color:var(--tier);font-weight:700;letter-spacing:.9px;white-space:nowrap}
+.status::before,.tk::before{content:"";display:inline-block;background:var(--tier);margin-right:7px;vertical-align:1px}
+.rules .tk{color:var(--tier);font-weight:700}
+.t-sealed{--tier:var(--green)}
+.t-mechanism{--tier:var(--cyan)}
+.t-parable{--tier:var(--violet)}
+.t-sealed::before{width:9px;height:9px;border-radius:1px}
+.t-mechanism::before{width:10px;height:10px;border-radius:50%}
+.t-parable::before{width:8px;height:8px;transform:rotate(45deg)}
+
+/* Seal line — a receipt, not a headline. Perforated rule, monospace, and the
+   verify command in a chip that a single click selects whole. The DISPLAYED
+   hash is abbreviated, so it is deliberately NOT one-click-selectable: copying
+   an ellipsis would hand you something that is not a hash. Run the command. */
+.lfoot{margin-top:18px;padding-top:14px;border-top:1px dashed var(--border)}
+.lmeta{font-size:14px;margin:0}
+.seal{font-family:var(--mono);font-size:12px;line-height:1.9;color:var(--text2);margin:8px 0 0;overflow-wrap:anywhere}
+.seal .sk{letter-spacing:.6px}
+.seal .sh{color:var(--text)}
+.seal code{color:var(--gold);background:#ffffff0a;border:1px solid var(--border);border-radius:4px;padding:2px 6px;user-select:all;-webkit-user-select:all;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .rules{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:18px;font-size:14px;color:var(--text2);margin-top:22px}
 .rules strong{color:var(--text)}
+.rules p:last-child{margin-bottom:0}
+@media(max-width:560px){.lesson{padding:16px 14px;border-radius:10px}.lhead{margin-bottom:14px}.blurb{font-size:15px}}
 .beta{font-family:var(--mono);font-size:9px;letter-spacing:1.2px;font-weight:700;color:var(--bg);background:var(--gold);border-radius:4px;padding:2px 6px;line-height:1;cursor:help;vertical-align:middle}
 </style>
 </head>
@@ -89,12 +127,17 @@ footer a{color:var(--gold)}
 
 <section><div class="wrap">
 <div class="rules">
-<p><strong>The ground rules (why this is not vibes).</strong> Every number is a real, sealed run - or it is labeled as something else. Each lesson carries an epistemic status: <strong>SEALED</strong> (measured clean runs), <strong>MECHANISM</strong> (documented engine behavior), or <strong>PARABLE</strong> (a story calibrated to sealed numbers). The joke never inflates the number. The human science is cited as analogue, not claimed as our discovery. And every footer seal is the actual SHA3-256 of its lesson file in <a href="https://github.com/IT-Help-San-Diego/calibration-scope/tree/main/lessons" rel="noopener">the public repo ↗</a> - recompute it yourself; if it does not match, trust the file less, not more. That is the point.</p>
+<p><strong>The ground rules (why this is not vibes).</strong> Every number is a real, sealed run - or it is labeled as something else. Each lesson carries an epistemic status: <strong class="tk t-sealed">SEALED</strong> (measured clean runs), <strong class="tk t-mechanism">MECHANISM</strong> (documented engine behavior), or <strong class="tk t-parable">PARABLE</strong> (a story calibrated to sealed numbers). The joke never inflates the number. The human science is cited as analogue, not claimed as our discovery. And every footer seal is the actual SHA3-256 of its lesson file in <a href="https://github.com/IT-Help-San-Diego/calibration-scope/tree/main/lessons" rel="noopener">the public repo ↗</a> - recompute it yourself; if it does not match, trust the file less, not more. That is the point.</p>
 </div>
 <article class="lesson">
-<h2>01 · THE CALCULATOR AISLE</h2>
-<p class="tagline">the product that warns you it is wrong</p>
-<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1510" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+<header class="lhead">
+<div class="ltitle">
+<h2 id="l01"><span class="lnum">01 ·</span> THE CALCULATOR AISLE</h2>
+<p class="tagline" id="t01">the product that warns you it is wrong</p>
+</div>
+<span class="status t-parable"><span class="tier">PARABLE</span> anchored to sealed numbers</span>
+</header>
+<div class="comicwrap"><svg class="comic" role="img" aria-labelledby="l01 t01" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1510" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
   <defs>
     <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
@@ -454,14 +497,20 @@ footer a{color:var(--gold)}
   </g>
 </svg></div>
 <p class="blurb">Confidence and accuracy travel on separate channels, and small models decouple them hard. The sub-1B reasoning floor is real and sealed: 41-47%. The X-3000 is fiction; its numbers are not. Certainty is a UI element, not a result.</p>
-<p class="lmeta"><span class="status">PARABLE anchored to sealed numbers</span>
-<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/01-calculator-aisle.md" rel="noopener">read the sealed lesson ↗</a></p>
-<p class="seal">SHA3-256 8601a916…339d483c · verify: <code>openssl dgst -sha3-256 lessons/01-calculator-aisle.md</code></p>
+<footer class="lfoot">
+<p class="lmeta"><a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/01-calculator-aisle.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal"><span class="sk">SHA3-256</span> <span class="sh">8601a916…339d483c</span> · verify: <code>openssl dgst -sha3-256 lessons/01-calculator-aisle.md</code></p>
+</footer>
 </article>
 <article class="lesson">
-<h2>02 · TRUNCATE MIDDLE</h2>
-<p class="tagline">it kept your hello and your goodbye</p>
-<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+<header class="lhead">
+<div class="ltitle">
+<h2 id="l02"><span class="lnum">02 ·</span> TRUNCATE MIDDLE</h2>
+<p class="tagline" id="t02">it kept your hello and your goodbye</p>
+</div>
+<span class="status t-mechanism"><span class="tier">MECHANISM</span> + sealed measurement</span>
+</header>
+<div class="comicwrap"><svg class="comic" role="img" aria-labelledby="l02 t02" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
   <defs>
     <filter id="soft2" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
@@ -762,14 +811,20 @@ footer a{color:var(--gold)}
   </g>
 </svg></div>
 <p class="blurb">A context window is a fixed token count. Exceed it and the middle is evicted - the model never saw it, so it cannot tell you it is missing. In carbon this is the serial-position effect: the beginning and end of the meeting survive; the middle is where information goes to be evicted.</p>
-<p class="lmeta"><span class="status">MECHANISM + sealed measurement</span>
-<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/02-truncate-middle.md" rel="noopener">read the sealed lesson ↗</a></p>
-<p class="seal">SHA3-256 ff28f63b…426dc845 · verify: <code>openssl dgst -sha3-256 lessons/02-truncate-middle.md</code></p>
+<footer class="lfoot">
+<p class="lmeta"><a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/02-truncate-middle.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal"><span class="sk">SHA3-256</span> <span class="sh">ff28f63b…426dc845</span> · verify: <code>openssl dgst -sha3-256 lessons/02-truncate-middle.md</code></p>
+</footer>
 </article>
 <article class="lesson">
-<h2>03 · TOKEN EXHAUSTION</h2>
-<p class="tagline">an empty answer is not a wrong answer</p>
-<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+<header class="lhead">
+<div class="ltitle">
+<h2 id="l03"><span class="lnum">03 ·</span> TOKEN EXHAUSTION</h2>
+<p class="tagline" id="t03">an empty answer is not a wrong answer</p>
+</div>
+<span class="status t-sealed"><span class="tier">SEALED</span> - real caught incident + regression test</span>
+</header>
+<div class="comicwrap"><svg class="comic" role="img" aria-labelledby="l03 t03" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
   <defs>
     <filter id="soft3" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
@@ -1041,14 +1096,20 @@ footer a{color:var(--gold)}
   </g>
 </svg></div>
 <p class="blurb">A model burned its whole budget reasoning and returned an empty completion - and our dashboard rendered the blank as if it were the answer. Real incident, first week, now a permanent regression test. Produced-nothing and produced-something-wrong are different failures with different fixes.</p>
-<p class="lmeta"><span class="status">SEALED - real caught incident + regression test</span>
-<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/03-token-exhaustion.md" rel="noopener">read the sealed lesson ↗</a></p>
-<p class="seal">SHA3-256 ca23cb91…fa669eec · verify: <code>openssl dgst -sha3-256 lessons/03-token-exhaustion.md</code></p>
+<footer class="lfoot">
+<p class="lmeta"><a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/03-token-exhaustion.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal"><span class="sk">SHA3-256</span> <span class="sh">ca23cb91…fa669eec</span> · verify: <code>openssl dgst -sha3-256 lessons/03-token-exhaustion.md</code></p>
+</footer>
 </article>
 <article class="lesson">
-<h2>04 · CARRIER COLOR</h2>
-<p class="tagline">the carrier is not the signal</p>
-<div class="comicwrap"><svg class="comic" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
+<header class="lhead">
+<div class="ltitle">
+<h2 id="l04"><span class="lnum">04 ·</span> CARRIER COLOR</h2>
+<p class="tagline" id="t04">the carrier is not the signal</p>
+</div>
+<span class="status t-sealed"><span class="tier">SEALED</span> - clean runs, no answer leakage</span>
+</header>
+<div class="comicwrap"><svg class="comic" role="img" aria-labelledby="l04 t04" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1560" font-family="&#39;Comic Sans MS&#39;,&#39;Comic Neue&#39;,&#39;Chalkboard SE&#39;,sans-serif">
   <defs>
     <filter id="soft4" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.45"></feDropShadow>
@@ -1280,9 +1341,10 @@ footer a{color:var(--gold)}
   </g>
 </svg></div>
 <p class="blurb">Identical logic dressed four ways - prose, Lean formula, haiku, flattery. On a 2B model the verdict moves with the outfit (99.0% bare, 91.2% under Lean or bribe - statistically supported at the endpoints). On a 30B and a frontier model: no movement we can resolve at current N (both at the 100% ceiling). Carrier-immunity looks bought with headroom - whether it holds independent of substrate is what the powered paired-design experiment is built to answer. And for some minds, that immunity is a native strength.</p>
-<p class="lmeta"><span class="status">SEALED - clean runs, no answer leakage</span>
-<a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/04-carrier-color.md" rel="noopener">read the sealed lesson ↗</a></p>
-<p class="seal">SHA3-256 30dd449c…55e4c13e · verify: <code>python3 -c "import hashlib;print(hashlib.sha3_256(open('lessons/04-carrier-color.md','rb').read()).hexdigest())"</code></p>
+<footer class="lfoot">
+<p class="lmeta"><a href="https://github.com/IT-Help-San-Diego/calibration-scope/blob/main/lessons/04-carrier-color.md" rel="noopener">read the sealed lesson ↗</a></p>
+<p class="seal"><span class="sk">SHA3-256</span> <span class="sh">30dd449c…55e4c13e</span> · verify: <code>python3 -c "import hashlib;print(hashlib.sha3_256(open('lessons/04-carrier-color.md','rb').read()).hexdigest())"</code></p>
+</footer>
 </article>
 </div></section>
 
