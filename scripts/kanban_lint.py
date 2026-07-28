@@ -38,6 +38,29 @@ def load(path):
     return cards
 
 
+def assert_added(path, expected_ids, prior_count=None):
+    """Assert an intended insert actually landed. Call BEFORE pushing, never after.
+
+    Three times in one session a guarded insert or a string replace silently did
+    nothing while the surrounding narration claimed it had worked: two memo edits
+    that failed on a line break, and a card insert guarded on an id that was
+    already taken. In every case the cell reported success from a proxy — a
+    whole-file inequality, or no check at all — instead of from the result.
+
+    A conditional that does not fire is indistinguishable from one that fired,
+    unless you assert the postcondition.
+    """
+    rows = [json.loads(l) for l in open(path) if l.strip()]
+    ids = {r.get("id") for r in rows}
+    missing = [i for i in expected_ids if i not in ids]
+    if missing:
+        raise AssertionError(f"insert did not land: {missing} absent from {path}")
+    if prior_count is not None and len(rows) != prior_count + len(expected_ids):
+        raise AssertionError(
+            f"count mismatch: expected {prior_count + len(expected_ids)}, got {len(rows)}")
+    return len(rows)
+
+
 def check(cards, repo_root="."):
     fails = []
     ids = {}
