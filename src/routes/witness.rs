@@ -1,10 +1,12 @@
 //! Witness Artifact Generator (DECISIONS §15, handoff Oscent item 2).
 //!
 //! GET /api/runs/{id}/witness — a sealed, self-verifying certificate for one
-//! run: a single self-contained HTML file whose body is one inline SVG.
+//! run: a single self-contained HTML file whose body is two inline SVGs
+//! (the φ certificate, then the v2 claim ledger).
 //! Zero JS, zero external resources, no <style> element; the ONLY style
-//! attributes are two layout shims (body margin/background, svg sizing) —
-//! everything inside the SVG is presentation attributes, so it renders
+//! attributes are three layout shims (body margin/background, one sizing
+//! attr per svg) — everything inside the SVGs is presentation attributes,
+//! so it renders
 //! identically under any CSP, from file://, or pasted into a mail. Dark scotopic
 //! palette, golden-ratio construction (portrait: 1000×1618, section at
 //! y=618, Fibonacci spacing 13/21/34/55/89 — self-described in the footer

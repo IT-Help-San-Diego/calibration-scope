@@ -14,8 +14,9 @@
 //!                      nothing to do with reasoning. NULL (never 0) when
 //!                      fewer than 2 forms were attempted.
 //!
-//! Subjects are models today and human participants when the carbon arm
-//! ships a UI — both land in the same shape (that is the whole point).
+//! Subjects are models AND human participants — the carbon arm's UI is the
+//! dashboard's Human Cal page, and rows carry subject_kind + subject_id so
+//! both land in the same shape (that is the whole point).
 
 use axum::extract::{Query, State};
 use axum::response::Json;
