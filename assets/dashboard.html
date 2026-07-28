@@ -52,7 +52,33 @@
      Fixed to the top of the viewport, above everything. The live RAM figure
      beside it is the same wired-memory telemetry LM Studio shows, streamed at
      1Hz — so the user watches memory climb and has a real STOP one click away. -->
-<div id="abort-bar" role="alert" aria-live="assertive">
+<!-- ═══ CONTROL STRIP — permanent top-level header. Control-room hierarchy:
+     1. Program identity (owl + name) — what system am I looking at
+     2. Mission-critical meters — run state, GPU, memory
+     3. Context flipper — LOCAL ⇄ WEB (which room am I in)
+     4. BIG RED STOP — always reachable, always visible
+     Replaces the scattered abort-bar + run-active-banner + floating flipper
+     with one unified strip that persists whether a run is live or idle. -->
+<div id="control-strip" style="position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;padding:8px 20px;background:var(--bg-secondary);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;">
+  <!-- 1. Program identity -->
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:28px;" onerror="this.style.display='none'">
+    <span style="color:var(--accent-gold);font-weight:700;font-size:14px;letter-spacing:0.5px;">CALIBRATION SCOPE</span>
+  </div>
+  <!-- 3. Context flipper — LEFT, next to identity (one-click flip, no mouse-jerk) -->
+  <a id="context-flip" href="https://calibrationscope.com/lessons.html" title="You are on the local instrument — flip to the web side (Lessons: the humans' failure runs, and everything a tool user wants from the site)" style="position:static;display:inline-flex;align-items:center;font-family:inherit;font-size:11px;letter-spacing:.6px;line-height:1;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text-secondary);white-space:nowrap;text-decoration:none;background:var(--bg-card);flex-shrink:0;"><span class="cur" style="color:var(--accent-gold);font-weight:700;">LOCAL</span><span class="s" style="opacity:.6;margin:0 5px;font-size:15px;">⇄</span>WEB</a>
+  <!-- 2. Mission-critical meters -->
+  <div id="control-meters" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;overflow:hidden;">
+    <span id="control-run-state" style="color:var(--text-muted);">● idle</span>
+    <span id="control-gpu" style="color:var(--text-muted);"></span>
+    <span id="control-mem" style="color:var(--text-muted);"></span>
+    <span id="control-trials" style="color:var(--text-muted);"></span>
+  </div>
+  <!-- 4. BIG RED STOP -->
+  <button id="control-stop-btn" onclick="abortAllLiveRuns()" style="display:none;background:var(--accent-red,#ff6b6b);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;" title="Stop all running benchmarks">⛔ STOP</button>
+</div>
+
+<div id="abort-bar" role="alert" aria-live="assertive" style="display:none;">
   <span class="abort-status">
     <span class="abort-live-dot"></span>
     <span id="abort-run-label">RUN LIVE</span>
@@ -64,7 +90,6 @@
 <!-- Top Nav -->
 <div class="top-nav" id="top-nav">
   <img class="logo" src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" onerror="this.style.display='none'" style="height:32px;margin-right:6px;cursor:pointer" onclick="showPage('benchmark')">
-  <a id="context-flip" href="https://calibrationscope.com/lessons.html" title="You are on the local instrument — flip to the web side (Lessons: the humans' failure runs, and everything a tool user wants from the site)"><span class="cur">LOCAL</span><span class="s">⇄</span>WEB</a>
   <button id="mode-toggle" class="tab" onclick="toggleMode()" title="Focused = single-viewport workspace (action never leaves the screen). Deep = full tab flow with everything visible. Both modes keep full power — Focused arranges, Deep exposes.">Mode: Deep</button>
   <button id="a11y-toggle" class="tab" onclick="toggleA11y()" title="High-contrast / large-text mode" style="cursor:pointer;">Readable: Off</button>
 
