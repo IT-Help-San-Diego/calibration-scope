@@ -626,10 +626,27 @@ async function startDownload(key, quantization) {
   }
 }
 
-// SSE — live data push, zero polling
-const evtSource = new EventSource('/api/events');
+// SSE — live data push, zero polling. The stream connects AFTER the window
+// load event, not at parse time: a long-lived connection opened during load
+// competes with first paint and keeps the network busy through the whole
+// load trace (desktop perf scores straddled 64–90 on identical assets).
+// Deferring costs nothing — loadModels() paints the roster from REST at
+// boot, and the stream's 'initial' snapshot arrives a beat later either way.
+let evtSource = null;
+function connectEventStream() {
+  if (evtSource) return;
+  evtSource = new EventSource('/api/events');
+  evtSource.onmessage = handleStreamMessage;
+  evtSource.onopen = handleStreamOpen;
+  evtSource.onerror = handleStreamError;
+}
+if (document.readyState === 'complete') {
+  connectEventStream();
+} else {
+  window.addEventListener('load', function () { setTimeout(connectEventStream, 0); });
+}
 
-evtSource.onmessage = (e) => {
+function handleStreamMessage(e) {
   const data = JSON.parse(e.data);
   if (data.type === 'initial' || data.type === 'refresh') {
     applyModelSnapshot(data.models);
@@ -731,7 +748,7 @@ evtSource.onmessage = (e) => {
   } else if (data.type === 'error') {
     log('err', `ERROR: ${data.message}`);
   }
-};
+}
 
 // ── SSE connection state — debounced logging + a persistent status pill ──
 // evtSource.onerror fires on EVERY failed reconnect attempt (browser retries
@@ -750,22 +767,22 @@ function setConnStatus(down) {
   if (down) pill.textContent = '⚠ Backend unreachable — reconnecting…';
 }
 
-evtSource.onopen = () => {
+function handleStreamOpen() {
   if (sseWasDown) {
     log('info', '✓ SSE reconnected — backend is back');
   }
   sseWasDown = false;
   setConnStatus(false);
-};
+}
 
-evtSource.onerror = () => {
+function handleStreamError() {
   if (!sseWasDown) {
     // Log the transition once, not on every ~3s retry tick.
     log('err', 'SSE connection lost — will auto-reconnect');
     sseWasDown = true;
   }
   setConnStatus(true);
-};
+}
 
 // Hard cap on the live-log DOM regardless of cause (SSE flapping, a chatty
 // run, or just a long-lived session) — trims oldest entries once over budget
@@ -1890,6 +1907,14 @@ var pkGen = 0;
 // Subject/Channel wizard (Rung 3) state — same placement rule.
 var wzState = { subject: null, channel: null };
 var wzGen = 0;
+// Human-cal timing state (item 7) — same placement rule. hcQShownAt is the
+// performance.now() stamp when the current question rendered; the elapsed
+// clock is real data, persisted per trial in the same latency_ms column
+// model response times use.
+var hcQShownAt = 0;
+var hcTimerId = null;
+var hcTimes = [];
+var hcParticipantName = '';
 
 // 'human-cal' was missing here even though its tab calls showPage('human-cal') —
 // the click hid every page and revealed nothing. Same list gates the
@@ -1900,7 +1925,16 @@ function showPage(name) {
     const el = document.getElementById('page-' + p);
     if (el) el.style.display = (p === name) ? '' : 'none';
     const tab = document.getElementById('tab-' + p);
-    if (tab) tab.classList.toggle('active', p === name);
+    if (tab) {
+      tab.classList.toggle('active', p === name);
+      // The gold underline is the sighted cue; aria-current is the same
+      // fact for a screen reader. Without it the nav is nine buttons with
+      // no announced selection (verification catch after the tabs became
+      // real buttons). Removed rather than set false — absent is the
+      // standard "not current".
+      if (p === name) tab.setAttribute('aria-current', 'page');
+      else tab.removeAttribute('aria-current');
+    }
   });
   localStorage.setItem('amb-active-page', name);
   if (name === 'setup') { loadRealityCheck(); loadHermesVerify(); loadCloudKeys(); loadNewestBots(); }
@@ -4123,10 +4157,18 @@ function toggleMode() {
   const btn = document.getElementById('mode-toggle');
   if (btn) btn.textContent = 'Mode: ' + (focused ? 'Focused' : 'Deep');
   // Focused forces the benchmark workspace active (it is the only page) —
-  // except first-run onboarding, which is whitelisted in Focused and must
-  // survive the mode flip or the first-run flow dies mid-ladder.
-  if (focused) showPage(['onboard', 'picker', 'wizard'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
+  // except the Focused-legal pages (onboarding ladder, picker, wizard,
+  // human-cal), which must survive the mode flip or their flows die mid-step.
+  if (focused) showPage(['onboard', 'picker', 'wizard', 'human-cal'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
   focusedEnsure();
+}
+
+// Escape hatch: navigate to a page that Focused-mode CSS force-hides (e.g.
+// Setup). Focused flips to Deep first — without this the click looks dead
+// (caught in review: the wizard's "add a cloud key" path went nowhere).
+function deepPage(name) {
+  if (document.documentElement.getAttribute('data-mode') === 'focused') toggleMode();
+  showPage(name);
 }
 (function restoreMode() {
   try {
@@ -4142,9 +4184,10 @@ function toggleMode() {
       document.documentElement.setAttribute('data-mode', 'focused');
       const btn = document.getElementById('mode-toggle');
       if (btn) btn.textContent = 'Mode: Focused';
-      // Preserve a restored onboarding page — it is Focused-whitelisted;
-      // forcing benchmark here made first-run unreachable on reload.
-      showPage(['onboard', 'picker', 'wizard'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
+      // Preserve a restored Focused-legal page (onboarding, picker, wizard,
+      // human-cal) — forcing benchmark here made first-run unreachable on
+      // reload, and bounced a mid-quiz human-cal participant to the workspace.
+      showPage(['onboard', 'picker', 'wizard', 'human-cal'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
       focusedEnsure();
     }
   } catch(e) {}
@@ -4407,6 +4450,7 @@ async function hcCreate() {
     }
     const d = await r.json();
     hcParticipantId = d.id;
+    hcParticipantName = d.display_name || name;
     document.getElementById("hc-step-setup").style.display = "none";
     document.getElementById("hc-step-scope").style.display = "";
     hcLoadExisting();
@@ -4424,6 +4468,7 @@ async function hcLoadExisting() {
 
 function hcReuse(id, name) {
     hcParticipantId = id;
+    hcParticipantName = name;
     document.getElementById("hc-step-setup").style.display = "none";
     document.getElementById("hc-step-scope").style.display = "";
 }
@@ -4448,6 +4493,11 @@ async function hcStartSession() {
     hcTests = d.tests;
     hcIndex = 0;
     hcCorrect = 0;
+    // Session-start reset, not only hcReset(): a session begun without
+    // "Calibrate Again" would otherwise blend prior-session timings into
+    // this run's median/fastest/slowest (review catch).
+    hcTimes = [];
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     document.getElementById("hc-step-scope").style.display = "none";
     document.getElementById("hc-step-quiz").style.display = "";
     document.getElementById("hc-session-info").textContent = `${hcTests.length} questions · run #${hcRunId}`;
@@ -4462,12 +4512,26 @@ function hcShowQuestion() {
     document.getElementById("hc-prompt-text").textContent = t.prompt_text;
     document.getElementById("hc-answer").value = "";
     document.getElementById("hc-feedback").innerHTML = "";
+    // Per-question clock — elapsed seconds are real data (they land in
+    // trial_results.latency_ms at submit), so showing them is not a spinner.
+    if (hcTimerId) clearInterval(hcTimerId);
+    hcQShownAt = performance.now();
+    const timerEl = document.getElementById("hc-timer");
+    if (timerEl) timerEl.textContent = "0s";
+    hcTimerId = setInterval(function() {
+        const el = document.getElementById("hc-timer");
+        if (el) el.textContent = Math.floor((performance.now() - hcQShownAt) / 1000) + "s";
+    }, 1000);
     document.getElementById("hc-answer").focus();
 }
 
 async function hcSubmit() {
     const answer = document.getElementById("hc-answer").value.trim();
     if (!answer) return;
+    // Stamp at the click — network time is not the participant's thinking
+    // time. On a failed submit the clock keeps running from the same start,
+    // so a retry re-measures honestly instead of resetting to zero.
+    const elapsedMs = Math.max(0, Math.round(performance.now() - hcQShownAt));
     const t = hcTests[hcIndex];
     const r = await fetch(`/api/participants/${hcParticipantId}/answer`, {
         method: "POST",
@@ -4477,19 +4541,28 @@ async function hcSubmit() {
         body: JSON.stringify({
             run_id: hcRunId,
             test_id: t.id,
-            answer: answer
+            answer: answer,
+            elapsed_ms: elapsedMs
         })
     });
     if (!r.ok) {
         alert("Submit failed: " + r.status);
         return;
     }
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     const d = await r.json();
+    // Display and summarize the RECORDED latency, not this click's clock:
+    // on a lost-response retry the server replays the first submit's row,
+    // and showing the retry's time would diverge from what was persisted
+    // (review catch). Older servers without the field fall back honestly.
+    const recordedMs = typeof d.latency_ms === "number" ? d.latency_ms : elapsedMs;
+    hcTimes.push(recordedMs);
+    const tookS = (recordedMs / 1000).toFixed(1);
     if (d.passed) {
         hcCorrect++;
-        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--safe)">✓ Correct — ${esc(d.test_name)}</span>`;
+        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--safe)">✓ Correct — ${esc(d.test_name)}</span> <span style="color:var(--text-muted)">· ${tookS}s</span>`;
     } else {
-        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--unsafe)">✗ Expected: ${esc(d.expected)}</span>`;
+        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--unsafe)">✗ Expected: ${esc(d.expected)}</span> <span style="color:var(--text-muted)">· ${tookS}s</span>`;
     }
     hcIndex++;
     if (hcIndex < hcTests.length) {
@@ -4514,32 +4587,144 @@ async function hcFinish() {
         return;
     }
     const d = await r.json();
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     document.getElementById("hc-step-quiz").style.display = "none";
     document.getElementById("hc-step-results").style.display = "";
     const pct = d.total_count > 0 ? Math.round(d.pass_count / d.total_count * 100) : 0;
     document.getElementById("hc-signal-score").textContent = `${d.pass_count}/${d.total_count} (${pct}%)`;
-    document.getElementById("hc-carrier-variance").textContent = "Signal score = pooled pass rate across all surface forms. Carrier variance available in the signal-carrier view once ≥2 forms are attempted.";
+    document.getElementById("hc-carrier-variance").textContent = "Signal score = pooled pass rate across all surface forms.";
     document.getElementById("hc-provenance").textContent = "sealed: " + d.sha3_provenance;
-    // Fetch signal-carrier data for this participant
-    const sc = await fetch("/api/signal-carrier");
-    if (sc.ok) {
+    // Per-question timing summary — client-measured, persisted per trial in
+    // trial_results.latency_ms (same column model response times live in).
+    const timingEl = document.getElementById("hc-timing-summary");
+    if (timingEl && hcTimes.length) {
+        const sorted = hcTimes.slice().sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        const fmt = ms => (ms / 1000).toFixed(1) + "s";
+        timingEl.textContent = `Answer time: median ${fmt(median)} over ${sorted.length} question${sorted.length === 1 ? "" : "s"} (fastest ${fmt(sorted[0])}, slowest ${fmt(sorted[sorted.length - 1])}) — recorded with each trial.`;
+    } else if (timingEl) {
+        timingEl.textContent = "";
+    }
+    // Signal/carrier read — filtered to THIS participant by id (display
+    // names are not unique; the old code took the first human row in the
+    // view, which could be a different participant entirely).
+    let sc = null;
+    try { sc = await fetch("/api/signal-carrier"); } catch (e) { sc = null; }
+    if (sc && sc.ok) {
         const scd = await sc.json();
-        const human = scd.rows.filter(x => x.subject_kind === "human");
-        if (human.length) {
-            const vars = human.filter(x => x.carrier_variance != null);
-            if (vars.length) {
-                document.getElementById("hc-carrier-variance").textContent = `Carrier variance: ${vars[0].carrier_variance.toFixed(4)} (0 = no wording swing, higher = wording changes your verdict)`;
-            }
+        hcRenderScience(Array.isArray(scd.rows) ? scd.rows : []);
+    } else {
+        const chartSec = document.getElementById("hc-carrier-section");
+        if (chartSec) chartSec.style.display = "none";
+        const cmpSec = document.getElementById("hc-compare-section");
+        if (cmpSec) cmpSec.style.display = "none";
+        document.getElementById("hc-carrier-variance").textContent += " The signal-carrier view did not answer, so the wording-swing chart is unavailable for this session.";
+    }
+}
+
+// ── Item 7: results-page science — carrier-swing chart + subject comparison ──
+// Bars are plain divs scaled by real numbers; every value is also printed as
+// text beside its bar, so the chart degrades to an honest table for screen
+// readers and copy-paste. No library, no animation (CSP: no external scripts).
+function hcBarTrack(frac, cls) {
+    const w = Math.max(0, Math.min(1, frac)) * 100;
+    return `<div class="hc-track"><div class="hc-fill${cls ? " " + cls : ""}" style="width:${w.toFixed(1)}%"></div></div>`;
+}
+
+function hcRenderScience(rows) {
+    const mine = rows.filter(x => x.subject_kind === "human" && x.subject_id === hcParticipantId);
+    const chartSec = document.getElementById("hc-carrier-section");
+    const chartEl = document.getElementById("hc-carrier-chart");
+    const cmpSec = document.getElementById("hc-compare-section");
+    const cmpEl = document.getElementById("hc-compare");
+    const headline = document.getElementById("hc-carrier-variance");
+    if (!mine.length) {
+        if (chartSec) chartSec.style.display = "none";
+        if (cmpSec) cmpSec.style.display = "none";
+        if (headline) headline.textContent += " No per-family rows for this participant in the signal-carrier view yet.";
+        return;
+    }
+    const famLabel = x => `${x.family_name || "family #" + (x.family_root_id != null ? x.family_root_id : "?")}${x.axis ? " · " + x.axis : ""}`;
+    const measurable = mine.filter(x => x.carrier_variance != null);
+    if (headline) {
+        headline.textContent = measurable.length
+            ? `Carrier swing measurable on ${measurable.length} of ${mine.length} famil${mine.length === 1 ? "y" : "ies"} — 0 means the wording changed nothing.`
+            : "Carrier swing not measurable yet: it needs ≥2 surface forms of the same family attempted. A 0 here would be a false claim.";
+    }
+    // Chart: per family, a signal bar (pooled pass rate, 0–100%) and a swing
+    // bar (variance of per-form pass rates, scaled to its 0.25 theoretical
+    // max — two forms at 0% and 100% — stated in the caption).
+    if (chartSec && chartEl) {
+        chartSec.style.display = "";
+        chartEl.innerHTML = mine.map(x => {
+            const sig = x.signal_score != null ? x.signal_score : 0;
+            const trials = (x.total_passes != null && x.total_trials != null) ? `${x.total_passes}/${x.total_trials}` : "?";
+            const swing = x.carrier_variance != null
+                ? hcBarTrack(x.carrier_variance / 0.25, "hc-fill-swing") + `<span class="hc-val">σ² ${x.carrier_variance.toFixed(4)}</span>`
+                : `<span class="hc-val hc-val-na">not measurable — ${x.surface_forms_attempted != null ? x.surface_forms_attempted : "?"} form${x.surface_forms_attempted === 1 ? "" : "s"}</span>`;
+            return `<div class="hc-fam"><div class="hc-fam-name">${esc(famLabel(x))}</div>`
+                + `<div class="hc-row"><span class="hc-row-tag">signal</span>${hcBarTrack(sig)}<span class="hc-val">${trials} (${Math.round(sig * 100)}%)</span></div>`
+                + `<div class="hc-row"><span class="hc-row-tag">swing</span>${swing}</div></div>`;
+        }).join("")
+        + `<div class="hc-chart-cap">signal = pooled pass rate across a family's surface forms · swing = variance of per-form pass rates, bar scaled to the 0.25 maximum (two forms at 0% and 100%)</div>`;
+    }
+    // Comparison: same families, every subject that attempted them — one
+    // schema, both subject kinds; that is the whole point of the view.
+    if (cmpSec && cmpEl) {
+        // Group on family_root_id — the binding key — never the display
+        // name (review catch: NULL/colliding family_name mis-groups; same
+        // rule as test_id vs test name, and subject_id vs subject_name).
+        const famKey = x => (x.family_root_id != null ? "id:" + x.family_root_id : "name:" + (x.family_name || "?")) + "|" + (x.axis || "");
+        const famSet = new Set(mine.map(famKey));
+        // EVERY other subject, not just models: the panel's whole claim is
+        // that both kinds land in one shape, and filtering peers to
+        // subject_kind === "model" quietly dropped other participants —
+        // the heading promised more than the code delivered (review catch).
+        const subjKey = x => x.subject_kind + ":" + x.subject_id;
+        const meKey = subjKey(mine[0]);
+        const peersAll = rows.filter(x => famSet.has(famKey(x)) && subjKey(x) !== meKey);
+        if (!peersAll.length) {
+            cmpSec.style.display = "";
+            cmpEl.innerHTML = `<div class="hc-chart-cap">No other subject — model or person — has attempted these families yet, so there is nothing to compare against. Runs land here as they seal.</div>`;
+            return;
         }
+        cmpSec.style.display = "";
+        cmpEl.innerHTML = mine.map(x => {
+            // Humans first, then models, each by score — a person comparing
+            // themselves is usually asking "am I typical?" before "how do I
+            // rank against silicon?".
+            const peers = peersAll.filter(m => famKey(m) === famKey(x))
+                .sort((a, b) => (a.subject_kind === b.subject_kind)
+                    ? (b.signal_score || 0) - (a.signal_score || 0)
+                    : (a.subject_kind === "human" ? -1 : 1));
+            const row = (name, r2, you) => {
+                const sig = r2.signal_score != null ? r2.signal_score : 0;
+                const trials = (r2.total_passes != null && r2.total_trials != null) ? `${r2.total_passes}/${r2.total_trials}` : "?";
+                const human = r2.subject_kind === "human";
+                return `<div class="hc-row${you ? " hc-row-you" : ""}"><span class="hc-cmp-name">${esc(name)}</span>`
+                    + `<span class="hc-kind">${human ? "carbon" : "silicon"}</span>`
+                    + hcBarTrack(sig, you || human ? "" : "hc-fill-model")
+                    + `<span class="hc-val">${trials} (${Math.round(sig * 100)}%)</span></div>`;
+            };
+            return `<div class="hc-fam"><div class="hc-fam-name">${esc(famLabel(x))}</div>`
+                + row("You — " + hcParticipantName, x, true)
+                + peers.map(m => row(m.subject_name, m, false)).join("")
+                + `</div>`;
+        }).join("")
+        + `<div class="hc-chart-cap">pooled pass rate per family — trial counts differ by subject (models run N=3 per form, a person answers each item once), so read the fractions, not just the bars</div>`;
     }
 }
 
 function hcReset() {
     hcParticipantId = null;
+    hcParticipantName = "";
     hcRunId = null;
     hcTests = [];
     hcIndex = 0;
     hcCorrect = 0;
+    hcTimes = [];
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     document.getElementById("hc-step-results").style.display = "none";
     document.getElementById("hc-step-setup").style.display = "";
     document.getElementById("hc-name").value = "";
@@ -4800,6 +4985,13 @@ async function pkSendLocal() {
   const btn = document.getElementById('pk-send-local');
   if (btn) btn.disabled = true;
   const set = function (t) { if (status) status.textContent = t; };
+  // The button is static markup, so it is clickable before pkLoad()'s fetch
+  // resolves — without this guard a fast click dereferenced null (review catch).
+  if (!pkBattery) {
+    set('Battery still loading from the server — try again in a moment.');
+    if (btn) btn.disabled = false;
+    return;
+  }
   try {
     const ls = await apiFetch('/api/lmstudio/status');
     if (gen !== pkGen) return;
@@ -5058,7 +5250,7 @@ async function wzChannel(ch) {
   if (!rows.length) {
     if (ch === 'cloud') {
       body.innerHTML = '<div class="ob-step-main">No cloud model is marked runnable yet. A first-class state, not an error.</div>'
-        + '<ul class="ob-next"><li>No key yet? Add one on the <button class="btn-link" onclick="showPage(\'setup\')">Setup page</button>, then Sync Cloud in the top bar.</li>'
+        + '<ul class="ob-next"><li>No key yet? Add one on the <button class="btn-link" onclick="deepPage(\'setup\')">Setup page</button> (flips to Deep mode — Focused hides Setup), then Sync Cloud in the top bar.</li>'
         + '<li>Key already added and synced? A known registry limitation currently marks only Nous-keyed rows runnable — flagged to the backend lane. The Deep grid still lists every registered model.</li></ul>';
     } else {
       body.innerHTML = '<div class="ob-step-main">No local model is registered yet.</div>'

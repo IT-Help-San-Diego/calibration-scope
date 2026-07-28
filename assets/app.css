@@ -150,6 +150,24 @@
     border-bottom: 2px solid var(--accent-cyan);
   }
   .top-nav .tab:hover { color: var(--text-primary); }
+  /* Native-button tabs must render exactly like the old div tabs: strip the
+     UA button chrome first (Safari paints ButtonFace — the "all-white First
+     Run tab" seen live 2026-07-27), then restate the one border .tab
+     carries. #mode-toggle / #a11y-toggle keep their id-level styling, which
+     outranks this; .tab.active and the a11y bump also outrank it (3-class
+     specificity), so active/readable states are unaffected. */
+  .top-nav button.tab {
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--border);
+    font: inherit;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: left;
+  }
   .top-nav .spacer { flex: 1; }
 
   /* Header */
@@ -618,7 +636,12 @@
   /* Accessibility toggle — must be legible on the dark theme in BOTH states.
      Default (Readable: On) = solid amber pill, black text (high contrast, pops).
      Off (Deep mode) = dark pill, solid light text (never gray-on-white). */
-  #mode-toggle { cursor: pointer; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; background: var(--bg-card); }
+  /* line-height pinned to the UA default these two pills always rendered
+     with: they were <button class="tab"> before the nav-wide button reset,
+     so inheriting body's 1.5 through `font: inherit` would silently grow
+     them ~4px (verification catch — the reset's commit claimed no visual
+     change, and for these two that was not yet true). */
+  #mode-toggle { cursor: pointer; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; background: var(--bg-card); line-height: normal; }
   #mode-toggle:hover { filter: brightness(1.1); }
   html[data-mode="focused"] #mode-toggle { background: var(--accent-cyan, #3fd8c9); color: #04110f; font-weight: 600; }
   /* FOCUSED MODE — Benchmark workspace is the ONLY page. The action never
@@ -729,6 +752,7 @@
   html[data-mode="focused"] #workspace { display: none !important; }
 
   #a11y-toggle {
+    line-height: normal;  /* same reason as #mode-toggle above */
     font-weight: 700;
     font-size: 12px;
     letter-spacing: 0.3px;
@@ -1516,3 +1540,27 @@
    check prefix alongside the gold border, and aria-pressed carries the state
    programmatically. */
 .wz-opt.wz-on .wz-opt-big::before { content: "✓ "; color: var(--safe); }
+
+/* ── Human-cal results science (item 7, 2026-07-27) ─────────────────────────
+   Carrier-swing chart + subject comparison. Bars are plain divs scaled by
+   real numbers; every value is also printed as text beside its bar, so the
+   chart reads as an honest table for screen readers and copy-paste. */
+.hc-fam { margin-bottom: var(--fib-3); }
+.hc-fam-name { font-family: var(--font-mono); font-size: 13px; color: var(--text-primary); margin-bottom: var(--fib-1); }
+.hc-row { display: flex; align-items: center; gap: var(--fib-2); margin-bottom: var(--fib-1); min-width: 0; }
+.hc-row-tag { flex: 0 0 55px; font-size: 12px; color: var(--text-muted); text-align: right; }
+.hc-cmp-name { flex: 0 0 233px; font-size: 12.5px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc-row-you .hc-cmp-name { color: var(--accent-gold); font-weight: 600; }
+/* Subject kind stated in words, not inferred from the name's shape — a
+   model key and a display name are not reliably distinguishable. */
+.hc-kind { flex: 0 0 52px; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.hc-track { flex: 1 1 89px; height: 13px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+.hc-fill { height: 100%; background: var(--accent-gold); }
+.hc-fill-swing { background: var(--accent-cyan, #3fd8c9); }
+.hc-fill-model { background: var(--text-muted); }
+.hc-val { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.hc-val-na { color: var(--text-muted); font-style: italic; }
+.hc-chart-cap { font-size: 12px; color: var(--text-muted); margin-top: var(--fib-2); }
+@media (max-width: 640px) {
+  .hc-cmp-name { flex-basis: 144px; }
+}

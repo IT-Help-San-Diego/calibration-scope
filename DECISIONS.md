@@ -1196,6 +1196,196 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
     **SHA3-512 / SHA3-256** because they match the literal sealed hash
     strings (`sha3-512:...`). Sealed surfaces (lessons, comics) are exempt
     until a re-seal is otherwise required.
+  - **2026-07-27 (Claude Code, post-merge branch restart): handoff item 7 —
+    human-cal results science — SHIPPED, browser-verified 23/23.** Three
+    surfaces at page-human-cal: (1) per-question timing — elapsed clock in
+    the quiz header, stamped at the submit click (network time is not
+    thinking time), sent as a new optional `elapsed_ms` on the answer
+    endpoint and stored in trial_results.latency_ms, the same column model
+    response times use — it was hardcoded 0 for humans, a small standing
+    data lie now closed (clamped 0–24 h server-side; absent = old
+    behavior); (2) per-family carrier-swing chart — signal bar (pooled
+    pass rate) + swing bar (per-form pass-rate variance scaled to its 0.25
+    theoretical max, scale stated in the caption); NULL variance renders
+    "not measurable — N form(s)", never 0; every bar's value printed as
+    text beside it; (3) same-families comparison panel, both subject kinds
+    in one shape, with the "read the fractions, not just the bars" caveat
+    (models run N=3 per form). **/api/signal-carrier now returns
+    `subject_id`** — display names are not unique, and the previous
+    results code took the FIRST human row in the view regardless of
+    participant; the rig reproduced that exact collision (two same-named
+    participants) before the id filter fixed it. Same pass, review
+    catches: wizard's Setup link was dead in Focused mode (Focused CSS
+    force-hides page-setup) → deepPage() flips to Deep before navigating;
+    pkSendLocal dereferenced a null battery on a fast click → honest
+    "still loading" guard; 'human-cal' added to the Focused mode-restore
+    whitelists (reload mid-quiz bounced to benchmark). **Perf fix with
+    relay (f) context:** the EventSource opened at script parse time, so
+    the load trace never went network-quiet — the prime suspect for the
+    gate's 64–90 straddle on identical assets. It now connects after the
+    window load event (REST loaders already paint first data; the stream's
+    snapshot arrives a beat later either way). Verified in-browser: the
+    /api/events request starts ~10 ms after loadEventStart.
+  - **2026-07-27 (Claude Code): Witness v2 — the claim ledger — SHIPPED.**
+    Claude Science's design constraint (claim status by claim ID, never
+    prose restatement) is now the certificate's second panel: one row per
+    test_id with raw k/n, column-major over three columns, height computed
+    from the claim count, verified in-browser at 3 and 54 claims and
+    unit-pinned at 293 (the no-overlap assertion caught a real 21px height
+    shortfall on first run — the test earned its keep before it ever hit
+    CI). NULL test_id (pre-021 trials) renders as one gray "unlinked
+    trials" line — not one claim, and not silently dropped. Also fixed:
+    the v1 INNER JOIN made /api/runs/{id}/witness answer "NO SUCH RUN —
+    no run with this id exists" for sealed human-participant runs (runs
+    that exist; model_id is simply NULL) — a false statement from the
+    instrument's own honesty surface, found because item 7 makes human
+    runs commonplace. Human certificates: carbon subject kind, load mode
+    "not applicable to a human subject" (clean-room would claim a control
+    that doesn't apply), channel "dashboard quiz — same items, same
+    grader". PR #3 review catches, both fixed same pass: comparison-panel
+    famKey now groups on family_root_id (the binding rule this project
+    keeps proving — id is the key, name is a label; my own commit applied
+    it to subjects and missed it for families three lines away), and
+    submit_answer/finish_session gained a run-ownership guard
+    (verify_run_owner): a guessed run_id could previously write trials
+    into — or RESEAL — another participant's run or a model run. Third
+    catch, next round: submit_answer now also enforces that test_id is in
+    the run's seeded test_ids (no padding a run with items the session
+    never posed), and duplicate submits replay the recorded verdict
+    instead of inserting — a hard rejection would strand a client whose
+    insert landed but whose response was lost. RELAY TO HERMES (g): the
+    airtight duplicate fix is a partial UNIQUE(run_id, test_id) index for
+    participant runs — migration, backend lane; the in-route check has an
+    unavoidable concurrent-submit race without it.
+  - **2026-07-27 (Claude Code): adversarial verification round on the
+    witness-v2/guards diff — two real bugs, both honesty-class, both
+    fixed.** (1) **The carbon certificate's "same grader as model runs"
+    line was false** — and so was this module's own doc, since 043: human
+    answers were graded by a plain case-insensitive compare while models
+    get scoring::score_response (verdict extraction + normalization). A
+    human typing "no" against expected INVALID failed where a model's
+    "no" passed; even "invalid." failed. Fixed the deep way: submit_answer
+    now calls score_response itself, so the parity is real, not claimed.
+    **Measurement-method note:** human runs sealed before 2026-07-27 were
+    graded by the stricter compare; comparisons across that boundary
+    should say so. (2) **Seal TOCTOU:** an answer in flight when Finish
+    landed could insert after the seal, leaving trial_results
+    contradicting the sealed counts. The INSERT now re-checks
+    status='running' in the same statement and reports "sealed while this
+    answer was in flight" when it loses the race. Also from the round:
+    finish_session now REPLAYS the stored seal for already-done runs
+    (recomputing rewrote finished_at per retry and re-derived the hash
+    from a fresh read); the evidence string gained an ORDER BY trial_num,
+    id tiebreak; the ownership guard's doc now states honestly that it is
+    integrity against mistakes, not authentication (the instrument has no
+    auth layer — instrument-wide boundary, predates this diff); and the
+    ledger prints a gold two-line note when its non-infra trial sum
+    disagrees with the sealed RESULT (pre-017 sealings included infra
+    trials in the denominator and were never backfilled — shown, not
+    hidden). Copilot same round: the ledger header now counts CLAIMS
+    excluding the synthetic unlinked-trials line, and the empty-ledger
+    aria-label carries the same "non-infra" qualifier as the visible
+    copy. **RELAY TO HERMES (g), extended:** the airtight fixes are
+    partial UNIQUE(run_id, test_id) AND UNIQUE(run_id, trial_num) indexes
+    for participant runs — migrations, backend lane; without the latter, a
+    trial_num collision makes the evidence order (and so the seal)
+    row-order-dependent between recomputes.
+  - **2026-07-27 (Claude Code): RELAY TO HERMES (h) — the
+    owl_signal_carrier view counts infra-error trials.** Copilot catch on
+    PR #3: the view (migration 043) aggregates trial_results with no
+    is_infra_error = false filter, while every other results query has
+    one — so a backend outage mid-run reads as the subject's reasoning
+    getting worse, and an outage hitting one surface form manufactures
+    fake carrier variance. The dashboard endpoint now inlines the
+    corrected aggregation (signal_carrier.rs), so the chart/compare panel
+    is right; the VIEW itself still serves infra-polluted numbers to any
+    direct consumer (Claude Science's harness, ad-hoc SQL). Fix at the
+    source is a CREATE OR REPLACE VIEW migration — backend lane, and
+    consumers should agree first since it changes published numbers.
+    Same round: made the witness claim-ledger's NULLS LAST explicit —
+    Copilot claimed Postgres sorts NULL first ascending (it doesn't;
+    default is NULLS LAST), declined-with-correction on the thread, but
+    the explicit qualifier documents the intent instead of leaning on a
+    default. Second defect in the same view (Copilot, next round):
+    VARIANCE() is Postgres var_samp (÷ n−1), reaching 0.5 for two forms
+    at 0%/100% — the dashboard's stated 0.25 theoretical max is a
+    population-variance bound, and the attempted forms are the complete
+    set under measurement, not a sample. The dashboard endpoint now uses
+    VAR_POP; the view fix should settle var_samp vs var_pop WITH Claude
+    Science (their pilot stats may assume one or the other). The mock rig
+    had computed population variance all along — it verified semantics
+    the view didn't have, which is exactly the class of gap a mock cannot
+    catch.
+  - **2026-07-28 (Claude Code): tab keyboard pass + wording residuals +
+    architecture doc.** (1) All nine nav tabs are native buttons with the
+    UA chrome stripped — fixes the all-white First Run tab Carey
+    photographed live on Safari (yesterday's div→button swap never reset
+    ButtonFace; mode/a11y toggles only looked right via their id-level
+    backgrounds) and completes the systemic keyboard pass: every tab
+    focusable, Enter-activatable, 23 Playwright checks. NOTE: pulling
+    main would NOT have fixed the white tab — the bug was in the Mac's
+    checkout already; the fix is this commit. (2) Wording residuals:
+    README's "90-test battery" figure had no sealed-run provenance
+    (PUBLIC_REPO scan SEV3) → "the same sealed battery", no number;
+    SCISPACE_PACKAGE.md — "features no existing benchmark provides" and
+    "no single existing benchmark provides" hedged to "we have not
+    found", "Universal Fallacy Blindness" renamed "Widespread" (19 of 21
+    is not universal — the sentence contradicted its own title),
+    stated-vs-actual identity installed in the summary, SHA-3-512 →
+    SHA3-512 per the identifier convention. Lessons headers CHECKED and
+    found already compliant — no edit, recorded as closure. (3)
+    docs/ARCHITECTURE.md added as the maintained architecture reference
+    (mermaid renders on GitHub); the stale .excalidraw is kept as a
+    drawing source and marked superseded on disagreement — editing its
+    JSON with no renderer available would have been an unverifiable
+    change.
+  - **2026-07-28 (Claude Code): verification round on the tab/wording/doc
+    batch — zero real bugs, four papercuts, three fixed.** (1) The
+    architecture doc's mermaid used `\n` for line breaks; mermaid v10+
+    (what GitHub renders) only breaks on `<br/>`, so every node would have
+    shown a literal backslash-n — the doc claimed "renders on GitHub" and
+    would have rendered wrong. Fixed. Lesson: a diagram format is a
+    dependency; "it renders" is a claim needing verification like any
+    other. (2) The nav-wide `font: inherit` in the button reset changed
+    #mode-toggle's line-height from UA normal to body's 1.5, growing the
+    pill ~4px — my commit message had claimed "every intentional state is
+    unchanged", which was not yet true. Both toggles now pin
+    `line-height: normal`, and the rig asserts it. (3) The nine tabs
+    became real buttons but announced no selection — `aria-current="page"`
+    now moves with navigation (sighted users had the gold underline; a
+    screen reader had nothing). (4) NOT fixed, recorded with reasoning:
+    the nav logo has an onclick with no keyboard path. WCAG 2.1.1 asks
+    that the *functionality* be keyboard-operable, and it is —
+    #tab-benchmark does the same thing and is focusable — so adding a
+    redundant tab stop would cost more than it gives. Same round
+    (Copilot): signal-carrier's `subject_id` tightened from Option<i32>
+    to i32, since 043's XOR CHECK was added without NOT VALID (validated
+    at creation, enforced since) — and if that invariant ever broke, a
+    loud decode failure beats a null the UI would render as "no rows for
+    this participant", which is a false statement.
+  - **2026-07-28 (Claude Code): the architecture drawing is editable after
+    all — I was wrong to retire it.** I had claimed the .excalidraw could
+    not be meaningfully edited here (no renderer) and moved the maintained
+    truth to markdown+mermaid. Carey pushed back on the right grounds:
+    Excalidraw is free for anyone to open, and a format nobody maintains is
+    worthless. Both halves of my position were weak — the file is plain
+    JSON (rectangles, text, arrows with x/y/points), and "I can't verify
+    it" was a tooling gap I could close rather than a fact.
+    **scripts/gen_architecture_diagram.py** now authors the .excalidraw
+    from a declarative spec and renders the same geometry to SVG, failing
+    on box overlaps, off-canvas elements, arrows crossing boxes, or labels
+    landing on one. Its first version reported "0 problems" for a diagram
+    whose arrows cut straight through the Executor box and ran one arrow
+    off the bottom of the canvas — the rendered preview caught what the
+    check did not, and the check was strengthened until it caught the same
+    five defects independently. **The lesson generalizes past diagrams: a
+    green check on a weak assertion is not evidence, and the fix is to
+    strengthen the assertion until it can fail.** Both views (markdown+
+    mermaid for inline GitHub reading, .excalidraw for hand-editing) are
+    now current and must be kept in step. Also corrected for the record:
+    mermaid is MIT-licensed and GitHub renders it with no account — the
+    paid product with the similar name is Miro; Excalidraw can even import
+    mermaid flowcharts into editable shapes.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
 
 ## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)

@@ -136,12 +136,26 @@ index, README, lessons headers, DECISIONS preamble. One voice.
 
 ## Open items (pick in order)
 
-**NEXT BUILD for this lane (agreed with Carey 2026-07-26): item 7,
-human-cal UI polish** — per-question timing in the quiz step, a
-carrier-variance bar chart at results, and a human-vs-model comparison
-panel from /api/signal-carrier (returns both subjects in one shape). The
-mock-verification rig for browser-testing dashboard pages lives in the PR
-record (python mock server + Playwright against the real assets).
+**NEXT BUILD for this lane: pick from the open items below — 5 (wording
+audit residuals), 8 (architecture diagram), or the systemic tab keyboard
+pass.** Item 7 (human-cal polish) SHIPPED 2026-07-27; see its record
+below. The mock-verification rig for browser-testing dashboard pages
+lives in the PR record (python mock server + Playwright against the real
+assets).
+
+**Witness v2 — SHIPPED 2026-07-27 (design constraint from Claude Science,
+relayed via Carey): claim status BY CLAIM ID, never prose restatement.**
+A second SVG below the certificate lists every claim as `#test_id name
+k/n` — keyed on test_id (the binding key; names are labels), counts raw,
+imperfect rows in gold, three-column column-major layout with height
+computed from the claim count (a 293-claim battery and a 3-claim human
+session both render completely; unit test pins the no-overlap math).
+Pre-migration-021 trials (test_id NULL) render as one gray "unlinked
+trials" line — honestly not one claim, not silently dropped. Same pass:
+human-participant runs now get certificates (the v1 INNER JOIN answered
+"no run exists" about runs that exist) — carbon subject kind, load mode
+"not applicable to a human subject", channel "dashboard quiz — same
+items, same grader as model runs".
 
 
 0. ~~§10.9 prose-block downgrade~~ **DONE (commit 3c40571, 2026-07-25 —
@@ -378,14 +392,39 @@ record (python mock server + Playwright against the real assets).
 6. **Lessons page polish.** Four comics render inline; design pass on the
    lesson cards, status badges, seal lines. Do NOT change the lesson .md
    files or comic SVGs (sealed — hash-verified).
-7. **Human-calibration UI polish (dashboard).** Backend is DONE (5
-   endpoints, E2E verified). Frontend is functional but basic (4-step flow
-   at page-human-cal). Add: per-question timing display, a carrier-variance
-   bar chart at results, and a human-vs-model comparison panel (the
-   signal_carrier endpoint already returns both subjects in the same shape).
-8. **Architecture diagram.** docs/architecture.excalidraw is stale — add
-   the Focused shell, NeuroVault proxy, signal-carrier view, spec-decode
-   panel, human-calibration page, /api/runs/complete endpoint, MCP server.
+7. ~~Human-calibration UI polish (dashboard).~~ **SHIPPED v1 2026-07-27,
+   browser-verified 23/23 checks.** Per-question timing: elapsed clock in
+   the quiz header, stamped at the click (network time is not thinking
+   time), persisted via a new optional `elapsed_ms` on the answer endpoint
+   into trial_results.latency_ms — the same column model response times
+   use; it was hardcoded 0 for humans before. Carrier-swing chart: per
+   family, signal bar (pooled pass rate) + swing bar (variance scaled to
+   its 0.25 theoretical max, stated in the caption); NULL variance renders
+   "not measurable — N form(s)", never 0. Comparison panel: same families,
+   every subject, "read the fractions, not just the bars" caveat (models
+   run N=3 per form). /api/signal-carrier now returns `subject_id` —
+   display names are NOT unique, so the UI filters by participant id (the
+   old results code took the first human row in the view, any participant).
+   Bonus fixes in the same pass: 'human-cal' added to the Focused
+   mode-restore whitelists (reload mid-quiz bounced to benchmark);
+   deepPage() escape hatch (wizard's Setup link was dead in Focused —
+   review catch); pkSendLocal null-battery guard (review catch); SSE
+   connect deferred to after the window load event (a parse-time
+   EventSource kept the network busy through the whole Lighthouse trace —
+   desktop perf straddled 64–90 on identical assets).
+8. ~~Architecture diagram.~~ **DONE 2026-07-28, both views current.**
+   docs/ARCHITECTURE.md is the prose reference (mermaid renders inline on
+   GitHub); docs/architecture.excalidraw is the editable drawing, now
+   regenerated to match — Focused shell, first-run rungs, human-cal,
+   signal-carrier with its recorded view defects, Witness, MCP, evidence
+   discipline, known gaps, three-agent workflow.
+   **scripts/gen_architecture_diagram.py** authors the .excalidraw from a
+   declarative spec AND renders the same geometry to SVG, exiting non-zero
+   on overlaps, off-canvas elements, arrows crossing boxes, or labels
+   landing on one — so "I can't verify a drawing here" is no longer true.
+   First run of that checker passed a diagram whose arrows cut through the
+   Executor and ran off the canvas; the eye caught it, then the checker was
+   strengthened until it caught the same things. Keep both views in step.
 9. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
    siblings. Template = migration 047/048 pattern (same formal_spec, new
    surface text for N; transform + named owl_flaw for C; resolve roots by
