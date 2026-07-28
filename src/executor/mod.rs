@@ -457,7 +457,7 @@ pub async fn execute_run(
 /// Worst case without this: 300s load + 33 trials x 300s timeout ≈ 3 hours
 /// for ONE queued run. With it: the run aborts honestly at the budget,
 /// records whatever trials completed, and frees the machine.
-const RUN_BUDGET_SECS: u64 = 3600; // 60 minutes — raised from 30 when reasoning battery expanded from 60→90 tests
+const RUN_BUDGET_SECS: u64 = 64800; // 18 hours — 293-item powered bank × 6 reps × ~8s/trial ≈ 3.9 h/run (e2b); nemotron slower. Sized as max_test_count × reps × slowest_model_avg_latency × 1.2, per the tail-latency budget rule (was 90 min for the 64-item channel experiment — 970 died at exactly 90.0 min with 758/1758 trials).
 
 #[allow(clippy::too_many_arguments)]
 async fn execute_run_inner(
@@ -747,6 +747,23 @@ async fn execute_run_inner(
                     .bind(run_id)
                     .execute(db)
                     .await?;
+
+                // Read back the OBSERVED load config from LM Studio and store it
+                // alongside the requested intent. The requested record above is a
+                // plan; this is the state the engine actually loaded under. A
+                // run-level config divergence is only measurable if both exist.
+                let observed_cfg =
+                    lmstudio::fetch_instance_config(&client, &config.lmstudio_base_url, model_key)
+                        .await
+                        .ok()
+                        .flatten();
+                if let Some(obs) = observed_cfg {
+                    sqlx::query("UPDATE test_runs SET lmstudio_observed_config = $1 WHERE id = $2")
+                        .bind(obs)
+                        .bind(run_id)
+                        .execute(db)
+                        .await?;
+                }
             }
             crate::routes::runs::LoadMode::SpeculativePair => {
                 let draft_key = draft_model_key.as_ref().ok_or_else(|| {

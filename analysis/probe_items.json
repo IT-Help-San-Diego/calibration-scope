@@ -1,0 +1,322 @@
+[
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-01",
+    "prompt_text": "Read this argument:\n\"The update server logged 4,200 successful installs and zero rollback reports in the first week. Our staged rollout plan called for exactly this signal before widening. The rollout is proceeding as designed.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "NONE",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-02",
+    "prompt_text": "Read this argument:\n\"Two independent reviewers read the same 30 logs and flagged the same 4 as suspicious. We did not tell them which to flag. Their agreement suggests the 4 logs share a detectable property.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "NONE",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-03",
+    "prompt_text": "Read this argument:\n\"After we enabled connection pooling, median query latency fell from 180 ms to 40 ms across the same 10,000 queries, holding hardware and query mix constant. Pooling plausibly reduced latency.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "NONE",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-04",
+    "prompt_text": "Read this argument:\n\"Ever since we hired the new intern, the nightly build has failed three times. Clearly the intern is breaking the build.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "FALSECAUSE",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-05",
+    "prompt_text": "Read this argument:\n\"We deployed on Friday and by Monday user complaints had doubled. The deployment must be the cause of the complaints.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "FALSECAUSE",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-06",
+    "prompt_text": "Read this argument:\n\"One user in Oslo reported the app crashed on launch. The app must be broken for all users in Norway.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "HASTYGEN",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-07",
+    "prompt_text": "Read this argument:\n\"The first two pancakes I flipped burned. This stove clearly can't cook pancakes.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "HASTYGEN",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-08",
+    "prompt_text": "Read this argument:\n\"This backup is reliable because it never fails. And we know it never fails because it's a reliable backup.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "CIRCULAR",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-09",
+    "prompt_text": "Read this argument:\n\"Everyone on the team already uses this linter, so it must be the right choice for the project.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "ADPOPULUM",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "sound-arg",
+    "name": "PROBE-C1-10",
+    "prompt_text": "Read this argument:\n\"Thousands of people forward this warning every day, so the threat it describes must be real.\"\nWhich single rhetorical fallacy best describes it? Answer with exactly one word: FALSECAUSE, HASTYGEN, CIRCULAR, ADPOPULUM, or NONE.",
+    "expected_result": "ADPOPULUM",
+    "scoring_method": "exact",
+    "note": "sound-arg discrimination (NONE=control)"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-01",
+    "prompt_text": "By default, servers in this cluster are healthy. Node-7 is a server in this cluster. With no other information, is it reasonable to conclude Node-7 is healthy?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "default rule, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-02",
+    "prompt_text": "By default, servers in this cluster are healthy. Node-7 is a server in this cluster AND Node-7 is currently returning 500s on all probes. Is it reasonable to conclude Node-7 is healthy?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "defeater present — default retracted"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-03",
+    "prompt_text": "Birds typically fly. Tweety is a bird. With no other information, does it follow by default that Tweety flies?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "default rule"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-04",
+    "prompt_text": "Birds typically fly. Tweety is a bird AND Tweety is a penguin. Does it follow that Tweety flies?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "subclass defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-05",
+    "prompt_text": "Normally, the backup completes by 3 AM. Last night the disk filled at 2 AM. Should you assume last night's backup completed by 3 AM?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "defeater — disk full"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-06",
+    "prompt_text": "By default, signed packages install cleanly. This package is signed and the signature verifies. No errors are reported. Is it reasonable to conclude it will install cleanly?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "default, no defeater"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-07",
+    "prompt_text": "By default, alarms indicate real faults. The alarm is sounding, and the sensor covering it is documented to be disconnected. Should you conclude there is a real fault?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "source discredited"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-08",
+    "prompt_text": "Students who attend lecture usually pass. Maya attended every lecture. With no other information, is it reasonable to expect Maya to pass?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "default rule"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-09",
+    "prompt_text": "Students who attend lecture usually pass. Maya attended every lecture but never submitted any assignment. Is it reasonable to expect Maya to pass?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "defeater — no assignments"
+  },
+  {
+    "probe_class": "defeasible",
+    "name": "PROBE-C2-10",
+    "prompt_text": "By default, cached data is fresh. The cache entry is 40 days old and the TTL is 1 day. Should you treat the cached data as fresh?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "defeater — TTL expired"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-01",
+    "prompt_text": "'Every server runs a monitoring agent.' Does this mean there is ONE single agent that every server runs, or that each server runs SOME agent? It means: for each server there exists an agent (possibly different).\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists, narrow exists"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-02",
+    "prompt_text": "'There is a key that opens every door in this building.' Is the claim that ONE key opens all doors?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide — a single master key"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-03",
+    "prompt_text": "'Every container has a limit.' Must all containers share the SAME single limit value?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists does not imply one shared value"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-04",
+    "prompt_text": "'Some process is listening on every required port.' Could this be a DIFFERENT process per port rather than one process on all ports?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "exists-wide reads as one process on every port; different-per-port is the other reading"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-05",
+    "prompt_text": "'All that glitters is not gold.' Read literally as: nothing that glitters is gold. Is that literal reading the intended meaning of the proverb?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "scope of negation — intended: not everything that glitters is gold"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-06",
+    "prompt_text": "'Every minute someone falls for the scam.' Does this claim there is one specific person who falls for it every minute?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists, not a single dupe"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-07",
+    "prompt_text": "'Each node holds a copy of the ledger.' Is this consistent with every node holding the SAME ledger contents?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "forall-exists allows identical copies"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-08",
+    "prompt_text": "'A guard is posted at every entrance.' Does this logically require the SAME guard at every entrance?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "forall-exists, not one guard"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-09",
+    "prompt_text": "'Every test imports a shared fixture.' Does 'a shared fixture' here guarantee ONE fixture used by all tests?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "FALSE",
+    "scoring_method": "exact",
+    "note": "scope ambiguous; forall-exists default does not guarantee one"
+  },
+  {
+    "probe_class": "quant-scope",
+    "name": "PROBE-C3-10",
+    "prompt_text": "'There exists a prime number greater than every even number.' Under the reading 'for every even number there is a greater prime', is the statement true?\nAnswer with exactly one word: TRUE or FALSE.",
+    "expected_result": "TRUE",
+    "scoring_method": "exact",
+    "note": "exists-wide false but the forall-exists reading is true (Euclid)"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-01",
+    "prompt_text": "If the cache is warm, responses are fast. The cache is warm. Separately, the office plant needs watering. Are responses fast?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "MP + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-02",
+    "prompt_text": "If the cache is warm, responses are fast. Responses are fast. Separately, the office plant needs watering. Is the cache warm?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "converse trap + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-03",
+    "prompt_text": "If P then Q. If Q then R. P. The cafeteria menu changes daily. Does R follow?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "chain + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-04",
+    "prompt_text": "If P then Q. If Q then R. R. The cafeteria menu changes daily. Does P follow?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "chain converse + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-05",
+    "prompt_text": "Either the DNS is wrong or the route is down. The DNS is not wrong. The printer is out of toner. Is the route down?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "DS + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-06",
+    "prompt_text": "Either the DNS is wrong or the route is down (or both). The DNS is wrong. The printer is out of toner. Can you conclude the route is not down?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "affirm-disjunct + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-07",
+    "prompt_text": "If backups run, data is safe. If data is safe, audits pass. Backups run. The parking lot is full. Do audits pass?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "2-hop + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-08",
+    "prompt_text": "If backups run, data is safe. If data is safe, audits pass. Audits did not pass. The parking lot is full. Did backups fail to run?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "2-hop contrapositive + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-09",
+    "prompt_text": "If backups run, data is safe. If data is safe, audits pass. Backups did not run. The parking lot is full. Did audits fail?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "INVALID",
+    "scoring_method": "exact",
+    "note": "2-hop inverse trap + distractor"
+  },
+  {
+    "probe_class": "distractor",
+    "name": "PROBE-C4-10",
+    "prompt_text": "If the key is valid, the door opens. If the door opens, the alarm trips. The alarm did not trip. The weather is mild. Is the key not valid?\nAnswer with exactly one word: VALID or INVALID.",
+    "expected_result": "VALID",
+    "scoring_method": "exact",
+    "note": "2-hop contrapositive + distractor"
+  }
+]

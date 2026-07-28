@@ -382,7 +382,7 @@ consistent. Any future scaffold work must treat the hint's REGISTER as a
 carrier variable — per this data, a haiku-register hint should beat a formal
 one for carrier-sensitive models.
 
-## 10.9 Carrier-immunity threshold — big models shrug off ALL carrier noise (runs 922-930)
+## 10.9 Carrier-immunity threshold — do big models shrug off carrier noise? (runs 922-930; conclusion scoped by §10.16)
 
 Replication of §10.8 on stronger models. Same LOGIC cluster (29 tests, modular
 `test_ids`), same 5 carriers, on a 30B local model (nemotron-3-nano-omni, 100%
@@ -392,25 +392,43 @@ confound ruled out: max 324 prompt + 764 completion tokens ≪ 131072 context /
 
 | Model | Baseline | English | Lean | Haiku | Bribe | Verdict |
 |---|---|---|---|---|---|---|
-| gemma-4-e2b (2B, §10.8) | 99.0% | 94.1% | 91.2% | 97.1% | 91.2% | **carrier-SENSITIVE** |
-| nemotron-3-nano-omni (30B) | 100% (87/87) | 100% | 100% | 100% | 100% | **carrier-IMMUNE** |
-| anthropic/claude-fable-5 (cloud) | 100% (85/85) | 100% (87/87) | 100% (84/84) | 100% (79/79) | 100% (87/87) | **carrier-IMMUNE** |
+| gemma-4-e2b (2B, §10.8) | 99.0% | 94.1% | 91.2% | 97.1% | 91.2% | **carrier-SENSITIVE** (endpoint drop supported) |
+| nemotron-3-nano-omni (30B) | 100% (87/87) | 100% | 100% | 100% | 100% | **no resolvable sensitivity** (at ceiling) |
+| anthropic/claude-fable-5 (cloud) | 100% (85/85) | 100% (87/87) | 100% (84/84) | 100% (79/79) | 100% (87/87) | **no resolvable sensitivity** (at ceiling) |
 
-**Finding:** carrier-immunity tracks **capability/headroom**, not substrate
-(local vs cloud). The small near-ceiling model (e2b, 99%) is dragged by carrier
-noise — the carrier crowds out its limited reasoning headroom (the user's
-"truncate middle / neutered" complaint). The 30B local and the cloud frontier
-model have enough headroom to absorb the noise AND keep the logic — 100% on
-EVERY carrier including Lean (worst on e2b) and bribe (flattery). **Below a
-capability/headroom threshold, a model is carrier-sensitive; above it,
-carrier-immune.** Confirmed on BOTH local (nemotron) and cloud (Fable 5) —
-immunity is a property of the model's capability, not where it runs.
+> **Caption superseded (2026-07-25, see §10.16):** the prose below was written before
+> the §10.8 statistical audit and is retained as the experiment receipt, but its firm
+> conclusion does not stand as stated. The scoped reading: at current N, larger models
+> show **no carrier sensitivity we can resolve** (scores at the 100% ceiling, small-N,
+> no CI); the e2b endpoint drop (99%→91% under Lean/bribe) *is* statistically supported;
+> whether immunity reflects a real capability threshold **independent of substrate** is
+> what the pre-registered paired-design experiment (N≈420) answers — **not yet settled.**
+> Endpoints real; capability-vs-substrate unresolved pending the powered run.
 
-**Mechanism (the user's intuition, confirmed):** small models are "neutered" by
-carrier noise because the carrier consumes the same limited context/reasoning
-budget the logic needs. Big models have surplus headroom — the noise is
-absorbed without touching the logic. This is Carrier Color's capability
-threshold, measured.
+> **Original finding — QUOTED VERBATIM as the experiment receipt; superseded as
+> stated (the blockquote above is the current claim, §10.16 is the correction
+> record):**
+>
+> "carrier-immunity tracks **capability/headroom**, not substrate
+> (local vs cloud). The small near-ceiling model (e2b, 99%) is dragged by carrier
+> noise — the carrier crowds out its limited reasoning headroom (the user's
+> 'truncate middle / neutered' complaint). The 30B local and the cloud frontier
+> model have enough headroom to absorb the noise AND keep the logic — 100% on
+> EVERY carrier including Lean (worst on e2b) and bribe (flattery). **Below a
+> capability/headroom threshold, a model is carrier-sensitive; above it,
+> carrier-immune.** Confirmed on BOTH local (nemotron) and cloud (Fable 5) —
+> immunity is a property of the model's capability, not where it runs."
+>
+> "**Mechanism (the user's intuition, confirmed):** small models are 'neutered' by
+> carrier noise because the carrier consumes the same limited context/reasoning
+> budget the logic needs. Big models have surplus headroom — the noise is
+> absorbed without touching the logic. This is Carrier Color's capability
+> threshold, measured."
+>
+> Neither paragraph's confidence level survives §10.8's statistical audit: the
+> 100%-ceiling cells are unresolvable at this N, so "confirmed" was never the
+> right word. The endpoints are real; the threshold-and-substrate story awaits
+> the powered paired-design run.
 
 **⚠ Confound note (2026-07-22, see §10.14):** the local-vs-cloud leg of this
 conclusion is ENTANGLED — cloud models differ from local on two axes at once
@@ -1034,4 +1052,535 @@ This sentence is the wording mandate. Site, README, dashboard landing, lessons, 
 - Human-cal (043) + Manual Subject Mode (§14) + API executor are three channel implementations of one abstraction.
 - The Witness artifact spec is new work (Claude Code lane, when ready).
 - The wording audit is a live work item: every public surface must be checked against the mission sentence.
+  - **2026-07-26 (Claude Code): README front door installed.** The lead, "why"
+    paragraph, capability demotion ("Runs against local models (LM Studio) and
+    cloud endpoints"), and the cognitive-scientist thread line are taken from
+    `inbox/claude-science/COPY_founding_thesis_stated_vs_actual.md` (2026-07-25,
+    closes STORY_CONSISTENCY_AUDIT Findings 1–2 for the README). The
+    crosswalk link anchors to §10.13 (the verified record) because
+    `ontology_crosswalk.json` is not committed to this repo.
+  - **2026-07-26 (Claude Code, same PR): Rung 1 shipped.** `page-onboard`
+    (first-run continuity test) on the dashboard: three-step ladder over
+    existing endpoints only (`/api/status`, `/api/lmstudio/status`,
+    `POST /api/prompt-check`), non-battery OHM stimulus, failure states as
+    first-class cards with next actions, zero credentials. The 2×3
+    SILICON/CARBON × LOCAL/CLOUD/MANUAL diagram ships inline there — the
+    golden-ratio commitment is now built on a real surface (public copy may
+    scope a phi claim to it once merged/deployed, per story-audit Finding 3).
+    Browser-verified against a mocked backend: green path + LM-Studio-down +
+    no-model-loaded, console clean. Bug found by the restore path during
+    verification (TDZ on a mid-file showPage call) fixed at the source. Side
+    fix: 'human-cal' was absent from the PAGES array — its tab hid every
+    page and displayed nothing; added.
+    - **Adversarial verification round (3 independent verifiers), fixes
+      applied same day:** (1) the page was UNREACHABLE in Focused mode —
+      the first-visit default — because the only entry lived inside the
+      hero that Focused hides, and mode restore force-switched to
+      benchmark; fixed with a "First Run" tab (both modes) + restore
+      exemption. (2) Generation counter so stale in-flight async (beep or
+      channel probe) can never overwrite a newer ladder state or
+      double-fire. (3) Beep timer leak on body-read failure — try/finally.
+      (4) Silent registry fallback REMOVED: a wrong pick could 404 or
+      JIT-load a multi-GB model; no-match is now a first-class state.
+      (5) OHM grading tolerates symmetric wrappers ("**OHM**", quotes).
+      (6) aria-live on ladder/result, retry links are real buttons,
+      step titles are h3s. Reload-persistence in Focused re-verified live.
+    - **2026-07-26 (Claude Code, same PR): Rung 2 shipped.** Model Picker
+      page + `src/routes/picker.rs`: battery served without the key,
+      grading server-side, 6 unit tests on the
+      floors (items 1/5 individually disqualifying verified in code).
+      Battery ported verbatim from the CS drop; the UI renders the caveat,
+      bands not scores, format failure as its own verdict, and points at
+      verified_configs.json instead of recommending any model. Reload-
+      restore bug in the Rung 1 generation counter (obGen undefined at
+      mid-file restore → NaN → ladder stuck at "Checking…") caught by
+      Copilot review and fixed by moving the onboarding globals above the
+      restore point; regression-asserted in the browser test.
+    - **2026-07-26 (Claude Code, same PR): Rung 3 shipped — the keystone
+      wizard.** `page-wizard`, three questions on one page; all six
+      subject×channel cells resolve honestly (live-registry model lists,
+      no-key and schema-ready as first-class states, carbon×local routes to
+      human-cal); Run arms the Focused workspace and fires the same
+      /api/runs path as the workspace button — one run machinery, one
+      schema, honest channel provenance. focusedPickSubject with no prior
+      pick now walks the wizard instead of the model grid (§15: the wizard
+      replaces the picker as Focused's default entry); Deep keeps the grid.
+      Onboarding is now Rung 1 ✓ Rung 2 ✓ Rung 3 ✓ — the three-rung
+      first-run flow designed by Claude Science 2026-07-25 is fully built.
+    - **2026-07-26 (Claude Code): Rung 3 hardened; channel-provenance
+      overclaim corrected — our own stated-vs-actual gap again, caught by
+      the adversarial pass.** The wizard's copy claimed channel provenance
+      in present tense on four surfaces, but the runs schema has NO channel
+      column — §14's migration/ingest (Hermes lane) are unbuilt; only
+      subject provenance (participant_id, migration 043) is live. All four
+      surfaces now say "designed (§14), not yet built." Also fixed:
+      clean-room enforcement in wzRun (the MODE select could silently turn
+      the wizard's run scaffolded/paired), Deep-mode silent-run (wizard now
+      finishes in Focused), focusedRun 400s rendering as empty success
+      (pre-existing, now fails loudly), instrument-down misdiagnosed as
+      no-key, color-only selection (aria-pressed + check mark), missing
+      aria-live, spec-pair stale reset, and a no-run grid escape hatch.
+      All re-verified in a live browser incl. MODE-tamper test. Follow-up
+      a11y note for the sweep: ALL top-nav tabs are clickable divs without
+      keyboard focus — the new First Run tab got role/tabindex/keydown
+      (it is the new-user entry point); the other nine tabs share the gap
+      and should be fixed together (Hawking standard).
+    - **2026-07-26 (Claude Code): Rung 2 secrecy claim corrected — our own
+      stated-vs-actual gap, caught by Copilot review.** The picker docs
+      claimed "the answer key never reaches page source" while the grade
+      response carried a per-item `key` field the UI displayed — and with
+      binary items, per-item correctness determines the key regardless; the
+      battery + key are also public in the repo. Correction applied as the
+      discipline demands: the claim is now scoped to what is true (key not
+      in the page bundle; grading server-authoritative; the picker is a
+      screener, not a blind instrument — blindness lives in the real
+      battery), the redundant `key` field was removed from the response and
+      UI, and grade() gained a length guard + unit test (7 total).
+    - **2026-07-26 (Claude Code, same PR): Witness Artifact Generator
+      shipped (§15 Oscent item 2).** GET /api/runs/:id/witness renders a
+      sealed run as a self-contained zero-JS certificate — one inline SVG,
+      presentation attributes only (CSP-proof anywhere, file:// included),
+      portrait golden-ratio construction self-described in its footer (the
+      second shipped φ surface). No witness without a seal; counts raw;
+      "demonstrates; does not rank"; channel labeled derived pending §14.
+      Witness link added beside the evidence-bundle export in run detail.
+    - **2026-07-26/27 (Claude Code): RELAY TO HERMES (f) — the CI Lighthouse
+      perf gate is the project's own small-N lesson applied to itself.** The
+      dashboard job gates performance at 85 from ONE Lighthouse run on an
+      SSE page. Observed readings across near-identical code in one day:
+      64 (fail), several ≥85 passes, 78 (fail) — including a red on a
+      commit whose only change was a one-line div→button swap. The page's
+      true score straddles the threshold and a single run cannot resolve
+      it — the same reason the pilot's ceiling classifier moved to ≥8
+      trials. Suggested fix (ci.yml, Hermes lane): median of 3 Lighthouse
+      runs, or gate on the median with the spread printed. Until then,
+      isolated perf-gate reds on doc-only or one-line commits should be
+      re-measured, not chased.
+    - **Backend findings from the same pass — RELAY TO HERMES (its lane,
+      recorded not patched):** (a) lmstudio_sync's UPDATE path sets
+      lmstudio_key but never rewrites `key`, so after a model rename/dedup
+      the registry key permanently differs from the loaded id and Sync
+      Local cannot restore an exact match; fetch_unique_models also does
+      not serialize lmstudio_key, so no client can match on it (the
+      existing filter at app.js:~3426 is already dead code). (b) The sync
+      canonicalization branch is a no-op (the gguf-filename candidate can
+      never contain '/'), so key = loaded-id holds today only by accident.
+      (c) models_handler swallows DB errors into a 200 empty list —
+      indistinguishable from an unsynced registry. (d) Migration 008 seeds
+      an active location='local' row (hermes-3-llama-3.1-8b,
+      lmstudio_key NULL) that the deactivation loop never touches, so
+      fresh installs permanently carry a phantom local model. (e)
+      annotate_runnable (events.rs) calls resolve_api_key with config
+      hardwired to None, and resolve_api_key has no env/config fallback
+      for any provider except nous — so openrouter/openai/gemini rows are
+      permanently runnable=false even when the key IS configured and the
+      real run path would succeed. The events.rs comment claims it asks
+      "the EXACT function the executor calls"; it doesn't. This makes any
+      runnable-filtered cloud list (the wizard's silicon×cloud path, the
+      old picker) a dead end for non-Nous providers.
+  - **2026-07-26 (Claude Code, same PR, later commit): site index + dashboard
+    landing installed too.** Site hero sub now leads with the stated-vs-actual
+    copy (text nodes only — style block untouched, hashes unchanged, verified
+    console-clean in a live browser); dashboard hero + meta/og/twitter moved
+    off "benchmarking"/"LLM capability verification" identity. Also removed
+    the site's one console violation (an inert `style="cursor:pointer"`
+    refused by the hash CSP); `site/lessons.html` still carries 26 inert
+    `style=` attributes inside inlined sealed-comic markup — left for the
+    deploy-coordinated pass. Still open in the audit: lessons headers,
+    DECISIONS preamble (checked — no benchmark voice, left as is),
+    SCISPACE_PACKAGE.md ("benchmark" voice, unhedged superlatives), and the
+    README's "90-test battery" figure, which needs sealed-run provenance per
+    PUBLIC_REPO_embarrassment_scan SEV3 before it can stay. Hash-naming
+    convention for the sweep (set 2026-07-26, README first): the family in
+    prose is **SHA-3** (NIST spelling); concrete algorithm identifiers stay
+    **SHA3-512 / SHA3-256** because they match the literal sealed hash
+    strings (`sha3-512:...`). Sealed surfaces (lessons, comics) are exempt
+    until a re-seal is otherwise required.
+  - **2026-07-27 (Claude Code, post-merge branch restart): handoff item 7 —
+    human-cal results science — SHIPPED, browser-verified 23/23.** Three
+    surfaces at page-human-cal: (1) per-question timing — elapsed clock in
+    the quiz header, stamped at the submit click (network time is not
+    thinking time), sent as a new optional `elapsed_ms` on the answer
+    endpoint and stored in trial_results.latency_ms, the same column model
+    response times use — it was hardcoded 0 for humans, a small standing
+    data lie now closed (clamped 0–24 h server-side; absent = old
+    behavior); (2) per-family carrier-swing chart — signal bar (pooled
+    pass rate) + swing bar (per-form pass-rate variance scaled to its 0.25
+    theoretical max, scale stated in the caption); NULL variance renders
+    "not measurable — N form(s)", never 0; every bar's value printed as
+    text beside it; (3) same-families comparison panel, both subject kinds
+    in one shape, with the "read the fractions, not just the bars" caveat
+    (models run N=3 per form). **/api/signal-carrier now returns
+    `subject_id`** — display names are not unique, and the previous
+    results code took the FIRST human row in the view regardless of
+    participant; the rig reproduced that exact collision (two same-named
+    participants) before the id filter fixed it. Same pass, review
+    catches: wizard's Setup link was dead in Focused mode (Focused CSS
+    force-hides page-setup) → deepPage() flips to Deep before navigating;
+    pkSendLocal dereferenced a null battery on a fast click → honest
+    "still loading" guard; 'human-cal' added to the Focused mode-restore
+    whitelists (reload mid-quiz bounced to benchmark). **Perf fix with
+    relay (f) context:** the EventSource opened at script parse time, so
+    the load trace never went network-quiet — the prime suspect for the
+    gate's 64–90 straddle on identical assets. It now connects after the
+    window load event (REST loaders already paint first data; the stream's
+    snapshot arrives a beat later either way). Verified in-browser: the
+    /api/events request starts ~10 ms after loadEventStart.
+  - **2026-07-27 (Claude Code): Witness v2 — the claim ledger — SHIPPED.**
+    Claude Science's design constraint (claim status by claim ID, never
+    prose restatement) is now the certificate's second panel: one row per
+    test_id with raw k/n, column-major over three columns, height computed
+    from the claim count, verified in-browser at 3 and 54 claims and
+    unit-pinned at 293 (the no-overlap assertion caught a real 21px height
+    shortfall on first run — the test earned its keep before it ever hit
+    CI). NULL test_id (pre-021 trials) renders as one gray "unlinked
+    trials" line — not one claim, and not silently dropped. Also fixed:
+    the v1 INNER JOIN made /api/runs/{id}/witness answer "NO SUCH RUN —
+    no run with this id exists" for sealed human-participant runs (runs
+    that exist; model_id is simply NULL) — a false statement from the
+    instrument's own honesty surface, found because item 7 makes human
+    runs commonplace. Human certificates: carbon subject kind, load mode
+    "not applicable to a human subject" (clean-room would claim a control
+    that doesn't apply), channel "dashboard quiz — same items, same
+    grader". PR #3 review catches, both fixed same pass: comparison-panel
+    famKey now groups on family_root_id (the binding rule this project
+    keeps proving — id is the key, name is a label; my own commit applied
+    it to subjects and missed it for families three lines away), and
+    submit_answer/finish_session gained a run-ownership guard
+    (verify_run_owner): a guessed run_id could previously write trials
+    into — or RESEAL — another participant's run or a model run. Third
+    catch, next round: submit_answer now also enforces that test_id is in
+    the run's seeded test_ids (no padding a run with items the session
+    never posed), and duplicate submits replay the recorded verdict
+    instead of inserting — a hard rejection would strand a client whose
+    insert landed but whose response was lost. RELAY TO HERMES (g): the
+    airtight duplicate fix is a partial UNIQUE(run_id, test_id) index for
+    participant runs — migration, backend lane; the in-route check has an
+    unavoidable concurrent-submit race without it.
+  - **2026-07-27 (Claude Code): adversarial verification round on the
+    witness-v2/guards diff — two real bugs, both honesty-class, both
+    fixed.** (1) **The carbon certificate's "same grader as model runs"
+    line was false** — and so was this module's own doc, since 043: human
+    answers were graded by a plain case-insensitive compare while models
+    get scoring::score_response (verdict extraction + normalization). A
+    human typing "no" against expected INVALID failed where a model's
+    "no" passed; even "invalid." failed. Fixed the deep way: submit_answer
+    now calls score_response itself, so the parity is real, not claimed.
+    **Measurement-method note:** human runs sealed before 2026-07-27 were
+    graded by the stricter compare; comparisons across that boundary
+    should say so. (2) **Seal TOCTOU:** an answer in flight when Finish
+    landed could insert after the seal, leaving trial_results
+    contradicting the sealed counts. The INSERT now re-checks
+    status='running' in the same statement and reports "sealed while this
+    answer was in flight" when it loses the race. Also from the round:
+    finish_session now REPLAYS the stored seal for already-done runs
+    (recomputing rewrote finished_at per retry and re-derived the hash
+    from a fresh read); the evidence string gained an ORDER BY trial_num,
+    id tiebreak; the ownership guard's doc now states honestly that it is
+    integrity against mistakes, not authentication (the instrument has no
+    auth layer — instrument-wide boundary, predates this diff); and the
+    ledger prints a gold two-line note when its non-infra trial sum
+    disagrees with the sealed RESULT (pre-017 sealings included infra
+    trials in the denominator and were never backfilled — shown, not
+    hidden). Copilot same round: the ledger header now counts CLAIMS
+    excluding the synthetic unlinked-trials line, and the empty-ledger
+    aria-label carries the same "non-infra" qualifier as the visible
+    copy. **RELAY TO HERMES (g), extended:** the airtight fixes are
+    partial UNIQUE(run_id, test_id) AND UNIQUE(run_id, trial_num) indexes
+    for participant runs — migrations, backend lane; without the latter, a
+    trial_num collision makes the evidence order (and so the seal)
+    row-order-dependent between recomputes.
+  - **2026-07-27 (Claude Code): RELAY TO HERMES (h) — the
+    owl_signal_carrier view counts infra-error trials.** Copilot catch on
+    PR #3: the view (migration 043) aggregates trial_results with no
+    is_infra_error = false filter, while every other results query has
+    one — so a backend outage mid-run reads as the subject's reasoning
+    getting worse, and an outage hitting one surface form manufactures
+    fake carrier variance. The dashboard endpoint now inlines the
+    corrected aggregation (signal_carrier.rs), so the chart/compare panel
+    is right; the VIEW itself still serves infra-polluted numbers to any
+    direct consumer (Claude Science's harness, ad-hoc SQL). Fix at the
+    source is a CREATE OR REPLACE VIEW migration — backend lane, and
+    consumers should agree first since it changes published numbers.
+    Same round: made the witness claim-ledger's NULLS LAST explicit —
+    Copilot claimed Postgres sorts NULL first ascending (it doesn't;
+    default is NULLS LAST), declined-with-correction on the thread, but
+    the explicit qualifier documents the intent instead of leaning on a
+    default. Second defect in the same view (Copilot, next round):
+    VARIANCE() is Postgres var_samp (÷ n−1), reaching 0.5 for two forms
+    at 0%/100% — the dashboard's stated 0.25 theoretical max is a
+    population-variance bound, and the attempted forms are the complete
+    set under measurement, not a sample. The dashboard endpoint now uses
+    VAR_POP; the view fix should settle var_samp vs var_pop WITH Claude
+    Science (their pilot stats may assume one or the other). The mock rig
+    had computed population variance all along — it verified semantics
+    the view didn't have, which is exactly the class of gap a mock cannot
+    catch.
+  - **2026-07-28 (Claude Code): tab keyboard pass + wording residuals +
+    architecture doc.** (1) All nine nav tabs are native buttons with the
+    UA chrome stripped — fixes the all-white First Run tab Carey
+    photographed live on Safari (yesterday's div→button swap never reset
+    ButtonFace; mode/a11y toggles only looked right via their id-level
+    backgrounds) and completes the systemic keyboard pass: every tab
+    focusable, Enter-activatable, 23 Playwright checks. NOTE: pulling
+    main would NOT have fixed the white tab — the bug was in the Mac's
+    checkout already; the fix is this commit. (2) Wording residuals:
+    README's "90-test battery" figure had no sealed-run provenance
+    (PUBLIC_REPO scan SEV3) → "the same sealed battery", no number;
+    SCISPACE_PACKAGE.md — "features no existing benchmark provides" and
+    "no single existing benchmark provides" hedged to "we have not
+    found", "Universal Fallacy Blindness" renamed "Widespread" (19 of 21
+    is not universal — the sentence contradicted its own title),
+    stated-vs-actual identity installed in the summary, SHA-3-512 →
+    SHA3-512 per the identifier convention. Lessons headers CHECKED and
+    found already compliant — no edit, recorded as closure. (3)
+    docs/ARCHITECTURE.md added as the maintained architecture reference
+    (mermaid renders on GitHub); the stale .excalidraw is kept as a
+    drawing source and marked superseded on disagreement — editing its
+    JSON with no renderer available would have been an unverifiable
+    change.
+  - **2026-07-28 (Claude Code): verification round on the tab/wording/doc
+    batch — zero real bugs, four papercuts, three fixed.** (1) The
+    architecture doc's mermaid used `\n` for line breaks; mermaid v10+
+    (what GitHub renders) only breaks on `<br/>`, so every node would have
+    shown a literal backslash-n — the doc claimed "renders on GitHub" and
+    would have rendered wrong. Fixed. Lesson: a diagram format is a
+    dependency; "it renders" is a claim needing verification like any
+    other. (2) The nav-wide `font: inherit` in the button reset changed
+    #mode-toggle's line-height from UA normal to body's 1.5, growing the
+    pill ~4px — my commit message had claimed "every intentional state is
+    unchanged", which was not yet true. Both toggles now pin
+    `line-height: normal`, and the rig asserts it. (3) The nine tabs
+    became real buttons but announced no selection — `aria-current="page"`
+    now moves with navigation (sighted users had the gold underline; a
+    screen reader had nothing). (4) NOT fixed, recorded with reasoning:
+    the nav logo has an onclick with no keyboard path. WCAG 2.1.1 asks
+    that the *functionality* be keyboard-operable, and it is —
+    #tab-benchmark does the same thing and is focusable — so adding a
+    redundant tab stop would cost more than it gives. Same round
+    (Copilot): signal-carrier's `subject_id` tightened from Option<i32>
+    to i32, since 043's XOR CHECK was added without NOT VALID (validated
+    at creation, enforced since) — and if that invariant ever broke, a
+    loud decode failure beats a null the UI would render as "no rows for
+    this participant", which is a false statement.
+  - **2026-07-28 (Claude Code): the architecture drawing is editable after
+    all — I was wrong to retire it.** I had claimed the .excalidraw could
+    not be meaningfully edited here (no renderer) and moved the maintained
+    truth to markdown+mermaid. Carey pushed back on the right grounds:
+    Excalidraw is free for anyone to open, and a format nobody maintains is
+    worthless. Both halves of my position were weak — the file is plain
+    JSON (rectangles, text, arrows with x/y/points), and "I can't verify
+    it" was a tooling gap I could close rather than a fact.
+    **scripts/gen_architecture_diagram.py** now authors the .excalidraw
+    from a declarative spec and renders the same geometry to SVG, failing
+    on box overlaps, off-canvas elements, arrows crossing boxes, or labels
+    landing on one. Its first version reported "0 problems" for a diagram
+    whose arrows cut straight through the Executor box and ran one arrow
+    off the bottom of the canvas — the rendered preview caught what the
+    check did not, and the check was strengthened until it caught the same
+    five defects independently. **The lesson generalizes past diagrams: a
+    green check on a weak assertion is not evidence, and the fix is to
+    strengthen the assertion until it can fail.** Both views (markdown+
+    mermaid for inline GitHub reading, .excalidraw for hand-editing) are
+    now current and must be kept in step. Also corrected for the record:
+    mermaid is MIT-licensed and GitHub renders it with no account — the
+    paid product with the similar name is Miro; Excalidraw can even import
+    mermaid flowcharts into editable shapes.
 - §10.8 Carrier Color, §10.15 positional integration, §14 Manual Subject Mode are all chapters of the same book: signal vs. carrier, measured, sealed, verified.
+
+## 10.16 Public-repo carrier overclaim — caught by CS, fixed by Hermes (2026-07-25)
+
+Claude Science's public-repo embarrassment scan (inbox/claude-science/PUBLIC_REPO_embarrassment_scan.md)
+flagged a **stated-vs-actual gap on our own front page**: README asserted as a *result* that "big models
+are carrier-immune (100% on every carrier); immunity tracks capability, not substrate." That directly
+contradicted our own §10.8 statistical audit ("endpoints real, middle unresolved" — near-ceiling
+compression makes small-N 100% scores unresolvable) and §10.9's own confound note ("treat the substrate
+half of the claim as unresolved until §10.14 runs").
+
+Hermes verified the flag first-hand (grep across all public surfaces), then applied the **honest
+downgrade — not deletion** — to every surface carrying the overclaim: README.md, lessons/04-carrier-color.md
+(+ its `measured_anchor` frontmatter), lessons/comic4.svg, site/lessons.html, and the live MCP tool text
+(src/routes/mcp.rs `get_carrier_color`). New wording: "no carrier sensitivity resolvable at current N
+(ceiling); the e2b endpoint drop 99→91 is statistically supported; whether immunity tracks capability
+*independent of substrate* is what the pre-registered paired-design experiment (N≈420) answers — not yet
+a settled result." Lesson 04 was re-sealed (SHA3-256 `f8a9c596…c67dea1a` → `30dd449c…55e4c13e`) and the
+lessons/README hash table + comic footer + site seal were updated to match. The fix turns a liability into
+a demonstration of the method: we hold our own claims to the standard we measure others by.
+
+CS's no-secrets / no-profanity scan was spot-verified clean (the only hit was a mild quote inside an
+internal research doc, not public copy). The CS branch was merged **docs-only** (`-X ours`) to preserve
+the time-estimate endpoint (a65a0d9) and RUN_BUDGET_SECS=5400 which the stale branch would have deleted.
+
+## 10.8x Carrier Color measured in a paired within-item test (PREVIEW, runs 970/971 partials)
+
+**Design.** 53 quant-scope items administered to `gemma-4-e2b` under two carriers — baseline and Lean —
+with identical argument text, identical decoding configuration, 6 repetitions per cell. The carrier is the
+only manipulated variable. (These are the paired survivors of two runs that expired on a wall-clock budget;
+they are a preview of the powered run 974-977, not its result.)
+
+**A. What the carrier did.**
+The carrier changed the model's classification on **13 of 53 items**. Overall accuracy fell from
+**0.840 to 0.679** (paired *t* = 2.20, *p* = 0.032, *n* = 53).
+The effect is entirely confined to one half of the bank: **FALSE-keyed items were unaffected — 26 of 26 scored
+1.000 under both carriers** — while TRUE-keyed accuracy fell from **0.685 to 0.370**.
+
+**B. The direction is not uniform.**
+Of 27 TRUE-keyed items, 17 ended at 0.000 and 10 at 1.000 under the carrier. **Five moved from a near-zero
+baseline to a perfect score.** The net effect is a loss, but the movement runs both ways, so this is
+**not** a uniform degradation of reasoning.
+
+**C. The unexplained result, and the most interesting one.**
+**Under the Lean carrier every cell became deterministic.** At baseline, 13 of 53 items produced intermediate
+rates (cell rates took the values 0.00, 0.17, 0.83, 1.00); under Lean, **0 of 53 did** — every cell was exactly
+6/6 or 0/6. Were rep-to-rep variability unchanged, the probability of zero intermediate cells across 53 items is
+**3.3 × 10⁻⁷**. The baseline arm is stochastic on both the items the Lean arm reached (13 of 53 intermediate) and
+those it did not (18 of 74), so **the determinism is a property of the carrier arm, not of the item subset the
+truncation selected.**
+The carrier did not make the model worse so much as **collapse its answer distribution**: uncertain on a quarter
+of items under baseline, certain on all of them under Lean — sometimes certainly right, sometimes certainly wrong.
+
+**D. Bounds. Read these as part of the finding, not as disclaimers.**
+1. **Temperature is excluded as the explanation — verified in source, not accepted on report.**
+   `src/executor/mod.rs` passes a literal to the local path: `lmstudio::chat(&client, …, 4096, 0.0)`. Temperature
+   is **0.0 on every local trial in both arms**, so there was no temperature for the carrier to change. (The
+   executor's own `verdict.rs` states the same design intent: *"Our harness is deterministic — temperature 0,
+   pinned stimuli, SHA-3 sealed evidence."*)
+   **This makes §C stronger and relocates the puzzle:** at temperature 0 the *baseline* should already be
+   deterministic, and it is not — 13 of 53 cells vary across repetitions. So the baseline carries genuine
+   sampler-level nondeterminism, and the Lean carrier **removes** it. That is a more specific claim than
+   "the carrier reduces accuracy."
+2. **Speculative decoding is excluded** (`spec_decode_artifact_ruled_out.json`, `f255876`): zero
+   `speculative_draft_model`, zero draft tokens, zero accepted draft tokens **in both arms**. This was the check I
+   named as blocking; it came back clean, and with temperature fixed at 0.0 and configs byte-identical, **the
+   execution-side confounds I can name are exhausted.**
+3. **State the variance result on the PAIRED items, not on mismatched denominators.** The figures in circulation —
+   "baseline stochastic on 31/66, Lean deterministic on 0/27" — are both correct but describe **different item
+   sets**: 66 is the full baseline arm, 27 is only the TRUE-keyed subset the truncated Lean arm reached. The valid
+   comparison uses the same items in both arms:
+   | Arm | TRUE-keyed paired items with a stochastic cell |
+   |---|---|
+   | baseline | **13 of 27 (0.481)** |
+   | Lean | **0 of 27 (0.000)** |
+   **McNemar exact (paired) p = 2.4 × 10⁻⁴**, on 13 discordant pairs — 13 items stochastic under baseline and
+   deterministic under Lean, **0 in the reverse direction.**
+   **Test correction (2026-07-27):** an earlier version of this section reported *Fisher exact p = 3.6 × 10⁻⁵*.
+   **Fisher treats the two arms as independent samples, which this design is not** — the same 27 items appear in
+   both arms. The paired test is McNemar, and it gives a p roughly 7× larger. The conclusion is unchanged and the
+   direction is perfectly asymmetric, but **2.4 × 10⁻⁴ is the number that may appear in print; 3.6 × 10⁻⁵ was
+   anti-conservative.** (This is the same independence-versus-pairing error class retracted earlier in this
+   session; it recurred in a cell whose own header said "paired.")
+4. **The prompt-length alternative is NOT excluded.** At temperature 0 with no draft model, residual
+   nondeterminism comes from float non-associativity in batched matmuls, which is **sequence-length dependent**,
+   and the Lean wrapper takes the prompt from ~71 to ~192 tokens. **"Longer prompts land in a more stable
+   numerical regime" would produce the determinism difference with no carrier effect on reasoning.**
+   **Two attempts to close it have failed, and both failures are recorded rather than buried:**
+   - *The within-arm test.* Prompt lengths of stochastic vs deterministic items inside the baseline arm are
+     indistinguishable (72.7 vs 68.7 tokens). That measures sensitivity across a **4-token spread at one regime**
+     and cannot bound behaviour across a **121-token, 2.7× regime change**; the relationship need not be monotone.
+   - *My §10.8 spectrum argument — retracted.* I argued the four-carrier ordering (baseline 99.0%, Haiku 97.1%,
+     English prose 94.1%, Lean 91.2%, Bribe 91.2%) excluded a token-count mechanism because the least-distorting
+     carrier was the shortest. **I never measured any carrier's length.** "Haiku is short" and "Bribe is longer"
+     were inferred from labels; the carrier texts live in `test_runs.scaffold_supplement` (runtime data, absent
+     from committed source), and the one scaffold quoted in this file — *"you're brilliant, I'd love it, make the
+     user happy"* — is short, which **contradicts** the ordering my argument required. **Withdrawn.**
+   **What would actually close it:** the four carriers' token counts (one query on sealed data), or a
+   length-matched control carrier — same token count as Lean, neutral content. If a neutral filler of equal length
+   also collapses variance, the effect is numerical; if it does not, the effect is content-driven.
+5. **The variance claim is narrower than the accuracy claim.** §10.8 reports accuracy by carrier, **not per-item
+   rep variability**, so nothing establishes that carriers in general collapse variance. **One query on sealed
+   data would test it: per-item pass counts for runs 919 / 917 / 918 / 920.** Until then the variance result is an
+   observation under **one** carrier.
+6. **No mechanism is established.** An earlier reading — that the carrier pushed the model onto a stem-length
+   heuristic — is **retracted**: among TRUE-keyed items, flipped and unflipped stems are indistinguishable in
+   length (269 vs 272 characters, Mann-Whitney *p* = 0.369). Length is confounded with the answer key across the
+   bank (§10.8y) but has no discriminating power within the responsive half.
+7. **The bank has a known defect.** A length-only rule predicts this bank's keys at 0.941 out-of-sample. The
+   *within-item* carrier contrast is structurally immune to it — length is identical in both arms — but the
+   effect is concentrated in exactly the half where length and key are confounded, so **generalisation to a
+   leak-free bank is unestablished.**
+8. **One model, one class, one truncated arm.** The Lean arm covered only the lowest item ids (199–251).
+   Selection checks are reassuring (baseline accuracy 0.840 in both reached and unreached subsets,
+   Mann-Whitney *p* = 0.835; TRUE-share 0.509 vs 0.527) but are not proof against an unconsidered
+   id-correlated property.
+9. **This does not resolve the §10.9 threshold question.** That requires the `nemotron` arms — the immune
+   control — which are queued.
+
+**E. What §10.8 may now assert, and what it may not.**
+May assert: *in a controlled paired test where the carrier was the only variable, the carrier changed the
+verdict on identical logical content, and under one carrier the model's answers became fully deterministic where
+they had been stochastic.*
+May **not** assert: that the mechanism is known, that the effect is a directional degradation, that it holds
+beyond this model and bank, or that the variance collapse reflects the carrier's content rather than its length. **Temperature and speculative decoding ARE excluded (both verified); prompt length is NOT** — see §D.4, where my own attempt to exclude it via §10.8's carrier ordering is retracted because that ordering's decisive premise, the carriers' relative lengths, was never measured.
+**The phrase "carrier-immune" remains retired** (§10.16). Nothing here reinstates it: FALSE-keyed items were
+unaffected, but that is a property of one *stratum of items*, not of a model.
+
+---
+
+## Morning check-in — Claude Code lane, 2026-07-28
+
+**Status.** Handoff items 6, 7, 8 and 10 are DONE; item 9 is written and
+validated but DELIBERATELY UNAPPLIED. PR #4 is open and CI-green (fmt,
+clippy, build, test, logic ground-truth gate, Lighthouse, CodeQL) and is
+awaiting Carey's merge decision — it is not merged as of this note.
+
+**A pre-merge check that came back clean, recorded because a negative result
+is still evidence.** Migration 056's adversarial C rows carry a full
+paragraph as `expected_result` (`'UNSAT — the first three clauses admit
+exactly two assignments…'`) against `scoring_method = 'exact'`, which looks
+on its face like a permanently unpassable row and therefore a poisoned
+ground truth. It is not. `score_response` (src/executor/scoring.rs) extracts
+the verdict from BOTH sides and normalizes before comparing — the paragraph
+form is the ESTABLISHED convention for adversarial items, introduced by the
+grader bug #3 fix of 2026-07-25, and the in-code comment says so. I also
+checked the specific new risk: LOGIC-09 introduces a verdict vocabulary
+(SAT/UNSAT) that no prior item used. Both tokens ARE in `extract_verdict`'s
+list, ordered by descending length with a word-boundary check, so
+`'UNSAT — …'` extracts to UNSAT rather than shadowing. **No defect. The
+migration follows the existing convention correctly.**
+
+**On the oracle extension — the non-circularity condition is accepted as
+stated.** The rule relayed via Carey is right and is now the standing rule
+for this lane: *if the machine verdict disagrees with the hand-seeded
+answer, REPORT it; never adjust the oracle to agree.* The reason it matters
+here specifically: whoever adds an oracle entry writes both the lambda
+structure and the seeded verdict, so deriving both from the same reasoning
+makes the check circular and it passes trivially. The structure must come
+from the `formal_spec` and the seeded verdict from the migration's
+`expected_result` — two independent sources — or the gate proves nothing.
+The negative control already run on 056 (flipping 09C to SAT and 05C to
+VALID yields `37/39 — 2 MISMATCH(ES)`, exit 1) is the evidence that this
+gate can in fact fail.
+
+**RELAY TO HERMES (i) — nine documented-vs-actual gaps in the MCP tool
+surface**, found by `scripts/mcp_e2e_test.py` (73 checks, 0 FAIL). Six are
+tool descriptions promising what the implementation does not deliver:
+`get_status` advertises `uptime` it does not return; `get_model_verdict`
+advertises `score` it does not return; `get_run` omits fields its own
+description promises; `list_models`' `runnable` filter is advertised but
+inert (0 of 349 rows carry the field); `list_tests active=false` does not
+select inactive tests; `get_owl_state` omits advertised coverage classes.
+Three are transport deviations that originate in axum's `Json` extractor
+rejecting the body BEFORE `mcp_handler` runs, so malformed JSON and a
+missing `method` never become JSON-RPC errors. **Low priority** — no client
+consumes this surface yet; fix when that file is open anyway.
+
+**FOR CLAUDE SCIENCE — one contamination question, checked and answered
+NO.** Relay (h) reports that the `owl_signal_carrier` view (migration 043)
+aggregates `trial_results` with no `is_infra_error = false` filter, which
+would let a backend outage manufacture fake carrier variance. I checked
+whether that could have contaminated the disputed 974–978 analysis: the
+view is read ONLY by `src/routes/signal_carrier.rs` and
+`src/routes/participants.rs` — both dashboard paths, and the endpoint
+already inlines the corrected aggregation. No analysis script reads it; the
+powered-run work went through the sealed CSVs. **So (h) is dashboard
+correctness, not a confound in the carrier science.** It should be fixed,
+but it does not bear on the provisional sentence.
+
+**Lane note.** The prompt-provenance columns of item 0.2
+(`subject_prompt_declared` / `subject_prompt_sha256` / `subject_prompt_source`
+plus the missing `channel`) are the measurement that would have answered
+"were the baseline and Lean arms actually different?" in one query, instead
+of a forensic trace through `build_messages`. The spec marks §3a as schema
+work and Hermes shipped migration 055 in exactly that area the same day, so
+this lane's recommendation is that 0.2 sits with Hermes. Flagging the
+reasoning, not claiming the call.

@@ -626,10 +626,27 @@ async function startDownload(key, quantization) {
   }
 }
 
-// SSE — live data push, zero polling
-const evtSource = new EventSource('/api/events');
+// SSE — live data push, zero polling. The stream connects AFTER the window
+// load event, not at parse time: a long-lived connection opened during load
+// competes with first paint and keeps the network busy through the whole
+// load trace (desktop perf scores straddled 64–90 on identical assets).
+// Deferring costs nothing — loadModels() paints the roster from REST at
+// boot, and the stream's 'initial' snapshot arrives a beat later either way.
+let evtSource = null;
+function connectEventStream() {
+  if (evtSource) return;
+  evtSource = new EventSource('/api/events');
+  evtSource.onmessage = handleStreamMessage;
+  evtSource.onopen = handleStreamOpen;
+  evtSource.onerror = handleStreamError;
+}
+if (document.readyState === 'complete') {
+  connectEventStream();
+} else {
+  window.addEventListener('load', function () { setTimeout(connectEventStream, 0); });
+}
 
-evtSource.onmessage = (e) => {
+function handleStreamMessage(e) {
   const data = JSON.parse(e.data);
   if (data.type === 'initial' || data.type === 'refresh') {
     applyModelSnapshot(data.models);
@@ -731,7 +748,7 @@ evtSource.onmessage = (e) => {
   } else if (data.type === 'error') {
     log('err', `ERROR: ${data.message}`);
   }
-};
+}
 
 // ── SSE connection state — debounced logging + a persistent status pill ──
 // evtSource.onerror fires on EVERY failed reconnect attempt (browser retries
@@ -750,22 +767,22 @@ function setConnStatus(down) {
   if (down) pill.textContent = '⚠ Backend unreachable — reconnecting…';
 }
 
-evtSource.onopen = () => {
+function handleStreamOpen() {
   if (sseWasDown) {
     log('info', '✓ SSE reconnected — backend is back');
   }
   sseWasDown = false;
   setConnStatus(false);
-};
+}
 
-evtSource.onerror = () => {
+function handleStreamError() {
   if (!sseWasDown) {
     // Log the transition once, not on every ~3s retry tick.
     log('err', 'SSE connection lost — will auto-reconnect');
     sseWasDown = true;
   }
   setConnStatus(true);
-};
+}
 
 // Hard cap on the live-log DOM regardless of cause (SSE flapping, a chatty
 // run, or just a long-lived session) — trims oldest entries once over budget
@@ -1257,6 +1274,11 @@ function updateGpuStrip(s) {
     const memEl = document.getElementById('abort-mem');
     if (memEl) memEl.textContent = '· ' + (mem / 1073741824).toFixed(1) + ' GB wired' + (pct != null ? ' · GPU ' + pct + '%' : '');
   }
+  // Feed the control-strip meters (GPU + memory).
+  const csGpu = document.getElementById('control-gpu');
+  if (csGpu) csGpu.textContent = pct != null ? 'GPU ' + pct + '%' : '';
+  const csMem = document.getElementById('control-mem');
+  if (csMem) csMem.textContent = mem != null ? (mem / 1073741824).toFixed(1) + ' GB' : '';
 }
 
 // ═══ EMERGENCY ABORT BAR ENGINE ═══════════════════════════════════════════
@@ -1302,13 +1324,22 @@ function hideRunActiveBanner() {
 function refreshAbortBar() {
   const bar = document.getElementById('abort-bar');
   const label = document.getElementById('abort-run-label');
+  const stripState = document.getElementById('control-run-state');
+  const stripStop = document.getElementById('control-stop-btn');
   if (!bar) return;
   const n = _liveRunIds.size;
   bar.classList.toggle('armed', n > 0);
   document.body.classList.toggle('abort-armed', n > 0);
-  if (label) label.textContent = n === 0 ? 'RUN LIVE'
+  const runText = n === 0 ? 'RUN LIVE'
     : n === 1 ? `RUN #${[..._liveRunIds][0]} LIVE`
     : `${n} RUNS LIVE`;
+  if (label) label.textContent = runText;
+  // Control strip mirrors run state + shows STOP when armed.
+  if (stripState) {
+    stripState.textContent = n > 0 ? '● ' + runText : '● idle';
+    stripState.style.color = n > 0 ? 'var(--accent-red, #ff6b6b)' : 'var(--text-muted)';
+  }
+  if (stripStop) stripStop.style.display = n > 0 ? '' : 'none';
   if (n === 0) { const m = document.getElementById('abort-mem'); if (m) m.textContent = ''; }
 }
 async function abortAllLiveRuns() {
@@ -1871,13 +1902,53 @@ document.getElementById('model-grid').addEventListener('click', function(e) {
   if (badge) badge.textContent = (count + (document.querySelector('.model-card.selected, .model-row.selected') ? 1 : 0)) + ' selected';
 });
 // ============ Tab navigation — makes the top-nav tabs actually work ============
-const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio'];
+// First-run onboarding globals (Rung 1). These MUST initialize BEFORE the
+// saved-page restore below can call obLoad() — declared later, the restore
+// would run with obGen undefined, ++undefined = NaN would poison the
+// generation check, and the later initializer would overwrite it: ladder
+// permanently stuck at "Checking..." on reload (Copilot catch, PR #2).
+// The ob* FUNCTIONS live at the end of the file; declarations hoist.
+var OB_STIMULUS = 'Continuity check. Reply with exactly one word: OHM';
+var obLoadedIds = [];
+var obBeepTimer = null;
+// Generation counter: every (re)entry to the ladder invalidates in-flight
+// async work, so a stale beep or channel probe can never overwrite a newer
+// ladder state (green verdict under a red channel card) or double-fire.
+var obGen = 0;
+// Model Picker (Rung 2) globals — same placement rule as the ob* block.
+var pkBattery = null;
+var pkGen = 0;
+// Subject/Channel wizard (Rung 3) state — same placement rule.
+var wzState = { subject: null, channel: null };
+var wzGen = 0;
+// Human-cal timing state (item 7) — same placement rule. hcQShownAt is the
+// performance.now() stamp when the current question rendered; the elapsed
+// clock is real data, persisted per trial in the same latency_ms column
+// model response times use.
+var hcQShownAt = 0;
+var hcTimerId = null;
+var hcTimes = [];
+var hcParticipantName = '';
+
+// 'human-cal' was missing here even though its tab calls showPage('human-cal') —
+// the click hid every page and revealed nothing. Same list gates the
+// localStorage page restore, so it also could never survive a reload.
+const PAGES = ['setup', 'benchmark', 'prompt-builder', 'loot-page', 'tests-page', 'runs-page', 'lmstudio', 'human-cal', 'onboard', 'picker', 'wizard'];
 function showPage(name) {
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
     if (el) el.style.display = (p === name) ? '' : 'none';
     const tab = document.getElementById('tab-' + p);
-    if (tab) tab.classList.toggle('active', p === name);
+    if (tab) {
+      tab.classList.toggle('active', p === name);
+      // The gold underline is the sighted cue; aria-current is the same
+      // fact for a screen reader. Without it the nav is nine buttons with
+      // no announced selection (verification catch after the tabs became
+      // real buttons). Removed rather than set false — absent is the
+      // standard "not current".
+      if (p === name) tab.setAttribute('aria-current', 'page');
+      else tab.removeAttribute('aria-current');
+    }
   });
   localStorage.setItem('amb-active-page', name);
   if (name === 'setup') { loadRealityCheck(); loadHermesVerify(); loadCloudKeys(); loadNewestBots(); }
@@ -1886,6 +1957,9 @@ function showPage(name) {
   if (name === 'runs-page') loadRunsPage();
   if (name === 'lmstudio') loadLmStudioPage();
   if (name === 'prompt-builder') loadPromptBuilderPage();
+  if (name === 'onboard') obLoad();
+  if (name === 'picker') pkLoad();
+  if (name === 'wizard') wzLoad();
 }
 // Restore last-viewed page on load (defaults to benchmark).
 const savedPage = localStorage.getItem('amb-active-page');
@@ -2749,7 +2823,7 @@ async function toggleRunDetail(runId) {
   const isLive = status === 'queued' || status === 'running' || status === 'loading';
   const abortHtml = isLive
     ? `<div style="margin:8px 0;"><button class="btn" style="background:var(--unsafe);color:#fff;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;" onclick="abortRun(${run.id})">⛔ Abort run #${run.id}</button><span style="color:var(--text-muted);margin-left:8px;font-size:11px;">stops LM Studio/provider work immediately</span></div>`
-    : `<div style="margin:8px 0;"><a class="btn" style="background:var(--bg-card);color:var(--accent-gold);border:1px solid var(--accent-gold);padding:6px 12px;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-block;" href="/api/runs/${run.id}/export" download title="Download the complete evidence bundle: every prompt, response, reasoning trace, latency, spec-decode counter, and the SHA3-512 seal — self-verifying, app-independent">⬇ Export evidence bundle</a><span style="color:var(--text-muted);margin-left:8px;font-size:11px;">one JSON file — prompts, responses, seals; verifiable offline</span></div>`;
+    : `<div style="margin:8px 0;"><a class="btn" style="background:var(--bg-card);color:var(--accent-gold);border:1px solid var(--accent-gold);padding:6px 12px;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-block;" href="/api/runs/${run.id}/export" download title="Download the complete evidence bundle: every prompt, response, reasoning trace, latency, spec-decode counter, and the SHA3-512 seal — self-verifying, app-independent">⬇ Export evidence bundle</a><a class="btn" style="background:var(--bg-card);color:var(--accent-gold);border:1px solid var(--accent-gold);padding:6px 12px;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-block;margin-left:8px;" href="/api/runs/${run.id}/witness" target="_blank" rel="noopener" title="A sealed, self-verifying certificate: one zero-JS HTML file, golden-ratio grid, the SHA3-512 seal, and a verify-by-hash footer. Demonstrates; does not rank. Sealed runs only.">🪶 Witness certificate</a><span style="color:var(--text-muted);margin-left:8px;font-size:11px;">one JSON file — prompts, responses, seals; verifiable offline · witness = shareable sealed certificate</span></div>`;
   if (!run.trials || !run.trials.length) {
     panel.innerHTML = `${abortHtml}<span style="color:var(--text-muted)">No trials recorded for this run.</span>`;
     return;
@@ -3743,7 +3817,12 @@ async function focusedRun(mode) {
   const JSON_HEADERS = { 'Content-Type': 'application/json' };
   try {
     let res;
-    const unwrap = (r) => (r && r.data !== undefined ? r.data : r);
+    const unwrap = (r) => {
+      // apiFetch envelope: a 400's plain-text body lands in r.data, which
+      // used to render as 'run(s) []' success — fail loudly instead.
+      if (r && r.ok === false) throw new Error(r.error || ('HTTP ' + r.status));
+      return (r && r.data !== undefined ? r.data : r);
+    };
     if (loadMode === 'paired') {
       // Paired design: every selected axis runs twice (baseline, then
       // scaffolded) — same endpoint Deep mode uses. 'missing'/'just' don't
@@ -3955,8 +4034,20 @@ function focusedEnsure() {
   }
 }
 
-// Subject picker — opens the modal, updates the hidden input + label.
+// Subject picker — the wizard is the DEFAULT Focused entry (DECISIONS §15):
+// with no subject picked yet, the button walks the three-question wizard;
+// once a subject exists, it opens the full-grid modal for change/compare.
 async function focusedPickSubject() {
+  if (!window._focusedSubjects || !window._focusedSubjects.length) {
+    showPage('wizard');
+    return;
+  }
+  return focusedPickSubjectViaGrid();
+}
+
+// The grid path, callable directly — the wizard offers it as an escape
+// hatch so grid-first flows (multi-select, spec pairs) don't cost a run.
+async function focusedPickSubjectViaGrid() {
   const picks = await showSubjectPicker();
   if (!picks || !picks.length) return;
   const input = document.getElementById('focused-subject-pick');
@@ -4079,9 +4170,19 @@ function toggleMode() {
   try { localStorage.setItem('calibration-mode', focused ? 'focused' : 'deep'); } catch(e) {}
   const btn = document.getElementById('mode-toggle');
   if (btn) btn.textContent = 'Mode: ' + (focused ? 'Focused' : 'Deep');
-  // Focused forces the benchmark workspace active (it is the only page).
-  if (focused) showPage('benchmark');
+  // Focused forces the benchmark workspace active (it is the only page) —
+  // except the Focused-legal pages (onboarding ladder, picker, wizard,
+  // human-cal), which must survive the mode flip or their flows die mid-step.
+  if (focused) showPage(['onboard', 'picker', 'wizard', 'human-cal'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
   focusedEnsure();
+}
+
+// Escape hatch: navigate to a page that Focused-mode CSS force-hides (e.g.
+// Setup). Focused flips to Deep first — without this the click looks dead
+// (caught in review: the wizard's "add a cloud key" path went nowhere).
+function deepPage(name) {
+  if (document.documentElement.getAttribute('data-mode') === 'focused') toggleMode();
+  showPage(name);
 }
 (function restoreMode() {
   try {
@@ -4097,7 +4198,10 @@ function toggleMode() {
       document.documentElement.setAttribute('data-mode', 'focused');
       const btn = document.getElementById('mode-toggle');
       if (btn) btn.textContent = 'Mode: Focused';
-      showPage('benchmark');
+      // Preserve a restored Focused-legal page (onboarding, picker, wizard,
+      // human-cal) — forcing benchmark here made first-run unreachable on
+      // reload, and bounced a mid-quiz human-cal participant to the workspace.
+      showPage(['onboard', 'picker', 'wizard', 'human-cal'].includes(localStorage.getItem('amb-active-page')) ? localStorage.getItem('amb-active-page') : 'benchmark');
       focusedEnsure();
     }
   } catch(e) {}
@@ -4360,6 +4464,7 @@ async function hcCreate() {
     }
     const d = await r.json();
     hcParticipantId = d.id;
+    hcParticipantName = d.display_name || name;
     document.getElementById("hc-step-setup").style.display = "none";
     document.getElementById("hc-step-scope").style.display = "";
     hcLoadExisting();
@@ -4377,6 +4482,7 @@ async function hcLoadExisting() {
 
 function hcReuse(id, name) {
     hcParticipantId = id;
+    hcParticipantName = name;
     document.getElementById("hc-step-setup").style.display = "none";
     document.getElementById("hc-step-scope").style.display = "";
 }
@@ -4401,6 +4507,11 @@ async function hcStartSession() {
     hcTests = d.tests;
     hcIndex = 0;
     hcCorrect = 0;
+    // Session-start reset, not only hcReset(): a session begun without
+    // "Calibrate Again" would otherwise blend prior-session timings into
+    // this run's median/fastest/slowest (review catch).
+    hcTimes = [];
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     document.getElementById("hc-step-scope").style.display = "none";
     document.getElementById("hc-step-quiz").style.display = "";
     document.getElementById("hc-session-info").textContent = `${hcTests.length} questions · run #${hcRunId}`;
@@ -4415,12 +4526,26 @@ function hcShowQuestion() {
     document.getElementById("hc-prompt-text").textContent = t.prompt_text;
     document.getElementById("hc-answer").value = "";
     document.getElementById("hc-feedback").innerHTML = "";
+    // Per-question clock — elapsed seconds are real data (they land in
+    // trial_results.latency_ms at submit), so showing them is not a spinner.
+    if (hcTimerId) clearInterval(hcTimerId);
+    hcQShownAt = performance.now();
+    const timerEl = document.getElementById("hc-timer");
+    if (timerEl) timerEl.textContent = "0s";
+    hcTimerId = setInterval(function() {
+        const el = document.getElementById("hc-timer");
+        if (el) el.textContent = Math.floor((performance.now() - hcQShownAt) / 1000) + "s";
+    }, 1000);
     document.getElementById("hc-answer").focus();
 }
 
 async function hcSubmit() {
     const answer = document.getElementById("hc-answer").value.trim();
     if (!answer) return;
+    // Stamp at the click — network time is not the participant's thinking
+    // time. On a failed submit the clock keeps running from the same start,
+    // so a retry re-measures honestly instead of resetting to zero.
+    const elapsedMs = Math.max(0, Math.round(performance.now() - hcQShownAt));
     const t = hcTests[hcIndex];
     const r = await fetch(`/api/participants/${hcParticipantId}/answer`, {
         method: "POST",
@@ -4430,19 +4555,28 @@ async function hcSubmit() {
         body: JSON.stringify({
             run_id: hcRunId,
             test_id: t.id,
-            answer: answer
+            answer: answer,
+            elapsed_ms: elapsedMs
         })
     });
     if (!r.ok) {
         alert("Submit failed: " + r.status);
         return;
     }
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     const d = await r.json();
+    // Display and summarize the RECORDED latency, not this click's clock:
+    // on a lost-response retry the server replays the first submit's row,
+    // and showing the retry's time would diverge from what was persisted
+    // (review catch). Older servers without the field fall back honestly.
+    const recordedMs = typeof d.latency_ms === "number" ? d.latency_ms : elapsedMs;
+    hcTimes.push(recordedMs);
+    const tookS = (recordedMs / 1000).toFixed(1);
     if (d.passed) {
         hcCorrect++;
-        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--safe)">✓ Correct — ${esc(d.test_name)}</span>`;
+        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--safe)">✓ Correct — ${esc(d.test_name)}</span> <span style="color:var(--text-muted)">· ${tookS}s</span>`;
     } else {
-        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--unsafe)">✗ Expected: ${esc(d.expected)}</span>`;
+        document.getElementById("hc-feedback").innerHTML = `<span style="color:var(--unsafe)">✗ Expected: ${esc(d.expected)}</span> <span style="color:var(--text-muted)">· ${tookS}s</span>`;
     }
     hcIndex++;
     if (hcIndex < hcTests.length) {
@@ -4467,34 +4601,728 @@ async function hcFinish() {
         return;
     }
     const d = await r.json();
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     document.getElementById("hc-step-quiz").style.display = "none";
     document.getElementById("hc-step-results").style.display = "";
     const pct = d.total_count > 0 ? Math.round(d.pass_count / d.total_count * 100) : 0;
     document.getElementById("hc-signal-score").textContent = `${d.pass_count}/${d.total_count} (${pct}%)`;
-    document.getElementById("hc-carrier-variance").textContent = "Signal score = pooled pass rate across all surface forms. Carrier variance available in the signal-carrier view once ≥2 forms are attempted.";
+    document.getElementById("hc-carrier-variance").textContent = "Signal score = pooled pass rate across all surface forms.";
     document.getElementById("hc-provenance").textContent = "sealed: " + d.sha3_provenance;
-    // Fetch signal-carrier data for this participant
-    const sc = await fetch("/api/signal-carrier");
-    if (sc.ok) {
+    // Per-question timing summary — client-measured, persisted per trial in
+    // trial_results.latency_ms (same column model response times live in).
+    const timingEl = document.getElementById("hc-timing-summary");
+    if (timingEl && hcTimes.length) {
+        const sorted = hcTimes.slice().sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        const fmt = ms => (ms / 1000).toFixed(1) + "s";
+        timingEl.textContent = `Answer time: median ${fmt(median)} over ${sorted.length} question${sorted.length === 1 ? "" : "s"} (fastest ${fmt(sorted[0])}, slowest ${fmt(sorted[sorted.length - 1])}) — recorded with each trial.`;
+    } else if (timingEl) {
+        timingEl.textContent = "";
+    }
+    // Signal/carrier read — filtered to THIS participant by id (display
+    // names are not unique; the old code took the first human row in the
+    // view, which could be a different participant entirely).
+    let sc = null;
+    try { sc = await fetch("/api/signal-carrier"); } catch (e) { sc = null; }
+    if (sc && sc.ok) {
         const scd = await sc.json();
-        const human = scd.rows.filter(x => x.subject_kind === "human");
-        if (human.length) {
-            const vars = human.filter(x => x.carrier_variance != null);
-            if (vars.length) {
-                document.getElementById("hc-carrier-variance").textContent = `Carrier variance: ${vars[0].carrier_variance.toFixed(4)} (0 = no wording swing, higher = wording changes your verdict)`;
-            }
+        hcRenderScience(Array.isArray(scd.rows) ? scd.rows : []);
+    } else {
+        const chartSec = document.getElementById("hc-carrier-section");
+        if (chartSec) chartSec.style.display = "none";
+        const cmpSec = document.getElementById("hc-compare-section");
+        if (cmpSec) cmpSec.style.display = "none";
+        document.getElementById("hc-carrier-variance").textContent += " The signal-carrier view did not answer, so the wording-swing chart is unavailable for this session.";
+    }
+}
+
+// ── Item 7: results-page science — carrier-swing chart + subject comparison ──
+// Bars are plain divs scaled by real numbers; every value is also printed as
+// text beside its bar, so the chart degrades to an honest table for screen
+// readers and copy-paste. No library, no animation (CSP: no external scripts).
+function hcBarTrack(frac, cls) {
+    const w = Math.max(0, Math.min(1, frac)) * 100;
+    return `<div class="hc-track"><div class="hc-fill${cls ? " " + cls : ""}" style="width:${w.toFixed(1)}%"></div></div>`;
+}
+
+function hcRenderScience(rows) {
+    const mine = rows.filter(x => x.subject_kind === "human" && x.subject_id === hcParticipantId);
+    const chartSec = document.getElementById("hc-carrier-section");
+    const chartEl = document.getElementById("hc-carrier-chart");
+    const cmpSec = document.getElementById("hc-compare-section");
+    const cmpEl = document.getElementById("hc-compare");
+    const headline = document.getElementById("hc-carrier-variance");
+    if (!mine.length) {
+        if (chartSec) chartSec.style.display = "none";
+        if (cmpSec) cmpSec.style.display = "none";
+        if (headline) headline.textContent += " No per-family rows for this participant in the signal-carrier view yet.";
+        return;
+    }
+    const famLabel = x => `${x.family_name || "family #" + (x.family_root_id != null ? x.family_root_id : "?")}${x.axis ? " · " + x.axis : ""}`;
+    const measurable = mine.filter(x => x.carrier_variance != null);
+    if (headline) {
+        headline.textContent = measurable.length
+            ? `Carrier swing measurable on ${measurable.length} of ${mine.length} famil${mine.length === 1 ? "y" : "ies"} — 0 means the wording changed nothing.`
+            : "Carrier swing not measurable yet: it needs ≥2 surface forms of the same family attempted. A 0 here would be a false claim.";
+    }
+    // Chart: per family, a signal bar (pooled pass rate, 0–100%) and a swing
+    // bar (variance of per-form pass rates, scaled to its 0.25 theoretical
+    // max — two forms at 0% and 100% — stated in the caption).
+    if (chartSec && chartEl) {
+        chartSec.style.display = "";
+        chartEl.innerHTML = mine.map(x => {
+            const sig = x.signal_score != null ? x.signal_score : 0;
+            const trials = (x.total_passes != null && x.total_trials != null) ? `${x.total_passes}/${x.total_trials}` : "?";
+            const swing = x.carrier_variance != null
+                ? hcBarTrack(x.carrier_variance / 0.25, "hc-fill-swing") + `<span class="hc-val">σ² ${x.carrier_variance.toFixed(4)}</span>`
+                : `<span class="hc-val hc-val-na">not measurable — ${x.surface_forms_attempted != null ? x.surface_forms_attempted : "?"} form${x.surface_forms_attempted === 1 ? "" : "s"}</span>`;
+            return `<div class="hc-fam"><div class="hc-fam-name">${esc(famLabel(x))}</div>`
+                + `<div class="hc-row"><span class="hc-row-tag">signal</span>${hcBarTrack(sig)}<span class="hc-val">${trials} (${Math.round(sig * 100)}%)</span></div>`
+                + `<div class="hc-row"><span class="hc-row-tag">swing</span>${swing}</div></div>`;
+        }).join("")
+        + `<div class="hc-chart-cap">signal = pooled pass rate across a family's surface forms · swing = variance of per-form pass rates, bar scaled to the 0.25 maximum (two forms at 0% and 100%)</div>`;
+    }
+    // Comparison: same families, every subject that attempted them — one
+    // schema, both subject kinds; that is the whole point of the view.
+    if (cmpSec && cmpEl) {
+        // Group on family_root_id — the binding key — never the display
+        // name (review catch: NULL/colliding family_name mis-groups; same
+        // rule as test_id vs test name, and subject_id vs subject_name).
+        const famKey = x => (x.family_root_id != null ? "id:" + x.family_root_id : "name:" + (x.family_name || "?")) + "|" + (x.axis || "");
+        const famSet = new Set(mine.map(famKey));
+        // EVERY other subject, not just models: the panel's whole claim is
+        // that both kinds land in one shape, and filtering peers to
+        // subject_kind === "model" quietly dropped other participants —
+        // the heading promised more than the code delivered (review catch).
+        const subjKey = x => x.subject_kind + ":" + x.subject_id;
+        const meKey = subjKey(mine[0]);
+        const peersAll = rows.filter(x => famSet.has(famKey(x)) && subjKey(x) !== meKey);
+        if (!peersAll.length) {
+            cmpSec.style.display = "";
+            cmpEl.innerHTML = `<div class="hc-chart-cap">No other subject — model or person — has attempted these families yet, so there is nothing to compare against. Runs land here as they seal.</div>`;
+            return;
         }
+        cmpSec.style.display = "";
+        cmpEl.innerHTML = mine.map(x => {
+            // Humans first, then models, each by score — a person comparing
+            // themselves is usually asking "am I typical?" before "how do I
+            // rank against silicon?".
+            const peers = peersAll.filter(m => famKey(m) === famKey(x))
+                .sort((a, b) => (a.subject_kind === b.subject_kind)
+                    ? (b.signal_score || 0) - (a.signal_score || 0)
+                    : (a.subject_kind === "human" ? -1 : 1));
+            const row = (name, r2, you) => {
+                const sig = r2.signal_score != null ? r2.signal_score : 0;
+                const trials = (r2.total_passes != null && r2.total_trials != null) ? `${r2.total_passes}/${r2.total_trials}` : "?";
+                const human = r2.subject_kind === "human";
+                return `<div class="hc-row${you ? " hc-row-you" : ""}"><span class="hc-cmp-name">${esc(name)}</span>`
+                    + `<span class="hc-kind">${human ? "carbon" : "silicon"}</span>`
+                    + hcBarTrack(sig, you || human ? "" : "hc-fill-model")
+                    + `<span class="hc-val">${trials} (${Math.round(sig * 100)}%)</span></div>`;
+            };
+            return `<div class="hc-fam"><div class="hc-fam-name">${esc(famLabel(x))}</div>`
+                + row("You — " + hcParticipantName, x, true)
+                + peers.map(m => row(m.subject_name, m, false)).join("")
+                + `</div>`;
+        }).join("")
+        + `<div class="hc-chart-cap">pooled pass rate per family — trial counts differ by subject (models run N=3 per form, a person answers each item once), so read the fractions, not just the bars</div>`;
     }
 }
 
 function hcReset() {
     hcParticipantId = null;
+    hcParticipantName = "";
     hcRunId = null;
     hcTests = [];
     hcIndex = 0;
     hcCorrect = 0;
+    hcTimes = [];
+    if (hcTimerId) { clearInterval(hcTimerId); hcTimerId = null; }
     document.getElementById("hc-step-results").style.display = "none";
     document.getElementById("hc-step-setup").style.display = "";
     document.getElementById("hc-name").value = "";
     document.getElementById("hc-existing").innerHTML = "";
+}
+
+// ═══ First-run onboarding — Rung 1, the continuity test (2026-07-26) ═══
+// Handoff item 0.5: ONE known-good round trip, ~60 s, zero credentials.
+// Failure states are first-class outputs with a specific next action — never
+// an error dialog, never a spinner (elapsed seconds are real data).
+// The stimulus is continuity-only, NOT a battery item: no leakage, and the
+// green check needs no interpretation (multimeter beep, not a benchmark).
+
+function obSetStep(n, cls, main, data, next) {
+  const titles = ['1 · INSTRUMENT — this dashboard', '2 · CHANNEL — LM Studio', '3 · SIGNAL — one round trip'];
+  const el = document.getElementById('ob-step-' + n);
+  if (!el) return;
+  el.className = 'ob-step' + (cls ? ' ' + cls : '');
+  el.innerHTML = '<h3 class="ob-step-title">' + titles[n - 1] + '</h3>'
+    + '<div class="ob-step-main">' + main + '</div>'
+    + (data ? '<div class="ob-data">' + data + '</div>' : '')
+    + (next ? '<ul class="ob-next">' + next + '</ul>' : '');
+}
+
+function obRecheckBtn(label) {
+  return '<button class="btn-link" onclick="obCheckChannel()">' + label + '</button>';
+}
+
+async function obLoad() {
+  const gen = ++obGen;
+  const res = document.getElementById('ob-result');
+  if (res) res.innerHTML = '';
+  if (obBeepTimer) { clearInterval(obBeepTimer); obBeepTimer = null; }
+  obSetStep(1, '', 'Checking…', '', '');
+  obSetStep(2, '', 'Waiting on step 1…', '', '');
+  obSetStep(3, '', 'Unlocks when the channel is green.', '', '');
+  const s = await apiFetch('/api/status');
+  if (gen !== obGen) return;
+  if (!s.ok) {
+    obSetStep(1, 'fail', 'The dashboard server did not answer.', escHtml(s.error || ''),
+      '<li>Is calibration-scope running on this machine? Restart it, then <button class="btn-link" onclick="obLoad()">re-check</button>.</li>');
+    obSetStep(2, '', 'Blocked — step 1 must pass first.', '', '');
+    return;
+  }
+  const v = (s.data && s.data.version) ? s.data.version : '?';
+  obSetStep(1, 'ok', 'Instrument responding.',
+    'status ' + escHtml(String(s.data && s.data.status || '?')) + ' · version ' + escHtml(String(v)) + ' · this origin', '');
+  await obCheckChannel();
+}
+
+async function obCheckChannel() {
+  const gen = ++obGen;
+  obSetStep(3, '', 'Unlocks when the channel is green.', '', '');
+  const started = Date.now();
+  obSetStep(2, '', 'Probing LM Studio…',
+    'live probe, 10 s server timeout · <span id="ob-ch-elapsed">0.0</span>s elapsed', '');
+  const tick = setInterval(function () {
+    const el = document.getElementById('ob-ch-elapsed');
+    if (el) el.textContent = ((Date.now() - started) / 1000).toFixed(1);
+  }, 100);
+  let r;
+  try {
+    r = await apiFetch('/api/lmstudio/status');
+  } finally {
+    clearInterval(tick);
+  }
+  if (gen !== obGen) return;
+  if (!r.ok || !r.data) {
+    obSetStep(2, 'fail', 'Could not query LM Studio status.', escHtml(r.error || ''),
+      '<li>' + obRecheckBtn('Re-check') + ' once the dashboard can reach it.</li>');
+    return;
+  }
+  const d = r.data;
+  if (!d.connected) {
+    obSetStep(2, 'fail',
+      'LM Studio is not reachable at <span style="font-family:var(--font-mono)">' + escHtml(d.base_url || 'its configured address') + '</span>.', '',
+      '<li>Open LM Studio → <b>Developer</b> tab → <b>Start Server</b>.</li>'
+      + '<li>Wrong port is the classic miss: the server must listen where the address above points (default <span style="font-family:var(--font-mono)">:1234</span>).</li>'
+      + '<li>Then ' + obRecheckBtn('re-check') + '. This path needs zero credentials.</li>');
+    return;
+  }
+  const loaded = d.loaded || [];
+  if (!loaded.length) {
+    obSetStep(2, 'warn', 'LM Studio is reachable — but no model is loaded.',
+      escHtml(String(d.total_models || 0)) + ' model(s) installed · 0 loaded',
+      '<li>Load any model in LM Studio, then ' + obRecheckBtn('re-check') + '.</li>'
+      + '<li>If a model you didn’t choose shows up loaded here later (granite-3.2-8b is the known case), Hermes Desktop auxiliary tasks can auto-load models — check <span style="font-family:var(--font-mono)">~/.hermes/config.yaml</span>.</li>');
+    return;
+  }
+  obLoadedIds = loaded.map(function (m) { return m.id; });
+  obSetStep(2, 'ok',
+    'LM Studio connected — ' + loaded.length + ' model' + (loaded.length > 1 ? 's' : '') + ' loaded. This names exactly which:',
+    loaded.map(function (m) { return escHtml(m.id); }).join(' · '), '');
+  obSetStep(3, '',
+    'Ready. One prompt to a loaded model asking for the single word <b>OHM</b>. Exact match = beep. The in-flight card names the exact model.',
+    'temperature 0 · max_tokens 2048 · one prompt, nothing stored beyond prompt history', '');
+  const el = document.getElementById('ob-step-3');
+  if (el) el.innerHTML += '<button class="btn btn-primary" id="ob-beep-btn" onclick="obBeep()">Send the beep</button>';
+}
+
+function obRetryBeep() {
+  return '<li>' + obRecheckBtn('Re-check the channel and try the beep again') + '.</li>';
+}
+
+async function obBeep() {
+  const gen = ++obGen;
+  const btn = document.getElementById('ob-beep-btn');
+  if (btn) btn.disabled = true;
+  // Map the loaded LM Studio id to a registry key. Sync writes key = id for
+  // fresh LM Studio rows, so exact match is the normal case. NO silent
+  // fallback: a wrong pick can 404 or JIT-load a multi-GB model the user
+  // never chose, breaking the 60-second zero-cost promise — no match is a
+  // first-class state instead. (Rename/dedup can leave key ≠ loaded id
+  // permanently; that is a registry limitation flagged to the backend lane.)
+  const mr = await apiFetch('/api/models');
+  if (gen !== obGen) return;
+  if (!mr.ok || !Array.isArray(mr.data)) {
+    obSetStep(3, 'fail', 'Could not read the model registry.', escHtml(mr.error || ''),
+      obRetryBeep());
+    return;
+  }
+  const locals = mr.data.filter(function (m) { return m.location === 'local'; });
+  let pick = null;
+  for (const id of obLoadedIds) {
+    const hit = locals.find(function (m) { return m.key === id; });
+    if (hit) { pick = hit; break; }
+  }
+  if (!pick) {
+    obSetStep(3, 'warn', 'No registry entry matches a loaded model, so the beep has no honest target.',
+      'loaded: ' + obLoadedIds.map(escHtml).join(' · ') + (locals.length ? ' — registry keys: ' + locals.slice(0, 6).map(function (m) { return escHtml(m.key); }).join(' · ') : ' — registry has no local rows'),
+      '<li>Click <b>Sync Local</b> in the top bar so the registry learns what LM Studio has, then ' + obRecheckBtn('re-check') + '.</li>'
+      + '<li>If this persists after a sync, the registry key differs from the loaded id (model rename/dedup case) — a known registry limitation, flagged to the backend lane. Pick the model on the Benchmark page instead.</li>');
+    return;
+  }
+  const started = Date.now();
+  obSetStep(3, '',
+    'Beep in flight to <span style="font-family:var(--font-mono)">' + escHtml(pick.key) + '</span>.',
+    'one prompt · temperature 0 · <span id="ob-elapsed">0.0</span>s elapsed', '');
+  obBeepTimer = setInterval(function () {
+    const el = document.getElementById('ob-elapsed');
+    if (el) el.textContent = ((Date.now() - started) / 1000).toFixed(1);
+  }, 100);
+  let r;
+  try {
+    r = await apiFetch('/api/prompt-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model_key: pick.key, prompt: OB_STIMULUS }),
+    });
+  } finally {
+    // finally, not post-await: a body-read failure inside apiFetch rejects,
+    // and the 100 ms ticker must never outlive the request it narrates.
+    clearInterval(obBeepTimer);
+    obBeepTimer = null;
+  }
+  if (gen !== obGen) return;
+  const secs = ((Date.now() - started) / 1000).toFixed(1);
+  const res = document.getElementById('ob-result');
+  if (!r.ok || !r.data || r.data.error) {
+    obSetStep(3, 'fail', 'The round trip failed.',
+      escHtml(String((r.data && r.data.error) || r.error || 'unknown error')), obRetryBeep());
+    return;
+  }
+  const d = r.data;
+  const reply = String(d.response || '');
+  if (d.no_final_answer) {
+    obSetStep(3, 'warn',
+      'The model returned an empty final message (finish_reason: ' + escHtml(String(d.finish_reason || '?')) + ') — the budget went to reasoning. The wire works; a reply didn’t arrive.',
+      'model ' + escHtml(pick.key) + ' · latency ' + secs + 's', obRetryBeep());
+    return;
+  }
+  // Continuity grading stays trivial but wrapper-tolerant: strip symmetric
+  // markdown/quote wrappers and edge punctuation ("**OHM**", "“OHM.”",
+  // "ohm !"), then case-fold. Anything further is interpretation, which this
+  // rung must not do.
+  const norm = reply.trim().replace(/^[\s*_"'`“”‘’]+|[\s*_"'`“”‘’.!,;:]+$/g, '').trim().toUpperCase();
+  if (norm === 'OHM') {
+    obSetStep(3, 'ok', 'Round trip complete — exact match.',
+      'model ' + escHtml(pick.key) + ' · latency ' + secs + 's · reply “' + escHtml(reply.trim()) + '”', '');
+    localStorage.setItem('amb-onboard-green', new Date().toISOString());
+    if (res) res.innerHTML =
+      '<div class="ob-verdict">● CONTINUITY CONFIRMED</div>'
+      + '<div style="text-align:center;font-size:13px;color:var(--text-muted);margin-bottom:var(--fib-3)">Instrument, channel, and one model round trip — live. This ranks nothing; that’s the battery’s job.</div>'
+      + '<div style="text-align:center"><button class="btn btn-primary" onclick="showPage(\'benchmark\')">Run the real battery →</button></div>';
+  } else {
+    obSetStep(3, 'warn',
+      'Round trip complete — the reply didn’t match the requested word. The channel works; the mismatch is data, shown verbatim below.',
+      'model ' + escHtml(pick.key) + ' · latency ' + secs + 's', obRetryBeep());
+    if (res) res.innerHTML = '<div class="ob-reply">' + escHtml(reply.slice(0, 2000)) + '</div>';
+  }
+}
+
+// ═══ Model Picker — Rung 2, the capability band (2026-07-26) ═══
+// Handoff item 0.5 Rung 2 + binding constraints: a BAND, not a ranking;
+// answers graded server-side (the key never reaches page source); item 6 is
+// human-graded against the rubric; no named model recommendation anywhere —
+// candidates come from the user's own portal/LM Studio.
+async function pkLoad() {
+  const gen = ++pkGen;
+  if (!pkBattery) {
+    const r = await apiFetch('/api/picker/battery');
+    if (gen !== pkGen) return;
+    if (!r.ok || !r.data || !r.data.stimulus) {
+      const el = document.getElementById('pk-stimulus');
+      if (el) el.textContent = 'Could not load the battery: ' + (r.error || 'unknown error');
+      return;
+    }
+    pkBattery = r.data;
+  }
+  const st = document.getElementById('pk-stimulus');
+  if (st) st.textContent = pkBattery.stimulus;
+  const prov = document.getElementById('pk-provenance');
+  if (prov) prov.textContent = 'stimulus sha3-256 ' + pkBattery.stimulus_sha3.replace(/^sha3-256:/, '').slice(0, 16) + '… · ' + pkBattery.source;
+  const items = document.getElementById('pk-items');
+  if (items && !items.childElementCount) {
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+      html += '<div class="pk-item-row"><span class="pk-item-n">Item ' + i + '</span>'
+        + '<label><input type="radio" name="pk-a' + i + '" value="VALID"> VALID</label>'
+        + '<label><input type="radio" name="pk-a' + i + '" value="INVALID"> INVALID</label>'
+        + '<label class="pk-noanswer"><input type="radio" name="pk-a' + i + '" value=""> no one-word answer given</label>'
+        + '</div>';
+    }
+    items.innerHTML = html;
+  }
+  const rub = document.getElementById('pk-rubric');
+  if (rub && !rub.childElementCount) {
+    rub.innerHTML = pkBattery.reframe_rubric.map(function (line, i) {
+      return '<label class="pk-rubric-row"><input type="radio" name="pk-reframe" value="' + i + '"> ' + escHtml(line) + '</label>';
+    }).join('');
+  }
+  pkRenderSession();
+}
+
+function pkCopy() {
+  if (!pkBattery) return;
+  const status = document.getElementById('pk-send-status');
+  navigator.clipboard.writeText(pkBattery.stimulus).then(function () {
+    if (status) status.textContent = 'copied — paste it to the candidate in your portal';
+  }, function () {
+    // Clipboard can be denied on plain-http origins other than localhost —
+    // select the text so manual copy still works.
+    const st = document.getElementById('pk-stimulus');
+    if (st && window.getSelection) {
+      const range = document.createRange();
+      range.selectNodeContents(st);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      if (status) status.textContent = 'clipboard blocked — text selected, press Ctrl/Cmd-C';
+    }
+  });
+}
+
+async function pkSendLocal() {
+  const gen = ++pkGen;
+  const status = document.getElementById('pk-send-status');
+  const btn = document.getElementById('pk-send-local');
+  if (btn) btn.disabled = true;
+  const set = function (t) { if (status) status.textContent = t; };
+  // The button is static markup, so it is clickable before pkLoad()'s fetch
+  // resolves — without this guard a fast click dereferenced null (review catch).
+  if (!pkBattery) {
+    set('Battery still loading from the server — try again in a moment.');
+    if (btn) btn.disabled = false;
+    return;
+  }
+  try {
+    const ls = await apiFetch('/api/lmstudio/status');
+    if (gen !== pkGen) return;
+    if (!ls.ok || !ls.data || !ls.data.connected) {
+      set('LM Studio not reachable — use the First Run page to diagnose, or paste manually.');
+      return;
+    }
+    const loaded = (ls.data.loaded || []).map(function (m) { return m.id; });
+    if (!loaded.length) {
+      set('No model loaded in LM Studio — load one, or paste manually.');
+      return;
+    }
+    const mr = await apiFetch('/api/models');
+    if (gen !== pkGen) return;
+    const locals = (mr.ok && Array.isArray(mr.data)) ? mr.data.filter(function (m) { return m.location === 'local'; }) : [];
+    let pick = null;
+    for (const id of loaded) {
+      const hit = locals.find(function (m) { return m.key === id; });
+      if (hit) { pick = hit; break; }
+    }
+    if (!pick) {
+      // Same rule as Rung 1: no silent fallback — a wrong pick can 404 or
+      // JIT-load a model the user never chose.
+      set('No registry match for a loaded model — run Sync Local, or paste manually.');
+      return;
+    }
+    const model = document.getElementById('pk-model');
+    if (model && !model.value.trim()) model.value = pick.key;
+    const started = Date.now();
+    const tick = setInterval(function () {
+      set('battery in flight to ' + pick.key + ' — ' + ((Date.now() - started) / 1000).toFixed(1) + 's elapsed');
+    }, 100);
+    let r;
+    try {
+      r = await apiFetch('/api/prompt-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model_key: pick.key, prompt: pkBattery.stimulus }),
+      });
+    } finally {
+      clearInterval(tick);
+    }
+    if (gen !== pkGen) return;
+    if (!r.ok || !r.data || r.data.error) {
+      set('round trip failed: ' + ((r.data && r.data.error) || r.error || 'unknown'));
+      return;
+    }
+    if (r.data.no_final_answer) {
+      set('empty final answer (finish_reason ' + (r.data.finish_reason || '?') + ') — the budget went to reasoning; try again or paste manually.');
+      return;
+    }
+    const reply = document.getElementById('pk-reply');
+    if (reply) reply.value = String(r.data.response || '');
+    set('reply captured from ' + pick.key + ' in ' + ((Date.now() - started) / 1000).toFixed(1) + 's — now transcribe items 1–5 below and grade item 6.');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function pkRadio(name) {
+  const el = document.querySelector('input[name="' + name + '"]:checked');
+  return el ? el.value : null;
+}
+
+async function pkGrade() {
+  const band = document.getElementById('pk-band');
+  const answers = [];
+  for (let i = 1; i <= 5; i++) {
+    const v = pkRadio('pk-a' + i);
+    if (v === null) {
+      if (band) band.innerHTML = '<div class="ob-step warn"><div class="ob-step-main">Item ' + i + ' is not transcribed yet — pick VALID, INVALID, or “no one-word answer given”.</div></div>';
+      return;
+    }
+    answers.push(v);
+  }
+  const reframe = pkRadio('pk-reframe');
+  if (reframe === null) {
+    if (band) band.innerHTML = '<div class="ob-step warn"><div class="ob-step-main">Item 6 is ungraded — you are the grader; pick the rubric line that fits.</div></div>';
+    return;
+  }
+  // "No one-word answer given" is transcribed honestly as a miss: an empty
+  // string is not in the allowed set, so the server rejects it — convert to
+  // an explicit wrong-format record client-side instead.
+  const noAnswer = answers.map(function (a, i) { return a === '' ? i + 1 : null; }).filter(Boolean);
+  if (noAnswer.length) {
+    // A non-answer is a FORMAT failure, not a wrong logic answer — grading
+    // it against the key would fake a datum that doesn't exist.
+    if (band) band.innerHTML = '<div class="ob-step fail"><h3 class="ob-step-title">FORMAT</h3><div class="ob-step-main">Item(s) ' + noAnswer.join(', ') + ' got no one-word answer from the allowed set — that is a format failure, and this screener does not paper over it. Record the run as FAIL (format) or re-run the candidate.</div><div class="ob-data">A model that cannot follow “answer with exactly one word” on 5 items is telling you something the logic score can’t.</div></div>';
+    pkSessionAdd({ label: (document.getElementById('pk-model') || {}).value || 'unnamed-model', logic: 'fmt', reframe: reframe + '/2', credits: (document.getElementById('pk-credits') || {}).value || '—', verdict: 'FAIL (format)' });
+    pkRenderSession();
+    return;
+  }
+  const r = await apiFetch('/api/picker/grade', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      answers: answers,
+      reframe: parseInt(reframe, 10),
+      model_label: (document.getElementById('pk-model') || {}).value || '',
+      credits: (document.getElementById('pk-credits') || {}).value || '',
+    }),
+  });
+  if (!r.ok || !r.data || r.data.error) {
+    if (band) band.innerHTML = '<div class="ob-step fail"><div class="ob-step-main">Grading failed.</div><div class="ob-data">' + escHtml((r.data && r.data.error) || r.error || 'unknown error') + '</div></div>';
+    return;
+  }
+  const result = r.data;
+  const perItem = result.per_item.map(function (p) {
+    return '<div class="pk-band-item">' + (p.correct ? '<span class="pk-ok">✓</span>' : '<span class="pk-bad">✗</span>')
+      + ' Item ' + p.item + ': ' + escHtml(p.given)
+      + ' <span class="ob-data">— ' + escHtml(p.rationale) + '</span></div>';
+  }).join('');
+  const failed = (result.which_failed || []).map(function (w) { return '<li>' + escHtml(w) + '</li>'; }).join('');
+  if (band) band.innerHTML =
+    '<div class="ob-step ' + (result.pass ? 'ok' : 'fail') + '">'
+    + '<h3 class="ob-step-title">CAPABILITY BAND — screener, not a ranking</h3>'
+    + '<div class="pk-band-verdict ' + (result.pass ? 'pk-pass' : 'pk-fail') + '">' + (result.pass ? 'WORTH A FULL RUN' : 'NOT WORTH A FULL RUN YET') + '</div>'
+    + '<div class="ob-step-main">logic ' + result.logic_score + '/5 · reframe ' + result.reframe + '/2</div>'
+    + perItem
+    + (failed ? '<ul class="ob-next">' + failed + '</ul>' : '')
+    + '<div class="ob-data" style="margin-top:var(--fib-2)">record: <span id="pk-record">' + escHtml(result.record_line) + '</span> <button class="btn-link" onclick="pkCopyRecord()">copy</button></div>'
+    + '<div class="ob-data" style="margin-top:var(--fib-2)">' + escHtml(pkBattery ? pkBattery.caveat : '') + '</div>'
+    + '</div>';
+  pkSessionAdd({ label: (document.getElementById('pk-model') || {}).value || 'unnamed-model', logic: result.logic_score + '/5', reframe: result.reframe + '/2', credits: (document.getElementById('pk-credits') || {}).value || '—', verdict: result.pass ? 'PASS' : 'FAIL' });
+  pkRenderSession();
+}
+
+function pkCopyRecord() {
+  const el = document.getElementById('pk-record');
+  if (el) navigator.clipboard.writeText(el.textContent);
+}
+
+function pkSessionAdd(row) {
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('amb-picker-session') || '[]'); } catch (e) { list = []; }
+  row.ts = new Date().toISOString();
+  list.push(row);
+  localStorage.setItem('amb-picker-session', JSON.stringify(list.slice(-30)));
+}
+
+function pkRenderSession() {
+  const el = document.getElementById('pk-session');
+  if (!el) return;
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem('amb-picker-session') || '[]'); } catch (e) { list = []; }
+  if (!list.length) { el.innerHTML = '<div class="ob-data">No candidates screened yet this session.</div>'; return; }
+  // Cheapest passer: only among PASS rows whose credits parse as a number.
+  // This is the battery's decision rule, not a ranking of models.
+  let cheapest = null;
+  list.forEach(function (r) {
+    const c = parseFloat(String(r.credits).replace(/[^0-9.]/g, ''));
+    if (r.verdict === 'PASS' && !isNaN(c)) {
+      if (!cheapest || c < cheapest.c) cheapest = { row: r, c: c };
+    }
+  });
+  el.innerHTML = list.map(function (r) {
+    const isCheapest = cheapest && r === cheapest.row;
+    return '<div class="pk-session-row' + (isCheapest ? ' pk-cheapest' : '') + '">'
+      + escHtml(r.label) + ' | logic ' + escHtml(String(r.logic)) + ' | reframe ' + escHtml(String(r.reframe))
+      + ' | credits ' + escHtml(String(r.credits)) + ' | ' + escHtml(r.verdict)
+      + (isCheapest ? ' — cheapest passer (the battery’s decision rule)' : '') + '</div>';
+  }).join('');
+}
+
+// ═══ Subject/Channel Wizard — Rung 3, the keystone UI (2026-07-26) ═══
+// DECISIONS §15: three questions, one page, honest channel provenance.
+// Model lists come from the live registry only (Hermes-4 retraction rule);
+// "no cloud key" and "schema-ready" are first-class states, not errors.
+function wzLoad() {
+  wzState = { subject: null, channel: null };
+  document.getElementById('wz-subj-silicon').classList.remove('wz-on');
+  document.getElementById('wz-subj-carbon').classList.remove('wz-on');
+  document.getElementById('wz-q2').style.display = 'none';
+  document.getElementById('wz-q3').style.display = 'none';
+}
+
+function wzSubject(subj) {
+  wzState.subject = subj;
+  wzState.channel = null;
+  ['silicon', 'carbon'].forEach(function (x) {
+    const el = document.getElementById('wz-subj-' + x);
+    if (el) { el.classList.toggle('wz-on', subj === x); el.setAttribute('aria-pressed', String(subj === x)); }
+  });
+  const q2 = document.getElementById('wz-q2');
+  const opts = document.getElementById('wz-q2-opts');
+  const mk = function (id, big, sub) {
+    return '<button class="wz-opt" id="wz-ch-' + id + '" aria-pressed="false" onclick="wzChannel(\'' + id + '\')"><span class="wz-opt-big">' + big + '</span><span class="wz-opt-sub">' + sub + '</span></button>';
+  };
+  if (subj === 'silicon') {
+    opts.innerHTML = mk('local', 'LOCAL API', 'Local model (LM Studio)')
+      + mk('cloud', 'CLOUD API', 'Cloud API — your key')
+      + mk('manual', 'MANUAL', 'Web chat (paste)');
+  } else {
+    opts.innerHTML = mk('local', 'AT THIS INSTRUMENT', 'the human-cal page, same battery')
+      + mk('cloud', 'REMOTE SESSION', 'schema-ready, not yet administered')
+      + mk('manual', 'ON PAPER', 'transcribed after — schema-ready');
+  }
+  q2.style.display = '';
+  document.getElementById('wz-q3').style.display = 'none';
+}
+
+async function wzChannel(ch) {
+  const gen = ++wzGen;
+  wzState.channel = ch;
+  ['local', 'cloud', 'manual'].forEach(function (c) {
+    const el = document.getElementById('wz-ch-' + c);
+    if (el) { el.classList.toggle('wz-on', c === ch); el.setAttribute('aria-pressed', String(c === ch)); }
+  });
+  const q3 = document.getElementById('wz-q3');
+  const body = document.getElementById('wz-q3-body');
+  const title = document.getElementById('wz-q3-title');
+  q3.style.display = '';
+  if (wzState.subject === 'carbon') {
+    title.textContent = '3 · THE DOOR';
+    if (ch === 'local') {
+      body.innerHTML = '<div class="ob-step-main">A human takes the same sealed battery at this instrument — the 4-step human-cal flow administers it and scores with the same discipline.</div>'
+        + '<button class="btn btn-primary" onclick="showPage(\'human-cal\')">Open Human Calibration →</button>';
+    } else if (ch === 'cloud') {
+      body.innerHTML = '<div class="ob-step-main">Designed, not yet built: subject provenance (participant identity) is live in the schema today; a remote-session path and the channel column (§14 design) are not. Nothing here pretends otherwise.</div>'
+        + '<div class="ob-data">When it ships, it lands in the same schema — that is the whole point of the door.</div>';
+    } else {
+      body.innerHTML = '<div class="ob-step-main">Designed, not yet built: paper administration with transcription afterwards — same items, same seals. The channel column and intake UI are §14 design work that has not landed; only subject provenance is in the schema today.</div>';
+    }
+    return;
+  }
+  // SILICON
+  if (ch === 'manual') {
+    title.textContent = '3 · THE PASTE CHANNEL';
+    body.innerHTML = '<div class="ob-step-main">Manual is a first-class measurement path — same items, same scoring. Two honest options today:</div>'
+      + '<ul class="ob-next"><li><b>Screen a candidate now:</b> the Model Picker is a working paste-once screener — <button class="btn-link" onclick="showPage(\'picker\')">open it</button>.</li>'
+      + '<li><b>Full battery by paste:</b> §14 design — pack generation, channel-tagged ingest, and the pack UI have not landed in this dashboard yet; the runs schema carries no channel column today.</li></ul>';
+    return;
+  }
+  title.textContent = '3 · BATTERY — pick, then Run';
+  body.innerHTML = '<div class="ob-data">reading the live registry…</div>';
+  let r;
+  try {
+    r = await apiFetch('/api/models');
+  } catch (e) {
+    r = { ok: false, error: String((e && e.message) || e) };
+  }
+  if (gen !== wzGen) return;
+  if (!r.ok) {
+    // Instrument down is NOT "no key" / "no model" — misdiagnosing it would
+    // hand out next actions that cannot work while the backend is dark.
+    body.innerHTML = '<div class="ob-step-main">The instrument did not answer when reading the registry — a connection problem, not a key or model problem.</div>'
+      + '<div class="ob-data">' + escHtml(r.error || '') + '</div>'
+      + '<ul class="ob-next"><li>Diagnose with the <button class="btn-link" onclick="showPage(\'onboard\')">First Run continuity test</button>, then come back.</li></ul>';
+    return;
+  }
+  const models = Array.isArray(r.data) ? r.data : ((r.data && Array.isArray(r.data.models)) ? r.data.models : []);
+  const rows = models.filter(function (m) {
+    const isLocal = m.provider === 'lmstudio' || m.location === 'local';
+    return (ch === 'local' ? isLocal : !isLocal) && m.runnable !== false;
+  });
+  if (!rows.length) {
+    if (ch === 'cloud') {
+      body.innerHTML = '<div class="ob-step-main">No cloud model is marked runnable yet. A first-class state, not an error.</div>'
+        + '<ul class="ob-next"><li>No key yet? Add one on the <button class="btn-link" onclick="deepPage(\'setup\')">Setup page</button> (flips to Deep mode — Focused hides Setup), then Sync Cloud in the top bar.</li>'
+        + '<li>Key already added and synced? A known registry limitation currently marks only Nous-keyed rows runnable — flagged to the backend lane. The Deep grid still lists every registered model.</li></ul>';
+    } else {
+      body.innerHTML = '<div class="ob-step-main">No local model is registered yet.</div>'
+        + '<ul class="ob-next"><li>Run the <button class="btn-link" onclick="showPage(\'onboard\')">First Run continuity test</button> to diagnose, or click Sync Local in the top bar.</li></ul>';
+    }
+    return;
+  }
+  const axes = ['reasoning', 'vision', 'tools', 'security', 'literary'];
+  const axDefaults = { reasoning: true, vision: true, tools: true, security: true, literary: false };
+  body.innerHTML =
+    '<div class="pk-form-row"><label>Subject model <select id="wz-model">'
+    + rows.map(function (m) {
+      const prov = m.provider || (m.location === 'local' ? 'lmstudio' : 'cloud');
+      return '<option value="' + escHtml(m.key) + '" data-provider="' + escHtml(prov) + '">' + escHtml(m.key) + (m.size_gb != null ? ' · ' + Number(m.size_gb).toFixed(1) + 'GB' : '') + '</option>';
+    }).join('')
+    + '</select></label></div>'
+    + '<div class="wz-axes" id="wz-axes">' + axes.map(function (a) {
+      return '<label><input type="checkbox" value="' + a + '"' + (axDefaults[a] ? ' checked' : '') + '> ' + a + '</label>';
+    }).join('') + '</div>'
+    + '<button class="btn btn-primary" onclick="wzRun()">Run — clean-room, N=3, sealed</button>'
+    + '<div class="ob-data" id="wz-run-note" style="margin-top:var(--fib-2)">Arms the Focused workspace with this subject and fires the same run the workspace Run button fires. Scaffolded and paired designs live in the workspace MODE control.</div>';
+}
+
+function wzRun() {
+  const sel = document.getElementById('wz-model');
+  if (!sel || !sel.value) return;
+  const provider = sel.selectedOptions[0].getAttribute('data-provider') || 'lmstudio';
+  const axesChecked = Array.from(document.querySelectorAll('#wz-axes input:checked')).map(function (i) { return i.value; });
+  const note = document.getElementById('wz-run-note');
+  if (!axesChecked.length) { if (note) note.textContent = 'pick at least one battery axis'; return; }
+  // Arm the Focused workspace exactly as focusedPickSubject would — including
+  // its spec-pair reset, so no stale ⚡ reading survives against a new subject.
+  const input = document.getElementById('focused-subject-pick');
+  const label = document.getElementById('focused-subject-label');
+  if (input) input.value = sel.value;
+  if (label) label.textContent = sel.value;
+  window._focusedSubjects = [{ key: sel.value, provider: provider }];
+  document.querySelectorAll('#focused-axes input').forEach(function (i) {
+    i.checked = axesChecked.includes(i.value);
+  });
+  const specBtn = document.getElementById('focused-run-spec');
+  const specBox = document.getElementById('focused-spec-result');
+  if (specBtn) specBtn.style.display = 'none';
+  if (specBox) specBox.innerHTML = '';
+  // The button PROMISES clean-room — enforce it; the workspace MODE select
+  // persists and focusedRun reads it (scaffolded/paired stay in the shell).
+  const lm = document.getElementById('focused-load-mode');
+  if (lm && lm.value !== 'clean-room') { lm.value = 'clean-room'; focusedLoadModeChanged(); }
+  // Finish in Focused: firing from Deep would write every runlog message —
+  // including errors — into the hidden focused shell. The wizard IS
+  // Focused's front door; Deep users got here via an explicit link.
+  if (document.documentElement.getAttribute('data-mode') !== 'focused') {
+    document.documentElement.setAttribute('data-mode', 'focused');
+    try { localStorage.setItem('calibration-mode', 'focused'); } catch (e) {}
+    const mb = document.getElementById('mode-toggle');
+    if (mb) mb.textContent = 'Mode: Focused';
+  }
+  showPage('benchmark');
+  focusedEnsure();
+  focusedRun('all');
 }

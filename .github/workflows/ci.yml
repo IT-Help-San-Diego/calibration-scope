@@ -296,22 +296,42 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Detect site changes
-        id: sitediff
-        run: |
-          if git diff --name-only HEAD^ HEAD | grep -qE '^(site/|scripts/deploy-site\.sh)'; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "site/ unchanged — nothing to deploy"
-          fi
-
       - name: Configure AWS credentials (OIDC — no stored keys)
-        if: steps.sitediff.outputs.changed == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-west-2
+
+      # Robust gate: diff the working tree against the LIVE S3 objects, not the
+      # last commit. The old `git diff HEAD^ HEAD` gate missed any site/ change
+      # that was immediately followed by a non-site commit (the common case when
+      # a copy fix lands in one commit and a code/table fix in the next) — the
+      # site silently went stale. Comparing content hashes against S3 is immune
+      # to commit-range blind spots: if S3 differs from the tree, we deploy.
+      - name: Detect site changes (tree vs live S3)
+        id: sitediff
+        run: |
+          set -e
+          BUCKET="calibrationscope.com-site"
+          drift=""
+          for f in index.html lessons.html install.sh 404.html; do
+            [ -f "site/$f" ] || continue
+            local_md5=$(openssl md5 -binary "site/$f" | base64)
+            remote_md5=$(aws s3api head-object --bucket "$BUCKET" --key "$f" \
+              --query 'ETag' --output text 2>/dev/null | tr -d '"' || echo "MISSING")
+            # S3 ETag is the hex md5 for non-multipart uploads; compare hex forms.
+            local_hex=$(openssl md5 "site/$f" | awk '{print $NF}')
+            if [ "$remote_md5" != "$local_hex" ]; then
+              drift="$drift $f"
+            fi
+          done
+          if [ -n "$drift" ] || git diff --name-only HEAD^ HEAD | grep -qE '^scripts/deploy-site\.sh'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "site drift vs S3:${drift:- none} (or deploy script changed) — deploying"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "site/ matches live S3 — nothing to deploy"
+          fi
 
       - name: Deploy (headers-policy hashes → s3 sync → invalidation)
         if: steps.sitediff.outputs.changed == 'true'

@@ -136,11 +136,18 @@ async fn main() {
         .route("/api/runs/complete", post(routes::runs::complete_run))
         .route("/api/runs/{id}", get(routes::runs::get_run_detail))
         .route("/api/runs/{id}/abort", post(routes::runs::abort_run))
+        .route(
+            "/api/models/{key}/time-estimate",
+            get(routes::time_estimate::time_estimate),
+        )
         .route("/api/runs/{id}/export", get(routes::runs::export_run))
+        .route("/api/runs/{id}/witness", get(routes::witness::run_witness))
         .route(
             "/api/prompt-check",
             get(routes::prompt_check::prompt_check).post(routes::prompt_check::prompt_check_post),
         )
+        .route("/api/picker/battery", get(routes::picker::picker_battery))
+        .route("/api/picker/grade", post(routes::picker::picker_grade))
         .route(
             "/api/prompt-history",
             get(routes::prompt_check::prompt_history),

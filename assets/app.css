@@ -150,6 +150,28 @@
     border-bottom: 2px solid var(--accent-cyan);
   }
   .top-nav .tab:hover { color: var(--text-primary); }
+  /* Native-button tabs must render exactly like the old div tabs: strip the
+     UA button chrome first (Safari paints ButtonFace — the "all-white First
+     Run tab" seen live 2026-07-27), then restate the one border .tab
+     carries. #mode-toggle / #a11y-toggle keep their id-level styling, which
+     outranks this; .tab.active and the a11y bump also outrank it (3-class
+     specificity), so active/readable states are unaffected. */
+  .top-nav button.tab {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--bg-secondary) !important;
+    border: none;
+    border-right: 1px solid var(--border);
+    font: inherit;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--text-muted) !important;
+    text-align: left;
+  }
+  .top-nav button.tab.active {
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+  }
   .top-nav .spacer { flex: 1; }
 
   /* Header */
@@ -618,16 +640,21 @@
   /* Accessibility toggle — must be legible on the dark theme in BOTH states.
      Default (Readable: On) = solid amber pill, black text (high contrast, pops).
      Off (Deep mode) = dark pill, solid light text (never gray-on-white). */
-  #mode-toggle { cursor: pointer; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; background: var(--bg-card); }
+  /* line-height pinned to the UA default these two pills always rendered
+     with: they were <button class="tab"> before the nav-wide button reset,
+     so inheriting body's 1.5 through `font: inherit` would silently grow
+     them ~4px (verification catch — the reset's commit claimed no visual
+     change, and for these two that was not yet true). */
+  #mode-toggle { cursor: pointer; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; background: var(--bg-card); line-height: normal; }
   #mode-toggle:hover { filter: brightness(1.1); }
   html[data-mode="focused"] #mode-toggle { background: var(--accent-cyan, #3fd8c9); color: #04110f; font-weight: 600; }
   /* FOCUSED MODE — Benchmark workspace is the ONLY page. The action never
      leaves the viewport: rail (select/run) | center (brain + stream) |
      stream. Nothing is REMOVED (full power) — the other tabs are hidden,
      every capability still reachable by flipping back to Deep. */
-  html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark):not(#tab-human-cal),
+  html[data-mode="focused"] .top-nav .tab[id^="tab-"]:not(#mode-toggle):not(#a11y-toggle):not(#tab-benchmark):not(#tab-human-cal):not(#tab-onboard),
   html[data-mode="focused"] .top-nav .nav-arrow { display: none; }
-  html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal) { display: none !important; }
+  html[data-mode="focused"] .page:not(#page-benchmark):not(#page-human-cal):not(#page-onboard):not(#page-picker):not(#page-wizard) { display: none !important; }
 
   /* FOCUSED MODE — a genuinely different ARRANGEMENT of the workspace, not
      just fewer tabs. Design goal (Hawking-accessibility + "the brain is the
@@ -729,6 +756,7 @@
   html[data-mode="focused"] #workspace { display: none !important; }
 
   #a11y-toggle {
+    line-height: normal;  /* same reason as #mode-toggle above */
     font-weight: 700;
     font-size: 12px;
     letter-spacing: 0.3px;
@@ -1360,7 +1388,7 @@
   .native-selector-title { font-size: 15px; font-weight: 700; color: var(--text-primary, #e6edf3); }
   .native-selector-close {
     background: transparent; border: 1px solid var(--border, #30363d);
-    color: var(--text-muted, #8b949e); border-radius: actions 6px;
+    color: var(--text-muted, #8b949e); border-radius: 6px;
     width: 30px; height: 30px; cursor: pointer; font-size: 15px;
   }
   .native-selector-close:hover { background: var(--bg-card, #161b22); color: var(--text-primary, #e6edf3); }
@@ -1454,3 +1482,89 @@
 #focused-load-mode:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
 #focused-scaffold-supplement { display: none; flex-basis: 100%; margin-top: 6px; min-height: 56px; resize: vertical; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; padding: 8px 10px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; }
 #focused-scaffold-supplement:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+
+/* ── First-run onboarding (Rung 1 — continuity test, 2026-07-26) ──────────
+   Verified-result-first (handoff item 0.5): each step shows real data or a
+   specific next action — never a spinner (elapsed seconds are real data, a
+   spinner is not). Status via the safe/gold/unsafe tokens; spacing on the
+   Fibonacci scale. */
+#page-onboard .ob-wrap { max-width: 880px; margin: 0 auto; padding: var(--fib-5) var(--fib-4); }
+.ob-step { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--text-muted); border-radius: 8px; padding: var(--fib-4); margin-bottom: var(--fib-3); }
+.ob-step.ok { border-left-color: var(--safe); }
+.ob-step.warn { border-left-color: var(--accent-gold); }
+.ob-step.fail { border-left-color: var(--unsafe); }
+.ob-step-title { font-family: var(--font-mono); font-size: 12px; font-weight: 400; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin: 0 0 var(--fib-2); }
+.btn-link { background: none; border: none; padding: 0; color: var(--accent-cyan, #58a6ff); text-decoration: underline; cursor: pointer; font: inherit; }
+.btn-link:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+.ob-step-main { font-size: 15px; line-height: 1.55; margin-bottom: var(--fib-2); }
+.ob-data { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); word-break: break-word; }
+.ob-next { margin: var(--fib-2) 0 0; padding-left: var(--fib-4); font-size: 13px; line-height: 1.6; }
+.ob-next li { margin-bottom: var(--fib-1); }
+.ob-step .btn { margin-top: var(--fib-3); }
+.ob-verdict { font-family: var(--font-mono); font-size: 21px; letter-spacing: 1px; color: var(--safe); padding: var(--fib-4); text-align: center; border: 1px solid var(--safe); border-radius: 8px; margin: var(--fib-3) 0; background: rgba(63,185,80,0.06); }
+.ob-reply { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: var(--fib-2) var(--fib-3); font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; word-break: break-word; max-height: 144px; overflow-y: auto; margin-top: var(--fib-3); }
+.ob-diagram { margin-top: var(--fib-5); }
+.ob-diagram img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--border); }
+.ob-diagram-cap { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: var(--fib-2); }
+
+/* ── Model Picker (Rung 2 — capability band, 2026-07-26) ────────────────── */
+.pk-form-row { display: flex; flex-wrap: wrap; gap: var(--fib-4); }
+.pk-form-row label { display: flex; flex-direction: column; gap: var(--fib-1); font-size: 13px; color: var(--text-muted); }
+.pk-form-row input { min-width: 280px; padding: var(--fib-2) var(--fib-3); background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+.pk-stimulus { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; padding: var(--fib-3); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.pk-reply { width: 100%; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; padding: var(--fib-2) var(--fib-3); font-family: var(--font-mono); font-size: 13px; resize: vertical; }
+.pk-item-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--fib-4); padding: var(--fib-2) 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.pk-item-row:last-child { border-bottom: none; }
+.pk-item-n { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); min-width: 55px; }
+.pk-item-row label { display: flex; align-items: center; gap: var(--fib-1); cursor: pointer; }
+.pk-noanswer { color: var(--text-muted); font-size: 13px; }
+.pk-rubric-row { display: flex; align-items: baseline; gap: var(--fib-2); padding: var(--fib-1) 0; font-size: 13.5px; line-height: 1.55; cursor: pointer; }
+.pk-band-verdict { font-family: var(--font-mono); font-size: 19px; letter-spacing: 1px; margin-bottom: var(--fib-2); }
+.pk-pass { color: var(--safe); }
+.pk-fail { color: var(--unsafe); }
+.pk-band-item { font-size: 13.5px; padding: 2px 0; }
+.pk-ok { color: var(--safe); }
+.pk-bad { color: var(--unsafe); }
+.pk-session-row { font-family: var(--font-mono); font-size: 12.5px; padding: var(--fib-1) 0; border-bottom: 1px dashed var(--border); word-break: break-word; }
+.pk-session-row:last-child { border-bottom: none; }
+.pk-cheapest { color: var(--safe); }
+
+/* ── Subject/Channel Wizard (Rung 3 — keystone UI, 2026-07-26) ──────────── */
+.wz-opts { display: flex; flex-wrap: wrap; gap: var(--fib-3); }
+.wz-opt { flex: 1 1 210px; display: flex; flex-direction: column; gap: var(--fib-1); align-items: flex-start; text-align: left; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; padding: var(--fib-4); cursor: pointer; font: inherit; }
+.wz-opt:hover { border-color: var(--accent-gold); }
+.wz-opt.wz-on { border-color: var(--accent-gold); background: rgba(212,168,83,0.08); }
+.wz-opt:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+.wz-opt-big { font-family: var(--font-mono); font-size: 17px; font-weight: 700; letter-spacing: 1px; }
+.wz-opt-sub { font-size: 13px; color: var(--text-muted); }
+.wz-axes { display: flex; flex-wrap: wrap; gap: var(--fib-3); margin: var(--fib-3) 0; font-size: 14px; }
+.wz-axes label { display: flex; align-items: center; gap: var(--fib-1); cursor: pointer; }
+#wz-model { min-width: 320px; padding: var(--fib-2) var(--fib-3); background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+/* Selection must not be color-only (WCAG 1.4.1): chosen wizard options get a
+   check prefix alongside the gold border, and aria-pressed carries the state
+   programmatically. */
+.wz-opt.wz-on .wz-opt-big::before { content: "✓ "; color: var(--safe); }
+
+/* ── Human-cal results science (item 7, 2026-07-27) ─────────────────────────
+   Carrier-swing chart + subject comparison. Bars are plain divs scaled by
+   real numbers; every value is also printed as text beside its bar, so the
+   chart reads as an honest table for screen readers and copy-paste. */
+.hc-fam { margin-bottom: var(--fib-3); }
+.hc-fam-name { font-family: var(--font-mono); font-size: 13px; color: var(--text-primary); margin-bottom: var(--fib-1); }
+.hc-row { display: flex; align-items: center; gap: var(--fib-2); margin-bottom: var(--fib-1); min-width: 0; }
+.hc-row-tag { flex: 0 0 55px; font-size: 12px; color: var(--text-muted); text-align: right; }
+.hc-cmp-name { flex: 0 0 233px; font-size: 12.5px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc-row-you .hc-cmp-name { color: var(--accent-gold); font-weight: 600; }
+/* Subject kind stated in words, not inferred from the name's shape — a
+   model key and a display name are not reliably distinguishable. */
+.hc-kind { flex: 0 0 52px; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.hc-track { flex: 1 1 89px; height: 13px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+.hc-fill { height: 100%; background: var(--accent-gold); }
+.hc-fill-swing { background: var(--accent-cyan, #3fd8c9); }
+.hc-fill-model { background: var(--text-muted); }
+.hc-val { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+.hc-val-na { color: var(--text-muted); font-style: italic; }
+.hc-chart-cap { font-size: 12px; color: var(--text-muted); margin-top: var(--fib-2); }
+@media (max-width: 640px) {
+  .hc-cmp-name { flex-basis: 144px; }
+}

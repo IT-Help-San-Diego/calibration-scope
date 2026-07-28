@@ -2,11 +2,15 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-**Test your AI models like a scientist — local or cloud, on your own hardware, with evidence you can audit. Then measure yourself.**
+**Calibration Scope measures the gap between what a system *states* and what is *actually* true — machine-checked, sealed, and verifiable by anyone. Any subject. Any substrate. Silicon or carbon.**
 
-A benchmarking dashboard for [LM Studio](https://lmstudio.ai) and cloud LLMs (Nous, OpenRouter, OpenAI, Gemini) that measures what models can *actually* do — vision, tool use, reasoning, prompt-injection resistance — using ground-truth tests, N=3 trials, SHA3-sealed evidence, and zero trust in anyone's marketing numbers. Built in Rust (Axum + Tokio + SQLx + PostgreSQL) with a single-file live dashboard driven by Server-Sent Events.
+Every benchmark asks "what can it do?" Calibration Scope asks a sharper question: **does what it *says* match what is *actually so*?** A model states a verdict — we check it against a machine-verified logical ground truth. A run claims a result — we seal it with a SHA-3 hash you can re-verify. A system reasons in one voice or another — we measure whether the *carrier* changed the *signal*. The instrument never accuses; it measures a gap, continuously, and shows its work. Point it at a local model, a cloud endpoint, or a human taking the same battery — the method is the constant; only the subject changes.
 
-The defining feature: **the same battery, the same seals, run against local and cloud models — then matched back and forth.** Run a 30B model on your own GPU, run the same 90-test battery on a cloud endpoint, and cross-reference the verdicts on identical stimulus. The methodology is the constant; only the silicon changes. That is how you answer *"what am I dealing with today — and is it better than last week, or just bigger?"*
+> *If you study human reasoning: the same sealed battery measures carbon and silicon on identical stimulus. See the cognitive-construct crosswalk ([DECISIONS.md §10.13, "Cognitive Atlas crosswalk"](DECISIONS.md#1013-cognitive-atlas-crosswalk--hallucinated-ids-caught--verified-2026-07-22)).*
+
+Runs against local models ([LM Studio](https://lmstudio.ai)) and cloud endpoints (Nous, OpenRouter, OpenAI, Gemini) — vision, tool use, reasoning, prompt-injection resistance — using ground-truth tests, N=3 trials, SHA-3-sealed evidence, and zero trust in anyone's marketing numbers. Built in Rust (Axum + Tokio + SQLx + PostgreSQL) with a single-file live dashboard driven by Server-Sent Events.
+
+The defining feature: **the same battery, the same seals, run against local and cloud models — then matched back and forth.** Run a 30B model on your own GPU, run the same sealed battery on a cloud endpoint, and cross-reference the verdicts on identical stimulus. The methodology is the constant; only the silicon changes. That is how you answer *"what am I dealing with today — and is it better than last week, or just bigger?"*
 
 And the loop closes on the human. The same fallacy taxonomy, the same N=3 discipline, the same sealed evidence can be pointed at **you** — take a calibrated logic/reasoning test, track your own weaknesses over time, and watch your profile move. Silicon and carbon under one instrument. That is the point: a tool to honestly measure intelligence wherever it shows up.
 
@@ -31,10 +35,16 @@ measured, sealed with SHA-3 provenance. Current results:
   content (English prose vs Lean formula vs haiku vs flattery), not the signal.
   Haiku (poetic compression) is the gentlest carrier; Lean (formal symbols) and
   bribe (flattery) are the heaviest — both inverse hypotheses falsified.
-- **Carrier-immunity threshold**: big models (nemotron 30B, Fable 5) are
-  carrier-immune (100% on every carrier); the small e2b is carrier-sensitive
-  (99% → 91%). Immunity tracks capability/headroom, not substrate (local vs
-  cloud).
+- **Carrier-immunity threshold (candidate)**: the small e2b shows a real carrier
+  drop (99% → 91% under Lean/bribe — the endpoint separation is statistically
+  supported). Larger models (nemotron 30B, Fable 5) show **no carrier
+  sensitivity we can resolve at current N** (all at/near the 100% ceiling —
+  small-N ceiling values, not a proven 100%). Whether immunity reflects a real
+  capability/headroom threshold, independent of substrate (local vs cloud), is
+  exactly what the pre-registered paired-design experiment (N≈420,
+  `docs/experiments/carrier_color_experiment_spec_v1.md`) is built to answer —
+  **not yet a settled result.** We hold our own claims to the standard we
+  measure others by.
 - **Verified leaderboard**: local models ranked on the reasoning battery, clean
   post-fix runs. Goldilocks floor: <1.5B breaks, 1.5B barely, **2B (gemma-4-e2b)
   genuinely usable**.

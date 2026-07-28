@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1618 1000" role="img"
+     aria-labelledby="ob-title ob-desc" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+  <title id="ob-title">One instrument, six doors — Subject times Channel</title>
+  <desc id="ob-desc">A two-by-three grid. Rows: SILICON (models) and CARBON (humans). Columns:
+    LOCAL API (local model via LM Studio), CLOUD API (cloud endpoint with your key), and MANUAL
+    (web chat, pasted pack). Four cells are live today; two carbon cells are schema-ready but not
+    yet administered. Every path lands in the same schema with honest channel provenance. The
+    manual channel is a first-class measurement path, not a downgrade.</desc>
+  <!-- Geometry is the shipped golden-ratio commitment, verifiable on sight:
+       canvas 1618x1000 (phi to 4 digits), vertical golden section at y=382
+       (1000 = 618 + 382), header split 236/146, Fibonacci spacing scale
+       13/21/34/55/89 for margins, gutters, and offsets. Presentation
+       attributes only - no <style> element, no style="" - so inlining this
+       into a hash-CSP page changes no style hashes. Zero JS. -->
+  <rect x="0" y="0" width="1618" height="1000" fill="#0a0a0a"/>
+
+  <!-- Header band: 0..382, golden-split into title 236 / mission 146 -->
+  <text x="55" y="144" font-size="55" font-weight="700" fill="#e0e0e0">One instrument, six doors</text>
+  <text x="55" y="199" font-size="21" fill="#a0a0a0">Subject &#215; Channel &#8212; every path lands in the same schema with honest channel provenance.</text>
+  <text x="55" y="322" font-size="17" fill="#d4a853">Pick a subject. Pick a channel. Run the same sealed battery.</text>
+  <line x1="55" y1="382" x2="1563" y2="382" stroke="#2b3143" stroke-width="1.5"/>
+  <text x="1563" y="371" font-size="13" fill="#7d8590" text-anchor="end">&#966; &#8212; 1000 = 618 + 382</text>
+
+  <!-- Column header band: 382..471 (height 89) -->
+  <text x="380" y="420" font-size="21" font-weight="700" fill="#d4a853" text-anchor="middle">LOCAL API</text>
+  <text x="380" y="450" font-size="16" fill="#a0a0a0" text-anchor="middle">Local model (LM Studio)</text>
+  <text x="853" y="420" font-size="21" font-weight="700" fill="#d4a853" text-anchor="middle">CLOUD API</text>
+  <text x="853" y="450" font-size="16" fill="#a0a0a0" text-anchor="middle">Cloud endpoint, your key</text>
+  <text x="1326" y="420" font-size="21" font-weight="700" fill="#d4a853" text-anchor="middle">MANUAL</text>
+  <text x="1326" y="450" font-size="16" fill="#a0a0a0" text-anchor="middle">Web chat (paste)</text>
+
+  <!-- Row label gutter: x 55..144 (width 89), rows 471..708 and 708..945 -->
+  <text x="99" y="590" font-size="21" font-weight="700" fill="#e0e0e0" text-anchor="middle"
+        transform="rotate(-90 99 590)">SILICON</text>
+  <text x="99" y="827" font-size="21" font-weight="700" fill="#e0e0e0" text-anchor="middle"
+        transform="rotate(-90 99 827)">CARBON</text>
+
+  <!-- Row 1: SILICON, y 471..708 (height 237). Cells inset 13, so 484..695. -->
+  <rect x="157" y="484" width="447" height="211" rx="13" fill="#0d1017" stroke="#2b3143" stroke-width="1.5"/>
+  <text x="178" y="549" font-size="20" font-weight="600" fill="#e0e0e0">A kid with LM Studio</text>
+  <text x="178" y="583" font-size="15" fill="#a0a0a0">The battery on their own GPU &#8212;</text>
+  <text x="178" y="607" font-size="15" fill="#a0a0a0">no account, no cloud.</text>
+  <text x="178" y="664" font-size="14" fill="#3fb950">&#9679; live</text>
+
+  <rect x="630" y="484" width="447" height="211" rx="13" fill="#0d1017" stroke="#2b3143" stroke-width="1.5"/>
+  <text x="651" y="549" font-size="20" font-weight="600" fill="#e0e0e0">Anyone with a cloud key</text>
+  <text x="651" y="583" font-size="15" fill="#a0a0a0">Same battery, cloud endpoint &#8212;</text>
+  <text x="651" y="607" font-size="15" fill="#a0a0a0">the key stays yours.</text>
+  <text x="651" y="664" font-size="14" fill="#3fb950">&#9679; live</text>
+
+  <rect x="1103" y="484" width="447" height="211" rx="13" fill="#0d1017" stroke="#d4a853" stroke-width="1.5"/>
+  <text x="1124" y="549" font-size="20" font-weight="600" fill="#e0e0e0">A security researcher with Replit</text>
+  <text x="1124" y="583" font-size="15" fill="#a0a0a0">A locked-down bot in a web chat &#8212;</text>
+  <text x="1124" y="607" font-size="15" fill="#a0a0a0">one pasted pack, a few minutes.</text>
+  <text x="1124" y="664" font-size="14" fill="#3fb950">&#9679; live</text>
+
+  <!-- Row 2: CARBON, y 708..945. Cells 721..932. -->
+  <rect x="157" y="721" width="447" height="211" rx="13" fill="#0d1017" stroke="#2b3143" stroke-width="1.5"/>
+  <text x="178" y="786" font-size="20" font-weight="600" fill="#e0e0e0">A human-cal participant</text>
+  <text x="178" y="820" font-size="15" fill="#a0a0a0">The same battery at this instrument &#8212;</text>
+  <text x="178" y="844" font-size="15" fill="#a0a0a0">human-cal page, same seals.</text>
+  <text x="178" y="901" font-size="14" fill="#3fb950">&#9679; live</text>
+
+  <rect x="630" y="721" width="447" height="211" rx="13" fill="#0a0c11" stroke="#2b3143"
+        stroke-width="1.5" stroke-dasharray="5 5"/>
+  <text x="651" y="786" font-size="20" font-weight="600" fill="#8b949e">A participant, remote</text>
+  <text x="651" y="820" font-size="15" fill="#7d8590">Same schema, when a remote</text>
+  <text x="651" y="844" font-size="15" fill="#7d8590">session path lands.</text>
+  <text x="651" y="901" font-size="14" fill="#8b949e">&#9702; schema-ready</text>
+
+  <rect x="1103" y="721" width="447" height="211" rx="13" fill="#0a0c11" stroke="#2b3143"
+        stroke-width="1.5" stroke-dasharray="5 5"/>
+  <text x="1124" y="786" font-size="20" font-weight="600" fill="#8b949e">A human on paper</text>
+  <text x="1124" y="820" font-size="15" fill="#7d8590">Transcribed after &#8212; same items,</text>
+  <text x="1124" y="844" font-size="15" fill="#7d8590">same seals.</text>
+  <text x="1124" y="901" font-size="14" fill="#8b949e">&#9702; schema-ready</text>
+
+  <!-- Footer band: 945..1000 -->
+  <text x="144" y="967" font-size="15" fill="#d4a853">MANUAL is a first-class measurement path, not a downgrade &#8212; same items, same scoring, channel recorded in provenance.</text>
+  <text x="144" y="990" font-size="12" fill="#7d8590">&#9702; = schema-ready, not yet administered &#183; Golden-ratio grid: 1618&#215;1000 canvas, 618&#8758;382 section, Fibonacci spacing 13&#183;21&#183;34&#183;55&#183;89</text>
+</svg>

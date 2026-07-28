@@ -1,0 +1,21 @@
+{
+  "check": "speculative-decoding artifact (final blocker)",
+  "query": "COUNT(speculative_draft_model), total_draft_tokens_count, accepted_draft_tokens_count per arm",
+  "result": {
+    "970_baseline": {
+      "trials": 758,
+      "speculative_draft_model": 0,
+      "draft_tokens": 0,
+      "draft_accepted": 0
+    },
+    "971_lean": {
+      "trials": 314,
+      "speculative_draft_model": 0,
+      "draft_tokens": 0,
+      "draft_accepted": 0
+    }
+  },
+  "verdict": "NO speculative decoding in EITHER arm. Counts equal (both zero). The variance collapse is NOT a speculative-decoding artifact. Combined with temperature=0.0 hardcoded and identical runtime configs, ALL execution artifacts are ruled out.",
+  "final_claim": "A prompt wrapper (Lean carrier) converted a stochastic reasoner (baseline 31/66 TRUE-keyed items intermediate at temp 0) into a committed one (Lean 0/27) at fixed temperature with no speculative decoding and identical configs. This is Carrier Color measured with all execution-level confounds excluded.",
+  "sha3_512": "8c7ddb0a507509b647af0914075c280daafc6523f01c0257a82ef54407e09db61733356118b2d6336e8c124e1f0c97667c14b47c0d64a5af52c3a4dfef33ed0f"
+}

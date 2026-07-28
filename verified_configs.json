@@ -1,0 +1,24 @@
+{
+  "schema": "verified_configs/v1",
+  "policy": "append-only. Every row carries N, pass rate WITH 95% Wilson CI, and a run hash. One verified row beats six plausible ones. A row is a claim the instrument can defend; never seed from memory.",
+  "configs": [
+    {
+      "model": "google/gemma-4-31b",
+      "quant": "GGUF (LM Studio)",
+      "channel": "local-api",
+      "battery": "64 distinct tests (DB-verified: 64 distinct test_ids, 192 trials, N=3 each). ONE display name — 'AUX-APPROVAL-01 Benign Command Classification' — is shared by two different tests, so name-keyed exports show 63 unique names. Count what the primary key counts.",
+      "n": 192,
+      "passed": 189,
+      "pass_rate": 0.9844,
+      "wilson95": [
+        0.9551,
+        0.9947
+      ],
+      "residual_failures": "LIT-12 x3 (sound control, stochastic over-call \u2014 model behavior, not instrument)",
+      "date": "2026-07-26",
+      "run_hash": "sha3-512:39cdd76dec386a4 (run 953)",
+      "notes": "Grader bug #3 fixed (ac37cad+6ca610a): verdict extraction + normalization. First run under the fixed grader. Claude Science pre-hoc prediction (LIT-12-only residuals) matched exactly.",
+      "verify": "docker exec archetype-postgres psql -U careybalboa -d calibration_scope -c \"SELECT COUNT(*) AS trials, COUNT(DISTINCT tr.test_id) AS distinct_tests, COUNT(DISTINCT te.name) AS distinct_names, COUNT(*) FILTER (WHERE tr.passed) AS passed, COUNT(*) FILTER (WHERE tr.is_infra_error) AS infra FROM trial_results tr JOIN tests te ON te.id=tr.test_id WHERE tr.run_id=953\" -- expect 192 | 64 | 63 | 189 | 0"
+    }
+  ]
+}

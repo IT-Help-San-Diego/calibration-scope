@@ -36,22 +36,26 @@ domain-general, never a test-specific formula.
   alien/heavy. **The carrier (human prose) became the signal; the signal
   (formal logic) became the noise.**
 
-## 2. Carrier-immunity threshold — big models shrug off ALL carrier noise
+## 2. Carrier-immunity threshold (candidate) — big models show no resolvable carrier drop
 
 Replication on stronger models (same 29-test LOGIC cluster, modular `test_ids`):
 
 | Model | Baseline | English | Lean | Haiku | Bribe | Verdict |
 |---|---|---|---|---|---|---|
-| gemma-4-e2b (2B) | 99.0% | 94.1% | 91.2% | 97.1% | 91.2% | **carrier-SENSITIVE** |
-| nemotron-3-nano-omni (30B) | 100% | 100% | 100% | 100% | 100% | **carrier-IMMUNE** |
-| anthropic/claude-fable-5 (cloud) | 100% | 100% | 100% | 100% | 100% | **carrier-IMMUNE** |
+| gemma-4-e2b (2B) | 99.0% | 94.1% | 91.2% | 97.1% | 91.2% | **carrier-SENSITIVE** (endpoint drop supported) |
+| nemotron-3-nano-omni (30B) | 100% | 100% | 100% | 100% | 100% | **no resolvable sensitivity** (at ceiling, N shown, no CI) |
+| anthropic/claude-fable-5 (cloud) | 100% | 100% | 100% | 100% | 100% | **no resolvable sensitivity** (at ceiling, N shown, no CI) |
 
-**Finding:** carrier-immunity tracks **capability/headroom**, not substrate
-(local vs cloud). Small models get "neutered" by carrier noise — the carrier
-crowds out their limited reasoning headroom. Big models have surplus headroom —
-they absorb the noise AND keep the logic. **Below a capability threshold, a
-model is carrier-sensitive; above it, carrier-immune.** Confirmed on BOTH local
-(nemotron) and cloud (Fable 5).
+**Finding (scoped):** at current N, larger models show **no carrier sensitivity we can
+resolve** — their scores sit at/near the 100% ceiling, where small-N compression hides
+any gap smaller than a few points (no confidence interval licenses a "100% immune"
+reading). The small e2b shows a candidate carrier drop (99%→91% under Lean/bribe;
+the endpoint separation *is* statistically supported). Whether this reflects a real
+capability/headroom threshold — and whether it tracks capability vs substrate (local vs
+cloud) — is exactly what the pre-registered paired-design experiment (N≈420,
+`docs/experiments/carrier_color_experiment_spec_v1.md`) is built to answer. **Not yet a
+settled result.** See DECISIONS §10.8 (statistical audit), §10.9 (confound note), §10.16
+(public-copy overclaim + fix).
 
 ## 3. Verified leaderboard (local models, reasoning axis, clean post-fix runs)
 
@@ -59,7 +63,7 @@ Top performers (pass rate on the reasoning battery, clean infrastructure):
 
 | Model | Score | Notes |
 |---|---|---|
-| nvidia/nemotron-3-nano-omni | **100%** (540/540) | carrier-immune |
+| nvidia/nemotron-3-nano-omni | **100%** (540/540) | no resolvable carrier sensitivity (ceiling) |
 | openai/gpt-oss-120b | **100%** (102/102) | |
 | google/gemma-4-31b | 97.6% | first verified 4/4 local |
 | nvidia/nemotron-3-nano-4b | 96.9% | |

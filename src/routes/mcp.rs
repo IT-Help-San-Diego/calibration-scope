@@ -182,7 +182,7 @@ fn tool_registry() -> Vec<ToolDef> {
         },
         ToolDef {
             name: "get_carrier_color",
-            description: "The Carrier Color findings: the 5-arm carrier spectrum + the immunity threshold (which models are carrier-sensitive vs carrier-immune).",
+            description: "The Carrier Color findings: the 5-arm carrier spectrum + the candidate immunity threshold (e2b carrier-sensitive; larger models show no resolvable carrier sensitivity at ceiling — capability-vs-substrate NOT yet settled, powered N≈420 experiment pending).",
             input_schema: json!({ "type": "object", "properties": {}, "additionalProperties": false }),
         },
         ToolDef {
@@ -524,10 +524,10 @@ async fn tool_get_carrier_color(_state: &AppState, id: Value) -> AppResult<Json<
         json!({
             "spectrum": [
                 { "model": "gemma-4-e2b", "baseline": 99.0, "english": 94.1, "lean": 91.2, "haiku": 97.1, "bribe": 91.2, "verdict": "carrier-sensitive" },
-                { "model": "nvidia/nemotron-3-nano-omni", "baseline": 100.0, "english": 100.0, "lean": 100.0, "haiku": 100.0, "bribe": 100.0, "verdict": "carrier-immune" },
-                { "model": "anthropic/claude-fable-5", "baseline": 100.0, "english": 100.0, "lean": 100.0, "haiku": 100.0, "bribe": 100.0, "verdict": "carrier-immune" }
+                { "model": "nvidia/nemotron-3-nano-omni", "baseline": 100.0, "english": 100.0, "lean": 100.0, "haiku": 100.0, "bribe": 100.0, "verdict": "no resolvable carrier sensitivity (ceiling)" },
+                { "model": "anthropic/claude-fable-5", "baseline": 100.0, "english": 100.0, "lean": 100.0, "haiku": 100.0, "bribe": 100.0, "verdict": "no resolvable carrier sensitivity (ceiling)" }
             ],
-            "finding": "Carrier-immunity tracks capability/headroom, not substrate. Small models (e2b) are carrier-sensitive; big models (nemotron, Fable 5) are carrier-immune. Below a capability threshold, a model's verdict tracks the carrier; above it, immune.",
+            "finding": "The small e2b shows a statistically-supported carrier drop at the endpoints (99% baseline -> 91% under Lean/bribe). Larger models (nemotron 30B, Fable 5) show NO carrier sensitivity resolvable at current N — they sit at the 100% ceiling, where small-N compression hides gaps smaller than a few points. Whether immunity reflects a real capability/headroom threshold independent of substrate is the question the pre-registered paired-design experiment (N~420) is built to answer — NOT yet a settled result.",
             "reference": "DECISIONS.md §10.8 (e2b 5-arm spectrum) + §10.9 (immunity threshold)"
         }),
     )
