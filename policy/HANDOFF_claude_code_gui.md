@@ -136,12 +136,29 @@ index, README, lessons headers, DECISIONS preamble. One voice.
 
 ## Open items (pick in order)
 
-**NEXT BUILD for this lane: pick from the open items below — 5 (wording
-audit residuals), 8 (architecture diagram), or the systemic tab keyboard
-pass.** Item 7 (human-cal polish) SHIPPED 2026-07-27; see its record
-below. The mock-verification rig for browser-testing dashboard pages
-lives in the PR record (python mock server + Playwright against the real
-assets).
+**NEXT BUILD for this lane (updated 2026-07-28).** Items 6, 7, 8 and 10 are
+now DONE — see their records below. What is actually left:
+
+1. **Decide and apply migration 056** (item 9). Written and validated in a
+   rolled-back transaction, deliberately UNAPPLIED — applying it changes the
+   live instrument's data, which is Carey's/Hermes's call, not an agent's.
+   Apply, then re-run BOTH oracle modes.
+2. **Oracle coverage for the 28 pre-existing N/C rows** seeded by migrations
+   047/048/049 (item 9's tail). They pass the STRUCTURAL family check while
+   their logic has never been machine-verified — the same gap 056 closed for
+   its own rows. Unglamorous and high-value: it is ground truth the whole
+   instrument rests on.
+3. **The systemic tab keyboard pass** (carried over, still open).
+4. **Item 5 wording-audit residuals**, if any survive.
+
+Relay items (f)–(i) are HERMES's lane, not this one — see DECISIONS. (i) is
+new: nine documented-vs-actual gaps in the MCP tool surface, found by the
+item-10 test. Item 0.2 (provenance_tier/channel) stays lane-disputed — the
+spec marks §3a "Hermes's lane" while Claude Science's audit assigns it here;
+settle the lane before building it.
+
+The mock-verification rig for browser-testing dashboard pages lives in the PR
+record (python mock server + Playwright against the real assets).
 
 **Witness v2 — SHIPPED 2026-07-27 (design constraint from Claude Science,
 relayed via Carey): claim status BY CLAIM ID, never prose restatement.**
@@ -389,9 +406,35 @@ items, same grader as model runs".
      in-browser: CLEAN console, 8 animations, pill pinned across scroll.
    - Remaining for this item: run deploy-site.sh (Hermes/Carey), then a
      final visual pass on the LIVE site; optionally richer brain art later.
-6. **Lessons page polish.** Four comics render inline; design pass on the
-   lesson cards, status badges, seal lines. Do NOT change the lesson .md
-   files or comic SVGs (sealed — hash-verified).
+6. ~~Lessons page polish.~~ **DONE 2026-07-28.** Design-only pass on
+   site/lessons.html; zero copy changed (proved mechanically — tokenised
+   old vs new, 2225 words both sides, every added token has an identical
+   removed counterpart from the badge's DOM move). Cards are real cards, so
+   the comic's near-black well reads as inset rather than as a hole. The
+   three epistemic tiers were all rendering in the SAME green — they now
+   carry a mark that differs in SHAPE as well as hue (SEALED square/green,
+   MECHANISM circle/cyan, PARABLE diamond/violet) so the code survives
+   greyscale, with identical chrome on every badge and the three keywords'
+   contrast within 0.05 of each other: the anti-ranking property is
+   measured, not asserted. PARABLE is a different KIND of claim, not a
+   lower grade, and a CSS comment says so to stop a future editor
+   "promoting" one. Seal lines read as receipts (perforation rule, spaced
+   label, verify command in a `user-select:all` chip that clones across
+   wraps); the ellipsized hash is deliberately NOT one-click-selectable
+   because copying `8601a916…339d483c` hands you something that is not a
+   hash. Accessibility extended: `aria-labelledby` on all four `role="img"`
+   comics (they had no accessible name), focus rings on in-comic links,
+   header/footer landmarks. Caught by rendering, not reading: the new
+   inner `<header>`/`<footer>` inherited the page banner's gradient — both
+   are now scoped `body>header`/`body>footer`. CSP style-hash recomputed by
+   deploy-site.sh's own method and re-verified after each of three edits
+   (`sha256-pC7E44VSL8MichIiD+67NV4X9I5aZmfIDZg67/aiYmA=`) — the gate that
+   caught yesterday's drift passes for both pages. All four SHA3-256 lesson
+   seals re-checked with openssl: match. NOTE for the record: the pass also
+   dropped a `.seal` rule the report called "fully shadowed — no visual
+   change"; that was wrong (it uniquely supplied background/border/padding/
+   display), but the seal line was redesigned wholesale in the same pass, so
+   the green chip is gone BY DESIGN, not by accident. Verifier catch.
 7. ~~Human-calibration UI polish (dashboard).~~ **SHIPPED v1 2026-07-27,
    browser-verified 23/23 checks.** Per-question timing: elapsed clock in
    the quiz header, stamped at the click (network time is not thinking
@@ -425,13 +468,75 @@ items, same grader as model runs".
    First run of that checker passed a diagram whose arrows cut through the
    Executor and ran off the canvas; the eye caught it, then the checker was
    strengthened until it caught the same things. Keep both views in step.
-9. **OWL N/C coverage expansion.** LOGIC-05/07/08/09/10 still have no N/C
-   siblings. Template = migration 047/048 pattern (same formal_spec, new
-   surface text for N; transform + named owl_flaw for C; resolve roots by
-   NAME, never raw id). Oracle: scripts/verify_logic_ground_truth.py
-   --check-owl-families.
-10. **MCP server e2e test.** Connect a real bot to POST /mcp, discover the
-   11 tools, call run_benchmark + get_run. Untested end-to-end by a client.
+9. **OWL N/C coverage expansion — WRITTEN AND VALIDATED, NOT APPLIED
+   (2026-07-28).** `migrations/056_owl_nc_coverage_logic_05_10.sql` (055 was
+   taken by Hermes the same day) adds N+C siblings for LOGIC-05/07/08/09/10
+   in the 047/048 pattern — roots resolved by NAME, never raw id. **The
+   migration is deliberately UNAPPLIED: applying it is a data change to the
+   live instrument and is Carey's/Hermes's call, not an agent's.** It was
+   validated by applying inside a transaction and rolling back: N/C rows
+   28→38, `fully_instrumented` families 5→10, all five targets reach
+   N=1/C=1, a second apply still yields 38 (idempotent), and the live DB was
+   confirmed unchanged afterwards (28 N/C, 474 tests). To land it, apply the
+   migration and re-run both oracle modes.
+   **THE REAL DELIVERABLE IS THE ORACLE EXTENSION**, because it closes a gap
+   that made this item riskier than it looked: `--check-owl-families` is
+   STRUCTURAL only (it checks that N keeps the root's spec and C carries a
+   different one) and never checks that a C trap's `expected_result` is
+   logically correct — and the oracle's battery is HAND-MAINTAINED, so rows
+   added by a migration are not covered until someone writes their
+   structures. New C traps would therefore have passed the family check with
+   their LOGIC UNVERIFIED. `scripts/verify_logic_ground_truth.py` now carries
+   all ten new rows: **28/28 → 39/39 ground truths verified.**
+   **LOGIC-09 is machine-verified for the first time.** It was absent from
+   the oracle entirely because its spec is a SATISFIABILITY question
+   (`(A∨B)∧(¬A∨C)∧(¬B∨¬C) — SAT`) while the harness computes ENTAILMENT — a
+   different shape, so it fell outside. A SAT-shaped check was added; the
+   entailment path is unchanged and still passing. Note the oracle returns
+   the FIRST satisfying assignment and stops, so it prints one witness
+   (`(A,B,C)=(F,T,F)`); the fact that exactly two models exist is true but is
+   NOT what this gate produces.
+   Negative control run (the check that the gate can actually fail): flipping
+   09C to SAT and 05C to VALID on a scratch copy gives `37/39 — 2
+   MISMATCH(ES)`, exit 1. The gate bites.
+   **STILL OPEN after 056** (the first draft's header claimed this closed the
+   one-form families — false, corrected): 19 LOGIC-* families remain not
+   fully_instrumented (LOGIC-02 has C=1/N=0; LOGIC-12..29 have neither), plus
+   every PILOT-*/PROBE-*/QS*/DF*/LIT-*/VVP-*/TOOL-*/SEC-* family. Separately,
+   the 28 N/C rows seeded by migrations 047/048/049 have NO oracle entry and
+   remain machine-unverified — same class of gap, still open.
+10. ~~MCP server e2e test.~~ **DONE 2026-07-28 — `scripts/mcp_e2e_test.py`,
+   73 checks: 58 PASS, 9 GAP, 6 INFO, 0 FAIL (exit 2 = GAPs only).** Acts as
+   a real bot: handshake, discovery, read-only tool calls, shape validation,
+   error paths. Nothing taken on faith — the expected tool set is parsed OUT
+   OF src/routes/mcp.rs at runtime, so a tool in the registry but not the
+   dispatcher (or vice versa) is a mismatch, not a green tick. Registry and
+   dispatcher parity confirmed at 11 tools. GPU SAFETY: run_benchmark starts
+   a REAL run, so the default NEVER fires one — it validates the contract
+   (presence, input schema, the three server-side refusals rejected before
+   any test_runs row exists); `--fire-run` is explicit opt-in. Queue verified
+   idle before and after (before=0, after=0).
+   **The 9 GAPs are findings about the server, not test failures** — RELAY
+   TO HERMES (i): get_status advertises `uptime` it does not return;
+   get_model_verdict advertises `score` it does not return; get_run omits
+   fields its own description promises; list_models' `runnable` filter is
+   advertised but inert (0 of 349 rows carry the field); list_tests
+   `active=false` does not select inactive tests; get_owl_state omits
+   advertised coverage classes; plus three transport deviations where
+   malformed JSON and a missing `method` are rejected by axum's extractor
+   at the HTTP layer before the MCP handler runs, so they never become
+   JSON-RPC errors.
+   Adversarial verification caught two FALSE PASSES in the first draft,
+   proved with a fault-injecting stub server: a failed probe yielded
+   `None`, which fell through to PASS and printed "true=None, false=None"
+   as its own evidence. Both fixed. Also corrected: the summary header
+   asserted "STATED-VS-ACTUAL GAPS (server is honest about none of these)"
+   — an uncomputed editorial claim that additionally mislabeled the three
+   transport deviations. Now `DOCUMENTED-VS-ACTUAL GAPS` with the count
+   computed and both kinds named.
+   Known blind spot (not fixed): `tool_list_tests` has a hard `LIMIT 500`
+   and the registry holds 474 — the `count == len(tests)` assertion would
+   still pass if the registry crossed 500 and got silently truncated.
 
 ## What's DONE (don't redo)
 
