@@ -18,7 +18,8 @@ instrument** and would degrade the record. Two reasons, neither of them about pr
 
 ## 1. WHAT ACTUALLY MAKES A RECORD ACCOUNTABLE: decisions, time-ordered, before outcomes
 **The accountable unit is a DECISION MADE UNDER UNCERTAINTY, timestamped before the outcome was known.** That is
-the thing that cannot be gamed retroactively, and it is what the log already does well for the agents:
+the thing that cannot be gamed retroactively. **The log does this far less often than I claimed, and the
+corrected figure weakens my own position rather than the argument:**
 **8 of 210 entries (3.8%) record a genuine pre-data prediction or a harness written before the data.**
 *(CORRECTED 2026-07-29: I first published **25**, computed by keyword-matching whole-entry JSON. Hand-reading all
 25 shows **17 are DISCUSSION of pre-registration — mostly corrections of my own pre-registration failures**, not
