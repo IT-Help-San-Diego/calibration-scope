@@ -1966,6 +1966,109 @@ document.getElementById('model-grid').addEventListener('click', function(e) {
   const badge = document.getElementById('selected-count-badge');
   if (badge) badge.textContent = (count + (document.querySelector('.model-card.selected, .model-row.selected') ? 1 : 0)) + ' selected';
 });
+
+// ── Model picker is a LISTBOX, not 312 tab stops (CS-037) ──────────────────
+// The rows were wired only by the delegated click above: they worked with a
+// mouse and did not exist for a keyboard. The obvious repair — tabindex="0" on
+// every row — costs 312 Tab presses to get past the list, which is a worse trap
+// than the one it replaces. So: the whole list is ONE tab stop, and a roving
+// tabindex moves the active option inside it.
+//
+// Interaction is Carey's call, recorded on CS-037 before this was written:
+// ARROWS MOVE ONLY, SPACE SELECTS. Arrowing past a selected row must never
+// clear it — with 312 rows, move-and-select would let one stray arrow destroy a
+// multi-model selection. Type-ahead was offered and NOT chosen; Home/End were
+// not decided. Neither is implemented here, deliberately — adding them as an
+// obvious improvement would be inventing a decision that was actually made.
+//
+// Everything is DERIVED from the DOM by sync(), and a MutationObserver calls it
+// whenever the grid's children or their classes change. That is what makes this
+// survive renderGrid(), restoreSelection(), applyFilters() and select-all
+// without hooking each one: the card warned that whatever holds the roving
+// tabindex must be re-established after every render or the list silently
+// reverts to unreachable, and hooking N call sites is exactly how that rots.
+(function () {
+  let activeKey = null;
+
+  const grid = () => document.getElementById('model-grid');
+  const options = () => {
+    const g = grid();
+    if (!g) return [];
+    return [...g.querySelectorAll('[data-key]')].filter(
+      el => el.classList.contains('model-row') || el.classList.contains('model-card')
+    );
+  };
+
+  function sync() {
+    const g = grid();
+    if (!g) return;
+    g.setAttribute('role', 'listbox');
+    g.setAttribute('aria-multiselectable', 'true');
+    if (!g.hasAttribute('aria-label')) g.setAttribute('aria-label', 'Models');
+    const list = options();
+    if (!list.length) return;
+    // Keep the active row across a re-render if its key survived; otherwise the
+    // first row. Tracking by data-key rather than index is what makes filtering
+    // and sorting not silently move the user somewhere else.
+    const active = list.find(el => el.dataset.key === activeKey) || list[0];
+    activeKey = active.dataset.key;
+    for (const el of list) {
+      el.setAttribute('role', 'option');
+      el.setAttribute('aria-selected', el.classList.contains('selected') ? 'true' : 'false');
+      el.setAttribute('tabindex', el === active ? '0' : '-1');
+    }
+  }
+
+  function onKeydown(e) {
+    const g = grid();
+    if (!g || !g.contains(e.target)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const list = options();
+    if (!list.length) return;
+    let i = list.findIndex(el => el.dataset.key === activeKey);
+    if (i < 0) i = 0;
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      // MOVE ONLY — selection is deliberately untouched here.
+      e.preventDefault();
+      const next = e.key === 'ArrowDown'
+        ? Math.min(i + 1, list.length - 1)
+        : Math.max(i - 1, 0);
+      activeKey = list[next].dataset.key;
+      sync();
+      list[next].focus();
+      list[next].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === ' ' || e.key === 'Spacebar') {
+      // SELECT — Space toggles, so arrowing is always safe.
+      // preventDefault because Space would otherwise scroll the page.
+      e.preventDefault();
+      selectModel(activeKey);
+      markLoadedRows();
+      // aria-selected is not set here: selectModel toggles .selected and the
+      // observer re-derives it, so there is one source of truth for "selected".
+    }
+  }
+
+  function arm() {
+    const g = grid();
+    if (!g) return;
+    new MutationObserver(sync).observe(g, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['class'],
+    });
+    // Only 'class' is observed, so sync()'s own role/aria-selected/tabindex
+    // writes cannot re-trigger it. Without that filter this is an infinite loop.
+    g.addEventListener('keydown', onKeydown);
+    g.addEventListener('click', e => {
+      const opt = e.target.closest('[data-key]');
+      if (opt && g.contains(opt)) { activeKey = opt.dataset.key; sync(); }
+    });
+    sync();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm);
+  else arm();
+})();
+
 // ============ Tab navigation — makes the top-nav tabs actually work ============
 // First-run onboarding globals (Rung 1). These MUST initialize BEFORE the
 // saved-page restore below can call obLoad() — declared later, the restore
