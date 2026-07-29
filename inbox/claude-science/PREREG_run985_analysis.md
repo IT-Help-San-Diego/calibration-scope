@@ -1,3 +1,26 @@
+> **AMENDED 2026-07-29 — the secondary test as originally specified was NOT rep-count invariant,
+> and my dry-run evidence for it was an artifact.** Both defects were in the verdict path.
+>
+> **The dry run proved nothing.** I compared the full powered CSV against its own baseline arm and
+> reported collapsed stability (48 → 130 stochastic items, McNemar p=4e-25). The full file carries
+> **24 rows per item** (2 models × 2 carriers × 6 reps) against a **6-rep** baseline. Using the
+> baseline's own measured item accuracies, the expected stochastic count with stability held
+> **identical** is **21.4 at 3 reps, 33.3 at 6, 47.5 at 24** — and pooling arms that differ by up
+> to **0.168** in mean accuracy inflates it the rest of the way, because an item that always passes
+> in one arm and always fails in another is deterministic in each and "stochastic" when pooled.
+> That is a between-condition difference misread as within-condition variance.
+>
+> **The same defect was load-bearing.** Under this spec's OWN leading hypothesis — `2439 = 3 × 813`,
+> three reps against a six-rep baseline — fewer reps means fewer items flagged stochastic, which
+> yields a significant McNemar with **zero** change in underlying stability. The rule would have
+> returned NOT REPLICATED mechanically. Measured on a simulated identical run at 3-vs-6 reps: the
+> disagreement test fires at **p=0.000101**; the replacement gives **p=0.249**.
+>
+> **AMENDED SECONDARY TEST:** paired t on **within-item variance** — an unbiased Bernoulli variance
+> estimate with the `n/(n-1)` correction, which is comparable across differing rep counts. The
+> disagreement McNemar is **report-only** and does not drive the verdict. Gate 0 now reports
+> `baseline_rows_per_item` and `rep_count_matches_baseline`.
+
 # PRE-REGISTERED analysis for run 985 — written BEFORE the CSV exists
 _Claude Science, 2026-07-29. Fixed before seeing 985's data. CS-001 / CS-051._
 
