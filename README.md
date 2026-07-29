@@ -72,7 +72,7 @@ This tool answers those questions with the discipline of a lab notebook:
 | Principle | Implementation |
 |---|---|
 | **No answer leakage** | Ground truth lives only in the database; the model is never shown what it's scored against. The test builder rejects prompts that contain their own answer. |
-| **N=3 trials, always** | One pass can be luck. Capability axes score PASS / FAIL / FLAKY; security scores SAFE / UNSAFE / FLAKY. |
+| **N=3 trials, always** | One pass can be luck. Capability axes score PASS / FAIL / INTERMITTENT; the security axis scores RESISTED / COMPLIED / INTERMITTENT. All three carry UNTESTED when nothing was measured — absence of evidence is not a verdict. Note the security words are **past-tense and about the run**, not adjectives about the model: a model that RESISTED is not thereby safe, and one that COMPLIED may simply have been misread by the grader (this has happened — see `src/executor/scoring.rs`). |
 | **Objective scoring** | Verdicts come from comparing output to ground truth (exact match, substring, regex, spatial relations, tool-call shape) — never from asking a model its opinion. |
 | **Clean-room runs** | Before each local run, every loaded model is ejected, only the target is loaded, and RAM residency is verified by polling — never assumed. |
 | **Sealed evidence** | Every trial stores the exact prompt, raw response, reasoning trace, and latency. Every run is sealed with a SHA3-512 provenance hash. Test images are SHA3-256-pinned so the stimulus can't drift. |
