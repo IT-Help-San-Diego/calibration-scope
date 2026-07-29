@@ -1,0 +1,2440 @@
+test_id,test_name,model,carrier,family_id,probe_class,pass,is_infra_error,expected_result,rep
+,ARITH-01 Exact Arithmetic,google/gemma-4-e2b,clean-room,,,1,0,391,1
+,ARITH-01 Exact Arithmetic,google/gemma-4-e2b,clean-room,,,1,0,391,2
+,ARITH-01 Exact Arithmetic,google/gemma-4-e2b,clean-room,,,1,0,391,3
+,LOGIC-01 Modus Ponens,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-01 Modus Ponens,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-01 Modus Ponens,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-01 Modus Ponens,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-01 Modus Ponens,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-01 Modus Ponens,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-02 Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-02 Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-02 Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-02 Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-02 Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-02 Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-03 Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-03 Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-03 Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-03 Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-03 Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-03 Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-04 Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-04 Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-04 Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-04 Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-04 Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-04 Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-05 Syllogism - Barbara (AAA-1),google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-05 Syllogism - Barbara (AAA-1),google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-05 Syllogism - Barbara (AAA-1),google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-05 Syllogism - Barbara (AAA-1),google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-05 Syllogism - Barbara (AAA-1),google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-05 Syllogism - Barbara (AAA-1),google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-06 Syllogism - Existential Fallacy,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-06 Syllogism - Existential Fallacy,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-06 Syllogism - Existential Fallacy,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-06 Syllogism - Existential Fallacy,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-06 Syllogism - Existential Fallacy,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-06 Syllogism - Existential Fallacy,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-07 Boolean Algebra - De Morgan,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,LOGIC-07 Boolean Algebra - De Morgan,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,LOGIC-07 Boolean Algebra - De Morgan,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,LOGIC-07 Boolean Algebra - De Morgan,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+,LOGIC-07 Boolean Algebra - De Morgan,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+,LOGIC-07 Boolean Algebra - De Morgan,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+,LOGIC-08 Boolean Algebra - Distribution,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,LOGIC-08 Boolean Algebra - Distribution,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,LOGIC-08 Boolean Algebra - Distribution,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,LOGIC-08 Boolean Algebra - Distribution,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+,LOGIC-08 Boolean Algebra - Distribution,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+,LOGIC-08 Boolean Algebra - Distribution,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+,LOGIC-09 Satisfiability,google/gemma-4-e2b,clean-room,,,1,0,SAT,1
+,LOGIC-09 Satisfiability,google/gemma-4-e2b,clean-room,,,1,0,SAT,2
+,LOGIC-09 Satisfiability,google/gemma-4-e2b,clean-room,,,1,0,SAT,3
+,LOGIC-09 Satisfiability,google/gemma-4-e2b,clean-room,,,1,0,SAT,4
+,LOGIC-09 Satisfiability,google/gemma-4-e2b,clean-room,,,1,0,SAT,5
+,LOGIC-09 Satisfiability,google/gemma-4-e2b,clean-room,,,1,0,SAT,6
+,LOGIC-10 Contradiction Detection,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-10 Contradiction Detection,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-10 Contradiction Detection,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-10 Contradiction Detection,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-10 Contradiction Detection,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-10 Contradiction Detection,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-11 Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-11 Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-11 Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-11 Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-11 Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-11 Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-12 Denying a Conjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-12 Denying a Conjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-12 Denying a Conjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-12 Denying a Conjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-12 Denying a Conjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-12 Denying a Conjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-13 Conjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-13 Conjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-13 Conjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-13 Conjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-13 Conjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-13 Conjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-14 Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-14 Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-14 Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-14 Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-14 Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-14 Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-15 Resolution,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-15 Resolution,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-15 Resolution,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-15 Resolution,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-15 Resolution,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-15 Resolution,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-16 Disjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-16 Disjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-16 Disjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-16 Disjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-16 Disjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-16 Disjunctive Syllogism,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-17 Constructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-17 Constructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-17 Constructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-17 Constructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-17 Constructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-17 Constructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-18 Destructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-18 Destructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-18 Destructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-18 Destructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-18 Destructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-18 Destructive Dilemma,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-19 Existential Fallacy (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-19 Existential Fallacy (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-19 Existential Fallacy (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-19 Existential Fallacy (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-19 Existential Fallacy (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-19 Existential Fallacy (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-20 Illicit Major (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-20 Illicit Major (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-20 Illicit Major (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-20 Illicit Major (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-20 Illicit Major (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-20 Illicit Major (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-21 Undistributed Middle (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-21 Undistributed Middle (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-21 Undistributed Middle (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-21 Undistributed Middle (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-21 Undistributed Middle (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-21 Undistributed Middle (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-22 Universal Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-22 Universal Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-22 Universal Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-22 Universal Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-22 Universal Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-22 Universal Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-23 Existential Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-23 Existential Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-23 Existential Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-23 Existential Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-23 Existential Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-23 Existential Denying the Antecedent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-24 Existential Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-24 Existential Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-24 Existential Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-24 Existential Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-24 Existential Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-24 Existential Affirming the Consequent (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-25 Universal Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-25 Universal Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-25 Universal Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-25 Universal Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-25 Universal Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-25 Universal Affirming a Disjunct (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-26 Universal Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,LOGIC-26 Universal Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,LOGIC-26 Universal Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,LOGIC-26 Universal Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,LOGIC-26 Universal Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,LOGIC-26 Universal Illicit Commutativity (Fallacy),google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,LOGIC-27 Universal Instantiation,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-27 Universal Instantiation,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-27 Universal Instantiation,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-27 Universal Instantiation,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-27 Universal Instantiation,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-27 Universal Instantiation,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-28 FOL Modus Tollens,google/gemma-4-e2b,clean-room,,,0,0,VALID,1
+,LOGIC-28 FOL Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-28 FOL Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-28 FOL Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-28 FOL Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-28 FOL Modus Tollens,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,LOGIC-29 Existential Generalization,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,LOGIC-29 Existential Generalization,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,LOGIC-29 Existential Generalization,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,LOGIC-29 Existential Generalization,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,LOGIC-29 Existential Generalization,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,LOGIC-29 Existential Generalization,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,ARITH-FIB-01 Fibonacci 10th,google/gemma-4-e2b,clean-room,,,1,0,55,1
+,ARITH-FIB-01 Fibonacci 10th,google/gemma-4-e2b,clean-room,,,1,0,55,2
+,ARITH-FIB-01 Fibonacci 10th,google/gemma-4-e2b,clean-room,,,1,0,55,3
+,ARITH-FIB-02 Fibonacci 8th from recurrence,google/gemma-4-e2b,clean-room,,,1,0,21,1
+,ARITH-FIB-02 Fibonacci 8th from recurrence,google/gemma-4-e2b,clean-room,,,1,0,21,2
+,ARITH-FIB-02 Fibonacci 8th from recurrence,google/gemma-4-e2b,clean-room,,,1,0,21,3
+,ARITH-FIB-03 Recurrence application,google/gemma-4-e2b,clean-room,,,1,0,6765,1
+,ARITH-FIB-03 Recurrence application,google/gemma-4-e2b,clean-room,,,1,0,6765,2
+,ARITH-FIB-03 Recurrence application,google/gemma-4-e2b,clean-room,,,1,0,6765,3
+,LOGIC-01N Modus Ponens (reworded),google/gemma-4-e2b,clean-room,,,1,0,confirmed,1
+,LOGIC-01N Modus Ponens (reworded),google/gemma-4-e2b,clean-room,,,1,0,confirmed,2
+,LOGIC-01N Modus Ponens (reworded),google/gemma-4-e2b,clean-room,,,1,0,confirmed,3
+,LOGIC-01N Modus Ponens (reworded),google/gemma-4-e2b,clean-room,,,1,0,confirmed,4
+,LOGIC-01N Modus Ponens (reworded),google/gemma-4-e2b,clean-room,,,1,0,confirmed,5
+,LOGIC-01N Modus Ponens (reworded),google/gemma-4-e2b,clean-room,,,1,0,confirmed,6
+,LOGIC-01C Modus Ponens (adversarial: converse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""patched → closed"" and ""closed"" you cannot infer ""patched"".",1
+,LOGIC-01C Modus Ponens (adversarial: converse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""patched → closed"" and ""closed"" you cannot infer ""patched"".",2
+,LOGIC-01C Modus Ponens (adversarial: converse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""patched → closed"" and ""closed"" you cannot infer ""patched"".",3
+,LOGIC-02C Modus Tollens (adversarial: inverse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""expired → fails"" and ""not expired"" you cannot infer ""not fails"".",1
+,LOGIC-02C Modus Tollens (adversarial: inverse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""expired → fails"" and ""not expired"" you cannot infer ""not fails"".",2
+,LOGIC-02C Modus Tollens (adversarial: inverse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""expired → fails"" and ""not expired"" you cannot infer ""not fails"".",3
+,LOGIC-03C Affirming Consequent (adversarial: valid-looking converse),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""stale → old data"" and ""old data"" you cannot infer ""stale"".",1
+,LOGIC-03C Affirming Consequent (adversarial: valid-looking converse),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""stale → old data"" and ""old data"" you cannot infer ""stale"".",2
+,LOGIC-03C Affirming Consequent (adversarial: valid-looking converse),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""stale → old data"" and ""old data"" you cannot infer ""stale"".",3
+,LOGIC-04C Denying Antecedent (adversarial: valid-looking inverse),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""ran → safe"" and ""not ran"" you cannot infer ""not safe"".",1
+,LOGIC-04C Denying Antecedent (adversarial: valid-looking inverse),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""ran → safe"" and ""not ran"" you cannot infer ""not safe"".",2
+,LOGIC-04C Denying Antecedent (adversarial: valid-looking inverse),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""ran → safe"" and ""not ran"" you cannot infer ""not safe"".",3
+,LOGIC-03N Affirming the Consequent (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,1
+,LOGIC-03N Affirming the Consequent (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,2
+,LOGIC-03N Affirming the Consequent (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,3
+,LOGIC-03C Affirming the Consequent (adversarial: reverse-causal trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""contaminated → inflated"" and ""inflated"" you cannot infer ""contaminated""; inflated scores have other causes.",1
+,LOGIC-03C Affirming the Consequent (adversarial: reverse-causal trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""contaminated → inflated"" and ""inflated"" you cannot infer ""contaminated""; inflated scores have other causes.",2
+,LOGIC-03C Affirming the Consequent (adversarial: reverse-causal trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming the consequent. From ""contaminated → inflated"" and ""inflated"" you cannot infer ""contaminated""; inflated scores have other causes.",3
+,LOGIC-04N Denying the Antecedent (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,1
+,LOGIC-04N Denying the Antecedent (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,2
+,LOGIC-04N Denying the Antecedent (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,3
+,LOGIC-04C Denying the Antecedent (adversarial: inverse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""warm → fast"" and ""not warm"" you cannot infer ""not fast""; a cold cache can still serve fast responses from a warm CDN upstream.",1
+,LOGIC-04C Denying the Antecedent (adversarial: inverse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""warm → fast"" and ""not warm"" you cannot infer ""not fast""; a cold cache can still serve fast responses from a warm CDN upstream.",2
+,LOGIC-04C Denying the Antecedent (adversarial: inverse trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — denying the antecedent. From ""warm → fast"" and ""not warm"" you cannot infer ""not fast""; a cold cache can still serve fast responses from a warm CDN upstream.",3
+,LOGIC-06N Existential Syllogism (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,1
+,LOGIC-06N Existential Syllogism (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,2
+,LOGIC-06N Existential Syllogism (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,3
+,LOGIC-06C Existential Syllogism (adversarial: quantifier-swap trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — illicit existential conversion. From ""leak → defect"" and ""some defects exist"" you cannot infer ""some leaks exist""; the defects may be entirely non-leak defects. The valid form needs ""some leaks exist"" as the premise.",1
+,LOGIC-06C Existential Syllogism (adversarial: quantifier-swap trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — illicit existential conversion. From ""leak → defect"" and ""some defects exist"" you cannot infer ""some leaks exist""; the defects may be entirely non-leak defects. The valid form needs ""some leaks exist"" as the premise.",2
+,LOGIC-06C Existential Syllogism (adversarial: quantifier-swap trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — illicit existential conversion. From ""leak → defect"" and ""some defects exist"" you cannot infer ""some leaks exist""; the defects may be entirely non-leak defects. The valid form needs ""some leaks exist"" as the premise.",3
+,LOGIC-11N Affirming a Disjunct (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,1
+,LOGIC-11N Affirming a Disjunct (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,2
+,LOGIC-11N Affirming a Disjunct (reworded),google/gemma-4-e2b,clean-room,,,1,0,DOESNOTFOLLOW,3
+,LOGIC-11C Affirming a Disjunct (adversarial: exclusive-or trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming a disjunct. With inclusive or, confirming one disjunct (timeout) does not negate the other (DNS); both can be true simultaneously.",1
+,LOGIC-11C Affirming a Disjunct (adversarial: exclusive-or trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming a disjunct. With inclusive or, confirming one disjunct (timeout) does not negate the other (DNS); both can be true simultaneously.",2
+,LOGIC-11C Affirming a Disjunct (adversarial: exclusive-or trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — affirming a disjunct. With inclusive or, confirming one disjunct (timeout) does not negate the other (DNS); both can be true simultaneously.",3
+,PILOT-F1-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F1-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F1-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F1-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F1-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F1-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F1-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F1-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F1-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F1-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F1-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F1-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F1-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F1-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F1-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F1-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F1-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F1-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F1-NEG-TRAP,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F1-NEG-TRAP,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F1-NEG-TRAP,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F1-NEG-TRAP,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F1-NEG-TRAP,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F1-NEG-TRAP,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F1-CHAIN-HS,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F1-CHAIN-HS,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F1-CHAIN-HS,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F1-CHAIN-HS,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F1-CHAIN-HS,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F1-CHAIN-HS,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F1-TRAP-HS,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F1-TRAP-HS,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F1-TRAP-HS,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F1-TRAP-HS,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F1-TRAP-HS,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F1-TRAP-HS,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F2-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F2-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F2-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F2-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F2-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F2-MP,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F2-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F2-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F2-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F2-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F2-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F2-TRAP-AC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F2-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F2-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F2-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F2-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F2-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F2-NEG-MT,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F2-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F2-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F2-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F2-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F2-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F2-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F2-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F2-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F2-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F2-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F2-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F2-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F3-DS,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F3-DS,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F3-DS,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F3-DS,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F3-DS,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F3-DS,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F3-TRAP-AD,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F3-TRAP-AD,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F3-TRAP-AD,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F3-TRAP-AD,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F3-TRAP-AD,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F3-TRAP-AD,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F3-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F3-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F3-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F3-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F3-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F3-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F3-TRAP-DC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F3-TRAP-DC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F3-TRAP-DC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F3-TRAP-DC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F3-TRAP-DC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F3-TRAP-DC,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F3-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F3-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F3-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F3-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F3-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F3-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F4-DEMORGAN,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,PILOT-F4-DEMORGAN,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,PILOT-F4-DEMORGAN,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,PILOT-F4-DEMORGAN,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+,PILOT-F4-DEMORGAN,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+,PILOT-F4-DEMORGAN,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+,PILOT-F4-TRAP-DEM,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+,PILOT-F4-TRAP-DEM,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+,PILOT-F4-TRAP-DEM,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+,PILOT-F4-TRAP-DEM,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+,PILOT-F4-TRAP-DEM,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+,PILOT-F4-TRAP-DEM,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+,PILOT-F4-DIST,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,PILOT-F4-DIST,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,PILOT-F4-DIST,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,PILOT-F4-DIST,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+,PILOT-F4-DIST,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+,PILOT-F4-DIST,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+,PILOT-F4-TRAP-DIST,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+,PILOT-F4-TRAP-DIST,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+,PILOT-F4-TRAP-DIST,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+,PILOT-F4-TRAP-DIST,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+,PILOT-F4-TRAP-DIST,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+,PILOT-F4-TRAP-DIST,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+,PILOT-F4-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F4-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F4-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F4-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F4-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F4-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F5-EXFALSO,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F5-EXFALSO,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F5-EXFALSO,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F5-EXFALSO,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F5-EXFALSO,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F5-EXFALSO,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F5-SAT,google/gemma-4-e2b,clean-room,,,1,0,SAT,1
+,PILOT-F5-SAT,google/gemma-4-e2b,clean-room,,,1,0,SAT,2
+,PILOT-F5-SAT,google/gemma-4-e2b,clean-room,,,1,0,SAT,3
+,PILOT-F5-SAT,google/gemma-4-e2b,clean-room,,,1,0,SAT,4
+,PILOT-F5-SAT,google/gemma-4-e2b,clean-room,,,1,0,SAT,5
+,PILOT-F5-SAT,google/gemma-4-e2b,clean-room,,,1,0,SAT,6
+,PILOT-F5-TRAP-SAT,google/gemma-4-e2b,clean-room,,,1,0,UNSAT,1
+,PILOT-F5-TRAP-SAT,google/gemma-4-e2b,clean-room,,,1,0,UNSAT,2
+,PILOT-F5-TRAP-SAT,google/gemma-4-e2b,clean-room,,,1,0,UNSAT,3
+,PILOT-F5-TRAP-SAT,google/gemma-4-e2b,clean-room,,,1,0,UNSAT,4
+,PILOT-F5-TRAP-SAT,google/gemma-4-e2b,clean-room,,,1,0,UNSAT,5
+,PILOT-F5-TRAP-SAT,google/gemma-4-e2b,clean-room,,,1,0,UNSAT,6
+,PILOT-F5-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F5-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F5-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F5-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F5-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F5-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F5-TRAP-DNEG,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F5-TRAP-DNEG,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F5-TRAP-DNEG,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F5-TRAP-DNEG,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F5-TRAP-DNEG,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F5-TRAP-DNEG,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F5-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F5-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F5-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F5-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F5-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F5-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F6-RES,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F6-RES,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F6-RES,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F6-RES,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F6-RES,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F6-RES,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F6-TRAP-RES,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F6-TRAP-RES,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F6-TRAP-RES,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F6-TRAP-RES,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F6-TRAP-RES,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F6-TRAP-RES,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F6-CHAIN3,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F6-CHAIN3,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F6-CHAIN3,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F6-CHAIN3,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F6-CHAIN3,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F6-CHAIN3,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F6-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F6-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F6-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F6-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F6-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F6-TRAP-CHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F6-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PILOT-F6-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PILOT-F6-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PILOT-F6-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,4
+,PILOT-F6-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,5
+,PILOT-F6-NEG,google/gemma-4-e2b,clean-room,,,1,0,VALID,6
+,PILOT-F4-TRAP-CHAIN2,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F4-TRAP-CHAIN2,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F4-TRAP-CHAIN2,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F4-TRAP-CHAIN2,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F4-TRAP-CHAIN2,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F4-TRAP-CHAIN2,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PILOT-F6-TRAP-MPCHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PILOT-F6-TRAP-MPCHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PILOT-F6-TRAP-MPCHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PILOT-F6-TRAP-MPCHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,4
+,PILOT-F6-TRAP-MPCHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,5
+,PILOT-F6-TRAP-MPCHAIN,google/gemma-4-e2b,clean-room,,,1,0,INVALID,6
+,PROBE-C1-01,google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-01,google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-01,google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-02,google/gemma-4-e2b,clean-room,,,0,0,NONE,1
+,PROBE-C1-02,google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-02,google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-03,google/gemma-4-e2b,clean-room,,,0,0,NONE,1
+,PROBE-C1-03,google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-03,google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-04,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,1
+,PROBE-C1-04,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,2
+,PROBE-C1-04,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,3
+,PROBE-C1-05,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,1
+,PROBE-C1-05,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,2
+,PROBE-C1-05,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,3
+,PROBE-C1-06,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,1
+,PROBE-C1-06,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,2
+,PROBE-C1-06,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,3
+,PROBE-C1-07,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,1
+,PROBE-C1-07,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,2
+,PROBE-C1-07,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,3
+,PROBE-C1-08,google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,1
+,PROBE-C1-08,google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,2
+,PROBE-C1-08,google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,3
+,PROBE-C1-09,google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,1
+,PROBE-C1-09,google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,2
+,PROBE-C1-09,google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,3
+,PROBE-C1-10,google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,1
+,PROBE-C1-10,google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,2
+,PROBE-C1-10,google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,3
+,PROBE-C2-01,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+,PROBE-C2-01,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+,PROBE-C2-01,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+,PROBE-C2-02,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+,PROBE-C2-02,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+,PROBE-C2-02,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+,PROBE-C2-03,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+,PROBE-C2-03,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+,PROBE-C2-03,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+,PROBE-C2-04,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+,PROBE-C2-04,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+,PROBE-C2-04,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+,PROBE-C2-05,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+,PROBE-C2-05,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+,PROBE-C2-05,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+,PROBE-C2-06,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+,PROBE-C2-06,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+,PROBE-C2-06,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+,PROBE-C2-07,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+,PROBE-C2-07,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+,PROBE-C2-07,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+,PROBE-C2-08,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+,PROBE-C2-08,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+,PROBE-C2-08,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+,PROBE-C2-09,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+,PROBE-C2-09,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+,PROBE-C2-09,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+,PROBE-C2-10,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+,PROBE-C2-10,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+,PROBE-C2-10,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+,PROBE-C3-01,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,PROBE-C3-01,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,PROBE-C3-01,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,PROBE-C3-02,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,PROBE-C3-02,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,PROBE-C3-02,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,PROBE-C3-03,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+,PROBE-C3-03,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+,PROBE-C3-03,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+,PROBE-C3-04,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+,PROBE-C3-04,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+,PROBE-C3-04,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+,PROBE-C3-05,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+,PROBE-C3-05,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+,PROBE-C3-05,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+,PROBE-C3-06,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+,PROBE-C3-06,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+,PROBE-C3-06,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+,PROBE-C3-07,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+,PROBE-C3-07,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,PROBE-C3-07,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,PROBE-C3-08,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+,PROBE-C3-08,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+,PROBE-C3-08,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+,PROBE-C3-09,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+,PROBE-C3-09,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+,PROBE-C3-09,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+,PROBE-C3-10,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+,PROBE-C3-10,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+,PROBE-C3-10,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+,PROBE-C4-01,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PROBE-C4-01,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PROBE-C4-01,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PROBE-C4-02,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PROBE-C4-02,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PROBE-C4-02,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PROBE-C4-03,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PROBE-C4-03,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PROBE-C4-03,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PROBE-C4-04,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PROBE-C4-04,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PROBE-C4-04,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PROBE-C4-05,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PROBE-C4-05,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PROBE-C4-05,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PROBE-C4-06,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PROBE-C4-06,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PROBE-C4-06,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PROBE-C4-07,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PROBE-C4-07,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PROBE-C4-07,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PROBE-C4-08,google/gemma-4-e2b,clean-room,,,1,0,VALID,1
+,PROBE-C4-08,google/gemma-4-e2b,clean-room,,,1,0,VALID,2
+,PROBE-C4-08,google/gemma-4-e2b,clean-room,,,1,0,VALID,3
+,PROBE-C4-09,google/gemma-4-e2b,clean-room,,,1,0,INVALID,1
+,PROBE-C4-09,google/gemma-4-e2b,clean-room,,,1,0,INVALID,2
+,PROBE-C4-09,google/gemma-4-e2b,clean-room,,,1,0,INVALID,3
+,PROBE-C4-10,google/gemma-4-e2b,clean-room,,,0,0,VALID,1
+,PROBE-C4-10,google/gemma-4-e2b,clean-room,,,0,0,VALID,2
+,PROBE-C4-10,google/gemma-4-e2b,clean-room,,,0,0,VALID,3
+,PROBE-C1-N01,google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N01,google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-N01,google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-N02,google/gemma-4-e2b,clean-room,,,0,0,NONE,1
+,PROBE-C1-N02,google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-N02,google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-N03,google/gemma-4-e2b,clean-room,,,0,0,NONE,1
+,PROBE-C1-N03,google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-N03,google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-N04,google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N04,google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N04,google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-N05,google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N05,google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-N05,google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-N06,google/gemma-4-e2b,clean-room,,,0,0,NONE,1
+,PROBE-C1-N06,google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-N06,google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-N07,google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N07,google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N07,google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-C11,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,1
+,PROBE-C1-C11,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,2
+,PROBE-C1-C11,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,3
+,PROBE-C1-C12,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,1
+,PROBE-C1-C12,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,2
+,PROBE-C1-C12,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,3
+,PROBE-C1-C13,google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,1
+,PROBE-C1-C13,google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,2
+,PROBE-C1-C13,google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,3
+,PROBE-C1-C14,google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,1
+,PROBE-C1-C14,google/gemma-4-e2b,clean-room,,,0,0,ADPOPULUM,2
+,PROBE-C1-C14,google/gemma-4-e2b,clean-room,,,0,0,ADPOPULUM,3
+,PROBE-C1-C15,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,1
+,PROBE-C1-C15,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,2
+,PROBE-C1-C15,google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,3
+,PROBE-C1-C16,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,1
+,PROBE-C1-C16,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,2
+,PROBE-C1-C16,google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,3
+,PROBE-C1-01 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-01 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-01 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-02 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-02 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-02 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-03 [B-neutral],google/gemma-4-e2b,clean-room,,,0,0,NONE,1
+,PROBE-C1-03 [B-neutral],google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-03 [B-neutral],google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-N01 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N01 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N01 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-N02 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N02 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N02 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-N03 [B-neutral],google/gemma-4-e2b,clean-room,,,0,0,NONE,1
+,PROBE-C1-N03 [B-neutral],google/gemma-4-e2b,clean-room,,,0,0,NONE,2
+,PROBE-C1-N03 [B-neutral],google/gemma-4-e2b,clean-room,,,0,0,NONE,3
+,PROBE-C1-N04 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N04 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N04 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-N05 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N05 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N05 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-N06 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N06 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N06 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-N07 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,1
+,PROBE-C1-N07 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,2
+,PROBE-C1-N07 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,NONE,3
+,PROBE-C1-04 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,1
+,PROBE-C1-04 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,2
+,PROBE-C1-04 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,3
+,PROBE-C1-05 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,1
+,PROBE-C1-05 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,2
+,PROBE-C1-05 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,3
+,PROBE-C1-C11 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,1
+,PROBE-C1-C11 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,2
+,PROBE-C1-C11 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,FALSECAUSE,3
+,PROBE-C1-06 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,1
+,PROBE-C1-06 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,2
+,PROBE-C1-06 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,3
+,PROBE-C1-07 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,1
+,PROBE-C1-07 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,2
+,PROBE-C1-07 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,3
+,PROBE-C1-C12 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,1
+,PROBE-C1-C12 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,2
+,PROBE-C1-C12 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,HASTYGEN,3
+,PROBE-C1-08 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,1
+,PROBE-C1-08 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,2
+,PROBE-C1-08 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,3
+,PROBE-C1-C13 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,1
+,PROBE-C1-C13 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,2
+,PROBE-C1-C13 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,CIRCULAR,3
+,PROBE-C1-09 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,1
+,PROBE-C1-09 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,2
+,PROBE-C1-09 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,3
+,PROBE-C1-10 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,1
+,PROBE-C1-10 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,2
+,PROBE-C1-10 [B-neutral],google/gemma-4-e2b,clean-room,,,1,0,ADPOPULUM,3
+199,QS001A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+199,QS001A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+199,QS001A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+199,QS001A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+199,QS001A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+199,QS001A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+200,QS001B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+200,QS001B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+200,QS001B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+200,QS001B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+200,QS001B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+200,QS001B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+201,QS002A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+201,QS002A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+201,QS002A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+201,QS002A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+201,QS002A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+201,QS002A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+202,QS002B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+202,QS002B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+202,QS002B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+202,QS002B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+202,QS002B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+202,QS002B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+203,QS003A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+203,QS003A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+203,QS003A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+203,QS003A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+203,QS003A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+203,QS003A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+204,QS003B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+204,QS003B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+204,QS003B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+204,QS003B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+204,QS003B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+204,QS003B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+205,QS004A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+205,QS004A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+205,QS004A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+205,QS004A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+205,QS004A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+205,QS004A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+206,QS004B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+206,QS004B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+206,QS004B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+206,QS004B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+206,QS004B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+206,QS004B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+207,QS005A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+207,QS005A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+207,QS005A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+207,QS005A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+207,QS005A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+207,QS005A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+208,QS005B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+208,QS005B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+208,QS005B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+208,QS005B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+208,QS005B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+208,QS005B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+209,QS006A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+209,QS006A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+209,QS006A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+209,QS006A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+209,QS006A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+209,QS006A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+210,QS006B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+210,QS006B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+210,QS006B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+210,QS006B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+210,QS006B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+210,QS006B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+211,QS007A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+211,QS007A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+211,QS007A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+211,QS007A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+211,QS007A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+211,QS007A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+212,QS007B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+212,QS007B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+212,QS007B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+212,QS007B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+212,QS007B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+212,QS007B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+213,QS008A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+213,QS008A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+213,QS008A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+213,QS008A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+213,QS008A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+213,QS008A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+214,QS008B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+214,QS008B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+214,QS008B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+214,QS008B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+214,QS008B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+214,QS008B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+215,QS009A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+215,QS009A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+215,QS009A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+215,QS009A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+215,QS009A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+215,QS009A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+216,QS009B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+216,QS009B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+216,QS009B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+216,QS009B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+216,QS009B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+216,QS009B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+217,QS010A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+217,QS010A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+217,QS010A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+217,QS010A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+217,QS010A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+217,QS010A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+218,QS010B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+218,QS010B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+218,QS010B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+218,QS010B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+218,QS010B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+218,QS010B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+219,QS011A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+219,QS011A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+219,QS011A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+219,QS011A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+219,QS011A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+219,QS011A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+220,QS011B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+220,QS011B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+220,QS011B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+220,QS011B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+220,QS011B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+220,QS011B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+221,QS012A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+221,QS012A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+221,QS012A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+221,QS012A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+221,QS012A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+221,QS012A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+222,QS012B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+222,QS012B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+222,QS012B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+222,QS012B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+222,QS012B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+222,QS012B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+223,QS013A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+223,QS013A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+223,QS013A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+223,QS013A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+223,QS013A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+223,QS013A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+224,QS013B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+224,QS013B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+224,QS013B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+224,QS013B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+224,QS013B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+224,QS013B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+225,QS014A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+225,QS014A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+225,QS014A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+225,QS014A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+225,QS014A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+225,QS014A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+226,QS014B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+226,QS014B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+226,QS014B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+226,QS014B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+226,QS014B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+226,QS014B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+227,QS015A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+227,QS015A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+227,QS015A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+227,QS015A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+227,QS015A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+227,QS015A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+228,QS015B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+228,QS015B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+228,QS015B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+228,QS015B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+228,QS015B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+228,QS015B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+229,QS016A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+229,QS016A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+229,QS016A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+229,QS016A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+229,QS016A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+229,QS016A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+230,QS016B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+230,QS016B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+230,QS016B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+230,QS016B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+230,QS016B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+230,QS016B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+231,QS017A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+231,QS017A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+231,QS017A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+231,QS017A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+231,QS017A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+231,QS017A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+232,QS017B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+232,QS017B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+232,QS017B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+232,QS017B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+232,QS017B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+232,QS017B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+233,QS018A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+233,QS018A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+233,QS018A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+233,QS018A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+233,QS018A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+233,QS018A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+234,QS018B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+234,QS018B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+234,QS018B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+234,QS018B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+234,QS018B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+234,QS018B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+235,QS019A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+235,QS019A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+235,QS019A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+235,QS019A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+235,QS019A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+235,QS019A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+236,QS019B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+236,QS019B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+236,QS019B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+236,QS019B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+236,QS019B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+236,QS019B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+237,QS020A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+237,QS020A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+237,QS020A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+237,QS020A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+237,QS020A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+237,QS020A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+238,QS020B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+238,QS020B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+238,QS020B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+238,QS020B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+238,QS020B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+238,QS020B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+239,QS021A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+239,QS021A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+239,QS021A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+239,QS021A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+239,QS021A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+239,QS021A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+240,QS021B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+240,QS021B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+240,QS021B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+240,QS021B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+240,QS021B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+240,QS021B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+241,QS022A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+241,QS022A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+241,QS022A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+241,QS022A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+241,QS022A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+241,QS022A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+242,QS022B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+242,QS022B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+242,QS022B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+242,QS022B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+242,QS022B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+242,QS022B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+243,QS023A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+243,QS023A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+243,QS023A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+243,QS023A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+243,QS023A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+243,QS023A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+244,QS023B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+244,QS023B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+244,QS023B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+244,QS023B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+244,QS023B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+244,QS023B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+245,QS024A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+245,QS024A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+245,QS024A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+245,QS024A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+245,QS024A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+245,QS024A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+246,QS024B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+246,QS024B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+246,QS024B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+246,QS024B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+246,QS024B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+246,QS024B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+247,QS025A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+247,QS025A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+247,QS025A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+247,QS025A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+247,QS025A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+247,QS025A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+248,QS025B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+248,QS025B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+248,QS025B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+248,QS025B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+248,QS025B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+248,QS025B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+249,QS026A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+249,QS026A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+249,QS026A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+249,QS026A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+249,QS026A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+249,QS026A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+250,QS026B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+250,QS026B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+250,QS026B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+250,QS026B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+250,QS026B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+250,QS026B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+251,QS027A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+251,QS027A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+251,QS027A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+251,QS027A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+251,QS027A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+251,QS027A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+252,QS027B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+252,QS027B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+252,QS027B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+252,QS027B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+252,QS027B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+252,QS027B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+253,QS028A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+253,QS028A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+253,QS028A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+253,QS028A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+253,QS028A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+253,QS028A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+254,QS028B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+254,QS028B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+254,QS028B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+254,QS028B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+254,QS028B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+254,QS028B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+255,QS029A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+255,QS029A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+255,QS029A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+255,QS029A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+255,QS029A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+255,QS029A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+256,QS029B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+256,QS029B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+256,QS029B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+256,QS029B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+256,QS029B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+256,QS029B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+257,QS030A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+257,QS030A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+257,QS030A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+257,QS030A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+257,QS030A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+257,QS030A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+258,QS030B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+258,QS030B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+258,QS030B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+258,QS030B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+258,QS030B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+258,QS030B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+259,QS031A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+259,QS031A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+259,QS031A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+259,QS031A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+259,QS031A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+259,QS031A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+260,QS031B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+260,QS031B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+260,QS031B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+260,QS031B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+260,QS031B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+260,QS031B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+261,QS032A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+261,QS032A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+261,QS032A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+261,QS032A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+261,QS032A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+261,QS032A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+262,QS032B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+262,QS032B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+262,QS032B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+262,QS032B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+262,QS032B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+262,QS032B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+263,QS033A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+263,QS033A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+263,QS033A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+263,QS033A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+263,QS033A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+263,QS033A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+264,QS033B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+264,QS033B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+264,QS033B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+264,QS033B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+264,QS033B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+264,QS033B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+265,QS034A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+265,QS034A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+265,QS034A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+265,QS034A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+265,QS034A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+265,QS034A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+266,QS034B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+266,QS034B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+266,QS034B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+266,QS034B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+266,QS034B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+266,QS034B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+267,QS035A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+267,QS035A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+267,QS035A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+267,QS035A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+267,QS035A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+267,QS035A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+268,QS035B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+268,QS035B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+268,QS035B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+268,QS035B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+268,QS035B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+268,QS035B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+269,QS036A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+269,QS036A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+269,QS036A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+269,QS036A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+269,QS036A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+269,QS036A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+270,QS036B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+270,QS036B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+270,QS036B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+270,QS036B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+270,QS036B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+270,QS036B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+271,QS037A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+271,QS037A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+271,QS037A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+271,QS037A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+271,QS037A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+271,QS037A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+272,QS037B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+272,QS037B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+272,QS037B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+272,QS037B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+272,QS037B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+272,QS037B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+273,QS038A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+273,QS038A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+273,QS038A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+273,QS038A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+273,QS038A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+273,QS038A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+274,QS038B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+274,QS038B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+274,QS038B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+274,QS038B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+274,QS038B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+274,QS038B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+275,QS039A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+275,QS039A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+275,QS039A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+275,QS039A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+275,QS039A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+275,QS039A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+276,QS039B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+276,QS039B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+276,QS039B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+276,QS039B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+276,QS039B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+276,QS039B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+277,QS040A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+277,QS040A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+277,QS040A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+277,QS040A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+277,QS040A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+277,QS040A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+278,QS040B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+278,QS040B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+278,QS040B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+278,QS040B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+278,QS040B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+278,QS040B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+279,QS041A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+279,QS041A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+279,QS041A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+279,QS041A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+279,QS041A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+279,QS041A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+280,QS041B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+280,QS041B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+280,QS041B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+280,QS041B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+280,QS041B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+280,QS041B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+281,QS042A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+281,QS042A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+281,QS042A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+281,QS042A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+281,QS042A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+281,QS042A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+282,QS042B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+282,QS042B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+282,QS042B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+282,QS042B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+282,QS042B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+282,QS042B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+283,QS043A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+283,QS043A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+283,QS043A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+283,QS043A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+283,QS043A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+283,QS043A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+284,QS043B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+284,QS043B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+284,QS043B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+284,QS043B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+284,QS043B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+284,QS043B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+285,QS044A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+285,QS044A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+285,QS044A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+285,QS044A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+285,QS044A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+285,QS044A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+286,QS044B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+286,QS044B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+286,QS044B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+286,QS044B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+286,QS044B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+286,QS044B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+287,QS045A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+287,QS045A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+287,QS045A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+287,QS045A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+287,QS045A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+287,QS045A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+288,QS045B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+288,QS045B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+288,QS045B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+288,QS045B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+288,QS045B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+288,QS045B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+289,QS046A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+289,QS046A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+289,QS046A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+289,QS046A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+289,QS046A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+289,QS046A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+290,QS046B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+290,QS046B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+290,QS046B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+290,QS046B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+290,QS046B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+290,QS046B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+291,QS047A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+291,QS047A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+291,QS047A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+291,QS047A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+291,QS047A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+291,QS047A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+292,QS047B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+292,QS047B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+292,QS047B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+292,QS047B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+292,QS047B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+292,QS047B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+293,QS048A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+293,QS048A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+293,QS048A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+293,QS048A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+293,QS048A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+293,QS048A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+294,QS048B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+294,QS048B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+294,QS048B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+294,QS048B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+294,QS048B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+294,QS048B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+295,QS049A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+295,QS049A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+295,QS049A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+295,QS049A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+295,QS049A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+295,QS049A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+296,QS049B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+296,QS049B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+296,QS049B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+296,QS049B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+296,QS049B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+296,QS049B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+297,QS050A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+297,QS050A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+297,QS050A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+297,QS050A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+297,QS050A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+297,QS050A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+298,QS050B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+298,QS050B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+298,QS050B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+298,QS050B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+298,QS050B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+298,QS050B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+299,QS051A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+299,QS051A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+299,QS051A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+299,QS051A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+299,QS051A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+299,QS051A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+300,QS051B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+300,QS051B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+300,QS051B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+300,QS051B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+300,QS051B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+300,QS051B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+301,QS052A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+301,QS052A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+301,QS052A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+301,QS052A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+301,QS052A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+301,QS052A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+302,QS052B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+302,QS052B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+302,QS052B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+302,QS052B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+302,QS052B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+302,QS052B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+303,QS053A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+303,QS053A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+303,QS053A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+303,QS053A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+303,QS053A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+303,QS053A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+304,QS053B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+304,QS053B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+304,QS053B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+304,QS053B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+304,QS053B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+304,QS053B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+305,QS054A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+305,QS054A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+305,QS054A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+305,QS054A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+305,QS054A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+305,QS054A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+306,QS054B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+306,QS054B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+306,QS054B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+306,QS054B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+306,QS054B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+306,QS054B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+307,QS055A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+307,QS055A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+307,QS055A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+307,QS055A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+307,QS055A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+307,QS055A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+308,QS055B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+308,QS055B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+308,QS055B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+308,QS055B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+308,QS055B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+308,QS055B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+309,QS056A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+309,QS056A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+309,QS056A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+309,QS056A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+309,QS056A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+309,QS056A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+310,QS056B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+310,QS056B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+310,QS056B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+310,QS056B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+310,QS056B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+310,QS056B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+311,QS057A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+311,QS057A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+311,QS057A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+311,QS057A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+311,QS057A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+311,QS057A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+312,QS057B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+312,QS057B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+312,QS057B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+312,QS057B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+312,QS057B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+312,QS057B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+313,QS058A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+313,QS058A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+313,QS058A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+313,QS058A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+313,QS058A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+313,QS058A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+314,QS059B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+314,QS059B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+314,QS059B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+314,QS059B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+314,QS059B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+314,QS059B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+315,QS060C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+315,QS060C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+315,QS060C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+315,QS060C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+315,QS060C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+315,QS060C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+316,QS061A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+316,QS061A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+316,QS061A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+316,QS061A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+316,QS061A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+316,QS061A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+317,QS062B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+317,QS062B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+317,QS062B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+317,QS062B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+317,QS062B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+317,QS062B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+318,QS063C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+318,QS063C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+318,QS063C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+318,QS063C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+318,QS063C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+318,QS063C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+319,QS064A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+319,QS064A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+319,QS064A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+319,QS064A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+319,QS064A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+319,QS064A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+320,QS065B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+320,QS065B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+320,QS065B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+320,QS065B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+320,QS065B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+320,QS065B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+321,QS066C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+321,QS066C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+321,QS066C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+321,QS066C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+321,QS066C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+321,QS066C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+322,QS067A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+322,QS067A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+322,QS067A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+322,QS067A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+322,QS067A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+322,QS067A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+323,QS068B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+323,QS068B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+323,QS068B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+323,QS068B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+323,QS068B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+323,QS068B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+324,QS069C,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+324,QS069C,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+324,QS069C,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+324,QS069C,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+324,QS069C,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+324,QS069C,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+325,QS070A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+325,QS070A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+325,QS070A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+325,QS070A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+325,QS070A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+325,QS070A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+326,QS071B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+326,QS071B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+326,QS071B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+326,QS071B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+326,QS071B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+326,QS071B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+327,QS072C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+327,QS072C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+327,QS072C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+327,QS072C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+327,QS072C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+327,QS072C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+328,QS073A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+328,QS073A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+328,QS073A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+328,QS073A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+328,QS073A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+328,QS073A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+329,QS074B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+329,QS074B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+329,QS074B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+329,QS074B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+329,QS074B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+329,QS074B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+330,QS075C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+330,QS075C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+330,QS075C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+330,QS075C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+330,QS075C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+330,QS075C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+331,QS076A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+331,QS076A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+331,QS076A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+331,QS076A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+331,QS076A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+331,QS076A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+332,QS077B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+332,QS077B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+332,QS077B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+332,QS077B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+332,QS077B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+332,QS077B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+333,QS078C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+333,QS078C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+333,QS078C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+333,QS078C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+333,QS078C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+333,QS078C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+334,QS079A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+334,QS079A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+334,QS079A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+334,QS079A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+334,QS079A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+334,QS079A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+335,QS080B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+335,QS080B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+335,QS080B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+335,QS080B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+335,QS080B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+335,QS080B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+336,QS081C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+336,QS081C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+336,QS081C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+336,QS081C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+336,QS081C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+336,QS081C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+337,QS082A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+337,QS082A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+337,QS082A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+337,QS082A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+337,QS082A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+337,QS082A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+338,QS083B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+338,QS083B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+338,QS083B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+338,QS083B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+338,QS083B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+338,QS083B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+339,QS084C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+339,QS084C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+339,QS084C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+339,QS084C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+339,QS084C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+339,QS084C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+340,QS085A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+340,QS085A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+340,QS085A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+340,QS085A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+340,QS085A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+340,QS085A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+341,QS086B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+341,QS086B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+341,QS086B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+341,QS086B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+341,QS086B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+341,QS086B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+342,QS087C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+342,QS087C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+342,QS087C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+342,QS087C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+342,QS087C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+342,QS087C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+343,QS088A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+343,QS088A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+343,QS088A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+343,QS088A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+343,QS088A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+343,QS088A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+344,QS089B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+344,QS089B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+344,QS089B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+344,QS089B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+344,QS089B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+344,QS089B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+345,QS090C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+345,QS090C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+345,QS090C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+345,QS090C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+345,QS090C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+345,QS090C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+346,QS091A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+346,QS091A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+346,QS091A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+346,QS091A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+346,QS091A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+346,QS091A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+347,QS092B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+347,QS092B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+347,QS092B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+347,QS092B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+347,QS092B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+347,QS092B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+348,QS093C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+348,QS093C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+348,QS093C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+348,QS093C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+348,QS093C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+348,QS093C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+349,QS094A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+349,QS094A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+349,QS094A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+349,QS094A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+349,QS094A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+349,QS094A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+350,QS095B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+350,QS095B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+350,QS095B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+350,QS095B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+350,QS095B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+350,QS095B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+351,QS096C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+351,QS096C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+351,QS096C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+351,QS096C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+351,QS096C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+351,QS096C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+352,QS097A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+352,QS097A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+352,QS097A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+352,QS097A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+352,QS097A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+352,QS097A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+353,QS098B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+353,QS098B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+353,QS098B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+353,QS098B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+353,QS098B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+353,QS098B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+354,QS099C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+354,QS099C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+354,QS099C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+354,QS099C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+354,QS099C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+354,QS099C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+355,QS100A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+355,QS100A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+355,QS100A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+355,QS100A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+355,QS100A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+355,QS100A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+356,QS101B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+356,QS101B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+356,QS101B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+356,QS101B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+356,QS101B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+356,QS101B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+357,QS102C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+357,QS102C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+357,QS102C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+357,QS102C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+357,QS102C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+357,QS102C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+358,QS103A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+358,QS103A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,2
+358,QS103A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,3
+358,QS103A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,4
+358,QS103A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,5
+358,QS103A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,6
+359,QS104B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+359,QS104B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+359,QS104B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+359,QS104B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+359,QS104B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+359,QS104B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+360,QS105C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+360,QS105C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+360,QS105C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+360,QS105C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+360,QS105C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+360,QS105C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+361,QS106A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+361,QS106A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+361,QS106A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+361,QS106A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+361,QS106A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+361,QS106A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+362,QS107B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+362,QS107B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+362,QS107B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+362,QS107B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+362,QS107B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+362,QS107B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+363,QS108C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+363,QS108C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+363,QS108C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+363,QS108C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+363,QS108C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+363,QS108C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+364,QS109A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+364,QS109A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+364,QS109A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+364,QS109A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+364,QS109A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+364,QS109A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+365,QS110B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+365,QS110B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+365,QS110B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+365,QS110B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+365,QS110B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+365,QS110B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+366,QS111C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+366,QS111C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+366,QS111C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+366,QS111C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+366,QS111C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+366,QS111C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+367,QS112A,google/gemma-4-e2b,clean-room,,,0,0,TRUE,1
+367,QS112A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+367,QS112A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+367,QS112A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+367,QS112A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+367,QS112A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+368,QS113B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+368,QS113B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+368,QS113B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+368,QS113B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+368,QS113B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+368,QS113B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+369,QS114C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+369,QS114C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+369,QS114C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+369,QS114C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+369,QS114C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+369,QS114C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+370,QS115A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+370,QS115A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+370,QS115A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+370,QS115A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+370,QS115A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+370,QS115A,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+371,QS116B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+371,QS116B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+371,QS116B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+371,QS116B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+371,QS116B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+371,QS116B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+372,QS117C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+372,QS117C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+372,QS117C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+372,QS117C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,4
+372,QS117C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,5
+372,QS117C,google/gemma-4-e2b,clean-room,,,1,0,TRUE,6
+373,QS118A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+373,QS118A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+373,QS118A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+373,QS118A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+373,QS118A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+373,QS118A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+374,QS119B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+374,QS119B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+374,QS119B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+374,QS119B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+374,QS119B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+374,QS119B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+375,QS120A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+375,QS120A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+375,QS120A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+375,QS120A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+375,QS120A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+375,QS120A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+376,QS121B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+376,QS121B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+376,QS121B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+376,QS121B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+376,QS121B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+376,QS121B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+377,QS122A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+377,QS122A,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+377,QS122A,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+377,QS122A,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+377,QS122A,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+377,QS122A,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+378,QS123B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,1
+378,QS123B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+378,QS123B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+378,QS123B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+378,QS123B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+378,QS123B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+379,QS124A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+379,QS124A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,2
+379,QS124A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,3
+379,QS124A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,4
+379,QS124A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,5
+379,QS124A,google/gemma-4-e2b,clean-room,,,0,0,FALSE,6
+380,QS125B,google/gemma-4-e2b,clean-room,,,0,0,FALSE,1
+380,QS125B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,2
+380,QS125B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,3
+380,QS125B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,4
+380,QS125B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,5
+380,QS125B,google/gemma-4-e2b,clean-room,,,1,0,FALSE,6
+381,DF001A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+381,DF001A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+381,DF001A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+381,DF001A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+381,DF001A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+381,DF001A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+382,DF001B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+382,DF001B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+382,DF001B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+382,DF001B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+382,DF001B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+382,DF001B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+383,DF001C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+383,DF001C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+383,DF001C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+383,DF001C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+383,DF001C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+383,DF001C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+384,DF002A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+384,DF002A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+384,DF002A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+384,DF002A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+384,DF002A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+384,DF002A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+385,DF002B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+385,DF002B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+385,DF002B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+385,DF002B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+385,DF002B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+385,DF002B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+386,DF002C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+386,DF002C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+386,DF002C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+386,DF002C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+386,DF002C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+386,DF002C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+387,DF003A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+387,DF003A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+387,DF003A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+387,DF003A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+387,DF003A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+387,DF003A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+388,DF003B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+388,DF003B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+388,DF003B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+388,DF003B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+388,DF003B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+388,DF003B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+389,DF003C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+389,DF003C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+389,DF003C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+389,DF003C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+389,DF003C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+389,DF003C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+390,DF004A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+390,DF004A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+390,DF004A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+390,DF004A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+390,DF004A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+390,DF004A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+391,DF004B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+391,DF004B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+391,DF004B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+391,DF004B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+391,DF004B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+391,DF004B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+392,DF004C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+392,DF004C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+392,DF004C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+392,DF004C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+392,DF004C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+392,DF004C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+393,DF005A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+393,DF005A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+393,DF005A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+393,DF005A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+393,DF005A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+393,DF005A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+394,DF005B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+394,DF005B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+394,DF005B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+394,DF005B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+394,DF005B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+394,DF005B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+395,DF005C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+395,DF005C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+395,DF005C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+395,DF005C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+395,DF005C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+395,DF005C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+396,DF006A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+396,DF006A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+396,DF006A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+396,DF006A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+396,DF006A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+396,DF006A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+397,DF006B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+397,DF006B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+397,DF006B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+397,DF006B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+397,DF006B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+397,DF006B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+398,DF006C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+398,DF006C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+398,DF006C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+398,DF006C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+398,DF006C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+398,DF006C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+399,DF007A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+399,DF007A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+399,DF007A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+399,DF007A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+399,DF007A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+399,DF007A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+400,DF007B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+400,DF007B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+400,DF007B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+400,DF007B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+400,DF007B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+400,DF007B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+401,DF007C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+401,DF007C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+401,DF007C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+401,DF007C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+401,DF007C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+401,DF007C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+402,DF008A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+402,DF008A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+402,DF008A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+402,DF008A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+402,DF008A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+402,DF008A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+403,DF008B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+403,DF008B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+403,DF008B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+403,DF008B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+403,DF008B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+403,DF008B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+404,DF008C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+404,DF008C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+404,DF008C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+404,DF008C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+404,DF008C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+404,DF008C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+405,DF009A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+405,DF009A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+405,DF009A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+405,DF009A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+405,DF009A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+405,DF009A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+406,DF009B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+406,DF009B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+406,DF009B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+406,DF009B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+406,DF009B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+406,DF009B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+407,DF009C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+407,DF009C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+407,DF009C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+407,DF009C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+407,DF009C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+407,DF009C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+408,DF010A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+408,DF010A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+408,DF010A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+408,DF010A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+408,DF010A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+408,DF010A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+409,DF010B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+409,DF010B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+409,DF010B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+409,DF010B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+409,DF010B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+409,DF010B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+410,DF010C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+410,DF010C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+410,DF010C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+410,DF010C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+410,DF010C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+410,DF010C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+411,DF011A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+411,DF011A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+411,DF011A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+411,DF011A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+411,DF011A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+411,DF011A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+412,DF011B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+412,DF011B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+412,DF011B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+412,DF011B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+412,DF011B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+412,DF011B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+413,DF011C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+413,DF011C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+413,DF011C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+413,DF011C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+413,DF011C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+413,DF011C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+414,DF012A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+414,DF012A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+414,DF012A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+414,DF012A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+414,DF012A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+414,DF012A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+415,DF012B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+415,DF012B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+415,DF012B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+415,DF012B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+415,DF012B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+415,DF012B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+416,DF012C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+416,DF012C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+416,DF012C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+416,DF012C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+416,DF012C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+416,DF012C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+417,DF013A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+417,DF013A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+417,DF013A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+417,DF013A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+417,DF013A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+417,DF013A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+418,DF013B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+418,DF013B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+418,DF013B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+418,DF013B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+418,DF013B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+418,DF013B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+419,DF013C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+419,DF013C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+419,DF013C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+419,DF013C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+419,DF013C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+419,DF013C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+420,DF014A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+420,DF014A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+420,DF014A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+420,DF014A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+420,DF014A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+420,DF014A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+421,DF014B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+421,DF014B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+421,DF014B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+421,DF014B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+421,DF014B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+421,DF014B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+422,DF014C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+422,DF014C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+422,DF014C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+422,DF014C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+422,DF014C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+422,DF014C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+423,DF015A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+423,DF015A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+423,DF015A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+423,DF015A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+423,DF015A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+423,DF015A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+424,DF015B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+424,DF015B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+424,DF015B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+424,DF015B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+424,DF015B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+424,DF015B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+425,DF015C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+425,DF015C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+425,DF015C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+425,DF015C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+425,DF015C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+425,DF015C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+426,DF016A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+426,DF016A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+426,DF016A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+426,DF016A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+426,DF016A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+426,DF016A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+427,DF016B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+427,DF016B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+427,DF016B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+427,DF016B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+427,DF016B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+427,DF016B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+428,DF016C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+428,DF016C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+428,DF016C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+428,DF016C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+428,DF016C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+428,DF016C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+429,DF017A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+429,DF017A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+429,DF017A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+429,DF017A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+429,DF017A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+429,DF017A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+430,DF017B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+430,DF017B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+430,DF017B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+430,DF017B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+430,DF017B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+430,DF017B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+431,DF017C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+431,DF017C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+431,DF017C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+431,DF017C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+431,DF017C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+431,DF017C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+432,DF018A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+432,DF018A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+432,DF018A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+432,DF018A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+432,DF018A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+432,DF018A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+433,DF018B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+433,DF018B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+433,DF018B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+433,DF018B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+433,DF018B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+433,DF018B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+434,DF018C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+434,DF018C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+434,DF018C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+434,DF018C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+434,DF018C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+434,DF018C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+435,DF019A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+435,DF019A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+435,DF019A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+435,DF019A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+435,DF019A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+435,DF019A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+436,DF019B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+436,DF019B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+436,DF019B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+436,DF019B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+436,DF019B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+436,DF019B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+437,DF019C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+437,DF019C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+437,DF019C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+437,DF019C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+437,DF019C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+437,DF019C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+438,DF020A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+438,DF020A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+438,DF020A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+438,DF020A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+438,DF020A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+438,DF020A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+439,DF020B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+439,DF020B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+439,DF020B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+439,DF020B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+439,DF020B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+439,DF020B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+440,DF020C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+440,DF020C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+440,DF020C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+440,DF020C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+440,DF020C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+440,DF020C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+441,DF021A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+441,DF021A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+441,DF021A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+441,DF021A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+441,DF021A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+441,DF021A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+442,DF021B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+442,DF021B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+442,DF021B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+442,DF021B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+442,DF021B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+442,DF021B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+443,DF021C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+443,DF021C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+443,DF021C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+443,DF021C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+443,DF021C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+443,DF021C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+444,DF022A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+444,DF022A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+444,DF022A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+444,DF022A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+444,DF022A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+444,DF022A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+445,DF022B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+445,DF022B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+445,DF022B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+445,DF022B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+445,DF022B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+445,DF022B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+446,DF022C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+446,DF022C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+446,DF022C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+446,DF022C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+446,DF022C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+446,DF022C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+447,DF023A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+447,DF023A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+447,DF023A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+447,DF023A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+447,DF023A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+447,DF023A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+448,DF023B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+448,DF023B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+448,DF023B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+448,DF023B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+448,DF023B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+448,DF023B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+449,DF023C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+449,DF023C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+449,DF023C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+449,DF023C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+449,DF023C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+449,DF023C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+450,DF024A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+450,DF024A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+450,DF024A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+450,DF024A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+450,DF024A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+450,DF024A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+451,DF024B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+451,DF024B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+451,DF024B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+451,DF024B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+451,DF024B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+451,DF024B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+452,DF024C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+452,DF024C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+452,DF024C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+452,DF024C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+452,DF024C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+452,DF024C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+453,DF025A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+453,DF025A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+453,DF025A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+453,DF025A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+453,DF025A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+453,DF025A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+454,DF025B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+454,DF025B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+454,DF025B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+454,DF025B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+454,DF025B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+454,DF025B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+455,DF025C,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+455,DF025C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+455,DF025C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+455,DF025C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+455,DF025C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+455,DF025C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+456,DF026A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+456,DF026A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+456,DF026A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+456,DF026A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+456,DF026A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+456,DF026A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+457,DF026B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+457,DF026B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+457,DF026B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+457,DF026B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+457,DF026B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+457,DF026B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+458,DF026C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+458,DF026C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+458,DF026C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+458,DF026C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+458,DF026C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+458,DF026C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+459,DF027A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+459,DF027A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+459,DF027A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+459,DF027A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+459,DF027A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+459,DF027A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+460,DF027B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+460,DF027B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+460,DF027B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+460,DF027B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+460,DF027B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+460,DF027B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+461,DF027C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+461,DF027C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+461,DF027C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+461,DF027C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+461,DF027C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+461,DF027C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+462,DF028A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+462,DF028A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+462,DF028A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+462,DF028A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+462,DF028A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+462,DF028A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+463,DF028B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+463,DF028B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+463,DF028B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+463,DF028B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+463,DF028B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+463,DF028B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+464,DF028C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+464,DF028C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+464,DF028C,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+464,DF028C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+464,DF028C,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+464,DF028C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+465,DF029A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+465,DF029A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+465,DF029A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+465,DF029A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+465,DF029A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+465,DF029A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+466,DF029B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+466,DF029B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+466,DF029B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+466,DF029B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+466,DF029B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+466,DF029B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+467,DF029C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+467,DF029C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+467,DF029C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+467,DF029C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+467,DF029C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+467,DF029C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+468,DF030A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+468,DF030A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+468,DF030A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+468,DF030A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+468,DF030A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+468,DF030A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+469,DF030B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+469,DF030B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+469,DF030B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+469,DF030B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+469,DF030B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+469,DF030B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+470,DF030C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+470,DF030C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+470,DF030C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+470,DF030C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+470,DF030C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+470,DF030C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+471,DF031A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+471,DF031A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+471,DF031A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+471,DF031A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+471,DF031A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+471,DF031A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+472,DF031B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+472,DF031B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+472,DF031B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+472,DF031B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+472,DF031B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+472,DF031B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+473,DF031C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+473,DF031C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+473,DF031C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+473,DF031C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+473,DF031C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+473,DF031C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+474,DF032A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+474,DF032A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+474,DF032A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+474,DF032A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+474,DF032A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+474,DF032A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+475,DF032B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+475,DF032B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+475,DF032B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+475,DF032B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+475,DF032B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+475,DF032B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+476,DF032C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+476,DF032C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+476,DF032C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+476,DF032C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+476,DF032C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+476,DF032C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+477,DF033A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+477,DF033A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+477,DF033A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+477,DF033A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+477,DF033A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+477,DF033A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+478,DF033B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+478,DF033B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+478,DF033B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+478,DF033B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+478,DF033B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+478,DF033B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+479,DF033C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+479,DF033C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+479,DF033C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+479,DF033C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+479,DF033C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+479,DF033C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+480,DF034A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+480,DF034A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+480,DF034A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+480,DF034A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+480,DF034A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+480,DF034A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+481,DF034B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+481,DF034B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+481,DF034B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+481,DF034B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+481,DF034B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+481,DF034B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+482,DF034C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+482,DF034C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+482,DF034C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+482,DF034C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+482,DF034C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+482,DF034C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+483,DF035A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+483,DF035A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+483,DF035A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+483,DF035A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+483,DF035A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+483,DF035A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+484,DF035B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+484,DF035B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+484,DF035B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+484,DF035B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+484,DF035B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+484,DF035B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+485,DF035C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+485,DF035C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+485,DF035C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+485,DF035C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+485,DF035C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+485,DF035C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+486,DF036A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,1
+486,DF036A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,2
+486,DF036A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,3
+486,DF036A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,4
+486,DF036A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,5
+486,DF036A,google/gemma-4-e2b,clean-room,,,0,0,HOLDS,6
+487,DF036B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,1
+487,DF036B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,2
+487,DF036B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,3
+487,DF036B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,4
+487,DF036B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,5
+487,DF036B,google/gemma-4-e2b,clean-room,,,0,0,DEFEATED,6
+488,DF036C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+488,DF036C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+488,DF036C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+488,DF036C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+488,DF036C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+488,DF036C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+489,DF037A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+489,DF037A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+489,DF037A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+489,DF037A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+489,DF037A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+489,DF037A,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+490,DF037B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,1
+490,DF037B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,2
+490,DF037B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,3
+490,DF037B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,4
+490,DF037B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,5
+490,DF037B,google/gemma-4-e2b,clean-room,,,1,0,DEFEATED,6
+491,DF037C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,1
+491,DF037C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,2
+491,DF037C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,3
+491,DF037C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,4
+491,DF037C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,5
+491,DF037C,google/gemma-4-e2b,clean-room,,,1,0,HOLDS,6
+,LOGIC-05N Barbara (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,1
+,LOGIC-05N Barbara (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,2
+,LOGIC-05N Barbara (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,3
+,LOGIC-05C Barbara (adversarial: undistributed-middle trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — undistributed middle. Both premises only place kernel panics and OOM kills INSIDE the crash-log class; neither links the two classes to each other, so they may be entirely disjoint. The middle term (""written to the crash log"") is the predicate of both premises and is therefore never distributed.",1
+,LOGIC-05C Barbara (adversarial: undistributed-middle trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — undistributed middle. Both premises only place kernel panics and OOM kills INSIDE the crash-log class; neither links the two classes to each other, so they may be entirely disjoint. The middle term (""written to the crash log"") is the predicate of both premises and is therefore never distributed.",2
+,LOGIC-05C Barbara (adversarial: undistributed-middle trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — undistributed middle. Both premises only place kernel panics and OOM kills INSIDE the crash-log class; neither links the two classes to each other, so they may be entirely disjoint. The middle term (""written to the crash log"") is the predicate of both premises and is therefore never distributed.",3
+,LOGIC-07N De Morgan (reworded),google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,LOGIC-07N De Morgan (reworded),google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,LOGIC-07N De Morgan (reworded),google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,LOGIC-07C De Morgan (adversarial: connective-preserved trap),google/gemma-4-e2b,clean-room,,,0,0,"FALSE — the negation was distributed over the conjunction without flipping the connective. De Morgan turns AND into OR: NOT (A AND B) is equivalent to (NOT A) OR (NOT B). Countermodel A=false, B=true: the left side is true, the right side is false.",1
+,LOGIC-07C De Morgan (adversarial: connective-preserved trap),google/gemma-4-e2b,clean-room,,,1,0,"FALSE — the negation was distributed over the conjunction without flipping the connective. De Morgan turns AND into OR: NOT (A AND B) is equivalent to (NOT A) OR (NOT B). Countermodel A=false, B=true: the left side is true, the right side is false.",2
+,LOGIC-07C De Morgan (adversarial: connective-preserved trap),google/gemma-4-e2b,clean-room,,,1,0,"FALSE — the negation was distributed over the conjunction without flipping the connective. De Morgan turns AND into OR: NOT (A AND B) is equivalent to (NOT A) OR (NOT B). Countermodel A=false, B=true: the left side is true, the right side is false.",3
+,LOGIC-08N Distribution (reworded),google/gemma-4-e2b,clean-room,,,1,0,TRUE,1
+,LOGIC-08N Distribution (reworded),google/gemma-4-e2b,clean-room,,,1,0,TRUE,2
+,LOGIC-08N Distribution (reworded),google/gemma-4-e2b,clean-room,,,1,0,TRUE,3
+,LOGIC-08C Distribution (adversarial: partial-distribution trap),google/gemma-4-e2b,clean-room,,,0,0,"FALSE — A was distributed over only the first disjunct. Correct distribution copies A into BOTH: (A AND B) OR (A AND C). Countermodel A=false, B=false, C=true: the left side is false, the right side is true.",1
+,LOGIC-08C Distribution (adversarial: partial-distribution trap),google/gemma-4-e2b,clean-room,,,0,0,"FALSE — A was distributed over only the first disjunct. Correct distribution copies A into BOTH: (A AND B) OR (A AND C). Countermodel A=false, B=false, C=true: the left side is false, the right side is true.",2
+,LOGIC-08C Distribution (adversarial: partial-distribution trap),google/gemma-4-e2b,clean-room,,,0,0,"FALSE — A was distributed over only the first disjunct. Correct distribution copies A into BOTH: (A AND B) OR (A AND C). Countermodel A=false, B=false, C=true: the left side is false, the right side is true.",3
+,LOGIC-09N Satisfiability (reworded),google/gemma-4-e2b,clean-room,,,1,0,SAT,1
+,LOGIC-09N Satisfiability (reworded),google/gemma-4-e2b,clean-room,,,1,0,SAT,2
+,LOGIC-09N Satisfiability (reworded),google/gemma-4-e2b,clean-room,,,1,0,SAT,3
+,LOGIC-09C Satisfiability (adversarial: local-satisfiability trap),google/gemma-4-e2b,clean-room,,,1,0,"UNSAT — the first three clauses admit exactly two assignments, (A,B,C) = (false,true,false) and (true,false,true). The fourth clause (A OR C) rules out the first of those and the fifth clause (B OR NOT C) rules out the second, so no assignment satisfies all five.",1
+,LOGIC-09C Satisfiability (adversarial: local-satisfiability trap),google/gemma-4-e2b,clean-room,,,1,0,"UNSAT — the first three clauses admit exactly two assignments, (A,B,C) = (false,true,false) and (true,false,true). The fourth clause (A OR C) rules out the first of those and the fifth clause (B OR NOT C) rules out the second, so no assignment satisfies all five.",2
+,LOGIC-09C Satisfiability (adversarial: local-satisfiability trap),google/gemma-4-e2b,clean-room,,,1,0,"UNSAT — the first three clauses admit exactly two assignments, (A,B,C) = (false,true,false) and (true,false,true). The fourth clause (A OR C) rules out the first of those and the fifth clause (B OR NOT C) rules out the second, so no assignment satisfies all five.",3
+,LOGIC-10N Contradiction Detection (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,1
+,LOGIC-10N Contradiction Detection (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,2
+,LOGIC-10N Contradiction Detection (reworded),google/gemma-4-e2b,clean-room,,,1,0,FOLLOWS,3
+,LOGIC-10C Contradiction Detection (adversarial: missing-premise trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — the two premises are jointly consistent, so no contradiction follows from them. Ex falso quodlibet licenses an arbitrary conclusion only when the PREMISES are contradictory; a contradictory conclusion is not itself a premise. Countermodel: the pipeline is not healthy and an alert is raised — both premises hold and the conclusion is false.",1
+,LOGIC-10C Contradiction Detection (adversarial: missing-premise trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — the two premises are jointly consistent, so no contradiction follows from them. Ex falso quodlibet licenses an arbitrary conclusion only when the PREMISES are contradictory; a contradictory conclusion is not itself a premise. Countermodel: the pipeline is not healthy and an alert is raised — both premises hold and the conclusion is false.",2
+,LOGIC-10C Contradiction Detection (adversarial: missing-premise trap),google/gemma-4-e2b,clean-room,,,1,0,"NO — the two premises are jointly consistent, so no contradiction follows from them. Ex falso quodlibet licenses an arbitrary conclusion only when the PREMISES are contradictory; a contradictory conclusion is not itself a premise. Countermodel: the pipeline is not healthy and an alert is raised — both premises hold and the conclusion is false.",3
