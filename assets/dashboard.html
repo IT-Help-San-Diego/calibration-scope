@@ -66,7 +66,12 @@
     <span style="color:var(--accent-gold);font-weight:700;font-size:14px;letter-spacing:0.5px;">CALIBRATION SCOPE</span>
   </div>
   <!-- 3. Context flipper — LEFT, next to identity (one-click flip, no mouse-jerk) -->
-  <a id="context-flip" href="https://calibrationscope.com/lessons.html" title="You are on the local instrument — flip to the web side (Lessons: the humans' failure runs, and everything a tool user wants from the site)" style="position:static;display:inline-flex;align-items:center;font-family:inherit;font-size:11px;letter-spacing:.6px;line-height:1;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text-secondary);white-space:nowrap;text-decoration:none;background:var(--bg-card);flex-shrink:0;"><span class="cur" style="color:var(--accent-gold);font-weight:700;">LOCAL</span><span class="s" style="opacity:.6;margin:0 5px;font-size:15px;">⇄</span>WEB</a>
+  <!-- Lands on the site ROOT, not a specific article. The web side flips to
+       the dashboard root, so root↔root keeps the pill a surface flipper —
+       "which room am I in" — rather than a deep link into one page. Lessons
+       is one click from home in the site nav. (Was lessons.html; changed
+       2026-07-28 on Carey's smooth-fusion call.) -->
+  <a id="context-flip" href="https://calibrationscope.com/" title="You are on the local instrument — flip to the web side (calibrationscope.com: the public front door; Lessons and Get Started are one click from there)" style="position:static;display:inline-flex;align-items:center;font-family:inherit;font-size:11px;letter-spacing:.6px;line-height:1;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text-secondary);white-space:nowrap;text-decoration:none;background:var(--bg-card);flex-shrink:0;"><span class="cur" style="color:var(--accent-gold);font-weight:700;">LOCAL</span><span class="s" style="opacity:.6;margin:0 5px;font-size:15px;">⇄</span>WEB</a>
   <!-- 2. Mission-critical meters -->
   <div id="control-meters" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;overflow:hidden;">
     <span id="control-run-state" style="color:var(--text-muted);">● idle</span>
