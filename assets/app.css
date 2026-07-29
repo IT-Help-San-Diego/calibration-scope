@@ -542,6 +542,9 @@
   .cap-safe   { color: var(--safe, #3fb950); }
   .cap-unsafe { color: var(--unsafe, #f85149); }
   .cap-flaky  { color: var(--flaky, #d29922); }
+  /* A verdict this renderer does not recognise must never borrow the pass
+     colour. Dashed, muted, and visibly not one of the three known states. */
+  .cap-unknown { color: var(--text-muted); border-style: dashed; }
   .cap-svg { display: block; flex: 0 0 auto; }
   .cap-txt { font-size: 10px; text-transform: uppercase; }
   .m-marks { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 5px; }

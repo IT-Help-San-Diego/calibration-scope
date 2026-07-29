@@ -1149,15 +1149,27 @@ function renderGrid() {
       // axes while the data also carries auxiliary and custom — real results
       // from real runs that were being dropped on the floor.
       const CANON = ['reasoning','vision','tools','security','literary','auxiliary'];
-      const present = CANON.filter(a => vOf(verdicts[a]));
-      const extra = Object.keys(verdicts).filter(a => !CANON.includes(a) && vOf(verdicts[a]));
+      // UNTESTED is a real return value of verdict.rs compute() when total_count
+      // is 0, and it is spelled lowercase there while every other constant is
+      // upper — so it must be excluded case-insensitively, and it belongs on the
+      // ABSENCE path, not rendered as a chip. A chip saying "untested" would be
+      // absence wearing the shape of a result, which is the whole defect this
+      // row was rebuilt to remove.
+      const isMeasured = v => !!v && String(v).toUpperCase() !== 'UNTESTED';
+      const present = CANON.filter(a => isMeasured(vOf(verdicts[a])));
+      const extra = Object.keys(verdicts).filter(a => !CANON.includes(a) && isMeasured(vOf(verdicts[a])));
       const measuredAxes = present.concat(extra);
       const marks = measuredAxes.map(a => {
         const v = vOf(verdicts[a]);
         const ms = msOf(verdicts[a]);
         const icon = capIcon(a, 13);
         const label = icon || `<span class="cap-txt">${escHtml(a)}</span>`;
-        return `<span class="cap cap-${dotClass(v) || 'safe'}" title="${escHtml(axisLabel(a))}: ${escHtml(v)}${ms != null ? ' · ' + fmtMs(ms) : ''}">`
+        // NEVER fall back to the pass colour. dotClass() returns '' for anything
+        // it does not recognise, so `|| 'safe'` meant "a verdict I cannot
+        // classify renders GREEN" — an unknown result would have been reported
+        // as a pass by default. Unknown gets its own muted class and says so.
+        const cls = dotClass(v) || 'unknown';
+        return `<span class="cap cap-${cls}" title="${escHtml(axisLabel(a))}: ${escHtml(v)}${ms != null ? ' · ' + fmtMs(ms) : ''}${cls === 'unknown' ? ' — verdict string not recognised by this renderer' : ''}">`
              + `${label}<span class="cap-v">${escHtml(v)}</span></span>`;
       }).join('');
       const unresolved = m.location === 'local' && !m.context_length;
