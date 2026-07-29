@@ -65,3 +65,42 @@ decide where in CI it runs; I have an opinion, not the context.**
 - The linter checks **structure, not truth**. It cannot tell whether a `check` string describes a check that was
   actually performed. **That still rests on the honesty of the lane writing the card** — the board narrows the
   failure surface, it does not eliminate it.
+
+---
+
+## Helpers in `scripts/kanban_lint.py` — what they are for
+
+These are importable functions, not lint rules. Each exists because a specific
+failure happened more than once, and each replaces a convention that had been
+documented and then breached anyway. **Reach for them by symptom:**
+
+| Symptom you are about to have | Call | The failure it came from |
+|---|---|---|
+| You are about to report that an insert, append or edit landed | `assert_added(path, expected_ids, prior_count=N)` | A guarded card insert silently added nothing because the id was already taken, and the commit message announced the card anyway. Third silent no-op in one day. |
+| You are about to say "N records contain X" | `count_records(path, pattern)` | An entry count was taken from a regex *occurrence* tally: one record held both matches and another was the retraction quoting the phrase, so "two entries" was really one. Returns `(n_records, [(line, n_occurrences)])` so the distribution is visible. |
+| You are about to mark a card `done` | `check()` rule R7 | A card closed against a real, resolving commit that had nothing to do with the card. R7 rejects empty or self-restating verifier text — it **cannot** catch a well-written check attached to the wrong object. |
+
+**Two standing rules that are not enforced by anything and have each been broken:**
+
+1. **Gate the push on the lint's exit code, not on having run it.** Running
+   `kanban_lint.py` in the same cell as the push, without asserting
+   `returncode == 0`, put a failing board on `main`. "I ran the check" is not
+   "the check passed." Use `assert r.returncode == 0` before any board write.
+2. **Read enumerated fields; do not guess them.** `VERIFIER_KINDS` is
+   `{commit, run, file, deploy}`. Two consecutive invented values (`code+selftest`,
+   then `selftest`) were rejected by R1 where a two-line read was available.
+
+## Other local gates worth knowing exist
+
+- **`scripts/migration_lint.py`** — rejects `UPDATE`/`DELETE` on a content table
+  pinned to a literal id (migration 048's rule, breached by 057, fixed by 060).
+  `--selftest` is 6/6. 057 is **grandfathered by name** because it is applied and
+  immutable; editing an applied migration changes its checksum and breaks
+  `_sqlx_migrations` everywhere. A *new* violation belongs in the migration, not
+  in that list.
+- **`scripts/fresh_seed_check.py`** — builds a scratch database from zero and runs
+  the DB gates against it. This is the capability that catches id-pinned migrations,
+  which are invisible locally because the row really is fixed on the machine that
+  wrote them. Its guarantee is that it cannot damage *the database in `DATABASE_URL`* —
+  not that it cannot damage any database.
+
