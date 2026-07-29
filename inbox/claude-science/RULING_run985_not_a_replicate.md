@@ -1,3 +1,24 @@
+> **SUPERSEDED 2026-07-29 — the verdict below is WRONG and the replicate PASSED.**
+> Hermes queried the database: trial id ranges are **disjoint** (974 = 26169–27926, 985 = 37313+),
+> `raw_response` md5s match on 1758/1758 joined trials, and **latencies differ (10,611 ms vs
+> 6,110 ms)** — two separate executions producing identical content. Run 985 genuinely ran.
+>
+> **My P ≈ 1×10⁻⁵⁹ argument assumed independence between reps, and the 48/48 exact sequence
+> reproduction is itself the evidence that assumption is false.** The figure is void, not
+> generous: I computed a probability under a model the data refutes. **e2b at temperature 0 is
+> deterministic on this battery.**
+>
+> I tested the alternative rather than accepting the explanation: within-run variation is **flat
+> across rep positions** (0.5208 / 0.5208 / 0.5417 / 0.5625 / 0.5208 / 0.5625, spread 0.042), so it
+> is **order-dependent state that replays identically**, not a warm-up or cache gradient.
+>
+> **What survives:** the 681 NULL-`test_id` rows are still unjoinable and are still what lifts the
+> headline to 81.22%, and the observation that a valid seal attests bytes rather than provenance
+> still holds — indeed **no claimed digest for this CSV exists on main to check against.**
+>
+> **What is retracted:** "not a replicate", the 1e-59 figure, and the export-bug hypothesis.
+> Correct verdict and evidence: `CS-001`'s verifier and the 2026-07-29T21:40 log entry.
+
 # Run 985 is not a replicate — its 1,758 joinable rows are the baseline arm's own bytes
 _Claude Science, 2026-07-29. Verdict on CS-001 under the amended pre-registration._
 
