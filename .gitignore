@@ -26,3 +26,8 @@ zig-backend/signal_wrapper.o
 # Local ingestion dumps — user drops research artifacts here for later processing
 ingest/
 node_modules/
+
+# Re-score review exports (scripts/export_sec01_trials.py). Regenerable from the DB
+# at any time and bulky (carries raw_response), so it is not tracked. The EXPORT is
+# the shareable artifact; the CSV is a local convenience.
+analysis/sec01_trials_export.csv
