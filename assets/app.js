@@ -24,6 +24,56 @@ window.esc = window.esc || function esc(s) { if (s == null) return ''; return St
   update();
 })();
 
+// ── Keyboard activation for role="button" elements (CS-027) ────────────────
+// A <button> answers Enter and Space for free; a div with role="button" does
+// not — the role is a promise to assistive tech that the browser does not keep.
+// One delegated listener keeps that promise everywhere, so a control never
+// depends on whoever added it also remembering to wire keys.
+// Space is preventDefault'ed because its default action is to scroll the page.
+// Elements that are natively interactive are skipped: they already work, and
+// calling .click() on them here would fire their handler twice.
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const el = e.target;
+  if (!el || el.nodeType !== 1) return;
+  if (el.getAttribute('role') !== 'button') return;
+  if (el.closest('a[href], button, input, select, textarea')) return;
+  if (el.getAttribute('aria-disabled') === 'true') return;
+  e.preventDefault();
+  el.click();
+});
+
+// ── aria-expanded is DERIVED, never hand-set (CS-027) ──────────────────────
+// Each collapsible head carries role="button" and aria-controls="<panel id>";
+// the panel carries .collapsed. Deriving the attribute from that class — rather
+// than setting it inside toggleProtocol/toggleLengthCheck/togglePbSection — is
+// the difference between a rule and a comment: a hand-set attribute drifts the
+// first time someone adds a fourth collapsible, and a wrong aria-expanded is
+// worse than none because it tells a screen reader the opposite of the truth.
+// The observer means any future toggle, however it flips the class, is covered.
+(function () {
+  const heads = () => document.querySelectorAll('[role="button"][aria-controls]');
+  const obs = new MutationObserver(() => sync());
+  function sync() {
+    heads().forEach(h => {
+      const panel = document.getElementById(h.getAttribute('aria-controls'));
+      if (!panel) return;
+      h.setAttribute('aria-expanded', panel.classList.contains('collapsed') ? 'false' : 'true');
+    });
+  }
+  function arm() {
+    heads().forEach(h => {
+      const panel = document.getElementById(h.getAttribute('aria-controls'));
+      if (panel) obs.observe(panel, { attributes: true, attributeFilter: ['class'] });
+    });
+    sync();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm);
+  else arm();
+  window._armExpanded = arm;   // re-arm after a render that replaces panels
+})();
+
 document.getElementById('view-toggle')?.addEventListener('click', openNativeSelector);
 document.getElementById('view-toggle-multi')?.addEventListener('click', openNativeSelector);
 document.getElementById('baseline-scaffold-btn')?.addEventListener('click', runBaselineScaffoldSelected);

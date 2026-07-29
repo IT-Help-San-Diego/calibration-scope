@@ -170,15 +170,15 @@
         <div class="panel-title">Compose Prompt</div>
         <textarea id="prompt-input" class="prompt-textarea" placeholder="Type or paste your prompt here...">What color is the planet fourth from the sun?</textarea>
         <div class="examples">
-          <div class="example-card" onclick="loadExample(0)">
+          <div class="example-card" role="button" tabindex="0" onclick="loadExample(0)">
             <div class="example-title">Reasoning</div>
             If P implies Q, does Q imply P? Explain using formal logic.
           </div>
-          <div class="example-card" onclick="loadExample(1)">
+          <div class="example-card" role="button" tabindex="0" onclick="loadExample(1)">
             <div class="example-title">Vision + Tools</div>
             Look at the screenshot attached and tell me what button to click next to export the DNS report.
           </div>
-          <div class="example-card" onclick="loadExample(2)">
+          <div class="example-card" role="button" tabindex="0" onclick="loadExample(2)">
             <div class="example-title">Literary</div>
             Write a 200-word essay on why verification matters in science.
           </div>
@@ -225,6 +225,24 @@
     </div>
   </div>
   <script>
+    // Keyboard activation for role="button" elements (CS-027). This page does
+    // not load app.js, so it needs its own copy — a role="button" without it is
+    // a promise to assistive tech that nothing keeps. Kept deliberately
+    // identical in behaviour to the app.js listener so the two surfaces do not
+    // drift; scripts/ui_lint.py fails any role="button" on a page that has
+    // neither activator, so a third surface cannot silently ship without one.
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = e.target;
+      if (!el || el.nodeType !== 1) return;
+      if (el.getAttribute('role') !== 'button') return;
+      if (el.closest('a[href], button, input, select, textarea')) return;
+      if (el.getAttribute('aria-disabled') === 'true') return;
+      e.preventDefault();
+      el.click();
+    });
+
     const EXAMPLES = [
       "If P implies Q, does Q imply P? Explain using formal logic.",
       "Look at the screenshot attached and tell me what button to click next to export the DNS report.",

@@ -190,6 +190,24 @@ pub async fn security_headers(req: Request<Body>, next: Next) -> Response<Body> 
     let mut resp = Response::from_parts(parts, final_body);
 
     let headers = resp.headers_mut();
+    // `parts` still carries the Content-Length computed BEFORE we stamped the
+    // nonce, but stamping GROWS the body by ~42 bytes per <script> tag. A stale
+    // Content-Length makes the client stop reading at the old length and drop
+    // the tail in silence — no error, no warning, just a shorter file.
+    //
+    // For /assets/prompt-builder.html that cost exactly `updateBrain();
+    // </script></body></html>`: the inline script never closed, so NOTHING on
+    // that page executed. It failed invisibly because the page still rendered —
+    // only the behaviour was gone. The dashboard route escaped it by returning
+    // Html<String> with no pre-set Content-Length, which is why one HTML surface
+    // worked and the other did not.
+    //
+    // Removing the header lets hyper recompute it from the body we actually
+    // send. Done for every HTML response, since that is exactly the set whose
+    // body this middleware may have rewritten. (Found via CS-027, 2026-07-28.)
+    if is_html {
+        headers.remove(header::CONTENT_LENGTH);
+    }
     // CSP is the load-bearing one; rebuilt per nonce, per-connection honest
     // about upgrade-insecure-requests (TLS connections only).
     if let Ok(v) = HeaderValue::from_str(&csp(&nonce, https)) {
