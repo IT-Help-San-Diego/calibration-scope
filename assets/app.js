@@ -880,6 +880,72 @@ function axisLabel(axis) {
   return map[axis] || axis;
 }
 
+// ── Capability marks: drawn, not typed (CS-040) ────────────────────────────
+// These replace 👁 / 🔧 / 🧠 — SMS-grade emoji that render differently on every
+// platform, carry a colour we cannot theme, and read as text-message decoration
+// rather than instrument iconography. Inline SVG instead: stroked in
+// currentColor so it inherits verdict colour and the high-contrast default,
+// crisp at 12px, no vendored asset, no external fetch to trip the CSP nonce.
+// Carey's set, 2026-07-28: wrench for tools, a purpose-drawn eye for vision,
+// a split brain for reasoning.
+const CAP_ICONS = {
+  // eye with a pupil — vision
+  vision: '<circle cx="8" cy="8" r="2.2"/><path d="M1 8s2.6-4.4 7-4.4S15 8 15 8s-2.6 4.4-7 4.4S1 8 1 8Z"/>',
+  // wrench at 45° — tools
+  tools: '<path d="M10.6 2.2a3.6 3.6 0 0 0-4.3 4.7L2.4 10.8a1.4 1.4 0 0 0 2 2l3.9-3.9a3.6 3.6 0 0 0 4.7-4.3l-2 2-1.6-.4-.4-1.6Z"/>',
+  // a brain split down the midline — reasoning
+  reasoning: '<path d="M8 2.4v11.2"/><path d="M8 3.4a2.2 2.2 0 0 0-3.7 1.2A2 2 0 0 0 3 8a2 2 0 0 0 1.4 3 2.1 2.1 0 0 0 3.6.8"/><path d="M8 3.4a2.2 2.2 0 0 1 3.7 1.2A2 2 0 0 1 13 8a2 2 0 0 1-1.4 3 2.1 2.1 0 0 1-3.6.8"/>',
+  // shield — security
+  security: '<path d="M8 1.6 13.2 3.6v4.1c0 3.1-2.1 5.6-5.2 6.7-3.1-1.1-5.2-3.6-5.2-6.7V3.6L8 1.6Z"/>',
+  // pen nib — literary
+  literary: '<path d="M11.8 2.1 13.9 4.2 6.4 11.7 3 12.9l1.2-3.4 7.6-7.4Z"/>',
+  // gear tooth simplified — auxiliary
+  auxiliary: '<circle cx="8" cy="8" r="2.4"/><path d="M8 1.4v2M8 12.6v2M1.4 8h2M12.6 8h2M3.3 3.3l1.4 1.4M11.3 11.3l1.4 1.4M12.7 3.3l-1.4 1.4M4.7 11.3l-1.4 1.4"/>',
+};
+// `custom` has no fixed meaning, so it gets no invented glyph — a mark implies a
+// known capability, and inventing one for an arbitrary axis would be a claim.
+function capIcon(axis, size) {
+  const d = CAP_ICONS[axis];
+  if (!d) return '';
+  const s = size || 13;
+  return `<svg class="cap-svg" viewBox="0 0 16 16" width="${s}" height="${s}" aria-hidden="true" focusable="false" `
+       + `fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+}
+
+// ── Runtime provenance: WHERE this model actually answers from (CS-040) ────
+// `location` only says local vs cloud, which cannot distinguish two local
+// runtimes or name the account that gets billed. `provider` is the ROUTE, and
+// it is the thing Carey needs before picking: "I get lost even in Hermes
+// Desktop trying to figure out where she is really routed."
+// Only the routes that EXIST are named. There is deliberately no Ollama or
+// OpenRouter entry — neither is integrated, and labelling a runtime this
+// instrument does not talk to would be inventing provenance in a tool whose
+// entire claim is that it does not.
+const ROUTE_LABELS = {
+  lmstudio: 'LM Studio',
+  nous: 'Nous Portal',
+  gemini: 'Google API',
+};
+function routeLabel(m) {
+  return ROUTE_LABELS[m.provider] || m.provider || 'unknown route';
+}
+
+// ── Fully-qualified identity (CS-040) ─────────────────────────────────────
+// Carey's call: the qualified name REPLACES the friendly one, because 312 rows
+// means a second line costs 312 lines. `key` is already qualified for cloud
+// (ai21/jamba-large-1.7); local rows additionally carry `publisher`, populated
+// for 64 of 64 local and 0 of 285 cloud — one code path, two sources.
+// Returned split so the row can typeset the segments separately: a long
+// publisher-prefixed string is harder to scan than a short name, and the
+// decision to drop the friendly name is only safe if the parts stay legible.
+function qualifiedName(m) {
+  const key = String(m.key || '');
+  const slash = key.indexOf('/');
+  if (slash > 0) return { org: key.slice(0, slash), name: key.slice(slash + 1) };
+  if (m.publisher) return { org: String(m.publisher), name: key };
+  return { org: '', name: key };
+}
+
 // Render bird's-eye grid
 
 (function(){try{const keys=selectedKeys?[...selectedKeys]:[];console.log('[selector-state] init selectedKeys='+JSON.stringify(keys)+' size='+(selectedKeys?selectedKeys.size:'null'));}catch(e){console.log('[selector-state] init error',e);}})();
@@ -1065,29 +1131,59 @@ function renderGrid() {
     // that drive a pick (vision/size/ctx), verdict dots, and ⓘ → dossier
     // popup for full visual detail. Everything else lives one click away.
     grid.classList.add('compact');
-    grid.innerHTML = rows.map(m => {
+    // ── TWO REGISTERS: what the model CLAIMS, and what we MEASURED (CS-040) ──
+    // Carey's decision, 2026-07-28. The old row merged them into one strip of
+    // four coloured dots, which is why they read as meaningless: axis identity
+    // was encoded in POSITION, verdict in COLOUR, and neither was labelled on
+    // screen — the meaning lived only in a title tooltip that needs a mouse.
+    // Worse, 275 of 349 rows have no verdicts at all, so most of the roster was
+    // rendering "we have never tested this" in the same visual grammar as a
+    // result. Declared and measured are now separate registers, because the gap
+    // between them IS this instrument: 180 models declare vision, 32 have
+    // proven it, 9 wobble, 139 have never been asked.
+    const renderRow = m => {
       let verdicts = {};
-      try { verdicts = JSON.parse(m.verdicts || '{}'); } catch(e) {}
-      const axes = ['vision','tools','reasoning','security'];
-      if (verdicts['literary']) axes.push('literary');
-      const dots = axes.map(a => {
+      try { verdicts = typeof m.verdicts === 'string' ? JSON.parse(m.verdicts || '{}') : (m.verdicts || {}); } catch(e) { verdicts = {}; }
+      // Render EVERY axis that actually has a verdict, in a stable order, then
+      // any the canonical list does not know about. The old code hardcoded five
+      // axes while the data also carries auxiliary and custom — real results
+      // from real runs that were being dropped on the floor.
+      const CANON = ['reasoning','vision','tools','security','literary','auxiliary'];
+      const present = CANON.filter(a => vOf(verdicts[a]));
+      const extra = Object.keys(verdicts).filter(a => !CANON.includes(a) && vOf(verdicts[a]));
+      const measuredAxes = present.concat(extra);
+      const marks = measuredAxes.map(a => {
         const v = vOf(verdicts[a]);
-        const cls = v ? (dotClass(v) || 'safe') : '';
-        const style = v ? '' : 'background:var(--border);box-shadow:none;';
-        return `<span class="judge-dot ${cls}" style="${style}" title="${axisLabel(a)}: ${v || 'untested'}"></span>`;
+        const ms = msOf(verdicts[a]);
+        const icon = capIcon(a, 13);
+        const label = icon || `<span class="cap-txt">${escHtml(a)}</span>`;
+        return `<span class="cap cap-${dotClass(v) || 'safe'}" title="${escHtml(axisLabel(a))}: ${escHtml(v)}${ms != null ? ' · ' + fmtMs(ms) : ''}">`
+             + `${label}<span class="cap-v">${escHtml(v)}</span></span>`;
       }).join('');
       const unresolved = m.location === 'local' && !m.context_length;
       const notRunnable = m.runnable === false;
-      const facts = [];
-      facts.push(m.supports_vision ? '👁' : 'txt');
-      if (m.size_gb > 0) facts.push(m.size_gb + 'GB');
+      // ── DECLARED register: what the catalogue says, present for every row ──
+      // NOTE the schema limit, deliberately not designed past: `supports_vision`
+      // is the ONLY declared capability. There is no supports_tools or
+      // supports_reasoning — those exist solely as measured verdicts. Drawing a
+      // declared tools mark would be inventing a claim the payload never made,
+      // which is precisely the fabrication this instrument exists to detect.
+      const declared = [];
+      declared.push(`<span class="d-route" title="Runtime provenance — where this model actually answers from">${escHtml(routeLabel(m))}</span>`);
+      if (m.supports_vision) {
+        declared.push(`<span class="d-cap" title="Declared vision-capable by the catalogue — a CLAIM, not a result">${capIcon('vision', 12)}vision</span>`);
+      }
       const ctx = fmtCtx(m.context_length);
-      if (ctx) facts.push(ctx);
+      if (ctx) declared.push(`<span class="d-fact" title="Context length">${ctx}</span>`);
+      if (m.size_gb > 0) declared.push(`<span class="d-fact" title="On-disk size">${m.size_gb}GB</span>`);
+      // quantization was in the payload for 63 local rows and never rendered —
+      // 4bit vs BF16 is materially a different model, so it belongs in a picker.
+      if (m.quantization) declared.push(`<span class="d-fact" title="Quantization — how much precision was traded for size">${escHtml(m.quantization)}</span>`);
       // costTier returns {label, cls, note} — push the LABEL, not the object.
       // Pushing the object rendered "[object Object]" on every priced cloud
       // row (found live 2026-07-14 via browser snapshot of the roster).
       const tier = costTier(m);
-      if (tier) facts.push(tier.label);
+      if (tier) declared.push(`<span class="d-cost ${tier.cls}" title="${escHtml(tier.note)}">${tier.label}</span>`);
       const rowClasses = ['model-row'];
       if (unresolved) rowClasses.push('model-card-unresolved');
       const kq = m.key.replace(/'/g, "\\'");
@@ -1096,31 +1192,32 @@ function renderGrid() {
         : notRunnable
         ? `<button class="btn-mini" disabled title="${esc(m.runnable_reason || 'No working credential path')}">🚫</button>`
         : `<button class="btn-mini" onclick="event.stopPropagation(); runSingle('${kq}', '${m.provider}')" title="Run this model now">▶</button>`;
-      // Name legibility is the picker's ONE job. Split "publisher/model" so
-      // the DISTINCTIVE part (the model name) leads in full weight, and the
-      // publisher rides small+muted after it — instead of every row wasting
-      // its first inches on "google/ ... google/ ... google/". Full key is
-      // still in the hover title and the facts line.
-      const rawName = m.display_name || m.key;
-      let modelName = rawName, publisher = '';
-      if (rawName.includes('/')) {
-        const parts = rawName.split('/');
-        modelName = parts.pop();
-        publisher = parts.join('/');
-      } else if (rawName.includes(': ')) {
-        // Cloud display style "Google: Gemma 4 31b" — lead with the model.
-        const idx = rawName.indexOf(': ');
-        publisher = rawName.slice(0, idx);
-        modelName = rawName.slice(idx + 2);
-      }
-      // publisher now renders on its own line inside .row-main (see below)
+      // FULLY-QUALIFIED IDENTITY REPLACES THE FRIENDLY NAME (Carey, 2026-07-28).
+      // The old code deliberately dropped the org so rows would not all begin
+      // "google/ google/ google/" — but that also meant the row never showed
+      // which "gemma-4-e2b" you were looking at. Density won the second-line
+      // question, so the org is kept and typeset instead: muted and lighter, the
+      // model segment in full weight, separable at a glance on ONE line.
+      const qn = qualifiedName(m);
+      // The MEASURED register. Never-tested must not look like a bad result, so
+      // absence is a WORD, not a row of grey circles that mimics the shape of a
+      // verdict. 79% of the roster lands here.
+      const measured = measuredAxes.length
+        ? `<span class="m-marks">${marks}</span>`
+        : `<span class="m-none" title="No axis has been run against this model on this instrument. This is absence of evidence, not evidence of failure.">not yet measured</span>`;
+      const fv = m.fountain_verdict;
+      const fvHtml = fv
+        ? `<span class="m-fountain f-${escHtml(String(fv).toLowerCase())}" title="Fountain probe — what the provider ACTUALLY sustained under 20 requests at 1/s">${escHtml(fv)}</span>`
+        : '';
       return `<div class="${rowClasses.join(' ')}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}" role="option" aria-selected="false" tabindex="-1">
         <span class="row-check">✓</span>
-        <span class="row-loc" title="${m.location === 'local' ? 'Local — your silicon' : 'Cloud — ' + m.provider}">${m.location === 'local' ? '🖥' : '☁️'}</span>
         <div class="row-main">
-          <div class="row-name" title="${escHtml(m.key)}"><span class="row-model">${escHtml(modelName)}</span></div>
-          ${publisher ? `<span class="row-pub">${escHtml(publisher)}</span>` : ''}
-          <div class="row-facts"><span class="row-dots">${dots}</span>${facts.join(' · ')}</div>
+          <div class="row-name" title="${escHtml(m.key)}">${qn.org ? `<span class="row-org">${escHtml(qn.org)}/</span>` : ''}<span class="row-model">${escHtml(qn.name)}</span></div>
+          <div class="row-regs">
+            <span class="row-declared">${declared.join('')}</span>
+            <span class="reg-split" aria-hidden="true"></span>
+            <span class="row-measured">${measured}${fvHtml}</span>
+          </div>
           <span class="row-status"></span>
         </div>
         <div class="row-actions">
@@ -1128,15 +1225,39 @@ function renderGrid() {
           ${runBtn}
         </div>
       </div>`;
-    }).join('');
-    // Sticky header labels the two things a picker row shows: the model, and
-    // its 4-axis verdict dots. Prepended once, stays visible during scroll.
-    const selectAllBtn = `<button id="select-all-btn" style="font-size:10px;padding:3px 8px;cursor:pointer;" title="Select every currently visible model">Select All</button>`;
-  const deselectAllBtn = `<button id="deselect-all-btn" style="font-size:10px;padding:3px 8px;cursor:pointer;margin-left:4px;" title="Clear every selection">Deselect All</button>`;
-  grid.insertAdjacentHTML('afterbegin',
-      '<div class="roster-head"><span class="rh-spacer"></span><span class="rh-spacer"></span>' +
-      '<span class="rh-main">Model name · publisher</span>' +
-      '<span class="rh-act">ⓘ &nbsp; ▶</span></div>');
+    };
+
+    // ── LOCAL / CLOUD as sticky group headers, nothing hidden (Carey) ────────
+    // A filter was rejected on purpose: a selection made under one filter can
+    // drift out of view under another and a multi-model set gets silently lost.
+    // Grouping keeps every row present, so picking a cloud model and a local one
+    // for the same run stays free — which was Carey's hard requirement.
+    // Stable partition: order WITHIN each group is whatever the filters and
+    // sort produced, so this regroups without reordering.
+    const localRows = rows.filter(m => m.location === 'local');
+    const cloudRows = rows.filter(m => m.location !== 'local');
+    const groupHead = (label, list, note) =>
+      `<div class="roster-group" role="presentation"><span class="rg-label">${label}</span>`
+      + `<span class="rg-count">${list.length}</span><span class="rg-note">${note}</span></div>`;
+    let html = '';
+    if (localRows.length) html += groupHead('LOCAL', localRows, 'your silicon') + localRows.map(renderRow).join('');
+    if (cloudRows.length) html += groupHead('CLOUD', cloudRows, 'someone else&rsquo;s computer, metered') + cloudRows.map(renderRow).join('');
+    grid.innerHTML = html;
+
+    // ── Roster header states COVERAGE, once, honestly ───────────────────────
+    // The gap is stated here rather than 275 times down the list. Both numbers,
+    // because "tested" and "rate-probed" are different claims: verdicts say the
+    // model answered our questions, the fountain probe says the provider stayed
+    // up while it did.
+    const tested = rows.filter(m => {
+      let v = {}; try { v = typeof m.verdicts === 'string' ? JSON.parse(m.verdicts || '{}') : (m.verdicts || {}); } catch(e) {}
+      return Object.keys(v).some(a => vOf(v[a]));
+    }).length;
+    const probed = rows.filter(m => m.fountain_verdict).length;
+    grid.insertAdjacentHTML('afterbegin',
+      `<div class="roster-head" role="presentation">`
+      + `<span class="rh-main">${rows.length} models · <strong>${tested}</strong> carry a measured verdict · <strong>${probed}</strong> rate-probed</span>`
+      + `<span class="rh-act">claimed &nbsp;|&nbsp; measured</span></div>`);
   }
   console.log('[renderGrid] rendered rows:', rows.length);
   restoreSelection(); // re-apply persisted multi-select after every render
@@ -1176,12 +1297,23 @@ function factsLine(m) {
 // SQL-derived Σ(metered tokens × unit price) across every completed run.
 // Tier vocabulary (display only — verdicts about rate REALITY come from
 // fountain probes, never from the price sheet):
-//   FREE (catalog $0) · TRICKLE (≤ $0.50/M in) · STANDARD (≤ $5/M) · PREMIUM
+//   FREE (catalog $0) · BUDGET (≤ $0.50/M in) · STANDARD (≤ $5/M) · PREMIUM
+// This comment's own previous wording is the evidence for the rename: it said
+// TRICKLE two lines above a paragraph distinguishing price tiers from fountain
+// verdicts, while TRICKLE was simultaneously one of those verdicts.
 function costTier(m) {
   if (m.price_prompt == null) return null;             // unpriced (local etc.)
   const perM = m.price_prompt * 1e6;
   if (perM === 0) return { label: 'FREE*', cls: 'cost-free', note: 'Catalog claims $0 — run a fountain probe to verify it\u2019s real' };
-  if (perM <= 0.5) return { label: 'TRICKLE', cls: 'cost-trickle', note: 'Near-zero unit price' };
+  // NAMING COLLISION FIXED (CS-040): this tier was called TRICKLE, which is ALSO
+  // a fountain verdict meaning "rate-limited into partial failure" — see the
+  // fountain legend below, where TRICKLE renders cyan for "slow but real". Two
+  // unrelated meanings, one word, both shown on the same row. It had already
+  // misled Carey, who described the cost tags as "that important tag about
+  // trickle mirage fountain" while looking at prices. The COST ladder is renamed
+  // rather than the fountain verdicts: fountain/trickle/mirage is a coherent
+  // metaphor earned by an actual probe, whereas money can just say money.
+  if (perM <= 0.5) return { label: 'BUDGET', cls: 'cost-trickle', note: 'Near-zero unit price' };
   if (perM <= 5)   return { label: 'STANDARD', cls: 'cost-standard', note: 'Mid-market unit price' };
   return { label: 'PREMIUM', cls: 'cost-premium', note: 'Frontier-tier unit price' };
 }
