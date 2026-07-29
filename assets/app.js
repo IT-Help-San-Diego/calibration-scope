@@ -1971,9 +1971,8 @@ document.getElementById('model-grid')?.addEventListener('keydown', (e) => {
   else if (e.key === ' ' || e.key === 'Spacebar') {
     e.preventDefault();
     _listboxActiveKey = opt.dataset.key;
-    selectModel(opt.dataset.key);
-    updateSelectorCounter(opt.dataset.key, document.querySelectorAll('.model-card.selected, .model-row.selected').length);
-    armListbox();
+    selectModel(opt.dataset.key); // toggles selection + updates the count badge internally
+    armListbox(); // mirror the new aria-selected and keep tabindex on the toggled row
   }
 });
 document.getElementById('model-grid')?.addEventListener('click', (e) => {
