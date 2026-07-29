@@ -15,6 +15,8 @@ that covered more than the work did.
 | 4 | calibration-scope's deploy YAML | "verified by my own pushes" — those were a *different repo's* workflow | audit |
 | 5 | a set-union of (job, conclusion) across 12 runs | "deploy skips *because* quality-gate is red" — the alternative was in my own printed output | audit |
 | 6 | `ls -d site` output, and an empty `assets/site/` | "the site isn't in this repo" — the check ran and wasn't read | Carey |
+| 7 | nothing — `LANES` was never read | filed `lane="all"` on the card pointing at *this document* | R6 (own linter) |
+| 8 | the message's voice and subject | credited a lane's self-audit to **Hermes** when the card lanes said `claude-code` | audit |
 
 ## The two sub-shapes, because they need different defences
 
@@ -43,8 +45,9 @@ this page that is now reliable became reliable by turning into code:
 
 ## The limit, stated so this page isn't over-trusted
 
-Every instance above was caught by an auditor or by Carey — **none by the lane
-that made the error.** Self-review found none of the six. That is the argument for
+Instances 1-6 and 8 were caught by an auditor or by Carey — **none by the lane
+that made the error.** Instance 7 was caught by a linter rule, which is the only
+self-catch on this page and the reason the fixes are code rather than prose. Self-review found none of the six. That is the argument for
 the audit loop existing, and it is also the reason this document cannot promise
 the next one gets caught internally. The linters lower the cost of the checks they
 encode; they do not make the mistake impossible, and R7 explicitly cannot catch a
