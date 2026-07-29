@@ -71,6 +71,52 @@ def cas_write_contract():
             "on_409": "re-read, re-apply, re-lint, rewrite", "never": "retry with a fresh sha"}
 
 
+def cas_write(repo, path, content, msg, base_sha, headers, branch="main"):
+    """Reference CAS writer. Use this instead of hand-rolling a push helper.
+
+    WHY THIS FUNCTION EXISTS AND NOT JUST THE CONTRACT ABOVE. I published
+    cas_write_contract() as mandatory, told another lane to adopt it, and then — after a
+    kernel reset wiped my in-memory helpers — rebuilt a push helper that re-fetched the
+    head sha immediately before every write, and used it on three shared files including
+    this board. The contract survived in the repo; the CODE that honoured it lived only in
+    a kernel. A rule that must be re-derived after every restart will be re-broken after
+    some restart.
+
+    No damage that time, and the reason is the point: my read happened to land after the
+    other lane's write, so I preserved their edit by ordering rather than by correctness.
+    A non-CAS write that does not happen to race is indistinguishable from a correct one.
+
+    Returns (status, new_sha) or ("CONFLICT", head_sha). On CONFLICT: re-read, re-apply,
+    re-lint, rewrite. Never retry with a freshly fetched sha.
+    """
+    import base64 as _b64, json as _json, urllib.parse as _up
+    import urllib.request as _rq, urllib.error as _err
+    body = {"message": msg, "content": _b64.b64encode(content).decode(),
+            "branch": branch, "sha": base_sha}
+    url = f"https://api.github.com/repos/{repo}/contents/{_up.quote(path)}"
+    req = _rq.Request(url, data=_json.dumps(body).encode(), headers=headers, method="PUT")
+    try:
+        r = _rq.urlopen(req)
+        return r.status, _json.loads(r.read())["content"]["sha"]
+    except _err.HTTPError as ex:
+        if ex.code == 409:
+            head = _json.loads(_rq.urlopen(_rq.Request(f"{url}?ref={branch}", headers=headers)).read())["sha"]
+            return "CONFLICT", head
+        raise
+
+
+def read_for_write(repo, path, headers, branch="main"):
+    """Read a shared file AND the sha it came from — the only correct entry point.
+
+    Reading content without capturing its sha is what forces a later re-fetch, which is
+    the bug. Pair this with cas_write().
+    """
+    import base64 as _b64, json as _json, urllib.parse as _up, urllib.request as _rq
+    url = f"https://api.github.com/repos/{repo}/contents/{_up.quote(path)}?ref={branch}"
+    m = _json.loads(_rq.urlopen(_rq.Request(url, headers=headers)).read())
+    return _b64.b64decode(m["content"]).decode(), m["sha"]
+
+
 def count_records(path, pattern):
     """Count RECORDS matching a pattern, not regex occurrences.
 
