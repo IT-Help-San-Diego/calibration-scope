@@ -38,6 +38,39 @@ def load(path):
     return cards
 
 
+def cas_write_contract():
+    """The contract every lane must follow when writing policy/kanban.jsonl.
+
+    THE FAILURE THIS COMES FROM. Three lanes do read-modify-write on one JSONL file.
+    In a single session the board went 22 -> 49 cards across interleaved edits, one lane
+    rebuilt its edit on top of another FOUR times, a card was moved to `done` with no
+    verifier between one lane's read and its write, and a card id was taken while an
+    insert was guarded on it.
+
+    THE CAUSE WAS PARTLY TOOLING, NOT THE FORMAT. A push helper that re-fetches the
+    file's head sha immediately before writing makes every write succeed — which
+    DEFEATS GitHub's optimistic concurrency and silently discards the other lane's edit
+    to any card both had touched. Last-writer-wins by construction.
+
+    THE CONTRACT:
+      1. read the file AND keep the `sha` you read it from;
+      2. write with THAT sha, never a freshly-fetched one;
+      3. on HTTP 409 -> RE-READ, RE-APPLY your change, re-lint, write again.
+         Never retry with a new sha: that is the bug, not the fix.
+
+    PROVEN, not assumed: with base sha f7a886c9 and head advanced to c8da77ff by a real
+    byte change, the stale-sha write was rejected 409. NOTE the invalid first attempt —
+    byte-identical content is accepted WITHOUT creating a commit, so the sha never moves
+    and a "stale" write still succeeds. A CAS test must change bytes to be a test at all.
+
+    WHY NOT PER-LANE FILES: three files is three sources of truth, and this project has
+    already been bitten by that — two simultaneous check-in files on two branches while
+    check-ins reported the lane current. Conflict DETECTION on one file beats partition.
+    """
+    return {"read_sha_and_keep_it": True, "write_with_read_sha": True,
+            "on_409": "re-read, re-apply, re-lint, rewrite", "never": "retry with a fresh sha"}
+
+
 def count_records(path, pattern):
     """Count RECORDS matching a pattern, not regex occurrences.
 
