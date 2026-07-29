@@ -59,7 +59,10 @@
      4. BIG RED STOP — always reachable, always visible
      Replaces the scattered abort-bar + run-active-banner + floating flipper
      with one unified strip that persists whether a run is live or idle. -->
-<div id="control-strip" style="position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;padding:8px 20px;background:var(--bg-secondary);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;">
+<!-- padding lives in app.css (#control-strip): the left gutter is a RESERVATION
+     for the fixed portal pill, so it must sit beside the rule that positions it.
+     Inline padding here would outrank that rule and put the pill on the owl. -->
+<div id="control-strip" style="position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;background:var(--bg-secondary);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;">
   <!-- 1. Program identity -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:28px;" onerror="this.style.display='none'">
@@ -71,7 +74,11 @@
        "which room am I in" — rather than a deep link into one page. Lessons
        is one click from home in the site nav. (Was lessons.html; changed
        2026-07-28 on Carey's smooth-fusion call.) -->
-  <a id="context-flip" href="https://calibrationscope.com/" title="You are on the local instrument — flip to the web side (calibrationscope.com: the public front door; Lessons and Get Started are one click from there)" style="position:static;display:inline-flex;align-items:center;font-family:inherit;font-size:11px;letter-spacing:.6px;line-height:1;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text-secondary);white-space:nowrap;text-decoration:none;background:var(--bg-card);flex-shrink:0;"><span class="cur" style="color:var(--accent-gold);font-weight:700;">LOCAL</span><span class="s" style="opacity:.6;margin:0 5px;font-size:15px;">⇄</span>WEB</a>
+  <!-- NO inline style: geometry is owned by #context-flip in app.css so it stays
+       byte-identical to .flip on the web surfaces. An inline style= here silently
+       outranks that ID rule (that is exactly how this control forked before —
+       position:static beat position:fixed and the pill moved on flip). -->
+  <a id="context-flip" href="https://calibrationscope.com/" title="You are on the local instrument — flip to the web side (calibrationscope.com: the public front door; Lessons and Get Started are one click from there)"><span class="cur">LOCAL</span><span class="s">⇄</span>WEB</a>
   <!-- 2. Mission-critical meters -->
   <div id="control-meters" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;overflow:hidden;">
     <span id="control-run-state" style="color:var(--text-muted);">● idle</span>

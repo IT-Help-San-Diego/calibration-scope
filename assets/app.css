@@ -1475,7 +1475,12 @@
 #context-flip .s{opacity:.6;margin:0 5px;font-size:15px}
 #context-flip:hover{color:var(--text-primary);border-color:var(--accent-gold)}
 #context-flip:focus-visible{outline:2px solid var(--accent-gold);outline-offset:2px}
-.top-nav{padding-left:122px}
+/* Left gutter = RESERVATION for the fixed pill above, which is out of flow and
+   would otherwise land on the owl + wordmark. 124px matches nav .wrap on
+   site/index.html and site/lessons.html, so the reserved space is one number on
+   all three surfaces. The pill lives in the control strip now, not the tab row —
+   .top-nav carried this reservation until 2026-07-28 and no longer needs it. */
+#control-strip{padding:8px 20px 8px 124px}
 
 /* ── Focused-shell scaffolding controls (parity with Deep, 2026-07-23) ────── */
 #focused-load-mode { font-size: 12px; padding: 6px 8px; background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
