@@ -1,7 +1,37 @@
 //! Verdict vocabulary — THE single source of truth for outcome terminology.
 //!
-//! Scientific rationale (user mandate 2026-07-09): "flaky" is software-testing
-//! jargon (Luo et al., FSE 2014) that blames the HARNESS for nondeterminism.
+//! Scientific rationale. THE DECISION is the user's (2026-07-09); the literature
+//! argument below is ours, and it was sharpened on 2026-07-30 after he asked the
+//! question that should have been asked first: is "flaky" actually a technical
+//! term, or social slang?
+//!
+//! IT IS A GENUINE TECHNICAL TERM, and any argument that says otherwise is
+//! wrong. Luo et al., "An Empirical Analysis of Flaky Tests", FSE 2014, ACM
+//! SIGSOFT, doi:10.1145/2635868.2635920 — plus a 74-page survey (Parry et al.,
+//! TOSEM 31(1), 2021) and a multivocal review (J. Systems & Software, 2023)
+//! reporting that >93% of the flaky-test literature postdates Luo 2014. It is
+//! an active subfield with venues at ICSE, ISSTA and ICST. We reject the word
+//! on FIT, not on rigor, and the distinction matters: rejecting a real term as
+//! unscientific would be the same error this instrument exists to catch.
+//!
+//! WHY IT DOES NOT FIT — and this is NOT the reason first recorded here.
+//! The original rationale said "flaky" blames the HARNESS for nondeterminism
+//! while our harness is deterministic. That is true but it is not the decisive
+//! point, and it sits awkwardly next to what we later measured. Luo's taxonomy
+//! names ORDER DEPENDENCY as one of the three commonest flakiness causes, and
+//! run 985 established that our within-run variation IS order-dependent state.
+//! By that reading "flaky" would be closer to our phenomenon, not further.
+//!
+//! The decisive point is REPRODUCIBILITY. A flaky test is non-deterministic:
+//! same code, same test, different outcome across runs. Ours is deterministic
+//! ACROSS runs — run 985 replayed 1,758 trial decisions byte-for-byte against
+//! run 974, including the exact rep-by-rep sequence of all 48 items whose reps
+//! disagree WITHIN a run, 48 of 48. Order-DEPENDENT is not order-RANDOM: a
+//! flaky order-dependent test yields a different answer when order changes;
+//! ours yields the same answer every time the same order is replayed. Flakiness
+//! means irreproducible. Our variation is exactly reproducible. That is why the
+//! word is wrong, and we earned that argument by measurement this week rather
+//! than by citation.
 //! Our harness is deterministic — temperature 0, pinned stimuli, SHA-3 sealed
 //! evidence. What we measure is the MODEL passing and failing identical
 //! trials. IEEE reliability engineering calls that an INTERMITTENT fault, and
@@ -63,9 +93,13 @@
 //! it fails to — asserting non-transferability from one item flipping and one
 //! not would be the same error as SAFE, pointed the other way.
 //!
-//! INTERMITTENT IS DELIBERATELY NOT RENAMED to FLAKY. That would reverse the
-//! 2026-07-09 mandate recorded at the top of this file, for the reason recorded
-//! there: "flaky" blames a harness that is deterministic.
+//! INTERMITTENT IS DELIBERATELY NOT RENAMED to FLAKY, for the reason at the top
+//! of this file — flakiness means irreproducible, and our variation replays
+//! byte-for-byte. Note that "flaky" IS a real technical term (Luo et al., FSE
+//! 2014); we reject it on fit. Anyone re-raising this should read the top of
+//! this file first: the argument there was corrected on 2026-07-30 and the
+//! superseded version ("it blames a deterministic harness") is weaker than what
+//! replaced it.
 //!
 //! CHANGING THE VOCABULARY MEANS EDITING THREE PLACES, NOT ONE. This function
 //! says it is "the ONLY place this decision logic may live" and that is simply
