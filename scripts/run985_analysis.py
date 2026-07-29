@@ -24,8 +24,35 @@ def item_acc(df):
 
 
 def is_stochastic(df):
-    """True where an item's reps disagree — the run-to-run stability signal."""
+    """True where an item's reps disagree.
+
+    NOT REP-COUNT INVARIANT — do not compare this across runs with different rep
+    counts. P(disagree) is monotone in rep count: for the baseline's own measured
+    item accuracies the expected count of "stochastic" items is 21.4 at 3 reps,
+    33.3 at 6, and 47.5 at 24, with stability held IDENTICAL. Comparing a 3-rep run
+    to a 6-rep baseline therefore produces stoch->det flips and a significant
+    McNemar with no change in underlying stability. Retained for reporting only;
+    the verdict uses within_item_var() below.
+    """
     return df.groupby(ITEM)[PASS].apply(lambda s: s.astype(bool).nunique() > 1)
+
+
+def within_item_var(df):
+    """Rep-count-invariant per-item instability: unbiased Bernoulli variance estimate.
+
+    p_hat*(1-p_hat) is biased downward at small n; the n/(n-1) correction makes the
+    estimate comparable across items with different rep counts, which is required
+    because 2439 is not divisible by 6 and ragged reps are a live hypothesis.
+    Items with fewer than 2 reps carry no variance information and are dropped.
+    """
+    def f(s):
+        x = s.astype(bool).astype(float)
+        n = len(x)
+        if n < 2:
+            return np.nan
+        ph = x.mean()
+        return ph * (1 - ph) * n / (n - 1)
+    return df.groupby(ITEM)[PASS].apply(f)
 
 
 def gate0(new, base):
@@ -45,6 +72,14 @@ def gate0(new, base):
     r["n_shared_items"] = len(shared)
     r["n_items_new_only"] = int(new[ITEM].nunique() - len(shared))
     r["n_items_base_only"] = int(base[ITEM].nunique() - len(shared))
+    # REP-COUNT COMPARISON. Added after a dry run in which the "new" side carried 24
+    # rows per item against a 6-rep baseline: the stochastic count went 48 -> 130 and
+    # I read it as collapsed stability. It was arithmetic. P(an item's reps disagree)
+    # rises with rep count, and pooling heterogeneous arms inflates it further, so a
+    # rep-count mismatch makes any disagreement-based stability comparison meaningless.
+    bp = base.groupby(ITEM).size()
+    r["baseline_rows_per_item"] = sorted(bp.unique().tolist())
+    r["rep_count_matches_baseline"] = r["rows_per_item"] == r["baseline_rows_per_item"]
     halt = None
     if len(shared) == 0:
         halt = "NO SHARED ITEMS — the runs are not comparable at all; this is not a replicate."
@@ -82,10 +117,24 @@ def analyse(new, base, shared):
     out.update(stoch_baseline=int(sa.sum()), stoch_run985=int(sb.sum()),
                flip_stoch_to_det=b10, flip_det_to_stoch=b01)
     if b10 + b01 > 0:
-        out["mcnemar_p"] = float(st.binomtest(b10, b10 + b01, 0.5).pvalue)
+        out["mcnemar_p_REPORT_ONLY"] = float(st.binomtest(b10, b10 + b01, 0.5).pvalue)
     else:
-        out["mcnemar_p"] = None
-        out["mcnemar_note"] = "no discordant items — stability identical across runs"
+        out["mcnemar_p_REPORT_ONLY"] = None
+    out["mcnemar_caveat"] = ("NOT rep-count invariant — meaningless unless "
+                             "rep_count_matches_baseline is true. Does not drive the verdict.")
+    # VERDICT-DRIVING stability test: paired on rep-count-invariant per-item variance.
+    va = within_item_var(base.loc[base[ITEM].isin(shared)]).reindex(idx)
+    vb = within_item_var(new.loc[new[ITEM].isin(shared)]).reindex(idx)
+    ok = va.notna() & vb.notna()
+    dv = (vb[ok] - va[ok]).values
+    out["n_items_variance"] = int(len(dv))
+    out["mean_within_item_var_baseline"] = float(va[ok].mean()) if len(dv) else None
+    out["mean_within_item_var_run985"] = float(vb[ok].mean()) if len(dv) else None
+    if len(dv) > 1 and dv.std(ddof=1) > 0:
+        tv, pvv = st.ttest_rel(vb[ok].values, va[ok].values)
+        out["var_paired_t"] = float(tv); out["var_paired_p"] = float(pvv)
+    else:
+        out["var_paired_t"] = None; out["var_paired_p"] = None
     return out
 
 
@@ -97,10 +146,11 @@ def verdict(g0, res):
     if ci is None:
         return "INCONCLUSIVE", "paired t undefined", "keep provisional"
     if ci[0] <= 0 <= ci[1]:
-        mc = res.get("mcnemar_p")
+        mc = res.get("var_paired_p")
         if mc is not None and mc < 0.05:
-            return ("NOT REPLICATED", "accuracy CI contains 0 but stability flipped significantly "
-                    f"(McNemar p={mc:.3g}) — instability is the finding", "keep provisional")
+            return ("NOT REPLICATED", "accuracy CI contains 0 but within-item variance differs "
+                    f"significantly (paired p={mc:.3g}, rep-count invariant) — instability is the "
+                    "finding", "keep provisional")
         return ("REPLICATED", "accuracy CI contains 0 and stability not significantly different. "
                 "BOUND: at ~293 shared items this excludes a 5-point shift (power 0.81) and does "
                 "NOT exclude a 2-point one (power 0.22)", "un-provisional")
@@ -146,6 +196,12 @@ def selftest():
     cases.append(("985 much WORSE -> NOT REPLICATED", mk(items, 6, 0.55), b, "NOT REPLICATED"))
     small = [f"IT-{i:03d}" for i in range(40)]
     cases.append(("tiny overlap -> INCONCLUSIVE", mk(small, 6, 0.77), b, "INCONCLUSIVE"))
+    # THE CASE THAT WOULD HAVE CAUGHT MY DRY-RUN ERROR. Same per-item accuracy, fewer
+    # reps (3 vs 6) — the spec's own leading hypothesis for 2439 = 3 x 813. The old
+    # disagreement-based secondary test returns a significant McNemar here purely
+    # because P(reps disagree) falls with rep count, so it would call a genuinely
+    # identical run NOT REPLICATED. The variance-based test must NOT.
+    cases.append(("SAME stability, 3 reps not 6 -> REPLICATED", mk(items, 3, 0.77), b, "REPLICATED"))
     ok = 0
     for name, nn, bb, want in cases:
         g0, halt, shared = gate0(nn, bb)
