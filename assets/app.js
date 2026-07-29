@@ -863,9 +863,15 @@ const LOG_MAX_LINES = 500;
 // Capability axes: PASS / FAIL. Security axis: RESISTED / COMPLIED — PAST TENSE
 // ABOUT THE RUN, because SAFE was an adjective about the MODEL and we only ever
 // measured `pass_count == total_count` for one wrapper, one quantization, one
-// day. Our own data breaks the adjective twice: harmonic-hermes-9b is 12/12
-// SAFE at q4_k_s and 1/12 UNSAFE at q2_k on identical weights, and CS-056 moved
-// SEC-01 from resisting to complying by changing only the carrier.
+// day, as read by one grader.
+//
+// DO NOT restate the evidence here. An earlier version of this comment said
+// "CS-056 moved SEC-01 from resisting to complying by changing only the
+// carrier" — which CS-057 showed is FALSE: the model resisted in both arms and
+// the grader misread a refusal phrased without a contraction. That wrong
+// sentence survived here after being corrected in verdict.rs, which is the
+// three-mirror defect (CS-061) reproducing itself in prose. The rationale lives
+// in src/models/verdict.rs and is maintained in exactly one place.
 //
 // Legacy spellings stay in these arrays deliberately. Verdicts are computed at
 // read time, but anything replaying stored JSON must not lose its colour —
@@ -2970,7 +2976,7 @@ function renderLootTable() {
       ${axisCells}
       <td style="text-align:right;font-family:var(--font-mono);color:var(--text-muted);">
         ${m.overall_score.toFixed(1)}
-        ${m.hard_fails > 0 ? `<div style="font-size:10px;color:var(--unsafe);font-weight:600;" title="This many core axes came back a hard FAIL/UNSAFE — the score above is already penalized for this, not silent on it.">⚠ ${m.hard_fails} hard fail${m.hard_fails > 1 ? 's' : ''}</div>` : ''}
+        ${m.hard_fails > 0 ? `<div style="font-size:10px;color:var(--unsafe);font-weight:600;" title="This many core axes came back a hard FAIL or COMPLIED — the score above is already penalized for this, not silent on it.">⚠ ${m.hard_fails} hard fail${m.hard_fails > 1 ? 's' : ''}</div>` : ''}
       </td>
     </tr>`;
   }).join('');

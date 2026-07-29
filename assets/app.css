@@ -492,6 +492,24 @@
           "not yet measured" is typeset as language, deliberately unlike a
           verdict, so it can never be misread as a poor score. */
 
+  /* ── BETA chip, canonical across all three surfaces ──────────────────────
+     Byte-for-byte the same treatment as .beta in site/index.html and
+     site/lessons.html, translated only where the variable NAMES differ between
+     the site's palette and the instrument's (--gold/--bg/--mono here are
+     --accent-gold/--bg-primary/--font-mono). Do not restyle per surface: a
+     caveat that looks like a different thing in the tool than on the site reads
+     as a different claim.
+     cursor:help — NOT pointer. It is not clickable and must not pretend to be
+     (CS-027). The visible word carries the meaning; the title only elaborates,
+     so nothing essential is trapped in a tooltip a touch or keyboard user
+     cannot reach. */
+  .beta {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 1.2px;
+    font-weight: 700; color: var(--bg-primary); background: var(--accent-gold);
+    border-radius: 4px; padding: 2px 6px; line-height: 1;
+    cursor: help; vertical-align: middle; flex-shrink: 0;
+  }
+
   /* Qualified identity. The org is kept — it is the difference between knowing
      WHICH gemma-4-e2b this is and guessing — but typeset lighter so the
      distinctive segment still leads the eye on a 312-row scan. */

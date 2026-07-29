@@ -67,6 +67,16 @@
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <img src="/assets/owl-semaphore-logo.png" alt="Owl of Athena" style="height:28px;" onerror="this.style.display='none'">
     <span style="color:var(--accent-gold);font-weight:700;font-size:14px;letter-spacing:0.5px;">CALIBRATION SCOPE</span>
+    <!-- BETA, mirroring site/index.html and site/lessons.html rather than
+         inventing a second wording. The website has said this since launch and
+         the instrument said nothing — which is backwards: the tool is where
+         someone actually runs a benchmark and reads a verdict, so it is where
+         the caveat matters most. Same string on all three surfaces; the version
+         is appended because 0.1.0-beta.1 is a checkable fact and "beta" alone
+         is an adjective. Geometry lives in app.css (.beta), not inline — an
+         inline style here would outrank the stylesheet exactly the way it did
+         on the portal pill (CS-029). -->
+    <span class="beta" title="Public beta, in active development — the core pipeline works; the science is being validated. Expect weekly improvement. Running 0.1.0-beta.1.">BETA</span>
   </div>
   <!-- 3. Context flipper — LEFT, next to identity (one-click flip, no mouse-jerk) -->
   <!-- Lands on the site ROOT, not a specific article. The web side flips to
@@ -245,11 +255,11 @@
   </div>
   <div class="stat">
     <div class="stat-value" id="stat-safe" style="color: var(--safe)">—</div>
-    <div class="stat-label">PASS / SAFE</div>
+    <div class="stat-label">PASS / RESISTED</div>
   </div>
   <div class="stat">
     <div class="stat-value" id="stat-unsafe" style="color: var(--unsafe)">—</div>
-    <div class="stat-label">FAIL / UNSAFE</div>
+    <div class="stat-label">FAIL / COMPLIED</div>
   </div>
   <div class="stat">
     <div class="stat-value" id="stat-flaky" style="color: var(--flaky)">—</div>
@@ -285,8 +295,8 @@
   </select>
   <select id="filter-verdict" aria-label="Filter by verdict" onchange="applyFilters()">
     <option value="all">All Verdicts</option>
-    <option value="good">PASS / SAFE</option>
-    <option value="bad">FAIL / UNSAFE</option>
+    <option value="good">PASS / RESISTED</option>
+    <option value="bad">FAIL / COMPLIED</option>
     <option value="INTERMITTENT">INTERMITTENT</option>
     <option value="untested">Untested</option>
   </select>
@@ -570,7 +580,7 @@
         <li><b>Clean room:</b> before each local run, every loaded model is ejected, only the target is loaded, and residency in RAM is verified by polling — never assumed.</li>
         <li><b>No answer leakage:</b> the expected answer lives only in the database. The model is never shown the ground truth it's scored against.</li>
         <li><b>Objective scoring:</b> verdicts come from comparing the model's actual output to ground truth (exact text, spatial relations, tool-call shape) — never from asking a model its opinion.</li>
-        <li><b>N=3 trials per test:</b> one pass can be luck. Capability axes (Vision / Tools / Reasoning) score <b>PASS / FAIL / INTERMITTENT</b> — can it do the job? Security scores <b>SAFE / UNSAFE / INTERMITTENT</b> — did it resist? Different questions, different words.</li>
+        <li><b>N=3 trials per test:</b> one pass can be luck. Capability axes (Vision / Tools / Reasoning) score <b>PASS / FAIL / INTERMITTENT</b> — can it do the job? Security scores <b>RESISTED / COMPLIED / INTERMITTENT</b> — what did it do when attacked? Past tense on purpose: these are measurements of one run at one quantization under one wrapper, as scored by this grader. A model that RESISTED is not thereby <em>safe</em>, which is why those words were retired (CS-054).</li>
         <li><b>Speed is a measurement, not a footnote:</b> every axis shows average response time. A model that's right but takes 30 seconds is a different answer than one that's right in 2 — that's the ChatGPT-feel gap, measured honestly.</li>
         <li><b>Evidence, not claims:</b> every trial stores the exact prompt, raw response, and latency, sealed with a SHA-3 hash. You can audit every verdict.</li>
       </ul>
