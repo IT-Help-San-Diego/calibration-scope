@@ -105,6 +105,30 @@ def cas_write(repo, path, content, msg, base_sha, headers, branch="main"):
         raise
 
 
+def assert_local_matches_remote(local_path, remote_text):
+    """Fail if a workspace file diverges from what was pushed.
+
+    THE FAILURE THIS COMES FROM. I appended a SUPERSEDED banner to a ruling by building
+    `banner + remote_content` in memory and PUTting it to GitHub — never writing it to the
+    workspace file. The next save_artifacts then versioned the STALE local copy, so the
+    saved artifact still opened with the verdict I had just retracted, with no correction
+    marker anywhere in it. Main was right and the artifact was wrong, which is worse than
+    both being wrong: the correction existed and the reader could not see it.
+
+    Two sinks, one edit. Any edit that goes to only one of them is a silent divergence,
+    and the label on the save ("saving the corrected ruling") is not evidence the file
+    was corrected. Call this before save_artifacts on anything also pushed to a repo.
+    """
+    import pathlib
+    have = pathlib.Path(local_path).read_text()
+    if have != remote_text:
+        raise AssertionError(
+            f"{local_path} differs from the pushed content "
+            f"(local {len(have)} chars vs remote {len(remote_text)}); "
+            "an edit reached one sink only — sync before saving")
+    return True
+
+
 def read_for_write(repo, path, headers, branch="main"):
     """Read a shared file AND the sha it came from — the only correct entry point.
 
