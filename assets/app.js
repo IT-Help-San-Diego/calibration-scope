@@ -1021,7 +1021,7 @@ function renderGrid() {
       ? `<button class="btn-mini" onclick="event.stopPropagation(); startFountain('${m.key.replace(/'/g, "\\'")}', '${m.provider}')" title="Fire 20 requests at 1/s and measure what the provider ACTUALLY sustains — verdicts: FOUNTAIN (all pass), TRICKLE (some 429s), THROTTLED (heavy 429s), MIRAGE (429'd into unusability), UNSTABLE (non-rate failures), ERRORED (nothing answered)">⛲ Probe</button>`
       : '';
 
-    return `<div class="${cardClasses}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}">
+    return `<div class="${cardClasses}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}" role="option" aria-selected="false" tabindex="-1">
       <div class="model-card-header">
         ${locBadge}
         <span class="model-name">${m.display_name}</span>
@@ -1114,7 +1114,7 @@ function renderGrid() {
         modelName = rawName.slice(idx + 2);
       }
       // publisher now renders on its own line inside .row-main (see below)
-      return `<div class="${rowClasses.join(' ')}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}">
+      return `<div class="${rowClasses.join(' ')}" data-key="${m.key}" data-provider="${m.provider}" data-location="${m.location}" data-unresolved="${unresolved}" role="option" aria-selected="false" tabindex="-1">
         <span class="row-check">✓</span>
         <span class="row-loc" title="${m.location === 'local' ? 'Local — your silicon' : 'Cloud — ' + m.provider}">${m.location === 'local' ? '🖥' : '☁️'}</span>
         <div class="row-main">
@@ -1934,6 +1934,53 @@ function persistSelection() {
   try { localStorage.setItem('amb-selected-keys', JSON.stringify([...selectedKeys])); } catch(e) {}
 }
 try { console.log('[renderGrid] before restore selectedKeys=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
+// ═══ CS-037 — ARIA listbox: roving tabindex + keyboard nav for the model picker ═══
+// One tab stop for the whole grid. Arrows move the active option (never change
+// selection — Carey's call, standard multi-select listbox). Space toggles the
+// active row via the existing selectModel(). aria-selected mirrors selectedKeys.
+// Re-armed after EVERY renderGrid()/restoreSelection() because the rows are rebuilt.
+let _listboxActiveKey = null;
+function listboxOptions() {
+  return Array.from(document.querySelectorAll('#model-grid [role="option"][data-key]'));
+}
+function armListbox() {
+  const opts = listboxOptions();
+  if (!opts.length) return;
+  for (const o of opts) o.setAttribute('aria-selected', selectedKeys.has(o.dataset.key) ? 'true' : 'false');
+  if (!_listboxActiveKey || !opts.some(o => o.dataset.key === _listboxActiveKey)) {
+    _listboxActiveKey = opts[0].dataset.key;
+  }
+  for (const o of opts) o.tabIndex = (o.dataset.key === _listboxActiveKey) ? 0 : -1;
+}
+function listboxMove(delta) {
+  const opts = listboxOptions();
+  if (!opts.length) return;
+  let i = opts.findIndex(o => o.dataset.key === _listboxActiveKey);
+  if (i < 0) i = 0;
+  i = (i + delta + opts.length) % opts.length;
+  _listboxActiveKey = opts[i].dataset.key;
+  for (const o of opts) o.tabIndex = (o.dataset.key === _listboxActiveKey) ? 0 : -1;
+  opts[i].focus();
+  opts[i].scrollIntoView({ block: 'nearest' });
+}
+document.getElementById('model-grid')?.addEventListener('keydown', (e) => {
+  const opt = e.target.closest('[role="option"][data-key]');
+  if (!opt) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); listboxMove(1); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); listboxMove(-1); }
+  else if (e.key === ' ' || e.key === 'Spacebar') {
+    e.preventDefault();
+    _listboxActiveKey = opt.dataset.key;
+    selectModel(opt.dataset.key);
+    updateSelectorCounter(opt.dataset.key, document.querySelectorAll('.model-card.selected, .model-row.selected').length);
+    armListbox();
+  }
+});
+document.getElementById('model-grid')?.addEventListener('click', (e) => {
+  const opt = e.target.closest('[role="option"][data-key]');
+  if (opt) { _listboxActiveKey = opt.dataset.key; armListbox(); }
+});
+
 // Re-apply the persisted selection to whatever cards are currently in the DOM.
 try { console.log('[renderGrid] after restore selectedKeys=' + JSON.stringify([...(selectedKeys||[])])); } catch(e) {}
 // Called after every renderGrid() so filtering/sorting/sync never drops it.
@@ -1942,6 +1989,7 @@ function restoreSelection() { try { console.log('[selector-debug] restoreSelecti
     c.classList.toggle('selected', selectedKeys.has(c.dataset.key));
   });
   markLoadedRows();
+  armListbox(); // CS-037: re-establish roving tabindex + aria-selected after every render
 }
 // Select-all / deselect-all wired once after every renderGrid.
 document.getElementById('select-all-btn')?.addEventListener('click', () => { try { console.log('[selector-debug] select-all'); } catch(e) {}
