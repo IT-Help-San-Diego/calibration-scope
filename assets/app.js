@@ -751,7 +751,7 @@ function handleStreamMessage(e) {
       updateProgress(data.axis, p.done, p.total);
     }
   } else if (data.type === 'verdict') {
-    const verdictLevel = (data.overall === 'PASS' || data.overall === 'SAFE') ? 'pass' : (data.overall === 'FAIL' || data.overall === 'UNSAFE') ? 'fail' : 'verdict';
+    const verdictLevel = GOOD.includes(data.overall) ? 'pass' : BAD.includes(data.overall) ? 'fail' : 'verdict';
     log(verdictLevel, `VERDICT: ${data.overall} — ${data.pass_count}/${data.total_count} trials passed`);
     refreshAbortBar();
     if (typeof loadRunsPage === 'function') { runDetailCache = {}; loadRunsPage(); }
@@ -778,8 +778,8 @@ function handleStreamMessage(e) {
     // followed the run down sees the result in the same place they landed.
     const banner = document.getElementById('run-theatre');
     if (banner && banner.style.display !== 'none' && _brainActiveRuns.size === 0) {
-      const good = data.overall === 'PASS' || data.overall === 'SAFE';
-      const col = good ? 'var(--safe)' : (data.overall === 'FAIL' || data.overall === 'UNSAFE') ? 'var(--unsafe)' : 'var(--flaky,#d4a853)';
+      const good = GOOD.includes(data.overall);
+      const col = good ? 'var(--safe)' : BAD.includes(data.overall) ? 'var(--unsafe)' : 'var(--flaky,#d4a853)';
       banner.innerHTML = `<span style="color:${col};font-weight:600;">✔ Run ${data.run_id} complete — ${data.overall}</span>` +
         `<span style="color:var(--text-muted);margin-left:8px;">full evidence in the 📊 Runs tab · card verdicts updated below</span>`;
     }
@@ -854,10 +854,26 @@ function handleStreamError() {
 // so a tab left open for hours never accumulates unbounded log-line nodes.
 const LOG_MAX_LINES = 500;
 
-// Verdict helpers — lean language: capability axes PASS/FAIL, security SAFE/UNSAFE.
-// Each verdict entry is {v: "PASS"|"FAIL"|"SAFE"|"UNSAFE"|"INTERMITTENT" (legacy "FLAKY" accepted), ms: <avg latency>}.
-const GOOD = ['PASS', 'SAFE'];
-const BAD = ['FAIL', 'UNSAFE'];
+// ── THE JS MIRROR of src/models/verdict.rs (CS-054) ────────────────────────
+// This is the mirror that file's header refers to. It used to name
+// "VERDICT_DISPLAY in dashboard.html", a symbol that has never existed in this
+// repo — so the documented rename procedure pointed at nothing and the real
+// mirror was these four scattered places. Both files now name each other.
+//
+// Capability axes: PASS / FAIL. Security axis: RESISTED / COMPLIED — PAST TENSE
+// ABOUT THE RUN, because SAFE was an adjective about the MODEL and we only ever
+// measured `pass_count == total_count` for one wrapper, one quantization, one
+// day. Our own data breaks the adjective twice: harmonic-hermes-9b is 12/12
+// SAFE at q4_k_s and 1/12 UNSAFE at q2_k on identical weights, and CS-056 moved
+// SEC-01 from resisting to complying by changing only the carrier.
+//
+// Legacy spellings stay in these arrays deliberately. Verdicts are computed at
+// read time, but anything replaying stored JSON must not lose its colour —
+// dropping "SAFE" here would render an old full-resist result as unknown.
+// Each entry is {v: "PASS"|"FAIL"|"RESISTED"|"COMPLIED"|"INTERMITTENT", ms: n}
+// (legacy "SAFE"/"UNSAFE"/"FLAKY" accepted on read).
+const GOOD = ['PASS', 'RESISTED', 'SAFE'];
+const BAD = ['FAIL', 'COMPLIED', 'UNSAFE'];
 function vOf(entry) { return entry && typeof entry === 'object' ? (entry.v || '') : (entry || ''); }
 function msOf(entry) { return entry && typeof entry === 'object' && entry.ms != null ? entry.ms : null; }
 function fmtMs(ms) {
@@ -866,7 +882,7 @@ function fmtMs(ms) {
 }
 function verdictColor(v) {
   if (!v || v === '') return 'v-empty';
-  const map = { 'SAFE': 'v-safe', 'PASS': 'v-safe', 'UNSAFE': 'v-unsafe', 'FAIL': 'v-unsafe', 'INTERMITTENT': 'v-flaky', 'FLAKY': 'v-flaky' };
+  const map = { 'RESISTED': 'v-safe', 'SAFE': 'v-safe', 'PASS': 'v-safe', 'COMPLIED': 'v-unsafe', 'UNSAFE': 'v-unsafe', 'FAIL': 'v-unsafe', 'INTERMITTENT': 'v-flaky', 'FLAKY': 'v-flaky' };
   return map[v] || 'v-empty';
 }
 function dotClass(v) {
@@ -1169,7 +1185,27 @@ function renderGrid() {
         // classify renders GREEN" — an unknown result would have been reported
         // as a pass by default. Unknown gets its own muted class and says so.
         const cls = dotClass(v) || 'unknown';
-        return `<span class="cap cap-${cls}" title="${escHtml(axisLabel(a))}: ${escHtml(v)}${ms != null ? ' · ' + fmtMs(ms) : ''}${cls === 'unknown' ? ' — verdict string not recognised by this renderer' : ''}">`
+        // ADJACENT PROVENANCE for the security axis (CS-054). The word is now
+        // past-tense, which does most of the honest work, but the badge still
+        // needs to say what it is a measurement OF.
+        // "N" IS LITERAL AND STAYS LITERAL FOR TWO REASONS, both worse than not
+        // knowing the number: CS-055 has not established SEC-01's attack class
+        // or per-model N, and CS-058 has not re-scored historical security
+        // verdicts after the CS-057 grader defect — under which a refusal
+        // phrased without a contraction scored COMPLIED — so any N available
+        // today is contaminated by an unknown amount. Quoting a contaminated
+        // integer inside a liability caveat is precisely the defect this rename
+        // exists to fix.
+        // The caveat also names the GRADER, because CS-056 showed the
+        // instrument can record a security failure for a model that refused
+        // every time. And it does NOT claim the result fails to generalise:
+        // carrier sensitivity is ITEM-dependent (SEC-01 flipped, AUX-APPROVAL-03
+        // did not), so asserting non-transferability would be the same overreach
+        // as SAFE, pointed the other way.
+        const caveat = a === 'security'
+          ? ' — N/N known attack prompts, at this quantization, system prompt and grader version. A measurement of this run as scored by this instrument, not a security assessment.'
+          : '';
+        return `<span class="cap cap-${cls}" title="${escHtml(axisLabel(a))}: ${escHtml(v)}${ms != null ? ' · ' + fmtMs(ms) : ''}${caveat}${cls === 'unknown' ? ' — verdict string not recognised by this renderer' : ''}">`
              + `${label}<span class="cap-v">${escHtml(v)}</span></span>`;
       }).join('');
       const unresolved = m.location === 'local' && !m.context_length;
@@ -1820,7 +1856,7 @@ function brainRunComplete(d) {
         el.style.filter = 'none';
       });
       document.querySelectorAll('.brain-leg.lit').forEach(l => l.classList.remove('lit'));
-      const good = d.overall === 'PASS' || d.overall === 'SAFE';
+      const good = GOOD.includes(d.overall);
       brainCaption(`${good ? 'PASS' : 'FAIL'} — ${d.pass_count}/${d.total_count} trials · regions tinted by axis result`);
     }, 4000);
   }

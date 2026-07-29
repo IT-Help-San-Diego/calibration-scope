@@ -22,7 +22,8 @@ pub struct ModelEntry {
     // DateTime<Utc> would require TIMESTAMPTZ and fails to decode at runtime.
     pub created_at: Option<chrono::NaiveDateTime>,
     pub updated_at: Option<chrono::NaiveDateTime>,
-    /// Per-axis verdict roll-up as a JSON object string, e.g. {"vision":"SAFE","tools":"INTERMITTENT"} (legacy rows may say FLAKY; canonicalized at read time).
+    /// Per-axis verdict roll-up as a JSON object string, e.g. {"vision":"PASS","security":"RESISTED","tools":"INTERMITTENT"}.
+    /// Legacy rows may say FLAKY (pre-2026-07-09) or SAFE/UNSAFE (pre-CS-054); both are canonicalized forward at read time.
     /// Computed from the latest completed test_run per (model, axis); '{}' = untested.
     /// The dashboard parses this with JSON.parse(m.verdicts || '{}').
     pub verdicts: Option<String>,
