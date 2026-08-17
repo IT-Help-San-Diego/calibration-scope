@@ -345,6 +345,18 @@ never a test-specific formula.
 **Full Carrier Color spectrum (same logic, 5 carriers, all 102-trial, clean infra):**
 baseline 99.0% > haiku 97.1% > English prose 94.1% > Lean = Bribe 91.2%.
 
+> **Ordering superseded (2026-08-05).** The rank language below — "BEST scaffold",
+> "WORST", "gentlest", "heaviest" — is **retained as the run receipt**, but the
+> ordering it asserts is not statistically supported and does not stand as stated.
+> Per the audit in `docs/experiments/carrier_color_experiment_spec_v1.md` §0,
+> re-derived by Fisher exact: every adjacent step is n.s. (baseline↔haiku p = 0.62,
+> haiku↔English p = 0.50, English↔Lean p = 0.59, Lean↔bribe p = 1.00), and even the
+> widest comparison, haiku vs Lean, does not separate (p = 0.13). **What the data
+> supports is the endpoint contrast only:** baseline vs Lean and baseline vs bribe,
+> 99.0% → 91.2%, p = 0.019. The falsification of both inverse hypotheses survives,
+> since it rests on that endpoint. README and FINDINGS were corrected 2026-08-05;
+> the ordering is what the pre-registered paired design (n ≈ 420) is built to resolve.
+
 **Findings (complete):**
 - **Every carrier drags the strong model.** None of the 4 scaffolds beat the 99%
   baseline. The strong model does not want a crutch.

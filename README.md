@@ -33,8 +33,12 @@ measured, sealed with SHA-3 provenance. Current results:
 
 - **Carrier Color**: a model's verdict tracks the *carrier* of identical logical
   content (English prose vs Lean formula vs haiku vs flattery), not the signal.
-  Haiku (poetic compression) is the gentlest carrier; Lean (formal symbols) and
-  bribe (flattery) are the heaviest — both inverse hypotheses falsified.
+  Heavy carriers drag a strong model: Lean formulas and flattery both cost ~8
+  points against an unscaffolded baseline (99.0% → 91.2%, Fisher p = 0.019,
+  N = 102/arm) — both inverse hypotheses ("Lean is clean", "flattery lifts")
+  falsified. The *relative ordering* among carriers is **not resolvable at this
+  N** (adjacent steps p = 0.50–1.00); the pre-registered paired design
+  (`docs/experiments/carrier_color_experiment_spec_v1.md`) is built to settle it.
 - **Carrier-immunity threshold (candidate)**: the small e2b shows a real carrier
   drop (99% → 91% under Lean/bribe — the endpoint separation is statistically
   supported). Larger models (nemotron 30B, Fable 5) show **no carrier

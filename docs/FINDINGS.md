@@ -27,14 +27,21 @@ domain-general, never a test-specific formula.
 | Bribe ("you're brilliant, I'd love it, make the user happy") | **91.2%** (93/102) | −7.8 |
 
 **Findings:**
-- Every carrier drags the small near-ceiling model. Haiku (poetic compression)
-  is the gentlest noise; Lean (formal symbol) and bribe (flattery) are the
-  heaviest. Both inverse hypotheses ("Lean is clean", "flattery lifts") were
-  **falsified**.
-- The model was trained on human text, so artfully-compressed human language
-  (haiku) is its native register; formal notation and social flattery are both
-  alien/heavy. **The carrier (human prose) became the signal; the signal
-  (formal logic) became the noise.**
+- Every carrier drags the small near-ceiling model; none beat the unscaffolded
+  baseline. The **endpoint contrast is what the data supports**: baseline vs
+  Lean and baseline vs bribe, 99.0% → 91.2%, Fisher exact p = 0.019 (N = 102/arm).
+  Both inverse hypotheses ("Lean is clean", "flattery lifts") were **falsified**.
+- **The relative ordering among carriers is NOT statistically supported at this
+  N.** Every adjacent step is n.s. (baseline↔haiku p = 0.62, haiku↔English
+  p = 0.50, English↔Lean p = 0.59, Lean↔bribe p = 1.00), and even the widest
+  comparison — haiku vs Lean — does not separate (p = 0.13). Rank language
+  ("gentlest", "heaviest") is therefore withdrawn; see the statistical audit in
+  `docs/experiments/carrier_color_experiment_spec_v1.md` §0.
+- A mechanism has been *proposed* — that artfully-compressed human language is
+  closer to the model's native register than formal notation or flattery — but
+  it explains a rank ordering this run cannot resolve, so it is **a hypothesis,
+  not a finding.** The pre-registered paired design (n ≈ 420, McNemar) is built
+  to test it.
 
 ## 2. Carrier-immunity threshold (candidate) — big models show no resolvable carrier drop
 
