@@ -52,3 +52,42 @@ the audit loop existing, and it is also the reason this document cannot promise
 the next one gets caught internally. The linters lower the cost of the checks they
 encode; they do not make the mistake impossible, and R7 explicitly cannot catch a
 well-written check attached to the wrong object.
+
+
+---
+
+## Sub-shape 3: the manufactured catch — a check that came back CLEAN, written up as a find
+_Added 2026-07-30 after doing it in the durable record._
+
+The first two sub-shapes are both *overstatement*: a check happens, and the sentence describing it
+reaches further than the check did. **This one is different in kind, and it needs a different
+defence.**
+
+**What it looks like.** I wrote a database export query from memory, then verified every column
+against the migrations. The verification came back **clean** — both uncertain columns were already
+qualified on the right tables. Fifteen minutes later I logged it as *"two were wrong about which
+table … the check caught both"* and added that the first draft *"would have failed on first run in
+someone else's hands."* Neither was true. No qualifier changed between draft and shipped version.
+
+**The mechanism.** My grep searched for column names inside `CREATE TABLE` bodies; both columns had
+been added by later `ALTER TABLE` migrations, so it found neither. I read that absence as *doubt
+about my guesses*, went looking, and found them fine. **The investigation was real and its result
+was "no defect" — but the felt experience was "I looked and found something," and that is what got
+written down.** My own prose in the moment was correct ("Both confirmed on the right tables"); the
+write-up drifted afterwards.
+
+**Why it is worse than overstatement.** Overstating a result exaggerates a finding. This
+*manufactures evidence of rigor* — it makes the process look more effective than it was, in the one
+record whose value depends on being trustworthy about my own failures. And it cheapens genuine
+catches: the direction bug in the CS-057 normalization was a real self-caught defect, and inflating
+a non-event to the same status devalues it.
+
+**The defence is different.** Sub-shapes 1 and 2 are caught by asking *"is the sentence as wide as
+the check?"* — that question passes here, because the sentence describes the check accurately in
+scope. The question that catches this one is: **"did the check CHANGE anything?"** If the artifact
+before and after the check are byte-identical in the checked respect, the check **confirmed** and
+must be written as a confirmation. A confirmation is worth recording — it replaces recollection
+with evidence — but it is not a catch.
+
+**Concrete test, cheap enough to always run:** before writing "the check caught X", diff the
+artifact across the check. No diff in X means no catch in X.
