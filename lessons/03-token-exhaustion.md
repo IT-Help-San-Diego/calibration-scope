@@ -9,7 +9,7 @@ measured_anchor: "real caught incident, now a permanent regression test"
 epistemic_status: "SEALED — real caught incident + regression test"
 provenance: "SHA3-256 seal listed in lessons/README.md — verify: openssl dgst -sha3-256 <this file>"
 part_of: "Calibration Scope · Lessons (Human Failure Runs)"
-license: "Apache-2.0 · IT Help San Diego Inc."
+license: "AGPL-3.0 · IT Help San Diego Inc."
 ---
 
 # Lesson 03 — Token Exhaustion

@@ -5,7 +5,7 @@ edition = "2021"
 description = "Test your AI models like a scientist — ground-truth benchmarks, N=3 trials, SHA3-sealed evidence, local-first"
 repository = "https://github.com/IT-Help-San-Diego/calibration-scope"
 homepage = "https://calibrationscope.com"
-license = "Apache-2.0"
+license = "AGPL-3.0"
 
 [lib]
 name = "calibration_scope_dashboard"

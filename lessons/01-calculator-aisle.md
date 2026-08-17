@@ -9,7 +9,7 @@ measured_anchor: "sub-1B reasoning floor — qwen2.5-0.5b 46%, llama-3.2-1b 47%;
 epistemic_status: "PARABLE anchored to sealed leaderboard floor numbers"
 provenance: "SHA3-256 seal listed in lessons/README.md — verify: openssl dgst -sha3-256 <this file>"
 part_of: "Calibration Scope · Lessons (Human Failure Runs)"
-license: "Apache-2.0 · IT Help San Diego Inc."
+license: "AGPL-3.0 · IT Help San Diego Inc."
 ---
 
 # Lesson 01 — The Calculator Aisle

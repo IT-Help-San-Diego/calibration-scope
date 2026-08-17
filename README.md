@@ -1,6 +1,6 @@
 # Calibration Scope
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 
 **Calibration Scope measures the gap between what a system *states* and what is *actually* true — machine-checked, sealed, and verifiable by anyone. Any subject. Any substrate. Silicon or carbon.**
 
@@ -241,14 +241,17 @@ If a number on the screen can't cite where it came from, that's a bug. File it.
 
 ## License & attribution
 
-**Calibration Scope is licensed under the [Apache License, Version 2.0](LICENSE).**
+**Calibration Scope is licensed under the [GNU Affero General Public License, Version 3.0](LICENSE).**
 
-- Copyright © 2026 **IT Help San Diego Inc.** All rights reserved under the terms of the Apache-2.0 license.
+**This is a fork point, not a history change:** everything published through
+`v0.1.0-beta.1` shipped under Apache-2.0, and that grant is irrevocable — those
+versions remain Apache-2.0 in perpetuity for anyone who has them. AGPL-3.0
+applies from the next release forward.
+
+- Copyright © 2026 **IT Help San Diego Inc.** — sole owner (contributors: Carey James Balboa; tool-authored commits carry no independent copyright standing).
 - Research published under Carey James Balboa and IT Help San Diego Inc., as part of the [Intellectual Resistance](https://intellectualresistance.com/) program.
 - The benchmark methodology, test battery, scoring logic, and SHA3-provenance design are original works of IT Help San Diego Inc.
-- Patent grant included (Section 3 of Apache-2.0): contributors grant a perpetual, royalty-free patent license for their contributions.
+- AGPL-3.0 is OSI-approved and machine-classified: dependency scanners and academic license whitelists accept it cleanly. The one obligation it adds over Apache-2.0 is the anti-shelving tooth — operating a hosted modified derivative requires publishing your changes, so a fork can never be withdrawn into private.
 - Trademark: "Calibration Scope" and "IT Help San Diego" are trademarks of IT Help San Diego Inc. The Owl of Athena is a historical/public symbol used for thematic identity and is not claimed as a trademark. The license does not grant rights to use the Calibration Scope or IT Help San Diego marks except for reasonable attribution.
 - See [NOTICE](NOTICE) for attribution and trademark details.
-
-This is a permissive license: you may use, modify, and redistribute the work (including commercial use), provided you retain the license, note modifications, and preserve attribution. It is intentionally more permissive than the DNS Tool product (BUSL-1.1) because a benchmark's value depends on broad, independent adoption — the methodology is the asset, not a hosted service.
 

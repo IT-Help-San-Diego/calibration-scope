@@ -36,4 +36,4 @@ The output must match the full hash in the table (LF line endings, file exactly 
 
 Same instrument, silicon and carbon. Look in the mouth before you trust the gift horse.
 
-— *IT Help San Diego Inc. · a project of the [Intellectual Resistance](https://intellectualresistance.com/) · Apache-2.0*
+— *IT Help San Diego Inc. · a project of the [Intellectual Resistance](https://intellectualresistance.com/) · AGPL-3.0*

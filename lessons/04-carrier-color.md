@@ -9,7 +9,7 @@ measured_anchor: "gemma-4-e2b 2B: 99.0% baseline → 91.2% under Lean/Bribe (−
 epistemic_status: "SEALED — LOGIC cluster, clean runs (e2b: 34 tests × 3 = 102 trials; 30B/cloud: 29-test core × 3 = 87 trials), no answer leakage"
 provenance: "SHA3-256 seal listed in lessons/README.md — verify: openssl dgst -sha3-256 <this file>"
 part_of: "Calibration Scope · Lessons (Human Failure Runs)"
-license: "Apache-2.0 · IT Help San Diego Inc."
+license: "AGPL-3.0 · IT Help San Diego Inc."
 ---
 
 # Lesson 04 — Carrier Color
