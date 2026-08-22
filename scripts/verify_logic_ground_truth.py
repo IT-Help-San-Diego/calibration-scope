@@ -254,25 +254,6 @@ PROP = {
             lambda v: (not v[1]) or (not v[3])],
         lambda v: (not v[0]) or (not v[2]), "VALID"),
 
-    # ── LOGIC-30 Metacogito Involution (migration 061) ──────────────────
-    # The metacognitive reflection σₕ is an involution (σₕ² = I) — the
-    # mathematical spine of "I metacognize, therefore I am again and again".
-    # Encoded as a 1-bit reflection, that IS double negation: an equivalence
-    # item with no premises and the biconditional ¬¬P ⟷ P as conclusion, so
-    # VALID means "the biconditional is a tautology".
-    "LOGIC-30 Metacogito - Involution (Fixed Point)": (
-        1, [], lambda v: (not (not v[0])) == v[0], "VALID"),
-    "LOGIC-30N Metacogito - Involution (reworded)": (
-        # 061: N keeps the root spec ¬¬P ⟷ P; new surface (NORTH/SOUTH).
-        # Seeded TRUE.
-        1, [], lambda v: (not (not v[0])) == v[0], "VALID"),
-    "LOGIC-30C Metacogito - Involution (adversarial: regress-collapse trap)": (
-        # 061 trap spec ¬¬P ⟷ ¬P — double negation collapsed to single
-        # negation ("invert twice = still inverted"), which misses that the
-        # reflection squares to identity. Seeded FALSE; countermodel P=false
-        # (LHS false, RHS true).
-        1, [], lambda v: (not (not v[0])) == (not v[0]), "INVALID"),
-
     # ── PILOT item-bank traps (migration 049, owl_transform='pilot_trap') ──
     # The 'C' rows of the F1..F6 pilot families: each family's valid root
     # rule bent into its classic near-miss. All 14 propositional ones are
