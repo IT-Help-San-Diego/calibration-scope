@@ -7,7 +7,7 @@ authors:
   - family-names: "Balboa"
     given-names: "Carey James"
     orcid: "https://orcid.org/0009-0000-5237-9065"
-    affiliation: "IT Help San Diego Inc."
+    affiliation: "Independent Researcher"
 license: Apache-2.0
 notes: "Repository license moved forward to AGPL-3.0 from the next release; v0.1.0-beta.1 (this version) and all earlier releases remain Apache-2.0 in perpetuity."
 repository-code: "https://github.com/IT-Help-San-Diego/calibration-scope"
